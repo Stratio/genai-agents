@@ -140,14 +140,33 @@ if [[ -d "$AGENT_ABS/.claude/skills" ]]; then
   SKILLS_SRC="$AGENT_ABS/.claude/skills"
 elif [[ -d "$AGENT_ABS/.opencode/skills" ]]; then
   SKILLS_SRC="$AGENT_ABS/.opencode/skills"
+elif [[ -d "$AGENT_ABS/skills" ]]; then
+  SKILLS_SRC="$AGENT_ABS/skills"
 fi
 
 if [[ -n "$SKILLS_SRC" ]]; then
   cp -r "$SKILLS_SRC/." "$OUTPUT_DIR/.claude/skills/"
+  # Normalizar: archivos .md sueltos → subcarpeta/SKILL.md
+  for md_file in "$OUTPUT_DIR/.claude/skills/"*.md; do
+    [[ -f "$md_file" ]] || continue
+    skill_name="$(basename "$md_file" .md)"
+    mkdir -p "$OUTPUT_DIR/.claude/skills/$skill_name"
+    mv "$md_file" "$OUTPUT_DIR/.claude/skills/$skill_name/SKILL.md"
+  done
   N_SKILLS=$(find "$OUTPUT_DIR/.claude/skills" -type f | wc -l)
   echo "    [5] $N_SKILLS skill(s) copiadas desde $SKILLS_SRC"
 else
   echo "    [5] Sin skills (continuando sin error)"
+fi
+
+# ---------------------------------------------------------------------------
+# Fase 5.5 — Output templates (opcional)
+# ---------------------------------------------------------------------------
+if [[ -d "$AGENT_ABS/output-templates" ]]; then
+  mkdir -p "$OUTPUT_DIR/output"
+  cp -r "$AGENT_ABS/output-templates/." "$OUTPUT_DIR/output/"
+  N_TEMPLATES=$(find "$OUTPUT_DIR/output" -type f | wc -l)
+  echo "    [5.5] $N_TEMPLATES plantilla(s) copiadas desde output-templates/"
 fi
 
 # ---------------------------------------------------------------------------
@@ -161,8 +180,10 @@ rsync -a \
   --exclude=.claude/ \
   --exclude=.opencode/ \
   --exclude=opencode.json \
+  --exclude=skills/ \
   --exclude='pack_*.sh' \
   --exclude=output/ \
+  --exclude=output-templates/ \
   --exclude=dist/ \
   --exclude=.venv/ \
   --exclude='__pycache__/' \
