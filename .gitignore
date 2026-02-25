@@ -1,0 +1,25 @@
+# Virtual environments
+**/.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# IDE
+.idea/
+**/.idea/
+
+# Analysis output
+**/output/
+
+# Generated packaging artifacts
+**/claude_plugins/
+**/claude_projects/
+**/claude_instructions/
+
+# Claude local settings: ignorado globalmente, re-incluir los de los agentes (subdirectorios)
+!*/.claude/settings.local.json
+
+# Generados por pack_claude_code.sh y pack_opencode.sh
+**/claude_code/
+**/opencode/

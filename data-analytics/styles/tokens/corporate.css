@@ -1,0 +1,48 @@
+/* Corporate Tokens — Design variables + fonts */
+
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('../fonts/Inter-Regular.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url('../fonts/Inter-SemiBold.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('../fonts/Inter-Bold.woff2') format('woff2');
+}
+
+:root {
+    --font-main: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+
+    --primary: #1a365d;
+    --primary-light: #2b6cb0;
+    --accent: #3182ce;
+
+    --bg-light: #f7fafc;
+    --bg-alt: #edf2f7;
+
+    --text-primary: #1a202c;
+    --text-secondary: #4a5568;
+    --border: #e2e8f0;
+
+    --success: #38a169;
+    --warning: #d69e2e;
+    --danger: #e53e3e;
+
+    --body-padding-pdf: 20mm 25mm;
+    --page-margin: 20mm 25mm 25mm 25mm;
+    --cover-padding: 60mm 30mm;
+}

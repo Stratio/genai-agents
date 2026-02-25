@@ -1,0 +1,35 @@
+# Analisis de datos
+pandas>=3.0
+numpy>=2.1
+scipy>=1.14
+pymannkendall>=1.4
+
+# Visualizacion
+matplotlib>=3.9
+seaborn>=0.13
+plotly>=6.0
+
+# Machine Learning (clustering, feature importance, tests estadisticos)
+scikit-learn>=1.5
+statsmodels>=0.14.4
+
+# Generacion de informes
+jinja2>=3.1
+markdown>=3.7
+weasyprint>=65.0
+nbformat>=5.10
+nbclient>=0.10
+nbconvert>=7.16
+python-pptx>=1.0
+python-docx>=1.1
+beautifulsoup4>=4.12
+
+# Datos
+openpyxl>=3.1
+
+# Testing
+pytest>=8.0
+pytest-mock>=3.14
+
+# Utilidades
+tabulate>=0.9

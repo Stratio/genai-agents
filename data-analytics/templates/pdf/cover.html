@@ -1,0 +1,9 @@
+<div class="cover-page">
+    <div class="cover-title">{{ title }}</div>
+    {% if subtitle %}<div class="cover-subtitle">{{ subtitle }}</div>{% endif %}
+    <div class="cover-meta">
+        {% if author %}<strong>Autor:</strong> {{ author }}<br>{% endif %}
+        {% if domain %}<strong>Dominio:</strong> {{ domain }}<br>{% endif %}
+        <strong>Fecha:</strong> {{ date }}
+    </div>
+</div>

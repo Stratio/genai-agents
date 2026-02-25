@@ -1,0 +1,23 @@
+# Analisis de datos
+pandas>=3.0
+numpy>=2.1
+scipy>=1.14
+pymannkendall>=1.4
+
+# Visualizacion
+matplotlib>=3.9
+seaborn>=0.13
+plotly>=6.0
+
+# Estadistica avanzada
+statsmodels>=0.14.4
+
+# Datos
+openpyxl>=3.1
+
+# Testing
+pytest>=8.0
+pytest-mock>=3.14
+
+# Utilidades
+tabulate>=0.9

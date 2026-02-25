@@ -1,0 +1,88 @@
+/* Web Target — Browser-specific rules (shared by all themes) */
+
+/* Body sizing for screen */
+body {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px 40px;
+}
+
+/* Interactivity — KPI cards */
+.kpi-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg, 0 10px 15px -3px rgba(0,0,0,0.1));
+}
+
+/* Table row hover */
+tbody tr:hover {
+    background: var(--bg-hover, #f1f5f9);
+}
+
+/* Sticky navigation */
+.nav {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+    position: sticky;
+    top: 0;
+    background: white;
+    padding: 12px 0;
+    z-index: 100;
+    border-bottom: 1px solid var(--border, #e2e8f0);
+}
+
+.nav a {
+    padding: 6px 16px;
+    border-radius: 20px;
+    background: var(--bg-section, #f8fafc);
+    color: var(--text-primary, #0f172a);
+    text-decoration: none;
+    font-size: 10pt;
+    font-weight: 500;
+    border: 1px solid var(--border, #e2e8f0);
+}
+
+.nav a:hover {
+    background: var(--primary, #6366f1);
+    color: white;
+}
+
+/* Chart containers */
+.chart-container {
+    background: white;
+    border-radius: var(--radius, 12px);
+    padding: 20px;
+    box-shadow: var(--shadow, 0 1px 3px rgba(0,0,0,0.1));
+    margin: 20px 0;
+}
+
+/* Section spacing with scroll offset for sticky nav */
+section {
+    margin-bottom: 40px;
+    scroll-margin-top: 80px;
+}
+
+/* Lists */
+ol, ul { padding-left: 24px; margin: 12px 0; }
+li { margin-bottom: 8px; }
+
+/* Cover page — no paged media needed, just padding */
+.cover-page {
+    padding: 60px 40px;
+    border-radius: var(--radius, 12px);
+    margin-bottom: 24px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .kpi-grid { grid-template-columns: 1fr 1fr; }
+    .kpi-container { flex-direction: column; }
+    body { padding: 10px 16px; }
+    .nav { gap: 8px; }
+    .nav a { font-size: 9pt; padding: 4px 12px; }
+}
