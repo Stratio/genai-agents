@@ -9,7 +9,7 @@ hose {
     BUILDTOOL_CPU_LIMIT = '8'
     BUILDTOOL_CPU_REQUEST = '2'
     GRYPE_TEST = true
-    DEPLOYONPRS = false
+    DEPLOYONPRS = true
 
     DEV = { config ->
         doCompile(config)
