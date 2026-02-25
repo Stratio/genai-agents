@@ -11,6 +11,10 @@ TOOLS_DIR = Path(__file__).resolve().parent
 if str(TOOLS_DIR) not in sys.path:
     sys.path.insert(0, str(TOOLS_DIR))
 
+# Inject a fake weasyprint module so tests run without system libs (cairo, pango)
+_weasyprint_mock = MagicMock()
+sys.modules.setdefault("weasyprint", _weasyprint_mock)
+
 from image_utils import embed_images_in_html, image_to_base64
 
 
