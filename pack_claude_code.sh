@@ -140,6 +140,8 @@ if [[ -d "$AGENT_ABS/.claude/skills" ]]; then
   SKILLS_SRC="$AGENT_ABS/.claude/skills"
 elif [[ -d "$AGENT_ABS/.opencode/skills" ]]; then
   SKILLS_SRC="$AGENT_ABS/.opencode/skills"
+elif [[ -d "$AGENT_ABS/.agents/skills" ]]; then
+  SKILLS_SRC="$AGENT_ABS/.agents/skills"
 elif [[ -d "$AGENT_ABS/skills" ]]; then
   SKILLS_SRC="$AGENT_ABS/skills"
 fi
@@ -179,6 +181,7 @@ rsync -a \
   --exclude=.mcp.json \
   --exclude=.claude/ \
   --exclude=.opencode/ \
+  --exclude=.agents/ \
   --exclude=opencode.json \
   --exclude=skills/ \
   --exclude='pack_*.sh' \
@@ -238,7 +241,7 @@ if [[ "$REFS" -gt 0 ]]; then
 fi
 
 # Ningún directorio prohibido
-for FORBIDDEN in .opencode opencode dist; do
+for FORBIDDEN in .opencode .agents opencode dist; do
   if [[ -d "$OUTPUT_DIR/$FORBIDDEN" ]]; then
     echo "    ERROR: directorio prohibido encontrado: $FORBIDDEN" >&2
     ERRORS=$((ERRORS + 1))

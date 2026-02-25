@@ -75,7 +75,7 @@ Los pack scripts reconocen dos formatos de definicion de skills:
 
 El formato plano se normaliza automaticamente a canonico al empaquetar (`<nombre>.md` → `<nombre>/SKILL.md`).
 
-Ubicaciones de busqueda (por orden de prioridad): `.claude/skills/` → `.opencode/skills/` → `skills/`.
+Ubicaciones de busqueda (por orden de prioridad): `.claude/skills/` → `.opencode/skills/` → `.agents/skills/` → `skills/`.
 
 ### Plantillas de output
 

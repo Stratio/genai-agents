@@ -63,10 +63,29 @@ EOF
 
 # --- Copiar skills ---
 echo "Copiando skills..."
+SKILLS_SRC=""
 if [ -d ".claude/skills" ]; then
-  cp -r .claude/skills/* "$PLUGIN_DIR/skills/"
+  SKILLS_SRC=".claude/skills"
+elif [ -d ".opencode/skills" ]; then
+  SKILLS_SRC=".opencode/skills"
+elif [ -d ".agents/skills" ]; then
+  SKILLS_SRC=".agents/skills"
+elif [ -d "skills" ]; then
+  SKILLS_SRC="skills"
+fi
+
+if [ -n "$SKILLS_SRC" ]; then
+  cp -r "$SKILLS_SRC"/* "$PLUGIN_DIR/skills/"
+  # Normalizar: archivos .md sueltos → subcarpeta/SKILL.md
+  for md_file in "$PLUGIN_DIR/skills/"*.md; do
+    [ -f "$md_file" ] || continue
+    skill_name="$(basename "$md_file" .md)"
+    mkdir -p "$PLUGIN_DIR/skills/$skill_name"
+    mv "$md_file" "$PLUGIN_DIR/skills/$skill_name/SKILL.md"
+  done
+  echo "  Skills copiadas desde $SKILLS_SRC"
 else
-  echo "WARN: No se encontro .claude/skills/ — el plugin no tendra skills."
+  echo "WARN: No se encontro directorio de skills — el plugin no tendra skills."
 fi
 
 # --- Generar agent file ---

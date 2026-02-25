@@ -58,17 +58,54 @@ cp CLAUDE.md "$OUTPUT_FILE"
 echo "Concatenando skills-guides..."
 append_section "skills-guides/exploration.md"
 
+# --- 2.5. Resolver directorio base de skills ---
+SKILLS_SRC=""
+if [ -d ".claude/skills" ]; then
+  SKILLS_SRC=".claude/skills"
+elif [ -d ".opencode/skills" ]; then
+  SKILLS_SRC=".opencode/skills"
+elif [ -d ".agents/skills" ]; then
+  SKILLS_SRC=".agents/skills"
+elif [ -d "skills" ]; then
+  SKILLS_SRC="skills"
+fi
+
+if [ -z "$SKILLS_SRC" ]; then
+  echo "ERROR: No se encontro directorio de skills" >&2
+  exit 1
+fi
+
+# Normalizar formato plano si es necesario
+SKILLS_NORM=""
+HAS_FLAT=$(find "$SKILLS_SRC" -maxdepth 1 -name '*.md' -not -name 'SKILL.md' 2>/dev/null | head -1)
+if [ -n "$HAS_FLAT" ]; then
+  SKILLS_NORM=$(mktemp -d)
+  cp -r "$SKILLS_SRC/." "$SKILLS_NORM/"
+  for md_file in "$SKILLS_NORM"/*.md; do
+    [ -f "$md_file" ] || continue
+    skill_name="$(basename "$md_file" .md)"
+    mkdir -p "$SKILLS_NORM/$skill_name"
+    mv "$md_file" "$SKILLS_NORM/$skill_name/SKILL.md"
+  done
+  SKILLS_SRC="$SKILLS_NORM"
+fi
+
 # --- 3. Skill analyze + sub-guias ---
 echo "Concatenando skill analyze..."
-append_section ".claude/skills/analyze/SKILL.md" true
-append_section ".claude/skills/analyze/advanced-analytics.md"
-append_section ".claude/skills/analyze/analytical-patterns.md"
-append_section ".claude/skills/analyze/clustering-guide.md"
+append_section "$SKILLS_SRC/analyze/SKILL.md" true
+append_section "$SKILLS_SRC/analyze/advanced-analytics.md"
+append_section "$SKILLS_SRC/analyze/analytical-patterns.md"
+append_section "$SKILLS_SRC/analyze/clustering-guide.md"
 
 # --- 4. Skills secundarias ---
 echo "Concatenando skills secundarias..."
-append_section ".claude/skills/explore-data/SKILL.md" true
-append_section ".claude/skills/propose-knowledge/SKILL.md" true
+append_section "$SKILLS_SRC/explore-data/SKILL.md" true
+append_section "$SKILLS_SRC/propose-knowledge/SKILL.md" true
+
+# Limpiar directorio temporal si se creó
+if [ -n "$SKILLS_NORM" ]; then
+  rm -rf "$SKILLS_NORM"
+fi
 
 # --- 5. Reemplazos de referencias ---
 echo "Actualizando referencias internas..."
