@@ -12,14 +12,8 @@ __pycache__/
 # Analysis output
 **/output/
 
-# Generated packaging artifacts
-**/claude_plugins/
-**/claude_projects/
-**/claude_instructions/
-
 # Claude local settings: ignorado globalmente, re-incluir los de los agentes (subdirectorios)
 !*/.claude/settings.local.json
 
-# Generados por pack_claude_code.sh y pack_opencode.sh
-**/claude_code/
-**/opencode/
+# Generated packaging artifacts (pack scripts + CI/CD build)
+**/dist/

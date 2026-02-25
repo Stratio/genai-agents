@@ -4,11 +4,24 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
-# --- Input ---
-read -p "Nombre del proyecto [data-analytics-light]: " PROJECT_NAME
-PROJECT_NAME="${PROJECT_NAME:-data-analytics-light}"
+# --- Parsear argumentos CLI ---
+ARG_NAME=""
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --name)  ARG_NAME="$2"; shift 2 ;;
+    *) echo "ERROR: Argumento desconocido: $1"; echo "Uso: $0 [--name NOMBRE]"; exit 1 ;;
+  esac
+done
 
-OUTPUT_DIR="claude_instructions/$PROJECT_NAME"
+# --- Input: usar argumento CLI o preguntar interactivamente ---
+if [ -n "$ARG_NAME" ]; then
+  PROJECT_NAME="$ARG_NAME"
+else
+  read -p "Nombre del proyecto [data-analytics-light]: " PROJECT_NAME
+  PROJECT_NAME="${PROJECT_NAME:-data-analytics-light}"
+fi
+
+OUTPUT_DIR="dist/claude_instructions/$PROJECT_NAME"
 OUTPUT_FILE="$OUTPUT_DIR/CLAUDE.md"
 
 # --- Limpiar si existe ---
