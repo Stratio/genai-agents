@@ -4,11 +4,24 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
-# --- Input ---
-read -p "Nombre del proyecto [data-analytics-light]: " PROJECT_NAME
-PROJECT_NAME="${PROJECT_NAME:-data-analytics-light}"
+# --- Parsear argumentos CLI ---
+ARG_NAME=""
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --name)  ARG_NAME="$2"; shift 2 ;;
+    *) echo "ERROR: Argumento desconocido: $1"; echo "Uso: $0 [--name NOMBRE]"; exit 1 ;;
+  esac
+done
 
-PROJECT_DIR="claude_projects/$PROJECT_NAME"
+# --- Input: usar argumento CLI o preguntar interactivamente ---
+if [ -n "$ARG_NAME" ]; then
+  PROJECT_NAME="$ARG_NAME"
+else
+  read -p "Nombre del proyecto [data-analytics-light]: " PROJECT_NAME
+  PROJECT_NAME="${PROJECT_NAME:-data-analytics-light}"
+fi
+
+PROJECT_DIR="dist/claude_projects/$PROJECT_NAME"
 
 # --- Limpiar si existe ---
 if [ -d "$PROJECT_DIR" ]; then
@@ -57,36 +70,7 @@ sed -i 's|(advanced-analytics\.md)|(analyze_advanced-analytics.md)|g' "$PROJECT_
 sed -i 's|(analytical-patterns\.md)|(analyze_analytical-patterns.md)|g' "$PROJECT_DIR"/*.md
 sed -i 's|(clustering-guide\.md)|(analyze_clustering-guide.md)|g' "$PROJECT_DIR"/*.md
 
-# --- 5. README ---
-cat > "$PROJECT_DIR/README.md" <<'EOF'
-# BI Analytics Agent (Light) — Claude Project
-
-Estructura plana con todos los ficheros necesarios para configurar un Claude Project.
-
-## Contenido
-
-| Fichero | Origen |
-|---------|--------|
-| `CLAUDE.md` | Instrucciones principales del agente |
-| `requirements.txt` | Dependencias Python |
-| `setup_env.sh` | Script de setup del entorno virtual |
-| `skills-guides_exploration.md` | Guia de exploracion de datos |
-| `skills-guides_visualization.md` | Guia de visualizaciones |
-| `analyze.md` | Skill de analisis completo |
-| `analyze_advanced-analytics.md` | Sub-guia: tecnicas avanzadas |
-| `analyze_analytical-patterns.md` | Sub-guia: patrones analiticos |
-| `analyze_clustering-guide.md` | Sub-guia: segmentacion y RFM |
-| `explore-data.md` | Skill de exploracion de dominios |
-| `propose-knowledge.md` | Skill de propuesta de conocimiento |
-
-## Uso
-
-1. Crear un proyecto en claude.ai
-2. Subir todos los ficheros de esta carpeta como "Project Knowledge"
-3. Configurar el MCP SQL de Stratio en la configuracion del proyecto
-EOF
-
-# --- 6. Verificacion ---
+# --- 5. Verificacion ---
 echo ""
 echo "=== Verificacion ==="
 
@@ -107,13 +91,18 @@ else
   echo "  OK: No se encontraron referencias rotas"
 fi
 
-# --- 7. ZIP opcional ---
+# --- 6. ZIP ---
 echo ""
-read -p "Generar ZIP? [s/N]: " GEN_ZIP
+if [ -n "$ARG_NAME" ]; then
+  # Modo no-interactivo: generar ZIP automaticamente
+  GEN_ZIP="s"
+else
+  read -p "Generar ZIP? [s/N]: " GEN_ZIP
+fi
 if [[ "$GEN_ZIP" =~ ^[sS]$ ]]; then
   ZIP_NAME="${PROJECT_NAME}.zip"
   (cd "$PROJECT_DIR" && zip -r "../_tmp_${ZIP_NAME}" . -q)
-  mv "claude_projects/_tmp_${ZIP_NAME}" "$PROJECT_DIR/${ZIP_NAME}"
+  mv "dist/claude_projects/_tmp_${ZIP_NAME}" "$PROJECT_DIR/${ZIP_NAME}"
   ZIP_SIZE=$(du -sh "$PROJECT_DIR/${ZIP_NAME}" | cut -f1)
   echo "  ZIP: $PROJECT_DIR/${ZIP_NAME} ($ZIP_SIZE)"
 fi

@@ -47,7 +47,7 @@ if [[ ! "$AGENT_NAME" =~ $KEBAB_RE ]]; then
   exit 1
 fi
 
-OUTPUT_DIR="$AGENT_ABS/opencode/$AGENT_NAME"
+OUTPUT_DIR="$AGENT_ABS/dist/opencode/$AGENT_NAME"
 echo "==> Empaquetando '$AGENT_NAME' para OpenCode"
 echo "    Fuente : $AGENT_ABS"
 echo "    Destino: $OUTPUT_DIR"
@@ -155,11 +155,7 @@ rsync -a \
   --exclude=opencode.json \
   --exclude='pack_*.sh' \
   --exclude=output/ \
-  --exclude=claude_code/ \
-  --exclude=claude_projects/ \
-  --exclude=claude_instructions/ \
-  --exclude=claude_plugins/ \
-  --exclude=opencode/ \
+  --exclude=dist/ \
   --exclude=.venv/ \
   --exclude='__pycache__/' \
   --exclude='*.pyc' \

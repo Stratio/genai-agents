@@ -29,23 +29,17 @@ if ! echo "$PLUGIN_NAME" | grep -qE '^[a-z][a-z0-9]*(-[a-z0-9]+)*$'; then
   exit 1
 fi
 
-DEFAULT_URL="${MCP_SQL_URL:-http://127.0.0.1:8080/mcp}"
+# MCP: si se pasan args, usar valores concretos; si no, dejar env vars como template
+MCP_URL_RESOLVED=""
+MCP_KEY_RESOLVED=""
 if [ -n "$ARG_URL" ]; then
-  MCP_URL="$ARG_URL"
-else
-  read -p "URL del MCP SQL [$DEFAULT_URL]: " MCP_URL
-  MCP_URL="${MCP_URL:-$DEFAULT_URL}"
+  MCP_URL_RESOLVED="$ARG_URL"
 fi
-
-DEFAULT_KEY="${MCP_SQL_API_KEY:-}"
 if [ -n "$ARG_KEY" ]; then
-  MCP_KEY="$ARG_KEY"
-else
-  read -p "API Key del MCP SQL [env var MCP_SQL_API_KEY]: " MCP_KEY
-  MCP_KEY="${MCP_KEY:-$DEFAULT_KEY}"
+  MCP_KEY_RESOLVED="$ARG_KEY"
 fi
 
-PLUGIN_DIR="claude_plugins/${PLUGIN_NAME}-marketplace"
+PLUGIN_DIR="dist/claude_plugins/${PLUGIN_NAME}-marketplace"
 
 # --- Limpiar si existe ---
 if [ -d "$PLUGIN_DIR" ]; then
@@ -126,15 +120,19 @@ echo "Copiando setup_env.sh y requirements.txt..."
 cp setup_env.sh "$PLUGIN_DIR/setup_env.sh"
 cp requirements.txt "$PLUGIN_DIR/requirements.txt"
 
-# --- .mcp.json del plugin (valores resueltos, sin env vars) ---
-cat > "$PLUGIN_DIR/.mcp.json" <<EOF
+# --- .mcp.json del plugin ---
+if [ -n "$MCP_URL_RESOLVED" ] || [ -n "$MCP_KEY_RESOLVED" ]; then
+  # Valores concretos proporcionados via args
+  MCP_URL_VALUE="${MCP_URL_RESOLVED:-\$\{MCP_SQL_URL:-http://127.0.0.1:8080/mcp\}}"
+  MCP_KEY_VALUE="${MCP_KEY_RESOLVED:-\$\{MCP_SQL_API_KEY:-\}}"
+  cat > "$PLUGIN_DIR/.mcp.json" <<EOF
 {
   "mcpServers": {
     "sql": {
       "type": "http",
-      "url": "$MCP_URL",
+      "url": "$MCP_URL_VALUE",
       "headers": {
-        "X-API-Key": "$MCP_KEY"
+        "X-API-Key": "$MCP_KEY_VALUE"
       },
       "allowedTools": [
         "stratio_list_business_domains",
@@ -152,6 +150,34 @@ cat > "$PLUGIN_DIR/.mcp.json" <<EOF
   }
 }
 EOF
+else
+  # Sin args: dejar templates con variables de entorno
+  cat > "$PLUGIN_DIR/.mcp.json" <<'EOF'
+{
+  "mcpServers": {
+    "sql": {
+      "type": "http",
+      "url": "${MCP_SQL_URL:-http://127.0.0.1:8080/mcp}",
+      "headers": {
+        "X-API-Key": "${MCP_SQL_API_KEY:-}"
+      },
+      "allowedTools": [
+        "stratio_list_business_domains",
+        "stratio_list_domain_tables",
+        "stratio_get_tables_details",
+        "stratio_get_table_columns_details",
+        "stratio_generate_sql",
+        "stratio_query_data",
+        "stratio_search_domain_knowledge",
+        "stratio_execute_sql",
+        "stratio_profile_data",
+        "stratio_propose_knowledge"
+      ]
+    }
+  }
+}
+EOF
+fi
 
 # --- Generar ZIP ---
 ZIP_NAME="${PLUGIN_NAME}-marketplace.zip"
@@ -160,7 +186,7 @@ echo "Generando $ZIP_NAME..."
 # Limpiar contenido del directorio y dejar solo el ZIP
 rm -rf "$PLUGIN_DIR"
 mkdir -p "$PLUGIN_DIR"
-mv "claude_plugins/_tmp_${ZIP_NAME}" "$PLUGIN_DIR/${ZIP_NAME}"
+mv "dist/claude_plugins/_tmp_${ZIP_NAME}" "$PLUGIN_DIR/${ZIP_NAME}"
 
 # --- Resumen ---
 ZIP_SIZE=$(du -sh "$PLUGIN_DIR/${ZIP_NAME}" | cut -f1)
@@ -168,6 +194,14 @@ echo ""
 echo "=== Marketplace empaquetado (paquete completo) ==="
 echo "  ZIP: $PLUGIN_DIR/${ZIP_NAME} ($ZIP_SIZE)"
 echo ""
-echo "  MCP URL: $MCP_URL"
-echo "  MCP API Key: ${MCP_KEY:+(configurada)}${MCP_KEY:-(vacia — usar env var)}"
+if [ -n "$MCP_URL_RESOLVED" ]; then
+  echo "  MCP URL: $MCP_URL_RESOLVED"
+else
+  echo "  MCP URL: \${MCP_SQL_URL:-http://127.0.0.1:8080/mcp} (env var)"
+fi
+if [ -n "$MCP_KEY_RESOLVED" ]; then
+  echo "  MCP API Key: (configurada)"
+else
+  echo "  MCP API Key: \${MCP_SQL_API_KEY:-} (env var)"
+fi
 echo ""

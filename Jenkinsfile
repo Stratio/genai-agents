@@ -1,0 +1,18 @@
+@Library('libpipelines') _
+
+hose {
+    EMAIL = 'genai'
+    DEVTIMEOUT = 60
+    RELEASETIMEOUT = 60
+    BUILDTOOL = 'make'
+    BUILDTOOL_IMAGE = 'stratio/python-builder-3.11:1.2.0'
+    BUILDTOOL_CPU_LIMIT = '8'
+    BUILDTOOL_CPU_REQUEST = '2'
+    GRYPE_TEST = true
+    DEPLOYONPRS = false
+
+    DEV = { config ->
+        doCompile(config)
+        doUT(config)
+    }
+}

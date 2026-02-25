@@ -47,7 +47,7 @@ if [[ ! "$AGENT_NAME" =~ $KEBAB_RE ]]; then
   exit 1
 fi
 
-OUTPUT_DIR="$AGENT_ABS/claude_code/$AGENT_NAME"
+OUTPUT_DIR="$AGENT_ABS/dist/claude_code/$AGENT_NAME"
 echo "==> Empaquetando '$AGENT_NAME' para Claude Code"
 echo "    Fuente : $AGENT_ABS"
 echo "    Destino: $OUTPUT_DIR"
@@ -163,11 +163,7 @@ rsync -a \
   --exclude=opencode.json \
   --exclude='pack_*.sh' \
   --exclude=output/ \
-  --exclude=claude_code/ \
-  --exclude=claude_projects/ \
-  --exclude=claude_instructions/ \
-  --exclude=claude_plugins/ \
-  --exclude=opencode/ \
+  --exclude=dist/ \
   --exclude=.venv/ \
   --exclude='__pycache__/' \
   --exclude='*.pyc' \
@@ -221,7 +217,7 @@ if [[ "$REFS" -gt 0 ]]; then
 fi
 
 # Ningún directorio prohibido
-for FORBIDDEN in .opencode opencode claude_projects claude_instructions claude_plugins; do
+for FORBIDDEN in .opencode opencode dist; do
   if [[ -d "$OUTPUT_DIR/$FORBIDDEN" ]]; then
     echo "    ERROR: directorio prohibido encontrado: $FORBIDDEN" >&2
     ERRORS=$((ERRORS + 1))
