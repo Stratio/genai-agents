@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{# --- Executive Summary --- #}
+<h2>Resumen Ejecutivo</h2>
+{{ executive_summary }}
+
+{% if kpis %}
+{% with %}
+{% include "components/kpi_card.html" %}
+{% endwith %}
+{% endif %}
+
+{# --- Methodology --- #}
+{% if methodology %}
+<h2>Metodologia</h2>
+{{ methodology }}
+{% endif %}
+
+{# --- Data & Sources --- #}
+{% if data_section %}
+<h2>Datos y Fuentes</h2>
+{{ data_section }}
+{% endif %}
+
+{% for table in data_tables %}
+{% with %}
+{% include "components/data_table.html" %}
+{% endwith %}
+{% endfor %}
+
+{# --- Analysis --- #}
+<h2>Analisis</h2>
+{{ analysis }}
+
+{% for fig in figures %}
+{% with %}
+{% include "components/figure.html" %}
+{% endwith %}
+{% endfor %}
+
+{# --- Conclusions --- #}
+<h2>Conclusiones y Recomendaciones</h2>
+{{ conclusions }}
+
+{% if callouts %}
+{% for callout in callouts %}
+{% with %}
+{% include "components/callout.html" %}
+{% endwith %}
+{% endfor %}
+{% endif %}
+
+{% endblock %}
