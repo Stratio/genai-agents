@@ -33,7 +33,6 @@ from datetime import date
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader
-from weasyprint import HTML
 
 from css_builder import build_css
 from image_utils import embed_images_in_html
@@ -207,6 +206,7 @@ class PDFGenerator:
             html_path = output_path.with_suffix(".html")
             html_path.write_text(html, encoding="utf-8")
 
+        from weasyprint import HTML
         html_doc = HTML(string=html, base_url=str(PROJECT_ROOT))
         html_doc.write_pdf(str(output_path), presentational_hints=True)
 

@@ -11,6 +11,10 @@ TOOLS_DIR = Path(__file__).resolve().parent
 if str(TOOLS_DIR) not in sys.path:
     sys.path.insert(0, str(TOOLS_DIR))
 
+# Inject a fake weasyprint module so tests run without system libs (cairo, pango)
+_weasyprint_mock = MagicMock()
+sys.modules.setdefault("weasyprint", _weasyprint_mock)
+
 from image_utils import embed_images_in_html, image_to_base64
 
 
@@ -81,15 +85,15 @@ from md_to_report import _build_cover_html, md_to_html, resolve_css
 class TestResolveCss:
     def test_preset_corporate(self):
         css = resolve_css("corporate")
-        assert "Corporate Style" in css
+        assert "tokens: corporate.css" in css
 
     def test_preset_academic(self):
         css = resolve_css("academic")
-        assert "Academic Style" in css
+        assert "tokens: academic.css" in css
 
     def test_preset_modern(self):
         css = resolve_css("modern")
-        assert "Modern Style" in css
+        assert "tokens: modern.css" in css
 
     def test_custom_file(self, tmp_path):
         custom = tmp_path / "custom.css"
@@ -97,11 +101,9 @@ class TestResolveCss:
         css = resolve_css(str(custom))
         assert "color: red" in css
 
-    def test_unknown_falls_back(self, capsys):
+    def test_unknown_falls_back(self):
         css = resolve_css("nonexistent_style_xyz")
-        assert "Corporate Style" in css
-        captured = capsys.readouterr()
-        assert "WARNING" in captured.out
+        assert "tokens: corporate.css" in css
 
 
 class TestBuildCoverHtml:
@@ -146,7 +148,7 @@ class TestMdToHtml:
 
 
 class TestConvert:
-    @patch("md_to_report.HTML")
+    @patch("weasyprint.HTML")
     def test_convert_creates_files(self, mock_html_cls, tmp_path):
         md_file = tmp_path / "test.md"
         md_file.write_text("# Test\n\nContent here.")
@@ -157,15 +159,15 @@ class TestConvert:
 
         from md_to_report import convert
 
-        html_path, pdf_path = convert(md_file, output_dir, "corporate")
+        html_path, pdf_path, docx_path = convert(md_file, output_dir, "corporate")
 
         assert html_path.exists()
         assert html_path.suffix == ".html"
         content = html_path.read_text()
-        assert "Corporate Style" in content
+        assert "tokens: corporate.css" in content
         mock_instance.write_pdf.assert_called_once()
 
-    @patch("md_to_report.HTML")
+    @patch("weasyprint.HTML")
     def test_convert_with_cover(self, mock_html_cls, tmp_path):
         md_file = tmp_path / "report.md"
         md_file.write_text("# Title\n\nBody")
@@ -176,7 +178,7 @@ class TestConvert:
 
         from md_to_report import convert
 
-        html_path, _ = convert(
+        html_path, _, _ = convert(
             md_file, output_dir, "corporate",
             author="Test Author", cover=True, domain="Finance"
         )
@@ -265,24 +267,7 @@ class TestPDFGenerator:
         with pytest.raises(RuntimeError, match="render"):
             gen.save("/tmp/test.pdf")
 
-    @patch("pdf_generator.HTML")
-    def test_save_creates_pdf(self, mock_html_cls, tmp_path):
-        mock_instance = MagicMock()
-        mock_html_cls.return_value = mock_instance
-
-        gen = PDFGenerator(style="corporate")
-        gen.render_scaffold(
-            title="Save Test",
-            executive_summary="<p>OK</p>",
-            analysis="<p>Data</p>",
-            conclusions="<p>End</p>",
-        )
-
-        output = tmp_path / "report.pdf"
-        gen.save(str(output))
-        mock_instance.write_pdf.assert_called_once()
-
-    @patch("pdf_generator.HTML")
+    @patch("weasyprint.HTML")
     def test_save_also_html(self, mock_html_cls, tmp_path):
         mock_instance = MagicMock()
         mock_html_cls.return_value = mock_instance

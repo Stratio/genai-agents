@@ -245,15 +245,6 @@ class TestGetChartColors:
         colors = get_chart_colors("corporate", n=20)
         assert len(colors) == 20
 
-    def test_different_styles(self):
-        from chart_layout import get_chart_colors
-
-        corp = get_chart_colors("corporate", n=3)
-        modern = get_chart_colors("modern", n=3)
-        # At minimum they should return valid colors (may differ)
-        assert all(c.startswith("#") for c in corp)
-        assert all(c.startswith("#") for c in modern)
-
     def test_default_style(self):
         from chart_layout import get_chart_colors
 

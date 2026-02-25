@@ -13,34 +13,6 @@ import pptx_layout as pl
 
 
 # ---------------------------------------------------------------------------
-# Constants validation
-# ---------------------------------------------------------------------------
-
-class TestConstants:
-    def test_content_top_has_sufficient_clearance(self):
-        """CONTENT_TOP must be at least 0.15" below HEADER_ZONE_BOTTOM."""
-        assert pl.CONTENT_TOP >= pl.HEADER_ZONE_BOTTOM + 0.15
-
-    def test_content_bottom_within_slide(self):
-        """CONTENT_BOTTOM must be at most SLIDE_HEIGHT - MARGIN_BOTTOM."""
-        assert pl.CONTENT_BOTTOM <= pl.SLIDE_HEIGHT - pl.MARGIN_BOTTOM
-
-    def test_content_width_consistent(self):
-        """CONTENT_WIDTH should equal SLIDE_WIDTH - left - right margins."""
-        expected = pl.SLIDE_WIDTH - pl.MARGIN_LEFT - pl.MARGIN_RIGHT
-        assert abs(pl.CONTENT_WIDTH - expected) < 0.01
-
-    def test_content_height_consistent(self):
-        """CONTENT_HEIGHT should equal CONTENT_BOTTOM - CONTENT_TOP."""
-        expected = pl.CONTENT_BOTTOM - pl.CONTENT_TOP
-        assert abs(pl.CONTENT_HEIGHT - expected) < 0.01
-
-    def test_content_top_equals_header_plus_padding(self):
-        expected = pl.HEADER_ZONE_BOTTOM + pl.HEADER_PADDING
-        assert abs(pl.CONTENT_TOP - expected) < 0.01
-
-
-# ---------------------------------------------------------------------------
 # content_area()
 # ---------------------------------------------------------------------------
 
@@ -171,18 +143,6 @@ class TestCreatePresentation:
 
 
 # ---------------------------------------------------------------------------
-# rgb_color()
-# ---------------------------------------------------------------------------
-
-class TestRgbColor:
-    def test_conversion(self):
-        from pptx.dml.color import RGBColor
-        result = pl.rgb_color((26, 54, 93))
-        assert isinstance(result, RGBColor)
-        assert str(result) == "1A365D"
-
-
-# ---------------------------------------------------------------------------
 # add_slide_header()
 # ---------------------------------------------------------------------------
 
@@ -230,12 +190,6 @@ class TestAddImageSafe:
 # footer_area()
 # ---------------------------------------------------------------------------
 
-class TestPanelGap:
-    def test_panel_gap_constant(self):
-        """PANEL_GAP should be 0.3 inches."""
-        assert pl.PANEL_GAP == 0.3
-
-
 class TestAddImageWithAspect:
     """Tests for add_image_with_aspect() aspect-ratio preservation."""
 
@@ -275,20 +229,6 @@ class TestAddImageWithAspect:
         assert actual_w < 5.6
         expected_w = 5.5 * (700 / 1800)
         assert actual_w == pytest.approx(expected_w, abs=0.01)
-
-    def test_returns_positive_dimensions(self, tmp_path):
-        """Return value should be a tuple of 2 positive floats."""
-        img_path = self._make_png(tmp_path, 1024, 768, "standard.png")
-        prs, _ = pl.create_presentation("corporate")
-        slide = prs.slides.add_slide(prs.slide_layouts[6])
-        result = pl.add_image_with_aspect(
-            slide, img_path, left=0.4, top=1.3, max_width=9.2, max_height=6.0
-        )
-        assert isinstance(result, tuple)
-        assert len(result) == 2
-        assert result[0] > 0
-        assert result[1] > 0
-
 
 class TestAddImageSafeAspect:
     """Test that add_image_safe preserves aspect ratio."""

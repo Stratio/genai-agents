@@ -31,7 +31,6 @@ from datetime import date
 from pathlib import Path
 
 import markdown
-from weasyprint import HTML
 
 from css_builder import build_css
 from image_utils import embed_images_in_html
@@ -139,6 +138,7 @@ def convert(input_path: Path, output_dir: Path, style: str,
     html_path.write_text(html_content, encoding="utf-8")
 
     pdf_path = output_dir / f"{stem}.pdf"
+    from weasyprint import HTML
     html_doc = HTML(string=html_content, base_url=str(PROJECT_ROOT))
     html_doc.write_pdf(str(pdf_path), presentational_hints=True)
 
