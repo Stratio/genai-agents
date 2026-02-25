@@ -27,6 +27,25 @@ Scripts genericos en la raiz del monorepo (desde `../`):
 | `pack_claude_code.sh` | Claude Code CLI | `claude_code/<nombre>/` | `bash ../pack_claude_code.sh --agent data-analytics-light` |
 | `pack_opencode.sh` | OpenCode | `opencode/<nombre>/` | `bash ../pack_opencode.sh --agent data-analytics-light` |
 
+## Compatibilidad
+
+Este agente funciona directamente sin empaquetar en:
+
+- **Claude Code**: `claude .` desde esta carpeta. Lee `CLAUDE.md` y carga skills de `.claude/skills/` automaticamente.
+- **OpenCode**: Abrir desde esta carpeta. `opencode.json` apunta a `CLAUDE.md` y reconoce `.claude/skills/`.
+
+Los pack scripts solo son necesarios para distribuir el agente fuera del repositorio.
+
+## Skills disponibles
+
+| Skill | Comando | Descripcion |
+|-------|---------|-------------|
+| Analisis | `/analyze` | Analisis de datos BI/BA: descubrimiento de dominio, EDA, planificacion de KPIs, queries MCP, analisis Python y visualizaciones |
+| Exploracion | `/explore-data` | Exploracion rapida de dominios, tablas, columnas y terminologia de negocio |
+| Conocimiento | `/propose-knowledge` | Proponer terminos de negocio descubiertos a Stratio Governance |
+
+**Nota**: Este agente no usa memoria persistente en ficheros — el output principal es el chat.
+
 ## Setup
 
 ```bash
@@ -35,4 +54,6 @@ bash setup_env.sh
 
 ## Uso
 
-Abrir Claude Code desde esta carpeta, o empaquetar para la plataforma deseada con el script correspondiente.
+```bash
+claude .
+```

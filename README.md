@@ -64,6 +64,32 @@ genai-agents/
 
 `make clean` elimina todos los `dist/` (raiz + agentes).
 
+### Formatos de skills soportados
+
+Los pack scripts reconocen dos formatos de definicion de skills:
+
+| Formato | Estructura | Ejemplo |
+|---------|-----------|---------|
+| **Canonico** (recomendado) | `skills/<nombre>/SKILL.md` | `.claude/skills/analyze/SKILL.md` |
+| **Plano** | `skills/<nombre>.md` | `.claude/skills/analyze.md` |
+
+El formato plano se normaliza automaticamente a canonico al empaquetar (`<nombre>.md` → `<nombre>/SKILL.md`).
+
+Ubicaciones de busqueda (por orden de prioridad): `.claude/skills/` → `.opencode/skills/` → `.agents/skills/` → `skills/`.
+
+### Plantillas de output
+
+Si un agente tiene un directorio `output-templates/`, los pack scripts crean `output/` en el paquete con ese contenido. Esto permite versionar en git las plantillas semilla (ficheros de memoria inicial, etc.) sin versionar el runtime — `**/output/` sigue en `.gitignore`.
+
+## Uso directo (sin empaquetar)
+
+Ambos agentes estan preparados para funcionar directamente sin necesidad de empaquetado:
+
+- **Claude Code**: Abrir desde la carpeta del agente con `claude .`. Lee `CLAUDE.md` como instrucciones y carga skills desde `.claude/skills/` automaticamente.
+- **OpenCode**: Abrir desde la carpeta del agente. `opencode.json` apunta a `CLAUDE.md` como instructions y reconoce `.claude/skills/` nativamente.
+
+No necesitan empaquetado para desarrollo local. Los pack scripts solo son necesarios para distribuir o desplegar en entornos donde no se clona el repositorio completo.
+
 ## Requisitos comunes
 
 - Python 3.10+
