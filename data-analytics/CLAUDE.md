@@ -339,7 +339,7 @@ Para instrucciones detalladas de generacion por formato, ver la skill `/report`.
 | Formato | Como generarlo | Cuando usarlo |
 |---------|---------------|---------------|
 | **Documento (PDF + DOCX)** | `tools/pdf_generator.py` + `tools/docx_generator.py` | Informes profesionales. Genera report.pdf, report.html y report.docx |
-| **Web** | HTML autonomo con graficas Plotly interactivas y CSS del estilo elegido | Dashboards, informes interactivos, compartir por navegador |
+| **Web** | `tools/dashboard_builder.py` (`DashboardBuilder`) — HTML autonomo con filtros globales, KPI cards dinamicos, tablas ordenables, graficas Plotly interactivas, datos JSON embebidos y CSS del estilo elegido | Dashboards interactivos, informes con filtros, compartir por navegador |
 | **PowerPoint** | `tools/pptx_layout.py` (helpers de layout) + `tools/css_builder.py` (colores) | Presentaciones ejecutivas, reuniones con stakeholders |
 
 **Formato automatico:** Ademas de los formatos seleccionados, siempre se genera `output/[ANALISIS_DIR]/report.md` (Markdown con tablas y bloques mermaid) como documentacion interna del analisis. Cuando el usuario selecciona "Documento", se generan juntos report.pdf, report.html y report.docx.
@@ -396,9 +396,10 @@ Al finalizar CADA analisis, generar reasoning en `output/[ANALISIS_DIR]/reasonin
 | `output/[ANALISIS_DIR]/reasoning/` | Documentacion del razonamiento: reasoning.md, reasoning.pdf, reasoning.html |
 | `output/[ANALISIS_DIR]/validation/` | Checklist de validacion de output final: validation.md, validation.pdf, validation.html |
 | `output/[ANALISIS_DIR]/` | Deliverables finales: report.md (siempre), report.pdf, report.docx, dashboard.html, presentation.pptx |
-| `tools/` | Scripts pre-construidos reutilizables (css_builder.py, md_to_report.py, pdf_generator.py, docx_generator.py, pptx_layout.py, image_utils.py) |
+| `tools/` | Scripts pre-construidos reutilizables (css_builder.py, md_to_report.py, pdf_generator.py, docx_generator.py, pptx_layout.py, dashboard_builder.py, image_utils.py) |
 | `tools/pptx_layout.py` | Layout PPTX: constantes de safe area, helpers de posicionamiento, validacion de bounds |
 | `tools/docx_generator.py` | Generador DOCX: DOCXGenerator con scaffold y markdown, estilos via get_palette() |
+| `tools/dashboard_builder.py` | Generador de dashboards web interactivos: DashboardBuilder con filtros, KPI cards, tablas ordenables, datos JSON embebidos |
 | `templates/pdf/` | Templates Jinja2 para PDFs: base.html, cover.html, components/, reports/scaffold.html |
 | `styles/tokens/` | Variables CSS (:root) y @font-face por tema (modern, corporate, academic) |
 | `styles/themes/` | Componentes visuales por tema — browser-safe, sin @page ni hover |

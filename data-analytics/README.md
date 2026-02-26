@@ -40,6 +40,21 @@ Los pack scripts solo son necesarios para distribuir el agente fuera del reposit
 | Memoria | `/update-memory` | Actualizar memoria persistente con preferencias, patrones y heuristicas |
 | Conocimiento | `/propose-knowledge` | Proponer terminos de negocio descubiertos a Stratio Governance |
 
+## Herramientas de generacion
+
+Scripts reutilizables en `tools/` para generar deliverables:
+
+| Herramienta | Descripcion |
+|-------------|-------------|
+| `css_builder.py` | Ensamblador CSS de 3 capas (tokens + theme + target) y extraccion de paleta |
+| `chart_layout.py` | Anti-overlap para graficas matplotlib y Plotly (titulos, leyendas, margenes) |
+| `pdf_generator.py` | Generador de PDFs con Jinja2 + WeasyPrint (scaffold y modo libre) |
+| `docx_generator.py` | Generador de DOCX con estilos y scaffold |
+| `pptx_layout.py` | Helpers de layout para PowerPoint (safe areas, posicionamiento) |
+| `dashboard_builder.py` | Generador de dashboards web interactivos (filtros, KPI cards, tablas ordenables, Plotly) |
+| `md_to_report.py` | Conversor Markdown a HTML/PDF/DOCX con estilos y portada |
+| `image_utils.py` | Utilidades para embeber imagenes como base64 en HTML |
+
 ## Memoria persistente
 
 El agente mantiene memoria entre sesiones en dos ficheros:

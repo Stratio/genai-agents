@@ -103,6 +103,15 @@ tbody tr:nth-child(even) {
     margin-top: 4px;
 }
 
+.kpi-change {
+    font-size: 9pt;
+    margin-top: 6px;
+    font-weight: 500;
+}
+
+.kpi-change.positive { color: var(--success); }
+.kpi-change.negative { color: var(--danger); }
+
 /* Figures */
 figure {
     margin: 20px 0;
