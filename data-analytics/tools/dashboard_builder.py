@@ -155,9 +155,11 @@ class DashboardBuilder:
         *,
         nav_label: str = "",
         description: str = "",
-        width: str = "full",
     ) -> None:
         """Add a section containing a Plotly chart.
+
+        Charts are always rendered at full width to ensure insight-style
+        titles display correctly and Plotly toolbars don't overlap.
 
         Args:
             section_id: Unique section identifier.
@@ -165,9 +167,6 @@ class DashboardBuilder:
             plotly_fig: A plotly Figure object.
             nav_label: Short label for sticky nav. Defaults to title.
             description: Optional HTML text below the chart.
-            width: "full" (default), "half" (2 columns) or "third"
-                (3 columns). Consecutive sections with the same non-full
-                width are grouped in a CSS grid row.
         """
         chart_html = plotly_fig.to_html(
             full_html=False,
@@ -182,7 +181,7 @@ class DashboardBuilder:
             "nav_label": nav_label or title,
             "chart_html": chart_html,
             "description": description,
-            "width": width,
+            "width": "full",
         })
 
     def add_html_section(
@@ -201,8 +200,9 @@ class DashboardBuilder:
             title: Section heading.
             html_content: Raw HTML content.
             nav_label: Short label for sticky nav.
-            width: "full" (default), "half" (2 columns) or "third"
-                (3 columns).
+            width: "full" (default) or "half" (2 columns).
+                Consecutive half-width sections are grouped in a CSS
+                grid row.
         """
         self._sections.append({
             "id": section_id,
@@ -411,28 +411,27 @@ class DashboardBuilder:
         return "\n".join(parts)
 
     def _render_sections(self, style_name: str) -> str:
-        grid_classes = {"half": "section-grid-2", "third": "section-grid-3"}
         parts = []
-        cur_grid: str | None = None
+        cur_grid: bool = False
         for idx, s in enumerate(self._sections):
             width = s.get("width", "full")
-            grid_cls = grid_classes.get(width)
+            is_half = width == "half"
             next_width = (
                 self._sections[idx + 1].get("width", "full")
                 if idx + 1 < len(self._sections)
                 else "full"
             )
-            next_grid_cls = grid_classes.get(next_width)
+            next_is_half = next_width == "half"
 
-            # Close current grid if switching to a different grid type
-            if cur_grid and grid_cls != cur_grid:
+            # Close current grid if switching away from half
+            if cur_grid and not is_half:
                 parts.append("</div>")
-                cur_grid = None
+                cur_grid = False
 
-            # Open grid wrapper for consecutive non-full sections
-            if grid_cls and not cur_grid:
-                parts.append(f'<div class="{grid_cls}">')
-                cur_grid = grid_cls
+            # Open grid wrapper for consecutive half-width sections
+            if is_half and not cur_grid:
+                parts.append('<div class="section-grid-2">')
+                cur_grid = True
 
             parts.append(f'<section id="{s["id"]}">')
             parts.append(f'  <h2>{_escape_html(s["title"])}</h2>')
@@ -479,10 +478,10 @@ class DashboardBuilder:
 
             parts.append("</section>")
 
-            # Close grid wrapper when next section uses a different width
-            if cur_grid and next_grid_cls != cur_grid:
+            # Close grid wrapper when next section is not half-width
+            if cur_grid and not next_is_half:
                 parts.append("</div>")
-                cur_grid = None
+                cur_grid = False
 
         return "\n".join(parts)
 

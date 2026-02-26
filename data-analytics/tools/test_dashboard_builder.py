@@ -187,37 +187,44 @@ class TestSections:
         html = builder.build()
         assert "<p>extra</p>" in html
 
-    def test_half_width_sections_in_grid(self, builder, mock_plotly_fig):
-        builder.add_chart_section("a", "A", mock_plotly_fig, width="half")
-        builder.add_chart_section("b", "B", mock_plotly_fig, width="half")
-        html = builder.build()
-        assert "section-grid-2" in html
-
-    def test_third_width_sections_in_grid(self, builder, mock_plotly_fig):
-        builder.add_chart_section("a", "A", mock_plotly_fig, width="third")
-        builder.add_chart_section("b", "B", mock_plotly_fig, width="third")
-        builder.add_chart_section("c", "C", mock_plotly_fig, width="third")
-        html = builder.build()
-        assert "section-grid-3" in html
-
-    def test_full_width_no_grid(self, builder, mock_plotly_fig):
+    def test_chart_sections_always_full_width(self, builder, mock_plotly_fig):
+        """Charts are always full-width — no grid wrapper."""
         builder.add_chart_section("a", "A", mock_plotly_fig)
         builder.add_chart_section("b", "B", mock_plotly_fig)
         html = builder.build()
-        # CSS may contain .section-grid rules, but no actual grid div should be rendered
         assert '<div class="section-grid-2">' not in html
-        assert '<div class="section-grid-3">' not in html
 
-    def test_mixed_widths(self, builder, mock_plotly_fig):
-        builder.add_chart_section("a", "A", mock_plotly_fig, width="half")
-        builder.add_chart_section("b", "B", mock_plotly_fig, width="half")
-        builder.add_chart_section("c", "C", mock_plotly_fig)  # full
+    def test_half_width_html_sections_in_grid(self, builder):
+        """Consecutive half-width HTML sections are grouped in a grid."""
+        builder.add_html_section("a", "A", "<p>A</p>", width="half")
+        builder.add_html_section("b", "B", "<p>B</p>", width="half")
         html = builder.build()
-        assert "section-grid-2" in html
+        assert '<div class="section-grid-2">' in html
+
+    def test_full_width_html_no_grid(self, builder):
+        builder.add_html_section("a", "A", "<p>A</p>")
+        builder.add_html_section("b", "B", "<p>B</p>")
+        html = builder.build()
+        assert '<div class="section-grid-2">' not in html
+
+    def test_mixed_html_widths(self, builder):
+        """Half-width HTML sections followed by full-width: grid closes before full."""
+        builder.add_html_section("a", "A", "<p>A</p>", width="half")
+        builder.add_html_section("b", "B", "<p>B</p>", width="half")
+        builder.add_html_section("c", "C", "<p>C</p>")  # full
+        html = builder.build()
+        assert '<div class="section-grid-2">' in html
         # The full-width section should NOT be inside the grid
         grid_end = html.index("</div>", html.index("section-grid-2"))
         section_c = html.index('id="c"')
         assert section_c > grid_end
+
+    def test_chart_has_no_width_parameter(self, mock_plotly_fig):
+        """add_chart_section does not accept width parameter."""
+        db = DashboardBuilder(title="Test")
+        # Should raise TypeError for unexpected keyword argument
+        with pytest.raises(TypeError):
+            db.add_chart_section("x", "X", mock_plotly_fig, width="half")
 
 
 # ---------------------------------------------------------------------------

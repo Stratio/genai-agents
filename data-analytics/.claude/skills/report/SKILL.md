@@ -142,7 +142,7 @@ db.save("output/[ANALISIS_DIR]/dashboard.html")
 - **Filtros globales**: Dropdowns y date range que actualizan KPIs, graficas y tablas via `applyFilters()`. El agente define `updateKPIs(filters)`, `updateCharts(filters)` y `updateTables(filters)` en custom JS
 - **KPI cards dinamicos**: Valor + cambio % con flecha e indicador de color (verde positivo, rojo negativo). Actualizables via `updateKPICard(id, value, change)`
 - **Tablas ordenables**: Click en header para sort asc/desc. Soporte para `sort_value` custom (ej: mostrar "1,234" pero ordenar por 1234)
-- **Grid layout**: `width="half"` (2 columnas) o `width="third"` (3 columnas) en `add_chart_section()` y `add_html_section()`. Secciones consecutivas con el mismo ancho se agrupan automaticamente en CSS grid. Default: `"full"` (ancho completo)
+- **Grid layout**: `width="half"` en `add_html_section()` para colocar contenido HTML en 2 columnas. Secciones consecutivas half-width se agrupan automaticamente en CSS grid. Las graficas Plotly (`add_chart_section()`) son siempre full-width para que los titulos insight-style y la toolbar se muestren correctamente
 - **Formato de numeros**: `formatValue(value, format)` disponible en JS — soporta `'currency'` ($1.2M), `'percent'` (45.1%), `'number'` (2.3K). Usarla en custom JS para evitar reescribir logica de formateo
 - **Datos JSON embebidos**: `DASHBOARD_DATA` disponible en JS para filtrado sin servidor
 - **Print media**: Oculta filtros y nav, ajusta graficas a 700px, evita page-break dentro de secciones
@@ -160,7 +160,7 @@ db.save("output/[ANALISIS_DIR]/dashboard.html")
 - Solapamiento titulo/leyenda: NUNCA dejar la leyenda en posicion default cuando la grafica tiene titulo con texto descriptivo. Usar `apply_plotly_layout` de `tools/chart_layout.py` o configurar manualmente: title con `y=0.95`, legend horizontal abajo con `y=-0.12`, `margin.t=100` y `margin.b=80`
 - **Custom JS**: Las funciones `updateKPIs(filters)`, `updateCharts(filters)` y `updateTables(filters)` se llaman automaticamente cuando cambia un filtro. Si no se definen, los filtros no tendran efecto — el agente DEBE implementarlas via `add_custom_js()` con la logica especifica del analisis
 - **Datos embebidos**: Llamar siempre a `db.set_data()` con los datos necesarios para filtrado. Sin datos embebidos, los filtros no pueden funcionar offline. Ver `skills-guides/visualization.md` sec 5.5 para limites de tamano y pre-agregacion
-- **Grid layout**: Usar `width="half"` o `width="third"` en secciones consecutivas para layout en 2 o 3 columnas. Util para graficas comparativas (ej: tendencia + composicion lado a lado). No mezclar `"half"` y `"third"` consecutivamente — usar el mismo width en cada grupo
+- **Grid layout**: Las graficas Plotly son siempre full-width (no aceptan parametro `width`). Solo `add_html_section()` soporta `width="half"` para contenido HTML ligero en 2 columnas (ej: callouts, tablas de resumen, texto comparativo). No usar grid para graficas — los titulos insight-style desbordan en contenedores estrechos
 - **formatValue**: Usar `formatValue(value, 'currency')` en custom JS en lugar de escribir logica de formateo manual. Soporta `'currency'`, `'percent'` y `'number'` con abreviaturas K/M/B
 
 ### 5.3 PowerPoint

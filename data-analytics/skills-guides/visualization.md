@@ -27,7 +27,11 @@ Elegir segun la pregunta analitica:
 - **Accesibilidad**: Usar paletas colorblind-friendly, no depender solo del color (usar formas/patrones), texto alternativo en imagenes
 - **Layout anti-solapamiento**: Titulo como insight arriba, contexto como subtitulo, leyenda posicionada debajo del grafico o a la derecha exterior. Usar `tools/chart_layout.py` (`apply_chart_layout` / `apply_plotly_layout`) para layout estandar. **NUNCA** `fig.tight_layout()` despues de `fig.suptitle()` — usar `fig.subplots_adjust()`
 - **Figsize para PDF/HTML**: Usar `figsize=(7, 4.5)` como maximo para graficas individuales (el area imprimible del A4 con los margenes por defecto es ~160mm ≈ 6.3"). Para subplots de 2 columnas usar `figsize=(12, 4.5)`. Exceder estas dimensiones provoca desbordamiento en WeasyPrint porque `md_to_report.py` convierte `![alt](img.png)` en `<p><img>` (no `<figure>`), sin CSS de contencion de ancho.
-- **Escalas dispares**: Antes de graficar multiples series en el mismo eje, verificar si las magnitudes difieren por mas de 3x. Si es asi, usar subplots con escalas Y independientes en lugar de eje compartido. Para barras con multiples series, usar barras agrupadas (dodge), nunca superponer con alpha.
+- **Escalas dispares**: Antes de graficar multiples series en el mismo eje, verificar si las magnitudes difieren por mas de 3x. Si es asi, usar subplots con escalas Y independientes en lugar de eje compartido. Para barras con multiples series, usar barras agrupadas (dodge), nunca superponer con alpha. **Checklist obligatorio antes de graficar series juntas:**
+  1. Calcular `max(serie_A) / max(serie_B)`. Si ratio > 3 → subplots separados con escalas Y independientes
+  2. Calcular rango de variacion de cada serie (`max - min`). Si difieren por mas de 10x → las barras agrupadas son engañosas (una serie parece plana). Separar en subplots o usar indices (base 100)
+  3. Media movil: solo anadirla si aporta informacion visual. Si la media movil es casi identica a la serie original (ventana pequena, serie suave), NO anadirla — genera lineas superpuestas que confunden sin aportar insight
+  4. Barras agrupadas comparativas: si los valores de una categoria oscilan 5pp y la otra 50pp, las barras de la primera se ven planas. Usar subplots separados o normalizar ambas a indice
 
 ## 3. Data Storytelling
 
@@ -42,9 +46,14 @@ Estructura narrativa para presentar hallazgos (no solo secuencial):
 **Principios:**
 - Cada seccion del reporte debe contar una historia, no solo mostrar datos
 - Titulos de graficos como insights ("La region Norte concentra el 45%"), no descripciones ("Ventas por region")
+- **Verificacion titulo-grafica obligatoria**: Antes de finalizar una grafica, verificar que el patron visual que se ve en el grafico corresponde con el insight del titulo. Errores comunes:
+  - Titulo dice "trayectorias divergentes" pero las lineas se cruzan multiples veces → el patron real es volatilidad cruzada, no divergencia
+  - Titulo dice "estabilidad" pero el eje Y amplifica variaciones pequenas → ajustar escala o reformular insight
+  - Titulo destaca un patron de una serie pero la grafica muestra otra serie que domina visualmente → repensar la composicion
 - Numeros siempre con contexto comparativo (vs periodo anterior, vs objetivo, vs media)
 - No presentar datos sin interpretacion — cada tabla o grafica necesita un parrafo explicativo
 - Adaptar nivel de detalle y vocabulario a la audiencia
+- **Anomalias conocidas**: Si un dato es anomalia confirmada (ej: primer mes con acumulacion de apertura), excluirlo de las graficas comparativas o marcarlo claramente con anotacion + opacidad reducida. No dejarlo como un punto normal que distorsiona la escala visual y confunde al lector
 
 ## 4. Mapping Hallazgos Analiticos → Narrativa
 
@@ -90,7 +99,7 @@ Orden recomendado de secciones (de arriba a abajo):
 - Max 6 KPI cards — mas de 6 diluye la atencion. Priorizar por impacto de negocio
 - Alternar graficas y texto — no apilar 5 graficas seguidas sin interpretacion
 - Cada seccion con `nav_label` corto (max 2-3 palabras) para la sticky nav
-- **Grid multi-columna**: Usar `width="half"` (2 columnas) o `width="third"` (3 columnas) en `add_chart_section()` para colocar graficas comparativas lado a lado. Secciones consecutivas con el mismo width se agrupan automaticamente. En movil colapsan a 1 columna
+- **Grid multi-columna**: Usar `width="half"` en `add_html_section()` para colocar contenido HTML comparativo lado a lado (2 columnas). Secciones consecutivas half-width se agrupan automaticamente. En movil colapsan a 1 columna. **Las graficas Plotly son siempre full-width** — los titulos insight-style y la toolbar de Plotly necesitan ancho completo para mostrarse correctamente
 
 ### 5.3 Filtros: cuando y cuales
 
