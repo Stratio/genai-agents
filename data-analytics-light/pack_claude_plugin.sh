@@ -83,6 +83,19 @@ else
   echo "WARN: No se encontro directorio de skills — el plugin no tendra skills."
 fi
 
+# --- Copiar skills-guides junto al SKILL.md de las skills que los usan ---
+if [ -d "skills-guides" ]; then
+  echo "Copiando skills-guides a skills..."
+  for skill_dir in "$PLUGIN_DIR/skills/analyze" "$PLUGIN_DIR/skills/explore-data"; do
+    if [ -d "$skill_dir" ]; then
+      cp skills-guides/*.md "$skill_dir/"
+    fi
+  done
+fi
+
+# Actualizar referencias a skills-guides/ en skills
+sed -i 's|`skills-guides/exploration\.md`|`exploration.md`|g' "$PLUGIN_DIR/skills/"*/SKILL.md 2>/dev/null || true
+
 # --- Generar agent file ---
 COWORK_DIR="claude-cowork-agent"
 mkdir -p "$PLUGIN_DIR/agents"
@@ -123,6 +136,9 @@ YAMLEOF
 }
 EOF
 fi
+
+# Actualizar referencias a skills-guides/ en agent
+sed -i 's|`skills-guides/exploration\.md`|`skills/analyze/exploration.md`|g' "$PLUGIN_DIR/agents/"*.md 2>/dev/null || true
 
 # --- .mcp.json del plugin ---
 if [ -n "$MCP_URL_RESOLVED" ] || [ -n "$MCP_KEY_RESOLVED" ]; then

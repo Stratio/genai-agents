@@ -28,7 +28,7 @@ bash pack_opencode.sh --agent data-analytics --name mi-agente
 
 El nombre debe ser kebab-case. Si se omite, se usa el basename del directorio del agente. Los directorios generados estan excluidos del repositorio (`.gitignore`).
 
-`data-analytics-light` incluye ademas scripts especificos para otras plataformas (Claude Projects, claude.ai, Claude Plugin, Claude Marketplace) — ver su propio `README.md`.
+`data-analytics-light` incluye ademas scripts de empaquetado para los diferentes formatos de Claude (Projects, Custom Instructions, Plugin y Marketplace), con instrucciones detalladas de como configurar cada formato en la plataforma destino — ver [`data-analytics-light/README.md`](data-analytics-light/README.md).
 
 ### Estructura de outputs (`make package`)
 

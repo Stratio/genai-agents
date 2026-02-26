@@ -125,14 +125,19 @@ YAMLEOF
 EOF
 fi
 
-# --- Copiar skills-guides/ ---
-echo "Copiando skills-guides/..."
-cp -r skills-guides/ "$PLUGIN_DIR/skills-guides/"
+# --- Copiar skills-guides junto al SKILL.md de las skills que los usan ---
+if [ -d "skills-guides" ]; then
+  echo "Copiando skills-guides a skills..."
+  for skill_dir in "$PLUGIN_DIR/skills/analyze" "$PLUGIN_DIR/skills/explore-data"; do
+    if [ -d "$skill_dir" ]; then
+      cp skills-guides/*.md "$skill_dir/"
+    fi
+  done
+fi
 
-# --- Copiar setup_env.sh y requirements.txt ---
-echo "Copiando setup_env.sh y requirements.txt..."
-cp setup_env.sh "$PLUGIN_DIR/setup_env.sh"
-cp requirements.txt "$PLUGIN_DIR/requirements.txt"
+# Actualizar referencias a skills-guides/ en skills y agent
+sed -i 's|`skills-guides/exploration\.md`|`exploration.md`|g' "$PLUGIN_DIR/skills/"*/SKILL.md 2>/dev/null || true
+sed -i 's|`skills-guides/exploration\.md`|`skills/analyze/exploration.md`|g' "$PLUGIN_DIR/agents/"*.md 2>/dev/null || true
 
 # --- .mcp.json del plugin ---
 if [ -n "$MCP_URL_RESOLVED" ] || [ -n "$MCP_KEY_RESOLVED" ]; then
