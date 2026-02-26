@@ -60,28 +60,21 @@ Antes de preguntar al usuario y planificar metricas, entender la realidad de los
 
 > **Nota**: Todas las preguntas con opciones de esta seccion siguen la convencion de preguntas (sec 10) (adaptativa al entorno: interactivas si disponibles, lista numerada en chat si no).
 
-### 3.0 Clasificacion de complejidad (antes de preguntar)
+### 3.0 Triage vs Analisis
 
-Clasificar la peticion para evitar interacciones innecesarias. Las preguntas simples (datos puntuales, sin dimensiones de corte) se resuelven en Triage (Fase 0) sin invocar esta skill.
+Las preguntas simples (datos puntuales, sin dimensiones de corte) se resuelven en Triage (CLAUDE.md Fase 0) sin invocar esta skill. Todo lo demas es un analisis y sigue el flujo de bloques de preguntas descrito a continuacion.
 
-| Complejidad | Criterio | Preguntas al usuario | Defaults |
-|-------------|----------|---------------------|----------|
-| **MODERADA** | ≤2 tablas, ≤4 metricas, alguna dimension de corte | Bloque 1 (profundidad) | Audiencia=Manager |
-| **COMPLEJA** | >2 tablas, multiples dimensiones, segmentacion avanzada, forecasting | Bloque 1 (profundidad + audiencia) | Sin defaults |
+### 3.1 Bloque 1 — Profundidad, Audiencia y Testing
 
-- Escalamiento automatico hacia arriba si el usuario anade complejidad ("anade segmentacion" → COMPLEJA)
-- Nunca escalar hacia abajo automaticamente
+Una sola interaccion:
 
-### 3.1 Bloque 1 — Profundidad y Audiencia
+| # | Pregunta | Opciones (literales) | Seleccion | Condicion |
+|---|----------|---------------------|-----------|-----------|
+| 1 | ¿Que profundidad de analisis prefieres? | **Rapido** · **Estandar** (Recomendado) · **Profundo** | Unica | Siempre |
+| 2 | ¿Para que audiencia es el analisis? | **C-level/Direccion** · **Manager/Responsable** · **Equipo tecnico/Data** · **Mixta/General** | Unica | Siempre |
+| 3 | ¿Quieres que se generen y ejecuten tests unitarios sobre el código Python? | **Sí** (Recomendado): mejora precisión y calidad, pero consume más tiempo, coste y contexto · **No**: ejecución directa sin tests | Única | Solo Estandar/Profundo |
 
-Una sola interaccion. Las preguntas varian segun complejidad:
-
-| # | Pregunta | Opciones (literales) | Seleccion | MODERADA | COMPLEJA |
-|---|----------|---------------------|-----------|----------|----------|
-| 1 | ¿Que profundidad de analisis prefieres? | **Rapido** · **Estandar** (Recomendado) · **Profundo** | Unica | SI | SI |
-| 2 | ¿Para que audiencia es el analisis? | **C-level/Direccion** · **Manager/Responsable** · **Equipo tecnico/Data** · **Mixta/General** | Unica | NO (default: Manager) | SI |
-
-- Requisitos adicionales via opcion "Other" (filtros temporales, segmentos, metricas obligatorias)
+- Los tests validan transformaciones y cálculos antes de ejecutar con datos reales. Mejoran la precisión pero consumen más tokens, tiempo y coste. **En profundidad Rápido, testing se desactiva automáticamente sin preguntar al usuario.**
 
 ## 4. Planificacion
 
@@ -220,6 +213,9 @@ Aplicar las 7 validaciones de la seccion 4 ("Validacion post-query") a cada resu
 - **Datasets grandes (>100k filas)**: Usar muestreo estratificado para desarrollo rapido, datos completos para la version final
 
 ### 5.3 Testing
+
+> **Solo si la profundidad es Estándar/Profundo Y el usuario eligió "Sí" en la pregunta de testing del Bloque 1.** En profundidad Rápido o si el usuario eligió "No", omitir esta sección y ejecutar directamente el script con datos reales.
+
 - Generar tests unitarios ANTES de ejecutar con datos reales
 - Usar DataFrames mock con estructura similar a los datos reales
 - Validar transformaciones, calculos y formatos de salida
@@ -253,7 +249,7 @@ Si durante la ejecucion se detecta un hallazgo que excede el alcance del nivel d
    - "No, solo documentar" → Registrar hallazgo en el chat como "area de investigacion futura"
 3. El upgrade NO reinicia el analisis — extiende el analisis actual con fases adicionales
 
-**Diferencia con el loop de iteracion (5.4b):** El loop refina hipotesis dentro del mismo nivel de complejidad. El upgrade cambia el nivel (ej: Triage → MODERADA) y activa capacidades adicionales (EDA, hipotesis formales, visualizaciones).
+**Diferencia con el loop de iteracion (5.4b):** El loop refina hipotesis dentro del mismo nivel de complejidad. El upgrade cambia el nivel (ej: Triage → Analisis) y activa capacidades adicionales (EDA, hipotesis formales, visualizaciones).
 
 ### 5.5 Presentacion de resultados
 La presentacion de resultados se hace en el chat, siguiendo la estructura de la seccion 6.1. Las visualizaciones generadas se muestran inline como soporte del analisis.

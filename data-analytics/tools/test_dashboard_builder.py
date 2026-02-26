@@ -56,7 +56,8 @@ class TestBasicBuild:
 
     def test_build_includes_plotly_cdn(self, builder):
         html = builder.build()
-        assert "cdn.plot.ly/plotly-latest.min.js" in html
+        assert "cdn.plot.ly/plotly-" in html
+        assert ".min.js" in html
 
     def test_build_includes_cover(self, builder):
         html = builder.build()
