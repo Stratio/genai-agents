@@ -13,13 +13,8 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# --- Input: usar argumento CLI o preguntar interactivamente ---
-if [ -n "$ARG_NAME" ]; then
-  PROJECT_NAME="$ARG_NAME"
-else
-  read -p "Nombre del proyecto [data-analytics-light]: " PROJECT_NAME
-  PROJECT_NAME="${PROJECT_NAME:-data-analytics-light}"
-fi
+# --- Nombre: argumento CLI o default ---
+PROJECT_NAME="${ARG_NAME:-data-analytics-light}"
 
 PROJECT_DIR="dist/claude_projects/$PROJECT_NAME"
 
@@ -133,19 +128,12 @@ fi
 
 # --- 6. ZIP ---
 echo ""
-if [ -n "$ARG_NAME" ]; then
-  # Modo no-interactivo: generar ZIP automaticamente
-  GEN_ZIP="s"
-else
-  read -p "Generar ZIP? [s/N]: " GEN_ZIP
-fi
-if [[ "$GEN_ZIP" =~ ^[sS]$ ]]; then
-  ZIP_NAME="${PROJECT_NAME}.zip"
-  (cd "$PROJECT_DIR" && zip -r "../_tmp_${ZIP_NAME}" . -q)
-  mv "dist/claude_projects/_tmp_${ZIP_NAME}" "$PROJECT_DIR/${ZIP_NAME}"
-  ZIP_SIZE=$(du -sh "$PROJECT_DIR/${ZIP_NAME}" | cut -f1)
-  echo "  ZIP: $PROJECT_DIR/${ZIP_NAME} ($ZIP_SIZE)"
-fi
+# Generar ZIP siempre (CI/CD-friendly, sin interaccion)
+ZIP_NAME="${PROJECT_NAME}.zip"
+(cd "$PROJECT_DIR" && zip -r "../_tmp_${ZIP_NAME}" . -q)
+mv "dist/claude_projects/_tmp_${ZIP_NAME}" "$PROJECT_DIR/${ZIP_NAME}"
+ZIP_SIZE=$(du -sh "$PROJECT_DIR/${ZIP_NAME}" | cut -f1)
+echo "  ZIP: $PROJECT_DIR/${ZIP_NAME} ($ZIP_SIZE)"
 
 echo ""
 echo "=== Proyecto empaquetado en $PROJECT_DIR ==="
