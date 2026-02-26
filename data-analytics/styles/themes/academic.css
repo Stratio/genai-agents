@@ -178,6 +178,45 @@ figcaption::before {
     margin-bottom: 4px;
 }
 
+/* KPI Cards (dashboard support) */
+.kpi-container {
+    display: flex;
+    gap: 16px;
+    margin: 20px 0;
+    flex-wrap: wrap;
+}
+
+.kpi-card {
+    flex: 1;
+    min-width: 150px;
+    padding: 14px;
+    border: 2px solid var(--border-color);
+    text-align: center;
+}
+
+.kpi-value {
+    font-size: 22pt;
+    font-weight: 700;
+    color: var(--heading-color);
+}
+
+.kpi-label {
+    font-size: 9pt;
+    color: var(--caption-color);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 4px;
+}
+
+.kpi-change {
+    font-size: 9pt;
+    margin-top: 6px;
+    font-weight: 500;
+}
+
+.kpi-change.positive { color: #16a34a; }
+.kpi-change.negative { color: #dc2626; }
+
 /* Callout */
 .callout {
     background: var(--bg-light);

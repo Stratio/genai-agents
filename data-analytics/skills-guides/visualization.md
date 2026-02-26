@@ -60,3 +60,99 @@ Mapear cada hallazgo a su rol narrativo:
 | Hallazgo INFORMATIVO (bajo impacto) | **Supporting detail** | Apendice |
 
 **Minimo narrativo**: Hook + al menos 1 Tension + Resolution. Si todo confirma expectativas, buscar el matiz menos obvio para la Tension.
+
+## 5. Dashboard Interactivo
+
+Principios para componer dashboards web con `tools/dashboard_builder.py` (`DashboardBuilder`).
+
+### 5.1 Cuando usar dashboard vs graficas sueltas
+
+| Situacion | Formato recomendado |
+|-----------|-------------------|
+| El usuario necesita explorar datos por diferentes dimensiones (region, periodo, segmento) | **Dashboard con filtros** |
+| Audiencia ejecutiva: resumen de KPIs + 2-3 graficas clave | **Dashboard simple** (KPIs + graficas, sin filtros o con 1 filtro) |
+| Informe formal con narrativa extensa y metodologia | **PDF/DOCX** (no dashboard) |
+| Hallazgos puntuales sin interactividad necesaria | **Graficas sueltas** en chat o report |
+
+### 5.2 Layout del dashboard
+
+Orden recomendado de secciones (de arriba a abajo):
+
+1. **Portada** (opcional) — titulo, subtitulo, autor, dominio, fecha
+2. **Filtros globales** — solo los relevantes para el analisis (ver 5.3)
+3. **KPI cards** — 3-6 metricas clave con cambio % vs periodo anterior
+4. **Graficas principales** — los hallazgos mas importantes primero (Hook)
+5. **Graficas de detalle** — desglose y contexto (Findings)
+6. **Tablas ordenables** — datos de soporte para drill-down manual
+7. **Conclusiones** (seccion HTML) — resumen y recomendaciones
+
+**Principios de layout:**
+- Max 6 KPI cards — mas de 6 diluye la atencion. Priorizar por impacto de negocio
+- Alternar graficas y texto — no apilar 5 graficas seguidas sin interpretacion
+- Cada seccion con `nav_label` corto (max 2-3 palabras) para la sticky nav
+- **Grid multi-columna**: Usar `width="half"` (2 columnas) o `width="third"` (3 columnas) en `add_chart_section()` para colocar graficas comparativas lado a lado. Secciones consecutivas con el mismo width se agrupan automaticamente. En movil colapsan a 1 columna
+
+### 5.3 Filtros: cuando y cuales
+
+| Tipo de datos | Filtro recomendado | Ejemplo |
+|--------------|-------------------|---------|
+| Dimension categorica con <=15 valores | **Dropdown** (`filter_type="select"`) | Region, Segmento, Canal |
+| Dimension temporal | **Date range** (`filter_type="date"`) | Periodo de analisis |
+| Dimension categorica con >15 valores | No usar filtro — agregar en "Otros" o usar tabla ordenable | SKUs, codigos postales |
+| Metrica continua | No usar filtro — usar grafica interactiva (zoom/hover de Plotly) | Importe, cantidad |
+
+**Reglas:**
+- Max 3-4 filtros — mas de 4 abruma al usuario y complica el custom JS
+- Cada filtro debe afectar al menos 2 secciones del dashboard (si solo afecta a 1, ponerlo como control local de esa seccion)
+- Siempre incluir "Todos" como opcion por defecto en dropdowns
+- Si hay filtro de fecha, poblar `start`/`end` con el rango real de los datos
+
+### 5.4 Tablas ordenables vs graficas
+
+| Usar tabla ordenable cuando... | Usar grafica cuando... |
+|-------------------------------|----------------------|
+| El usuario necesita buscar valores especificos (ej: "cuanto vendio el producto X") | La pregunta es sobre patrones (tendencia, concentracion, distribucion) |
+| Hay >7 dimensiones que comparar | Hay <=7 categorias que comparar visualmente |
+| Los datos tienen precision importante (decimales, fechas exactas) | Los ordenes de magnitud importan mas que los valores exactos |
+| Es una tabla de referencia/detalle de soporte | Es un hallazgo clave del analisis |
+
+**Tip**: Usar `sort_value` custom para columnas con formato (ej: mostrar "1,234 EUR" pero ordenar por `1234`). Esto permite que la tabla sea legible y funcional al mismo tiempo.
+
+### 5.5 Rendimiento del dashboard
+
+#### Tamano de datos embebidos
+
+| Tamano del dataset | Estrategia | Ejemplo |
+|-------------------|-----------|---------|
+| <1,000 filas | Embeber directamente con `set_data()` | Ventas mensuales por region (12 meses x 5 regiones = 60 filas) |
+| 1,000-10,000 filas | Pre-agregar en pandas antes de embeber. Embeber solo las agregaciones necesarias para KPIs, graficas y tablas | Transacciones diarias de un anio → agregar a semanal por segmento |
+| >10,000 filas | Agregar en MCP (`stratio_query_data`). Embeber solo el resumen. Nunca traer detalle transaccional al dashboard | Millones de transacciones → top 20 productos, tendencia mensual, KPIs globales |
+
+**Regla**: El JSON embebido en `DASHBOARD_DATA` no deberia superar ~500 KB. Mas de eso ralentiza la carga inicial del HTML.
+
+#### Limites por componente
+
+| Componente | Limite recomendado | Si se excede |
+|-----------|-------------------|-------------|
+| Line chart | <500 puntos por serie | Downsample: agregar a granularidad mayor (diario → semanal) |
+| Bar chart | <50 categorias | Agrupar en "Otros" o usar top-N + "Resto" |
+| Tabla ordenable | <200 filas | Mostrar top-N con nota "mostrando los N principales". Para detalle completo, exportar CSV |
+| KPI cards | 3-6 | Priorizar por impacto de negocio (ya cubierto en 5.2) |
+| Filtros | 3-4 | Ya cubierto en 5.3 |
+
+#### Pre-agregacion en pandas
+
+Antes de llamar a `set_data()`, agregar los datos al nivel necesario para cada componente del dashboard:
+
+```python
+# NO: embeber 50,000 transacciones
+db.set_data({"transactions": df.to_dict(orient="records")})  # ~5 MB
+
+# SI: pre-agregar para cada componente
+data = {
+    "monthly": df.groupby("month").agg({"revenue": "sum", "orders": "count"}).reset_index().to_dict(orient="records"),
+    "by_region": df.groupby("region").agg({"revenue": "sum"}).reset_index().to_dict(orient="records"),
+    "top_products": df.groupby("product").agg({"revenue": "sum"}).nlargest(20, "revenue").reset_index().to_dict(orient="records"),
+}
+db.set_data(data)  # ~2 KB
+```
