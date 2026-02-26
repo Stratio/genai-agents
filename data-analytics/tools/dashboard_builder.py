@@ -46,9 +46,37 @@ Usage:
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 from css_builder import build_css
+
+
+def _detect_plotlyjs_cdn() -> str:
+    """Return the CDN filename matching the installed plotly.js version.
+
+    Reads the bundled plotly.min.js header to extract the exact version,
+    ensuring the browser loads the same Plotly.js that serialised the data.
+    Falls back to a known-good version if detection fails.
+    """
+    try:
+        import importlib.resources
+        js_path = (
+            Path(importlib.resources.files("plotly"))  # type: ignore[arg-type]
+            / "package_data"
+            / "plotly.min.js"
+        )
+        with open(js_path) as f:
+            header = f.read(500)
+        m = re.search(r"v(\d+\.\d+\.\d+)", header)
+        if m:
+            return f"plotly-{m.group(1)}.min.js"
+    except Exception:
+        pass
+    return "plotly-3.3.1.min.js"
+
+
+_PLOTLYJS_CDN = _detect_plotlyjs_cdn()
 
 
 class DashboardBuilder:
@@ -313,6 +341,7 @@ class DashboardBuilder:
             data_json=data_json,
             custom_js=self._custom_js,
             author_meta=f'<meta name="author" content="{_escape_html(self.author)}">' if self.author else "",
+            plotlyjs_cdn=_PLOTLYJS_CDN,
         )
         return html
 
@@ -514,7 +543,7 @@ _DASHBOARD_TEMPLATE = """<!DOCTYPE html>
     <style>
 {css}
     </style>
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdn.plot.ly/{plotlyjs_cdn}"></script>
 </head>
 <body>
 

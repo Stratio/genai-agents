@@ -19,6 +19,11 @@ Usage:
 
     # Colors
     colors = get_chart_colors("corporate", n=5)
+
+    # Transparency (Plotly-safe — never use hex+alpha like "#1a365d80")
+    from chart_layout import to_rgba
+    fill_color = to_rgba("#1a365d", 0.3)   # "rgba(26,54,93,0.3)"
+    fill_color = to_rgba((26, 54, 93), 0.3)  # same result from RGB tuple
 """
 
 from __future__ import annotations
@@ -187,6 +192,29 @@ def apply_plotly_layout(
 # ---------------------------------------------------------------------------
 # Colors
 # ---------------------------------------------------------------------------
+
+def to_rgba(color, alpha: float = 0.5) -> str:
+    """Convert a hex string or (R,G,B) tuple to an rgba() string.
+
+    Works with both Plotly and matplotlib.  Use this instead of appending
+    alpha digits to hex strings (Plotly rejects ``#RRGGBBAA``).
+
+    Args:
+        color: ``"#RRGGBB"`` hex string or ``(R, G, B)`` tuple (0-255).
+        alpha: Opacity from 0.0 (transparent) to 1.0 (opaque).
+
+    Returns:
+        CSS rgba string, e.g. ``"rgba(26,54,93,0.5)"``.
+    """
+    if isinstance(color, str):
+        h = color.strip().lstrip("#")
+        if len(h) == 3:
+            h = h[0] * 2 + h[1] * 2 + h[2] * 2
+        r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+    else:
+        r, g, b = int(color[0]), int(color[1]), int(color[2])
+    return f"rgba({r},{g},{b},{alpha})"
+
 
 def get_chart_colors(style: str = "corporate", n: int = 6) -> list[str]:
     """Return a list of n hex color strings from the given style palette.

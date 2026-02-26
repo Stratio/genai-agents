@@ -35,14 +35,14 @@ Antes de activar el workflow de analisis, evaluar si la pregunta se resuelve con
 | Dato puntual sin analisis | `stratio_query_data` | "Cuantos clientes hay?", "Total ventas del mes" |
 
 **Si encaja** → Resolver directamente: descubrir dominio si es necesario (listar dominios, explorar tablas, buscar knowledge), obtener el dato via MCP, responder en chat con contexto minimo (vs periodo anterior si disponible). FIN. Sin plan, sin hipotesis, sin artefactos.
-**Si NO encaja** → Continuar con Fase 1 y clasificacion MODERADA/COMPLEJA.
+**Si NO encaja** → Continuar con Fase 1 (analisis).
 
 **Activacion de skills**: Si la pregunta NO es triage, cargar la skill correspondiente ANTES de continuar:
-- Pregunta de analisis (MODERADA/COMPLEJA) → Cargar skill `analyze`
+- Pregunta de analisis → Cargar skill `analyze`
 - Exploracion de dominio sin analisis → Cargar skill `explore-data`
 - NUNCA seguir el workflow de las Fases 1-4 sin tener la skill cargada en contexto. La skill contiene el detalle operativo necesario.
 
-**Criterio de triage**: La pregunta se responde con datos puntuales (1-2 metricas, sin dimensiones de corte) sin necesidad de cruzar datos, formular hipotesis, ni generar visualizaciones. Las llamadas MCP de descubrimiento (listar dominios, explorar tablas, buscar knowledge) son infraestructura y no cuentan como analisis. Si hay duda, clasificar como MODERADA.
+**Criterio de triage**: La pregunta se responde con datos puntuales (1-2 metricas, sin dimensiones de corte) sin necesidad de cruzar datos, formular hipotesis, ni generar visualizaciones. Las llamadas MCP de descubrimiento (listar dominios, explorar tablas, buscar knowledge) son infraestructura y no cuentan como analisis. Si hay duda, tratar como analisis.
 
 ### Fase 1 — Descubrimiento (en fase de planificacion, solo lectura)
 
@@ -57,25 +57,15 @@ Para exploracion rapida de dominios sin analisis completo, ver la skill `/explor
 
 Antes de planificar metricas, entender la realidad de los datos. Ejecutar profiling siguiendo la mecanica de `skills-guides/exploration.md` sec 7, luego evaluar calidad, generar mini-resumen e informar limitaciones al usuario. Para detalle operativo completo (checklist de suficiencia, Data Quality Score, que evaluar), ver skill `/analyze` sec 2.5.
 
-### Fase 1.9 — Clasificacion de complejidad
+### Fase 1.9 — Defaults
 
-Antes de preguntar al usuario, clasificar la peticion para evitar interacciones innecesarias:
-
-| Complejidad | Criterio | Preguntas al usuario | Defaults |
-|-------------|----------|---------------------|----------|
-| **MODERADA** | ≤2 tablas, ≤4 metricas, alguna dimension de corte | Bloque 1 (profundidad) | Audiencia=Manager |
-| **COMPLEJA** | >2 tablas, multiples dimensiones, segmentacion avanzada, forecasting | Bloque 1 (profundidad + audiencia) | Sin defaults |
-
-**Reglas:**
-- Escalamiento automatico hacia arriba si el usuario anade complejidad ("anade segmentacion" → COMPLEJA)
-- Nunca escalar hacia abajo automaticamente
-- **Escalamiento durante ejecucion**: Si se detecta anomalia (>30% desviacion), inconsistencia o patron critico → informar al usuario y ofrecer escalar. Detalle en skill `/analyze` sec 5.4c
+- **Escalamiento durante ejecucion**: Si se detecta anomalia (>30% desviacion), inconsistencia o patron critico → informar al usuario y ofrecer profundizar. Detalle en skill `/analyze` sec 5.4c
 
 ### Fase 2 — Preguntas al Usuario (en fase de planificacion, solo lectura)
 
 Agrupar en 1 bloque de preguntas al usuario con opciones seleccionables (detalle de opciones en skill `/analyze` sec 3):
 
-**Bloque 1** (siempre): Profundidad. En COMPLEJA, tambien Audiencia.
+**Bloque 1** (siempre): Profundidad y Audiencia. En Estandar/Profundo, tambien Testing.
 
 **Nota**: SIEMPRE dar un resumen de hallazgos en la conversacion.
 
@@ -93,7 +83,7 @@ Agrupar en 1 bloque de preguntas al usuario con opciones seleccionables (detalle
 | Root cause analysis (ver `/analyze` [advanced-analytics.md](advanced-analytics.md)) | NO | Solo si se detecta anomalia critica | Activo ante cualquier desviacion |
 | Deteccion de anomalias (ver `/analyze` [advanced-analytics.md](advanced-analytics.md)) | Solo outliers del EDA | Temporal + estatica | Completa (temporal, tendencia, categorica) |
 | Loop de iteracion (Fase 4.6) | NO | Max 1 iteracion | Max 2 iteraciones |
-| Testing de scripts (Fase 4.4) | Opcional | SI | SI |
+| Testing de scripts (Fase 4.4) | NO (implicito, sin preguntar) | Segun preferencia del usuario (Bloque 1, default SI) | Segun preferencia del usuario (Bloque 1, default SI) |
 | Validacion de output (Fase 4) | Verificar que las visualizaciones se generaron | Verificar visualizaciones + coherencia de datos | Completo + consistencia de KPIs entre hallazgos |
 
 ### Fase 3 — Planificacion (en fase de planificacion, solo lectura)
