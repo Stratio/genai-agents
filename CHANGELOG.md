@@ -7,3 +7,4 @@
 * Document build output structure in README, update pack script output paths in table
 * Add skills normalization (flat .md → canonical format), output-templates support, sources zip generation and improve agent docs
 * Remove interactive prompts from data-analytics-light pack scripts to make them fully CI/CD-friendly
+* Add pack_claude_cowork.sh, --with-agent and --shared-guides flags for pack_claude_plugin.sh, instructions ZIP artifact and update packaging docs
