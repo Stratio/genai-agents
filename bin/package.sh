@@ -138,6 +138,61 @@ if [[ -d "$SL_DIR" ]]; then
   done
 fi
 
+# --- Pack adicionales de data-quality ---
+DQ_DIR="$REPO_ROOT/data-quality"
+if [[ -d "$DQ_DIR" ]]; then
+  for pack_script in "$DQ_DIR"/pack_claude_*.sh; do
+    [[ ! -f "$pack_script" ]] && continue
+    SCRIPT_NAME=$(basename "$pack_script")
+
+    # Extraer tipo del nombre: pack_claude_ai_project.sh -> ai_project
+    PACK_TYPE="${SCRIPT_NAME#pack_claude_}"
+    PACK_TYPE="${PACK_TYPE%.sh}"
+
+    echo "  [data-quality] Ejecutando $SCRIPT_NAME..."
+    (cd "$DQ_DIR" && bash "$SCRIPT_NAME" --name data-quality) || {
+      echo "  WARN: $SCRIPT_NAME fallo — continuando"
+      continue
+    }
+
+    # Buscar el directorio de output generado
+    case "$PACK_TYPE" in
+      ai_project) OUTPUT_SUBDIR="dist/claude_ai_projects/data-quality" ;;
+      cowork)     OUTPUT_SUBDIR="dist/claude_cowork/data-quality" ;;
+      *) echo "  WARN: Tipo desconocido: $PACK_TYPE"; continue ;;
+    esac
+
+    # Normalizar PACK_TYPE para el nombre del ZIP (ai_project -> ai-project)
+    ZIP_TYPE=$(echo "$PACK_TYPE" | tr '_' '-')
+
+    # Los pack scripts generan un ZIP dentro del directorio
+    ZIP_FILE=$(find "$DQ_DIR/$OUTPUT_SUBDIR" -name '*.zip' -maxdepth 1 2>/dev/null | head -1)
+    if [[ -n "$ZIP_FILE" ]]; then
+      cp "$ZIP_FILE" "$DIST_DIR/data-quality-claude-${ZIP_TYPE}-${VERSION}.zip"
+      echo "    -> dist/data-quality-claude-${ZIP_TYPE}-${VERSION}.zip"
+    fi
+  done
+fi
+
+# --- Zip de fuentes ---
+echo "  Generando zip de fuentes..."
+SOURCES_ZIP="genai-agents-sources-${VERSION}.zip"
+(cd "$REPO_ROOT" && zip -r "$DIST_DIR/$SOURCES_ZIP" . \
+  -x "dist/*" \
+  -x ".git/*" \
+  -x "*/.venv/*" \
+  -x "*/__pycache__/*" \
+  -x "*.pyc" \
+  -x "*/node_modules/*" \
+  -x "*/.idea/*" \
+  -x "*/output/*" \
+  -q)
+echo "    -> dist/$SOURCES_ZIP"
+
+# --- Zip global ---
+echo "  Generando zip global..."
+(cd "$DIST_DIR" && zip -r "genai-agents-${VERSION}.zip" *.zip -q 2>/dev/null) || true
+echo "    -> dist/genai-agents-${VERSION}.zip"
 
 # --- Resumen ---
 echo ""

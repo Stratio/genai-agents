@@ -1,0 +1,74 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": ["AGENTS.md"],
+  "mcp": {
+    "stratio_data": {
+      "type": "remote",
+      "url": "{env:MCP_SQL_URL}",
+      "timeout": 90000,
+      "headers": {
+        "Authorization": "Bearer {env:MCP_SQL_API_KEY}",
+        "X-API-Key": "{env:MCP_SQL_API_KEY}"
+      }
+    },
+    "stratio_gov": {
+      "type": "remote",
+      "url": "{env:MCP_GOV_URL}",
+      "timeout": 300000,
+      "headers": {
+        "Authorization": "Bearer {env:MCP_GOV_API_KEY}",
+        "X-API-Key": "{env:MCP_GOV_API_KEY}"
+      }
+    }
+  },
+  "permission": {
+    "read": "allow",
+    "glob": "allow",
+    "grep": "allow",
+    "list": "allow",
+    "lsp": "allow",
+    "edit": "allow",
+    "write": "allow",
+    "todoread": "allow",
+    "todowrite": "allow",
+    "task": "allow",
+    "skill": "allow",
+    "webfetch": "allow",
+    "stratio_data_*": "allow",
+    "stratio_gov_*": "deny",
+    "stratio_gov_get_quality_rule_dimensions": "allow",
+    "stratio_gov_create_quality_rule": "allow",
+    "stratio_gov_quality_rules_metadata": "allow",
+    "bash": {
+      "git *": "allow",
+      "gh *": "allow",
+      "poetry *": "allow",
+      "python *": "allow",
+      "python3 *": "allow",
+      "pytest *": "allow",
+      "pip *": "allow",
+      "pip3 *": "allow",
+      "bash *": "allow",
+      "source *": "allow",
+      "mkdir *": "allow",
+      "ls *": "allow",
+      "cd *": "allow",
+      "pwd": "allow",
+      "which *": "allow",
+      "curl *": "allow",
+      "find *": "allow",
+      "grep *": "allow",
+      "cat *": "allow",
+      "sed *": "allow",
+      "export *": "allow",
+      "xargs *": "allow",
+      "echo *": "allow",
+      "head *": "allow",
+      "tail *": "allow",
+      "tree *": "allow",
+      "file *": "allow",
+      "test *": "allow",
+      "ln *": "allow"
+    }
+  }
+}
