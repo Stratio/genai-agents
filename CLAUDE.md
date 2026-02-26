@@ -15,7 +15,7 @@ genai-agents/
 - Cada agente tiene su propio `CLAUDE.md` con instrucciones especificas. Trabajar siempre desde la carpeta del agente correspondiente
 - Skills de cada agente en `.claude/skills/`
 - Scripts de empaquetado genericos en la raiz del monorepo: `pack_claude_code.sh` y `pack_opencode.sh` (cualquier agente)
-- Scripts de empaquetado especificos de plataforma en `data-analytics-light/` (`pack_claude_project.sh`, `pack_claude_instructions.sh`, `pack_claude_plugin.sh`, `pack_claude_marketplace.sh`)
+- Scripts de empaquetado especificos de plataforma en `data-analytics-light/` (`pack_claude_project.sh`, `pack_claude_instructions.sh`, `pack_claude_plugin.sh`, `pack_claude_cowork.sh`)
 - El `.gitignore` raiz cubre ambos agentes
 
 ## Resumen de agentes
@@ -24,7 +24,7 @@ genai-agents/
 Agente completo de BI/BA: consulta de datos gobernados via MCP, analisis con Python (pandas, scipy, scikit-learn), visualizaciones (matplotlib, seaborn, plotly), generacion de informes (PDF, DOCX, web, PowerPoint), documentacion del razonamiento, validacion, gestion de la memoria entre sesiones.
 
 ### data-analytics-light
-Agente ligero de BI/BA: mismo motor analitico pero orientado a conversacion. Sin generacion de informes formales — el output principal es el chat. Incluye scripts de empaquetado para Claude Projects, Claude Instructions, Claude Plugin y Claude Marketplace.
+Agente ligero de BI/BA: mismo motor analitico pero orientado a conversacion. Sin generacion de informes formales — el output principal es el chat. Incluye scripts de empaquetado para Claude Projects, Claude Instructions, Claude Plugin y Claude Cowork.
 
 ## Scripts de empaquetado (raiz)
 

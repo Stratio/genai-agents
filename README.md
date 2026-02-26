@@ -28,7 +28,7 @@ bash pack_opencode.sh --agent data-analytics --name mi-agente
 
 El nombre debe ser kebab-case. Si se omite, se usa el basename del directorio del agente. Los directorios generados estan excluidos del repositorio (`.gitignore`).
 
-`data-analytics-light` incluye ademas scripts de empaquetado para los diferentes formatos de Claude (Projects, Custom Instructions, Plugin y Marketplace), con instrucciones detalladas de como configurar cada formato en la plataforma destino — ver [`data-analytics-light/README.md`](data-analytics-light/README.md).
+`data-analytics-light` incluye ademas scripts de empaquetado para los diferentes formatos de Claude (Projects, Custom Instructions, Plugin y Cowork), con instrucciones detalladas de como configurar cada formato en la plataforma destino — ver [`data-analytics-light/README.md`](data-analytics-light/README.md).
 
 ### Estructura de outputs (`make package`)
 
@@ -42,7 +42,8 @@ genai-agents/
     data-analytics-light-claude-code-{v}.zip
     data-analytics-light-opencode-{v}.zip
     data-analytics-light-claude-plugin-{v}.zip
-    data-analytics-light-claude-marketplace-{v}.zip
+    data-analytics-light-claude-plugin-agent-{v}.zip
+    data-analytics-light-claude-cowork-{v}.zip
     data-analytics-light-claude-project-{v}.zip
     data-analytics-light-claude-instructions-{v}.zip
     genai-agents-{v}.zip                        # ZIP global con todos los anteriores
@@ -57,7 +58,7 @@ genai-agents/
       claude_code/data-analytics-light/
       opencode/data-analytics-light/
       claude_plugins/data-analytics-light/
-      claude_plugins/data-analytics-light-marketplace/
+      claude_cowork/data-analytics-light/
       claude_projects/data-analytics-light/
       claude_instructions/data-analytics-light/
 ```
