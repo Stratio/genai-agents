@@ -13,13 +13,8 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# --- Input: usar argumento CLI o preguntar interactivamente ---
-if [ -n "$ARG_NAME" ]; then
-  PROJECT_NAME="$ARG_NAME"
-else
-  read -p "Nombre del proyecto [data-analytics-light]: " PROJECT_NAME
-  PROJECT_NAME="${PROJECT_NAME:-data-analytics-light}"
-fi
+# --- Nombre: argumento CLI o default ---
+PROJECT_NAME="${ARG_NAME:-data-analytics-light}"
 
 OUTPUT_DIR="dist/claude_instructions/$PROJECT_NAME"
 OUTPUT_FILE="$OUTPUT_DIR/CLAUDE.md"

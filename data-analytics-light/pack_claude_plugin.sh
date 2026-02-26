@@ -15,13 +15,8 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# --- Inputs: usar argumento CLI o preguntar interactivamente ---
-if [ -n "$ARG_NAME" ]; then
-  PLUGIN_NAME="$ARG_NAME"
-else
-  read -p "Nombre del plugin [data-analytics-light]: " PLUGIN_NAME
-  PLUGIN_NAME="${PLUGIN_NAME:-data-analytics-light}"
-fi
+# --- Nombre: argumento CLI o default ---
+PLUGIN_NAME="${ARG_NAME:-data-analytics-light}"
 
 # Validar kebab-case
 if ! echo "$PLUGIN_NAME" | grep -qE '^[a-z][a-z0-9]*(-[a-z0-9]+)*$'; then
