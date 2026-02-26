@@ -46,6 +46,7 @@ genai-agents/
     data-analytics-light-claude-cowork-{v}.zip
     data-analytics-light-claude-project-{v}.zip
     data-analytics-light-claude-instructions-{v}.zip
+    genai-agents-sources-{v}.zip                 # Fuentes del repositorio
     genai-agents-{v}.zip                        # ZIP global con todos los anteriores
 
   data-analytics/
