@@ -62,28 +62,25 @@ Antes de preguntar al usuario sobre formatos y planificar metricas, entender la 
 
 > **Nota**: Todas las preguntas con opciones de esta seccion siguen la convencion de preguntas de CLAUDE.md sec 11 (adaptativa al entorno: interactivas si disponibles, lista numerada en chat si no).
 
-### 3.0 Clasificacion de complejidad (antes de preguntar)
+### 3.0 Triage vs Analisis
 
-Clasificar la peticion para evitar interacciones innecesarias. Las preguntas simples (datos puntuales, sin dimensiones de corte) se resuelven en Triage (CLAUDE.md Fase 0) sin invocar esta skill.
+Las preguntas simples (datos puntuales, sin dimensiones de corte) se resuelven en Triage (CLAUDE.md Fase 0) sin invocar esta skill. Todo lo demas es un analisis y sigue el flujo de bloques de preguntas descrito a continuacion.
 
-| Complejidad | Criterio | Preguntas al usuario | Defaults |
-|-------------|----------|---------------------|----------|
-| **MODERADA** | ≤2 tablas, ≤4 metricas, alguna dimension de corte | Bloque 1 (profundidad + formato) + Bloque 2 si selecciona formato | Audiencia=Manager, Estilo=Corporativo |
-| **COMPLEJA** | >2 tablas, multiples dimensiones, segmentacion, forecasting | Bloque 1 + Bloque 2 | Sin defaults |
+**Defaults generales:**
+- Estilo visual: **Corporativo** (si el usuario no elige otro en Bloque 2)
 
-- Escalamiento automatico hacia arriba si el usuario anade complejidad ("quiero PDF", "anade segmentacion" → COMPLEJA)
-- Nunca escalar hacia abajo automaticamente
+### 3.1 Bloque 1 — Profundidad, Audiencia y Formato
 
-### 3.1 Bloque 1 — Profundidad, Audiencia y Formato (solo MODERADA/COMPLEJA)
+Una sola interaccion:
 
-Una sola interaccion. Las preguntas varian segun complejidad:
+| # | Pregunta | Opciones (literales) | Seleccion | Condicion |
+|---|----------|---------------------|-----------|-----------|
+| 1 | ¿Que profundidad de analisis prefieres? | **Rapido** · **Estandar** (Recomendado) · **Profundo** | Unica | Siempre |
+| 2 | ¿Para que audiencia es el analisis? | **C-level/Direccion** · **Manager/Responsable** · **Equipo tecnico/Data** · **Mixta/General** | Unica | Siempre |
+| 3 | ¿En que formatos quieres los deliverables? | **Documento** (PDF + DOCX) · **Web** (HTML interactivo con Plotly) · **PowerPoint** (.pptx) | Multiple | Siempre |
+| 4 | ¿Quieres que se generen y ejecuten tests unitarios sobre el código Python? | **Sí** (Recomendado): mejora precisión y calidad, pero consume más tiempo, coste y contexto · **No**: ejecución directa sin tests | Única | Solo Estandar/Profundo |
 
-| # | Pregunta | Opciones (literales) | Seleccion | MODERADA | COMPLEJA |
-|---|----------|---------------------|-----------|----------|----------|
-| 1 | ¿Que profundidad de analisis prefieres? | **Rapido** · **Estandar** (Recomendado) · **Profundo** | Unica | SI | SI |
-| 2 | ¿Para que audiencia es el analisis? | **C-level/Direccion** · **Manager/Responsable** · **Equipo tecnico/Data** · **Mixta/General** | Unica | NO (default: Manager) | SI |
-| 3 | ¿En que formatos quieres los deliverables? | **Documento** (PDF + DOCX) · **Web** (HTML interactivo con Plotly) · **PowerPoint** (.pptx) | Multiple | SI | SI |
-
+- Los tests validan transformaciones y cálculos antes de ejecutar con datos reales. Mejoran la precisión pero consumen más tokens, tiempo y coste. **En profundidad Rápido, testing se desactiva automáticamente sin preguntar al usuario.**
 - La pregunta de formato SIEMPRE permite seleccion multiple
 - Las opciones de formato son EXACTAMENTE 3: Documento (PDF + DOCX), Web, PowerPoint. No inventar, no omitir, no sustituir
 - Si no selecciona formato → no hay deliverables, el analisis se entrega solo en chat + report.md automatico
@@ -268,6 +265,9 @@ Aplicar las 7 validaciones de la seccion 4 de CLAUDE.md ("Validacion post-query"
 - **Datasets grandes (>100k filas)**: Usar muestreo estratificado para desarrollo rapido, datos completos para la version final
 
 ### 5.5 Testing
+
+> **Solo si la profundidad es Estándar/Profundo Y el usuario eligió "Sí" en la pregunta de testing del Bloque 1.** En profundidad Rápido o si el usuario eligió "No", omitir esta sección y ejecutar directamente el script con datos reales.
+
 - Generar `output/[ANALISIS_DIR]/scripts/test_*.py` con tests unitarios ANTES de ejecutar con datos reales
 - Usar DataFrames mock con estructura similar a los datos reales
 - Validar transformaciones, calculos y formatos de salida
@@ -304,7 +304,7 @@ Si durante la ejecucion se detecta un hallazgo que excede el alcance del nivel d
    - "No, solo documentar" → Registrar hallazgo en el chat y en reasoning como "area de investigacion futura"
 3. El upgrade NO reinicia el analisis — extiende el analisis actual con fases adicionales
 
-**Diferencia con el loop de iteracion (5.6b):** El loop refina hipotesis dentro del mismo nivel de complejidad. El upgrade cambia el nivel (ej: Triage → MODERADA) y activa capacidades adicionales (EDA, hipotesis formales, visualizaciones).
+**Diferencia con el loop de iteracion (5.6b):** El loop refina hipotesis dentro del mismo nivel de complejidad. El upgrade cambia el nivel (ej: Triage → Analisis) y activa capacidades adicionales (EDA, hipotesis formales, visualizaciones).
 
 ### 5.7 Generacion de deliverables
 Cargar la skill `report` para generar los deliverables en los formatos solicitados.

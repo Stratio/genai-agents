@@ -23,6 +23,7 @@ Elegir segun la pregunta analitica:
 - Siempre titulo descriptivo + subtitulo con periodo/filtro
 - Eje Y comenzar en 0 para barras (evitar manipulacion visual)
 - Colores coherentes con el tema elegido (via `get_palette()`, nunca hardcodear)
+- **Transparencia**: Para colores con alpha (bandas de confianza, fill_between, areas superpuestas), usar `to_rgba(color, alpha)` de `tools/chart_layout.py`. Acepta hex (`"#1a365d"`) o tupla RGB y devuelve `"rgba(R,G,B,A)"` compatible con Plotly y matplotlib. **NUNCA** concatenar alpha a hex (`"#1a365d80"`) — Plotly lo rechaza
 - Anotaciones para puntos notables (picos, caidas, anomalias)
 - **Accesibilidad**: Usar paletas colorblind-friendly, no depender solo del color (usar formas/patrones), texto alternativo en imagenes
 - **Layout anti-solapamiento**: Titulo como insight arriba, contexto como subtitulo, leyenda posicionada debajo del grafico o a la derecha exterior. Usar `tools/chart_layout.py` (`apply_chart_layout` / `apply_plotly_layout`) para layout estandar. **NUNCA** `fig.tight_layout()` despues de `fig.suptitle()` — usar `fig.subplots_adjust()`

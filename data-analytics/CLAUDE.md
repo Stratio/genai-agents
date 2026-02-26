@@ -37,15 +37,15 @@ Antes de activar el workflow de analisis, evaluar si la pregunta se resuelve con
 | Dato puntual sin analisis | `stratio_query_data` | "Cuantos clientes hay?", "Total ventas del mes" |
 
 **Si encaja** → Resolver directamente: descubrir dominio si es necesario (listar dominios, explorar tablas, buscar knowledge), obtener el dato via MCP, responder en chat con contexto minimo (vs periodo anterior si disponible). FIN. Sin plan, sin hipotesis, sin artefactos.
-**Si NO encaja** → Continuar con Fase 1 y clasificacion MODERADA/COMPLEJA.
+**Si NO encaja** → Continuar con Fase 1 (analisis).
 
 **Activacion de skills**: Si la pregunta NO es triage, cargar la skill correspondiente ANTES de continuar:
-- Pregunta de analisis (MODERADA/COMPLEJA) → Cargar skill `analyze`
+- Pregunta de analisis → Cargar skill `analyze`
 - Exploracion de dominio sin analisis → Cargar skill `explore-data`
 - Generacion de informe a partir de analisis existente → Cargar skill `report`
 - NUNCA seguir el workflow de las Fases 1-4 sin tener la skill cargada en contexto. La skill contiene el detalle operativo necesario.
 
-**Criterio de triage**: La pregunta se responde con datos puntuales (1-2 metricas, sin dimensiones de corte) sin necesidad de cruzar datos, formular hipotesis, ni generar visualizaciones. Las llamadas MCP de descubrimiento (listar dominios, explorar tablas, buscar knowledge) son infraestructura y no cuentan como analisis. Si hay duda, clasificar como MODERADA.
+**Criterio de triage**: La pregunta se responde con datos puntuales (1-2 metricas, sin dimensiones de corte) sin necesidad de cruzar datos, formular hipotesis, ni generar visualizaciones. Las llamadas MCP de descubrimiento (listar dominios, explorar tablas, buscar knowledge) son infraestructura y no cuentan como analisis. Si hay duda, tratar como analisis.
 
 ### Fase 1 — Descubrimiento (en fase de planificacion, solo lectura)
 
@@ -60,27 +60,18 @@ Para exploracion rapida de dominios sin analisis completo, ver la skill `/explor
 
 Antes de planificar metricas, entender la realidad de los datos. Ejecutar profiling siguiendo la mecanica de `skills-guides/exploration.md` sec 7, luego evaluar calidad, generar mini-resumen e informar limitaciones al usuario. Para detalle operativo completo (checklist de suficiencia, Data Quality Score, que evaluar), ver skill `/analyze` sec 2.5.
 
-### Fase 1.9 — Clasificacion de complejidad
+### Fase 1.9 — Defaults
 
-Antes de preguntar al usuario, clasificar la peticion para evitar interacciones innecesarias:
-
-| Complejidad | Criterio | Preguntas al usuario | Defaults |
-|-------------|----------|---------------------|----------|
-| **MODERADA** | ≤2 tablas, ≤4 metricas, alguna dimension de corte | Bloque 1 (profundidad + formato) + Bloque 2 si selecciona formato | Audiencia=Manager, Estilo=Corporativo |
-| **COMPLEJA** | >2 tablas, multiples dimensiones, segmentacion, forecasting | Workflow completo (2 bloques) | Sin defaults |
-
-**Reglas:**
-- Escalamiento automatico hacia arriba si el usuario anade complejidad ("quiero PDF", "anade segmentacion" → COMPLEJA)
-- Nunca escalar hacia abajo automaticamente
-- **Escalamiento durante ejecucion**: Si se detecta anomalia (>30% desviacion), inconsistencia o patron critico → informar al usuario y ofrecer escalar. Detalle en skill `/analyze` sec 5.6c
+- Default de estilo visual: **Corporativo** (si el usuario no elige otro en Bloque 2)
+- **Escalamiento durante ejecucion**: Si se detecta anomalia (>30% desviacion), inconsistencia o patron critico → informar al usuario y ofrecer profundizar. Detalle en skill `/analyze` sec 5.6c
 
 ### Fase 2 — Preguntas al Usuario (en fase de planificacion, solo lectura)
 
 Leer `output/MEMORY.md` sec Preferencias (si existe) para ofrecer defaults personalizados al usuario.
 
-Aplica a ambas complejidades (MODERADA y COMPLEJA). Agrupar en maximo 2 bloques de preguntas al usuario con opciones seleccionables (detalle de opciones en skill `/analyze` sec 3):
+Agrupar en maximo 2 bloques de preguntas al usuario con opciones seleccionables (detalle de opciones en skill `/analyze` sec 3):
 
-**Bloque 1** (siempre): Profundidad + Formato (permitir seleccion multiple). En COMPLEJA, tambien Audiencia
+**Bloque 1** (siempre): Profundidad + Audiencia + Formato (permitir seleccion multiple). En Estandar/Profundo, tambien Testing
 **Bloque 2** (solo si selecciono formato en Bloque 1): Estructura + Estilo
 
 Si no selecciona formato en Bloque 1 → Bloque 2 se omite. Resultado: de 6 a 1-2 interacciones.
@@ -102,7 +93,7 @@ Si no selecciona formato en Bloque 1 → Bloque 2 se omite. Resultado: de 6 a 1-
 | Deteccion de anomalias (ver `/analyze` [advanced-analytics.md](advanced-analytics.md)) | Solo outliers del EDA | Temporal + estatica | Completa (temporal, tendencia, categorica) |
 | Feature importance (sec 3.3) | NO | Solo si el usuario lo pide explicitamente | Proactivo si >5 variables candidatas |
 | Loop de iteracion (Fase 4.8) | NO | Max 1 iteracion | Max 2 iteraciones |
-| Testing de scripts (Fase 4.5-6) | Opcional | SI | SI |
+| Testing de scripts (Fase 4.5-6) | NO (implicito, sin preguntar) | Segun preferencia del usuario (Bloque 1, default SI) | Segun preferencia del usuario (Bloque 1, default SI) |
 | Reasoning (Fase 4.11) | Simplificado (solo hallazgos y limitaciones) | Completo | Completo + sugerencias de seguimiento |
 | Validacion de output (Fase 4.12) | Solo Bloque A (integridad) | Bloques A + B + C | Completo (A + B + C + D) |
 
@@ -131,8 +122,8 @@ Si no selecciona formato en Bloque 1 → Bloque 2 se omite. Resultado: de 6 a 1-
 2. Consultar datos via MCP (`stratio_query_data` con preguntas en lenguaje natural y `output_format="dict"`). Lanzar en paralelo todas las queries independientes del plan
 3. **Validar datos recibidos** (ver seccion 4 — Validacion post-query)
 4. Escribir scripts Python en `output/[ANALISIS_DIR]/scripts/` con nombres descriptivos
-5. Generar tests unitarios (`output/[ANALISIS_DIR]/scripts/test_*.py`) con mocks o subsets de datos
-6. Ejecutar tests. Si fallan, corregir y reintentar
+5. **(Si testing = Sí)** Generar tests unitarios (`output/[ANALISIS_DIR]/scripts/test_*.py`) con mocks o subsets de datos
+6. **(Si testing = Sí)** Ejecutar tests. Si fallan, corregir y reintentar
 7. Ejecutar scripts con datos reales
 8. **Loop de iteracion**: Si un hallazgo contradice hipotesis o revela patron inesperado, iterar (nuevas queries + actualizar analisis). Max 2 iteraciones; detalle en skill `/analyze` sec 5.6b
 9. Generar visualizaciones en `output/[ANALISIS_DIR]/assets/`
