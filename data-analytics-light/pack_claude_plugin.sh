@@ -5,13 +5,15 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
 # --- Parsear argumentos CLI ---
-ARG_NAME="" ARG_URL="" ARG_KEY=""
+ARG_NAME="" ARG_URL="" ARG_KEY="" WITH_AGENT=false SHARED_GUIDES=false
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --name)  ARG_NAME="$2"; shift 2 ;;
     --url)   ARG_URL="$2"; shift 2 ;;
     --key)   ARG_KEY="$2"; shift 2 ;;
-    *) echo "ERROR: Argumento desconocido: $1"; echo "Uso: $0 [--name NOMBRE] [--url MCP_URL] [--key API_KEY]"; exit 1 ;;
+    --with-agent) WITH_AGENT=true; shift ;;
+    --shared-guides) SHARED_GUIDES=true; shift ;;
+    *) echo "ERROR: Argumento desconocido: $1"; echo "Uso: $0 [--name NOMBRE] [--url MCP_URL] [--key API_KEY] [--with-agent] [--shared-guides]"; exit 1 ;;
   esac
 done
 
@@ -83,49 +85,34 @@ else
   echo "WARN: No se encontro directorio de skills — el plugin no tendra skills."
 fi
 
-# --- Copiar skills-guides junto al SKILL.md de las skills que los usan ---
+# --- Copiar skills-guides ---
 if [ -d "skills-guides" ]; then
-  echo "Copiando skills-guides a skills..."
-  for skill_dir in "$PLUGIN_DIR/skills/analyze" "$PLUGIN_DIR/skills/explore-data"; do
-    if [ -d "$skill_dir" ]; then
-      cp skills-guides/*.md "$skill_dir/"
-    fi
-  done
+  if [ "$SHARED_GUIDES" = true ]; then
+    # Modo compartido: skills-guides/ en la raiz del plugin, referenciado con ruta relativa
+    echo "Copiando skills-guides a raiz del plugin (modo compartido)..."
+    mkdir -p "$PLUGIN_DIR/skills-guides"
+    cp skills-guides/*.md "$PLUGIN_DIR/skills-guides/"
+    sed -i 's|`skills-guides/exploration\.md`|`../../skills-guides/exploration.md`|g' "$PLUGIN_DIR/skills/"*/SKILL.md 2>/dev/null || true
+  else
+    # Modo por defecto: duplicar junto al SKILL.md de cada skill que los usa
+    echo "Copiando skills-guides a skills..."
+    for skill_dir in "$PLUGIN_DIR/skills/analyze" "$PLUGIN_DIR/skills/explore-data"; do
+      if [ -d "$skill_dir" ]; then
+        cp skills-guides/*.md "$skill_dir/"
+      fi
+    done
+    sed -i 's|`skills-guides/exploration\.md`|`exploration.md`|g' "$PLUGIN_DIR/skills/"*/SKILL.md 2>/dev/null || true
+  fi
 fi
 
-# Actualizar referencias a skills-guides/ en skills
-sed -i 's|`skills-guides/exploration\.md`|`exploration.md`|g' "$PLUGIN_DIR/skills/"*/SKILL.md 2>/dev/null || true
-
-# --- Generar agent file ---
-COWORK_DIR="claude-cowork-agent"
-mkdir -p "$PLUGIN_DIR/agents"
-if [ -d "$COWORK_DIR" ]; then
-  echo "Usando overrides de $COWORK_DIR..."
-  AGENT_HEADER=$(ls "$COWORK_DIR"/*.md 2>/dev/null | head -1)
-  if [ -n "$AGENT_HEADER" ]; then
-    # Sustituir name: en el YAML header por el nombre elegido
-    sed "s/^name: .*/name: $PLUGIN_NAME/" "$AGENT_HEADER" > "$PLUGIN_DIR/agents/$PLUGIN_NAME.md"
-    cat CLAUDE.md >> "$PLUGIN_DIR/agents/$PLUGIN_NAME.md"
-  else
-    echo "WARN: No se encontro .md en $COWORK_DIR — generando agent por defecto"
-    cat > "$PLUGIN_DIR/agents/$PLUGIN_NAME.md" <<YAMLEOF
----
-name: $PLUGIN_NAME
-description: BI/BA Analytics Agent
-model: inherit
----
-YAMLEOF
-    cat CLAUDE.md >> "$PLUGIN_DIR/agents/$PLUGIN_NAME.md"
-  fi
-  if [ -f "$COWORK_DIR/settings.json" ]; then
-    sed "s/\"agent\": \"[^\"]*\"/\"agent\": \"$PLUGIN_NAME\"/" "$COWORK_DIR/settings.json" > "$PLUGIN_DIR/settings.json"
-  fi
-else
-  echo "No se encontro $COWORK_DIR — generando agent y settings por defecto..."
+# --- Generar agent file (solo con --with-agent) ---
+if [ "$WITH_AGENT" = true ]; then
+  echo "Generando agente del plugin..."
+  mkdir -p "$PLUGIN_DIR/agents"
   cat > "$PLUGIN_DIR/agents/$PLUGIN_NAME.md" <<YAMLEOF
 ---
 name: $PLUGIN_NAME
-description: BI/BA Analytics Agent
+description: Analista senior de BI/BA que convierte preguntas de negocio en analisis accionables con datos gobernados via MCP. Usar proactivamente para cualquier tarea de analisis de datos.
 model: inherit
 ---
 YAMLEOF
@@ -135,10 +122,13 @@ YAMLEOF
   "agent": "$PLUGIN_NAME"
 }
 EOF
+  # Actualizar referencias a skills-guides/ en agent
+  if [ "$SHARED_GUIDES" = true ]; then
+    sed -i 's|`skills-guides/exploration\.md`|`skills-guides/exploration.md`|g' "$PLUGIN_DIR/agents/"*.md 2>/dev/null || true
+  else
+    sed -i 's|`skills-guides/exploration\.md`|`skills/analyze/exploration.md`|g' "$PLUGIN_DIR/agents/"*.md 2>/dev/null || true
+  fi
 fi
-
-# Actualizar referencias a skills-guides/ en agent
-sed -i 's|`skills-guides/exploration\.md`|`skills/analyze/exploration.md`|g' "$PLUGIN_DIR/agents/"*.md 2>/dev/null || true
 
 # --- .mcp.json del plugin ---
 if [ -n "$MCP_URL_RESOLVED" ] || [ -n "$MCP_KEY_RESOLVED" ]; then

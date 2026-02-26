@@ -59,7 +59,7 @@ if [[ -d "$DAL_DIR" ]]; then
       project)   OUTPUT_SUBDIR="dist/claude_projects/data-analytics-light" ;;
       instructions) OUTPUT_SUBDIR="dist/claude_instructions/data-analytics-light" ;;
       plugin)    OUTPUT_SUBDIR="dist/claude_plugins/data-analytics-light" ;;
-      marketplace) OUTPUT_SUBDIR="dist/claude_plugins/data-analytics-light-marketplace" ;;
+      cowork)    OUTPUT_SUBDIR="dist/claude_cowork/data-analytics-light" ;;
       *) echo "  WARN: Tipo desconocido: $PACK_TYPE"; continue ;;
     esac
 
@@ -70,6 +70,15 @@ if [[ -d "$DAL_DIR" ]]; then
       echo "    -> dist/data-analytics-light-claude-${PACK_TYPE}-${VERSION}.zip"
     fi
   done
+
+  # Plugin con agente (para Claude Code CLI)
+  echo "  [data-analytics-light] Generando plugin con agente..."
+  (cd "$DAL_DIR" && bash pack_claude_plugin.sh --name data-analytics-light --with-agent)
+  ZIP_FILE=$(find "$DAL_DIR/dist/claude_plugins/data-analytics-light" -name '*.zip' -maxdepth 1 2>/dev/null | head -1)
+  if [[ -n "$ZIP_FILE" ]]; then
+    cp "$ZIP_FILE" "$DIST_DIR/data-analytics-light-claude-plugin-agent-${VERSION}.zip"
+    echo "    -> dist/data-analytics-light-claude-plugin-agent-${VERSION}.zip"
+  fi
 fi
 
 # --- Zip de fuentes ---

@@ -18,11 +18,11 @@ Todos los scripts son no-interactivos (CI/CD-friendly). Si no se pasa `--name`, 
 | Script | Plataforma destino | Output | Ejemplo |
 |--------|-------------------|--------|---------|
 | `pack_claude_project.sh` | claude.ai (Projects) | `dist/claude_projects/<nombre>/` | `bash pack_claude_project.sh --name data-analytics-light` |
-| `pack_claude_instructions.sh` | claude.ai (Custom Instructions) | `dist/claude_instructions/<nombre>/CLAUDE.md` | `bash pack_claude_instructions.sh --name data-analytics-light` |
-| `pack_claude_plugin.sh` | Claude Code (Plugin) | `dist/claude_plugins/<nombre>/` | `bash pack_claude_plugin.sh --name data-analytics-light` |
-| `pack_claude_marketplace.sh` | Claude Marketplace | `dist/claude_plugins/<nombre>/` | `bash pack_claude_marketplace.sh --name data-analytics-light` |
+| `pack_claude_instructions.sh` | claude.ai (Custom Instructions) | `dist/claude_instructions/<nombre>/` | `bash pack_claude_instructions.sh --name data-analytics-light` |
+| `pack_claude_plugin.sh` | Claude Code (Plugin) | `dist/claude_plugins/<nombre>/` | `bash pack_claude_plugin.sh --name data-analytics-light --with-agent` |
+| `pack_claude_cowork.sh` | Claude Cowork | `dist/claude_cowork/<nombre>/` | `bash pack_claude_cowork.sh --name data-analytics-light` |
 
-Los scripts de plugin y marketplace aceptan tambien `--url <MCP_URL>` y `--key <API_KEY>`. Si se omiten, quedan como variables de entorno template para configurar despues.
+Los scripts de plugin y cowork aceptan tambien `--url <MCP_URL>` y `--key <API_KEY>`. Si se omiten, quedan como variables de entorno template para configurar despues. El script de plugin acepta `--with-agent` para incluir el agente en el paquete y `--shared-guides` para colocar las guias en un directorio compartido en la raiz del plugin en vez de duplicarlas junto a cada skill (ver detalles abajo).
 
 ### Scripts genericos (desde la raiz del monorepo)
 
@@ -33,23 +33,60 @@ Los scripts de plugin y marketplace aceptan tambien `--url <MCP_URL>` y `--key <
 
 ### Empaquetado como Claude Plugin
 
-Genera un ZIP listo para instalar como plugin en Claude Code. El paquete incluye las skills del agente y un fichero de agente (`agents/<nombre>.md`) con el contenido de `CLAUDE.md` como instrucciones, ademas de la configuracion MCP (`.mcp.json`). Las guias compartidas de `skills-guides/` se copian junto al `SKILL.md` de cada skill que las usa (patron de los plugins oficiales de Anthropic):
+Genera un ZIP listo para instalar como plugin en Claude Code. Las guias compartidas de `skills-guides/` se copian junto al `SKILL.md` de cada skill que las usa (patron de los plugins oficiales de Anthropic). El script soporta dos variantes:
+
+- **Con agente** (`--with-agent`): Para Claude Code CLI. El paquete incluye `agents/<nombre>.md` (con `CLAUDE.md` como instrucciones) y `settings.json` — el agente del plugin toma el control como hilo principal. Funciona tambien en Cowork, pero reemplaza al orquestador (pierde la capacidad de coordinacion con otros plugins/agentes).
+- **Sin agente** (default): Solo skills + MCP. Uso interno por `pack_claude_cowork.sh`, no se distribuye como entregable independiente porque las skills referencian secciones de CLAUDE.md.
 
 ```bash
-bash pack_claude_plugin.sh --name data-analytics-light --url https://mcp.ejemplo.com --key mi-api-key
+# Plugin con agente (para Claude Code CLI)
+bash pack_claude_plugin.sh --name data-analytics-light --with-agent --url https://mcp.ejemplo.com --key mi-api-key
+
+# Plugin sin agente (uso interno por pack_claude_cowork.sh)
+bash pack_claude_plugin.sh --name data-analytics-light
 ```
 
 El resultado se encuentra en `dist/claude_plugins/data-analytics-light/data-analytics-light.zip`.
 
-### Empaquetado como Claude Marketplace
+**Guias compartidas** (`--shared-guides`): Por defecto las guias de `skills-guides/` se duplican junto al `SKILL.md` de cada skill que las usa. Con `--shared-guides` se colocan en un directorio `skills-guides/` en la raiz del plugin y las skills las referencian con ruta relativa. Esto evita duplicacion pero depende de que Claude resuelva rutas relativas entre directorios del plugin.
 
-Genera un ZIP con el paquete completo: skills, agente y configuracion MCP. Las guias compartidas de `skills-guides/` se copian junto al `SKILL.md` de cada skill que las usa (mismo patron que el plugin):
+### Empaquetado como Claude Cowork
+
+Genera un paquete para configurar el agente en Claude Cowork sin reemplazar al orquestador. Contiene:
+
+- `CLAUDE.md` — folder instructions con referencias actualizadas para el contexto del plugin
+- `<nombre>.zip` — plugin ZIP (solo skills + MCP, sin agente)
+- `<nombre>-cowork.zip` — ZIP final con ambos ficheros
 
 ```bash
-bash pack_claude_marketplace.sh --name data-analytics-light --url https://mcp.ejemplo.com --key mi-api-key
+bash pack_claude_cowork.sh --name data-analytics-light --url https://mcp.ejemplo.com --key mi-api-key
 ```
 
-El resultado se encuentra en `dist/claude_plugins/data-analytics-light-marketplace/data-analytics-light-marketplace.zip`.
+El resultado se encuentra en `dist/claude_cowork/data-analytics-light/`.
+
+**Como usarlo en Cowork:**
+
+1. Copiar `CLAUDE.md` al directorio de trabajo del proyecto en Cowork (actua como folder instructions)
+2. Instalar el ZIP del plugin en Cowork (aporta las skills `/analyze`, `/explore-data`, `/propose-knowledge` y la conexion MCP)
+3. El orquestador de Cowork lee las instrucciones de CLAUDE.md y delega a las skills del plugin cuando corresponda
+
+**Diferencia con el plugin con agente:** En Cowork con agente, el plugin sustituye al orquestador — funciona como Claude Code CLI dentro de Cowork. Con el paquete Cowork, el orquestador mantiene el control y puede coordinar con otros plugins/agentes.
+
+### Empaquetado como Custom Instructions (claude.ai)
+
+Genera un unico `CLAUDE.md` aplanado que concatena todas las instrucciones, skills y guias en un solo fichero, listo para pegar en el campo Custom Instructions de claude.ai. Tambien genera un ZIP del artefacto.
+
+```bash
+bash pack_claude_instructions.sh --name data-analytics-light
+```
+
+El resultado se encuentra en `dist/claude_instructions/data-analytics-light/` (`CLAUDE.md` + ZIP).
+
+Para configurarlo en claude.ai:
+
+1. Abrir [claude.ai](https://claude.ai) → Settings → Custom Instructions
+2. Copiar el contenido completo de `CLAUDE.md` y pegarlo en el campo de instrucciones
+3. Guardar — el agente estara disponible en todas las conversaciones
 
 ### Empaquetado como Claude Project (claude.ai)
 

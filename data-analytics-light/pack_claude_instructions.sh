@@ -162,5 +162,13 @@ LINE_COUNT=$(wc -l < "$OUTPUT_FILE")
 echo ""
 echo "  Tamano: $FILE_SIZE ($LINE_COUNT lineas)"
 
+# --- 7. Generar ZIP ---
+ZIP_NAME="${PROJECT_NAME}.zip"
+echo "Generando $ZIP_NAME..."
+(cd "$OUTPUT_DIR" && zip -r "../_tmp_${ZIP_NAME}" . -q)
+mv "dist/claude_instructions/_tmp_${ZIP_NAME}" "$OUTPUT_DIR/${ZIP_NAME}"
+
+ZIP_SIZE=$(du -sh "$OUTPUT_DIR/${ZIP_NAME}" | cut -f1)
 echo ""
 echo "=== Fichero generado: $OUTPUT_FILE ==="
+echo "  ZIP: $OUTPUT_DIR/${ZIP_NAME} ($ZIP_SIZE)"
