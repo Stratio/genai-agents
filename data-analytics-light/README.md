@@ -18,7 +18,6 @@ Todos los scripts son no-interactivos (CI/CD-friendly). Si no se pasa `--name`, 
 | Script | Plataforma destino | Output | Ejemplo |
 |--------|-------------------|--------|---------|
 | `pack_claude_project.sh` | claude.ai (Projects) | `dist/claude_projects/<nombre>/` | `bash pack_claude_project.sh --name data-analytics-light` |
-| `pack_claude_instructions.sh` | claude.ai (Custom Instructions) | `dist/claude_instructions/<nombre>/` | `bash pack_claude_instructions.sh --name data-analytics-light` |
 | `pack_claude_plugin.sh` | Claude Code (Plugin) | `dist/claude_plugins/<nombre>/` | `bash pack_claude_plugin.sh --name data-analytics-light --with-agent` |
 | `pack_claude_cowork.sh` | Claude Cowork | `dist/claude_cowork/<nombre>/` | `bash pack_claude_cowork.sh --name data-analytics-light` |
 
@@ -71,22 +70,6 @@ El resultado se encuentra en `dist/claude_cowork/data-analytics-light/`.
 3. El orquestador de Cowork lee las instrucciones de CLAUDE.md y delega a las skills del plugin cuando corresponda
 
 **Diferencia con el plugin con agente:** En Cowork con agente, el plugin sustituye al orquestador — funciona como Claude Code CLI dentro de Cowork. Con el paquete Cowork, el orquestador mantiene el control y puede coordinar con otros plugins/agentes.
-
-### Empaquetado como Custom Instructions (claude.ai)
-
-Genera un unico `CLAUDE.md` aplanado que concatena todas las instrucciones, skills y guias en un solo fichero, listo para pegar en el campo Custom Instructions de claude.ai. Tambien genera un ZIP del artefacto.
-
-```bash
-bash pack_claude_instructions.sh --name data-analytics-light
-```
-
-El resultado se encuentra en `dist/claude_instructions/data-analytics-light/` (`CLAUDE.md` + ZIP).
-
-Para configurarlo en claude.ai:
-
-1. Abrir [claude.ai](https://claude.ai) → Settings → Custom Instructions
-2. Copiar el contenido completo de `CLAUDE.md` y pegarlo en el campo de instrucciones
-3. Guardar — el agente estara disponible en todas las conversaciones
 
 ### Empaquetado como Claude Project (claude.ai)
 
