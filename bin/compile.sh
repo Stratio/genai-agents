@@ -28,7 +28,7 @@ else
     else
       echo "  [OK] Modulo: $module"
       # Validar JSON si existen ficheros .json o .mcp.json
-      for json_file in $(find "$REPO_ROOT/$module" -maxdepth 2 \( -name '*.json' -o -name '.mcp.json' \) -not -path '*/.venv/*' -not -path '*/node_modules/*' -not -path '*/claude_code/*' -not -path '*/opencode/*' -not -path '*/claude_plugins/*' -not -path '*/claude_projects/*' -not -path '*/claude_instructions/*' 2>/dev/null); do
+      for json_file in $(find "$REPO_ROOT/$module" -maxdepth 2 \( -name '*.json' -o -name '.mcp.json' \) -not -path '*/.venv/*' -not -path '*/node_modules/*' -not -path '*/claude_code/*' -not -path '*/opencode/*' -not -path '*/claude_plugins/*' -not -path '*/claude_projects/*' 2>/dev/null); do
         if command -v python3 &>/dev/null; then
           if ! python3 -c "import json; json.load(open('$json_file'))" 2>/dev/null; then
             echo "  WARN: JSON invalido (o contiene templates): $(basename "$json_file") en $module"

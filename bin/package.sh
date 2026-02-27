@@ -57,7 +57,6 @@ if [[ -d "$DAL_DIR" ]]; then
     # Buscar el directorio de output generado
     case "$PACK_TYPE" in
       project)   OUTPUT_SUBDIR="dist/claude_projects/data-analytics-light" ;;
-      instructions) OUTPUT_SUBDIR="dist/claude_instructions/data-analytics-light" ;;
       plugin)    OUTPUT_SUBDIR="dist/claude_plugins/data-analytics-light" ;;
       cowork)    OUTPUT_SUBDIR="dist/claude_cowork/data-analytics-light" ;;
       *) echo "  WARN: Tipo desconocido: $PACK_TYPE"; continue ;;
