@@ -1,6 +1,6 @@
 # Patrones Analiticos Adicionales
 
-Implementacion detallada de patrones cuyo trigger esta en CLAUDE.md sec 3.2 (tabla de patrones operacionalizados).
+Implementacion detallada de patrones cuyo trigger esta en sec "Patrones analiticos operacionalizados" de AGENTS.md (tabla de patrones operacionalizados).
 
 ## Concentracion (Lorenz/Gini)
 - **Query MCP**: "metrica acumulada por [entidad] ordenada de mayor a menor"

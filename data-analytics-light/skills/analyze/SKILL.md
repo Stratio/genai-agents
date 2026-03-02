@@ -62,7 +62,7 @@ Antes de preguntar al usuario y planificar metricas, entender la realidad de los
 
 ### 3.0 Triage vs Analisis
 
-Las preguntas simples (datos puntuales, sin dimensiones de corte) se resuelven en Triage (CLAUDE.md Fase 0) sin invocar esta skill. Todo lo demas es un analisis y sigue el flujo de bloques de preguntas descrito a continuacion.
+Las preguntas simples (datos puntuales, sin dimensiones de corte) se resuelven en Triage (Fase 0 del workflow) sin invocar esta skill. Todo lo demas es un analisis y sigue el flujo de bloques de preguntas descrito a continuacion.
 
 ### 3.1 Bloque 1 — Profundidad, Audiencia y Testing
 

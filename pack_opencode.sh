@@ -128,14 +128,14 @@ echo "    [4] .opencode/ preparado (openwork.json excluido)"
 # Fase 5 — Skills (opcional)
 # ---------------------------------------------------------------------------
 SKILLS_SRC=""
-if [[ -d "$AGENT_ABS/.opencode/skills" ]]; then
+if [[ -d "$AGENT_ABS/skills" ]]; then
+  SKILLS_SRC="$AGENT_ABS/skills"
+elif [[ -d "$AGENT_ABS/.opencode/skills" ]]; then
   SKILLS_SRC="$AGENT_ABS/.opencode/skills"
 elif [[ -d "$AGENT_ABS/.claude/skills" ]]; then
   SKILLS_SRC="$AGENT_ABS/.claude/skills"
 elif [[ -d "$AGENT_ABS/.agents/skills" ]]; then
   SKILLS_SRC="$AGENT_ABS/.agents/skills"
-elif [[ -d "$AGENT_ABS/skills" ]]; then
-  SKILLS_SRC="$AGENT_ABS/skills"
 fi
 
 if [[ -n "$SKILLS_SRC" ]]; then

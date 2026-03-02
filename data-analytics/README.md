@@ -25,8 +25,8 @@ Scripts genericos en la raiz del monorepo (desde `../`):
 
 Este agente funciona directamente sin empaquetar en:
 
-- **Claude Code**: `claude .` desde esta carpeta. Lee `CLAUDE.md` y carga skills de `.claude/skills/` automaticamente.
-- **OpenCode**: Abrir desde esta carpeta. `opencode.json` apunta a `CLAUDE.md` y reconoce `.claude/skills/`.
+- **Claude Code**: Empaquetar con `pack_claude_code.sh` para usar con Claude Code.
+- **OpenCode**: Empaquetar con `pack_opencode.sh` para usar con OpenCode.
 
 Los pack scripts solo son necesarios para distribuir el agente fuera del repositorio.
 

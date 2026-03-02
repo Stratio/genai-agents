@@ -61,14 +61,14 @@ EOF
 # --- Copiar skills ---
 echo "Copiando skills..."
 SKILLS_SRC=""
-if [ -d ".claude/skills" ]; then
+if [ -d "skills" ]; then
+  SKILLS_SRC="skills"
+elif [ -d ".claude/skills" ]; then
   SKILLS_SRC=".claude/skills"
 elif [ -d ".opencode/skills" ]; then
   SKILLS_SRC=".opencode/skills"
 elif [ -d ".agents/skills" ]; then
   SKILLS_SRC=".agents/skills"
-elif [ -d "skills" ]; then
-  SKILLS_SRC="skills"
 fi
 
 if [ -n "$SKILLS_SRC" ]; then
@@ -116,7 +116,7 @@ description: Analista senior de BI/BA que convierte preguntas de negocio en anal
 model: inherit
 ---
 YAMLEOF
-  cat CLAUDE.md >> "$PLUGIN_DIR/agents/$PLUGIN_NAME.md"
+  cat AGENTS.md >> "$PLUGIN_DIR/agents/$PLUGIN_NAME.md"
   cat > "$PLUGIN_DIR/settings.json" <<EOF
 {
   "agent": "$PLUGIN_NAME"
