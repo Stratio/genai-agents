@@ -61,12 +61,12 @@ mkdir -p "$OUTPUT_DIR/.claude/skills"
 # ---------------------------------------------------------------------------
 # Fase 2 — CLAUDE.md
 # ---------------------------------------------------------------------------
-if [[ -f "$AGENT_ABS/CLAUDE.md" ]]; then
-  cp "$AGENT_ABS/CLAUDE.md" "$OUTPUT_DIR/CLAUDE.md"
-  echo "    [2] CLAUDE.md copiado desde CLAUDE.md"
-elif [[ -f "$AGENT_ABS/AGENTS.md" ]]; then
+if [[ -f "$AGENT_ABS/AGENTS.md" ]]; then
   cp "$AGENT_ABS/AGENTS.md" "$OUTPUT_DIR/CLAUDE.md"
   echo "    [2] CLAUDE.md copiado desde AGENTS.md"
+elif [[ -f "$AGENT_ABS/CLAUDE.md" ]]; then
+  cp "$AGENT_ABS/CLAUDE.md" "$OUTPUT_DIR/CLAUDE.md"
+  echo "    [2] CLAUDE.md copiado desde CLAUDE.md"
 else
   echo "ERROR: no se encontró CLAUDE.md ni AGENTS.md en $AGENT_ABS" >&2
   exit 1
@@ -136,14 +136,14 @@ fi
 # Fase 5 — Skills (opcional)
 # ---------------------------------------------------------------------------
 SKILLS_SRC=""
-if [[ -d "$AGENT_ABS/.claude/skills" ]]; then
+if [[ -d "$AGENT_ABS/skills" ]]; then
+  SKILLS_SRC="$AGENT_ABS/skills"
+elif [[ -d "$AGENT_ABS/.claude/skills" ]]; then
   SKILLS_SRC="$AGENT_ABS/.claude/skills"
 elif [[ -d "$AGENT_ABS/.opencode/skills" ]]; then
   SKILLS_SRC="$AGENT_ABS/.opencode/skills"
 elif [[ -d "$AGENT_ABS/.agents/skills" ]]; then
   SKILLS_SRC="$AGENT_ABS/.agents/skills"
-elif [[ -d "$AGENT_ABS/skills" ]]; then
-  SKILLS_SRC="$AGENT_ABS/skills"
 fi
 
 if [[ -n "$SKILLS_SRC" ]]; then

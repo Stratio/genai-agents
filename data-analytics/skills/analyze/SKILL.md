@@ -17,7 +17,7 @@ Esta guia define el workflow completo para realizar un analisis de Business Inte
 
 ### 1.1 Triage rapido
 
-Si la peticion se resuelve con una sola llamada MCP (ver Fase 0 de CLAUDE.md), responder directamente:
+Si la peticion se resuelve con una sola llamada MCP (ver Fase 0 del workflow (AGENTS.md)), responder directamente:
 - Definiciones/conceptos → `stratio_search_domain_knowledge` → chat
 - Estructura/columnas → `stratio_list_domain_tables` / `stratio_get_table_columns_details` → chat
 - Dato puntual → `stratio_query_data` → chat
@@ -60,11 +60,11 @@ Antes de preguntar al usuario sobre formatos y planificar metricas, entender la 
 
 ## 3. Clasificacion y Preguntas al Usuario
 
-> **Nota**: Todas las preguntas con opciones de esta seccion siguen la convencion de preguntas de CLAUDE.md sec 11 (adaptativa al entorno: interactivas si disponibles, lista numerada en chat si no).
+> **Nota**: Todas las preguntas con opciones de esta seccion siguen la convencion de preguntas (sec "Interaccion con el Usuario" de AGENTS.md) (adaptativa al entorno: interactivas si disponibles, lista numerada en chat si no).
 
 ### 3.0 Triage vs Analisis
 
-Las preguntas simples (datos puntuales, sin dimensiones de corte) se resuelven en Triage (CLAUDE.md Fase 0) sin invocar esta skill. Todo lo demas es un analisis y sigue el flujo de bloques de preguntas descrito a continuacion.
+Las preguntas simples (datos puntuales, sin dimensiones de corte) se resuelven en Triage (Fase 0 del workflow) sin invocar esta skill. Todo lo demas es un analisis y sigue el flujo de bloques de preguntas descrito a continuacion.
 
 **Defaults generales:**
 - Estilo visual: **Corporativo** (si el usuario no elige otro en Bloque 2)
@@ -99,7 +99,7 @@ Si no selecciono formato en Bloque 1 → Bloque 2 se omite completamente. Result
 
 ## 4. Planificacion
 
-Elaborar un plan detallado siguiendo el framework analitico (seccion 3 de CLAUDE.md):
+Elaborar un plan detallado siguiendo el framework analitico (sec "Framework Analitico" de AGENTS.md):
 
 ### 4.0 Contexto historico
 Leer en paralelo (si existen):
@@ -123,7 +123,7 @@ Determinar si la pregunta requiere solo analisis descriptivo o tambien segmentac
 **Deteccion automatica**: Si la pregunta menciona "segmentar", "agrupar", "perfiles" → clustering. Si menciona "que factores influyen", "que explica" → feature importance. Si pide proyeccion temporal → proyeccion lineal (no ML). Inferir el tipo de la pregunta y los datos, no preguntar al usuario.
 
 ### 4.3 Hipotesis
-Formular hipotesis ANTES de consultar datos. Usar la plantilla de CLAUDE.md sec 3.1. Para cada sub-pregunta identificada en el paso 1:
+Formular hipotesis ANTES de consultar datos. Usar la plantilla de sec "Pensamiento analitico" de AGENTS.md. Para cada sub-pregunta identificada en el paso 1:
 - Que esperamos encontrar y por que
 - Que resultado seria sorprendente
 - Documentar las hipotesis en el plan para validarlas luego con datos
@@ -155,7 +155,7 @@ Para cada KPI, documentar:
 | Fuente | Tabla(s) y columna(s) del dominio |
 | Test estadistico | Si requiere IC o comparacion entre grupos (ver seccion 4.5b de esta skill) |
 
-**Benchmark Discovery** — Escala segun profundidad (ver matriz de activacion en CLAUDE.md):
+**Benchmark Discovery** — Escala segun profundidad (ver matriz de activacion en AGENTS.md sec 2):
 - **Rapido**: No buscar activamente. Usar comparacion temporal natural si la query ya incluye dimension tiempo
 - **Estandar**: Best-effort silencioso:
   1. `stratio_search_domain_knowledge("target/objetivo de [nombre_KPI]", domain)`
@@ -198,7 +198,7 @@ Para cada visualizacion del plan, definir:
 
 ### 4.6b Tecnicas analiticas avanzadas
 
-Activar segun la profundidad seleccionada (ver matriz de activacion en CLAUDE.md):
+Activar segun la profundidad seleccionada (ver matriz de activacion en AGENTS.md sec 2):
 - **Estandar**: Consultar [advanced-analytics.md](advanced-analytics.md) cuando sea relevante
 - **Profundo**: Consultar [advanced-analytics.md](advanced-analytics.md) sistematicamente
 
@@ -206,7 +206,7 @@ Cubre: rigor estadistico (tests, IC, effect sizes), analisis prospectivo (escena
 
 ### 4.6c Patrones analiticos adicionales
 
-Implementacion detallada de patrones cuyo trigger esta en CLAUDE.md sec 3.2 (Lorenz/Gini, mix, indexacion, desviacion vs referencia, gap).
+Implementacion detallada de patrones cuyo trigger esta en sec "Patrones analiticos operacionalizados" de AGENTS.md (Lorenz/Gini, mix, indexacion, desviacion vs referencia, gap).
 
 Cuando un patron se active: consultar [analytical-patterns.md](analytical-patterns.md) para query MCP, Python e interpretacion.
 
@@ -226,12 +226,17 @@ Para feature importance como complemento a la segmentacion o al analisis descrip
 Secciones, contenido de cada una, formato. Aplicar principios de data storytelling (seccion 6.1)
 
 ### 4.8 Presentar plan
-Presentar plan completo al usuario y solicitar aprobacion antes de ejecutar
+Presentar plan completo al usuario y solicitar aprobacion antes de ejecutar.
+
+Al final de la presentacion del plan, incluir una nota breve:
+> Si dispones de documentacion adicional, benchmarks de referencia, informes previos o datos complementarios que puedan enriquecer el analisis, puedes compartirlos ahora.
+
+No convertir esta nota en pregunta bloqueante. Es una invitacion, no un paso obligatorio. Si el usuario no aporta nada, continuar sin esperar respuesta adicional mas alla de la aprobacion del plan.
 
 ## 5. Ejecucion
 
 ### 5.0 Determinar carpeta del analisis
-Generar nombre `YYYY-MM-DD_HHMM_nombre_descriptivo` (minusculas, sin tildes, guiones bajos, max 30 chars en el nombre). Declarar en chat. Crear subdirectorios: `output/[ANALISIS_DIR]/scripts/`, `output/[ANALISIS_DIR]/data/`, `output/[ANALISIS_DIR]/assets/`, `output/[ANALISIS_DIR]/reasoning/`, `output/[ANALISIS_DIR]/validation/`.
+Generar nombre `YYYY-MM-DD_HHMM_nombre_descriptivo` (minusculas, sin tildes, guiones bajos, max 30 chars en el nombre). Declarar en chat. Crear subdirectorios: `output/[ANALISIS_DIR]/scripts/`, `output/[ANALISIS_DIR]/data/`, `output/[ANALISIS_DIR]/assets/`. Si profundidad >= Estandar, crear tambien `output/[ANALISIS_DIR]/reasoning/` y `output/[ANALISIS_DIR]/validation/`.
 
 Persistir el plan aprobado en `output/[ANALISIS_DIR]/plan.md`.
 Escribir el plan tal como fue formulado en la Fase 3 (seccion 4) y aprobado por el usuario:
@@ -247,13 +252,13 @@ Si hay librerias adicionales, actualizar `requirements.txt` y re-ejecutar setup.
 ### 5.2 Obtencion de datos
 - Usar `stratio_query_data(data_question=..., domain_name=..., output_format="dict")` para cada pregunta de datos. **Lanzar en paralelo** todas las queries independientes definidas en el plan (paso 4.4). Solo serializar si una query necesita el resultado de otra para formularse
 - `output_format` solo acepta strings: `"dict"`, `"csv"`, `"markdown"`. Nunca pasar booleanos
-- Maximizar lo que se resuelve en el MCP (joins, agregaciones, filtros) antes de recurrir a pandas. Ver reglas "MCP-first" y "Multiples datasets" en CLAUDE.md seccion 4
+- Maximizar lo que se resuelve en el MCP (joins, agregaciones, filtros) antes de recurrir a pandas. Ver reglas "MCP-first" y "Multiples datasets" en sec "Uso de MCPs" de AGENTS.md
 - NUNCA escribir SQL manualmente
 - Si una query falla, reformular la pregunta en lenguaje natural
 - Guardar datos intermedios en `output/[ANALISIS_DIR]/data/` como CSV si son necesarios para scripts posteriores
 
 ### 5.3 Validacion post-query (obligatorio)
-Aplicar las 7 validaciones de la seccion 4 de CLAUDE.md ("Validacion post-query") a cada resultado recibido. Cuando se lanzan queries en paralelo, validar cada resultado conforme llega. Si alguna falla: reformular la pregunta al MCP, informar al usuario, ajustar el plan.
+Aplicar las 7 validaciones de la sec "Validacion post-query" de AGENTS.md ("Validacion post-query") a cada resultado recibido. Cuando se lanzan queries en paralelo, validar cada resultado conforme llega. Si alguna falla: reformular la pregunta al MCP, informar al usuario, ajustar el plan.
 
 ### 5.4 Desarrollo de scripts
 - Escribir scripts en `output/[ANALISIS_DIR]/scripts/` con nombres descriptivos que incluyan contexto del analisis
@@ -299,7 +304,7 @@ Si durante la ejecucion se detecta un hallazgo que excede el alcance del nivel d
 
 **Accion:**
 1. Pausar la ejecucion normal
-2. Informar al usuario siguiendo la convencion de preguntas de CLAUDE.md sec 11: "He detectado [descripcion del hallazgo]. Esto requiere investigacion adicional. ¿Quieres que profundice?" con opciones:
+2. Informar al usuario siguiendo la convencion de preguntas (sec "Interaccion con el Usuario" de AGENTS.md): "He detectado [descripcion del hallazgo]. Esto requiere investigacion adicional. ¿Quieres que profundice?" con opciones:
    - "Si, profundizar" → Escalar complejidad, activar fases adicionales (EDA completo, hipotesis sobre el hallazgo, visualizaciones de drill-down)
    - "No, solo documentar" → Registrar hallazgo en el chat y en reasoning como "area de investigacion futura"
 3. El upgrade NO reinicia el analisis — extiende el analisis actual con fases adicionales
@@ -310,25 +315,25 @@ Si durante la ejecucion se detecta un hallazgo que excede el alcance del nivel d
 Cargar la skill `report` para generar los deliverables en los formatos solicitados.
 
 ### 5.8 Reasoning
-Generar reasoning en `output/[ANALISIS_DIR]/reasoning/` en tres formatos (.md, .pdf, .html). Contenido obligatorio (ver seccion 9 de CLAUDE.md), incluyendo:
-- Hipotesis formuladas y resultado de su validacion
-- Resumen de calidad de datos (data quality score)
-- "So what" para cada hallazgo principal
-- Si se uso feature importance o clustering: enfoque, variables, resultados, limitaciones
+
+Generar reasoning segun la profundidad (ver defaults en sec "Reasoning" de AGENTS.md):
+
+- **Rapido**: No generar fichero. Las notas clave se incluyen en el reporte del chat (sec 6.1).
+- **Estandar/Profundo**: Seguir la guia completa en [reasoning-guide.md](reasoning-guide.md). Generar solo `.md`.
+
+Si el usuario solicito override de formatos, aplicar su preferencia.
 
 ### 5.9 Validacion de output final
-Antes de reportar al usuario, ejecutar el checklist de validacion del producto terminado (ver paso 12 de la Fase 4 en CLAUDE.md):
 
-1. **Integridad de archivos**: Verificar que todos los archivos declarados en el plan existen (`output/[ANALISIS_DIR]/report.md`, deliverables solicitados, reasoning en 3 formatos, validation en 3 formatos, assets referenciados en report.md, CSVs referenciados en scripts)
-2. **Calidad de visualizaciones**: Para cada grafica en `output/[ANALISIS_DIR]/assets/`, verificar tamano >1KB y datos fuente suficientes (>5 valores no-nulos en columna principal). Umbrales por tipo: tendencia >6 puntos, ranking >3, distribucion >10. Si no pasa → excluir del deliverable y documentar por que
-3. **Completitud del analisis**: Extraer dimensiones pedidas por el usuario y verificar que cada una aparece en al menos un analisis/grafica. Verificar secciones obligatorias del reasoning
-4. **Consistencia de datos**: Para 1-2 KPIs clave, comparar valor reportado en deliverable vs valor en `output/[ANALISIS_DIR]/data/`. Discrepancia >1% → WARNING
+Ejecutar validacion segun la profundidad (ver defaults en sec "Reasoning" de AGENTS.md):
 
-Generar `output/[ANALISIS_DIR]/validation/validation.md` con resultados (PASS/WARNING/FAIL por item). Luego generar .html y .pdf con el mismo workflow que reasoning:
-```bash
-bash -c "source .venv/bin/activate && python tools/md_to_report.py output/[ANALISIS_DIR]/validation/validation.md --style corporate"
-```
-Incluir resumen de validacion en el reporte final al usuario.
+- **Rapido**: Solo Bloque A (integridad de archivos). Reportar resultado en chat. No generar fichero.
+- **Estandar**: Bloques A + B + C. Generar `validation/validation.md`. Reportar resumen en chat.
+- **Profundo**: Bloques A + B + C + D. Generar `validation/validation.md`. Reportar resumen en chat.
+
+Para detalle de cada bloque, umbrales y criterios PASS/WARNING/FAIL, ver [validation-guide.md](validation-guide.md).
+
+Si el usuario solicito override de formatos, aplicar su preferencia.
 
 ## 6. Reporte Final
 
@@ -364,7 +369,7 @@ Para principios de data storytelling y mapping hallazgos → narrativa, leer `sk
 
 ## 7. Memoria de Analisis (Confirmacion requerida)
 
-Tras presentar el reporte final, preguntar al usuario (siguiendo la convencion de preguntas de CLAUDE.md sec 11):
+Tras presentar el reporte final, preguntar al usuario (siguiendo la convencion de preguntas (sec "Interaccion con el Usuario" de AGENTS.md)):
 
 "¿Deseas guardar este analisis en la memoria persistente? Se actualizaran el registro de analisis (`ANALYSIS_MEMORY.md`) y la memoria de conocimiento (`MEMORY.md`)."
 - **Si** → Continuar con los pasos 7.1, 7.2 y 7.5
@@ -412,7 +417,7 @@ Tras escribir en ANALYSIS_MEMORY.md, invocar la skill `/update-memory` para actu
 
 ## 8. Propuesta de Conocimiento (Opcional)
 
-Tras presentar el reporte final, preguntar al usuario siguiendo la convencion de preguntas de CLAUDE.md sec 11:
+Tras presentar el reporte final, preguntar al usuario siguiendo la convencion de preguntas (sec "Interaccion con el Usuario" de AGENTS.md):
 - **Si**: Analizar conversacion y proponer conocimiento al dominio
 - **No**: Finalizar sin proponer
 

@@ -28,7 +28,7 @@ mkdir -p "$PROJECT_DIR"
 
 # --- 1. Ficheros raiz (sin cambio de nombre) ---
 echo "Copiando ficheros raiz..."
-cp CLAUDE.md "$PROJECT_DIR/CLAUDE.md"
+cp AGENTS.md "$PROJECT_DIR/CLAUDE.md"
 cp requirements.txt "$PROJECT_DIR/requirements.txt"
 cp setup_env.sh "$PROJECT_DIR/setup_env.sh"
 
@@ -41,14 +41,14 @@ echo "Copiando skills..."
 
 # Resolver directorio base de skills (fallback en 4 ubicaciones)
 SKILLS_SRC=""
-if [ -d ".claude/skills" ]; then
+if [ -d "skills" ]; then
+  SKILLS_SRC="skills"
+elif [ -d ".claude/skills" ]; then
   SKILLS_SRC=".claude/skills"
 elif [ -d ".opencode/skills" ]; then
   SKILLS_SRC=".opencode/skills"
 elif [ -d ".agents/skills" ]; then
   SKILLS_SRC=".agents/skills"
-elif [ -d "skills" ]; then
-  SKILLS_SRC="skills"
 fi
 
 if [ -z "$SKILLS_SRC" ]; then

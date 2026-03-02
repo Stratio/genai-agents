@@ -52,8 +52,8 @@ echo "Creando estructura cowork..."
 mkdir -p "$COWORK_DIR"
 
 # --- Paso 3: Copiar CLAUDE.md con referencias actualizadas ---
-echo "Copiando CLAUDE.md con referencias actualizadas..."
-sed 's|`skills-guides/exploration\.md`|`skills/analyze/exploration.md`|g' CLAUDE.md > "$COWORK_DIR/CLAUDE.md"
+echo "Copiando AGENTS.md con referencias actualizadas..."
+sed 's|`skills-guides/exploration\.md`|`skills/analyze/exploration.md`|g' AGENTS.md > "$COWORK_DIR/CLAUDE.md"
 
 # --- Paso 4: Copiar plugin ZIP ---
 cp "$PLUGIN_ZIP" "$COWORK_DIR/${COWORK_NAME}.zip"
@@ -69,7 +69,7 @@ ZIP_SIZE=$(du -sh "$COWORK_DIR/${ZIP_NAME}" | cut -f1)
 PLUGIN_SIZE=$(du -sh "$COWORK_DIR/${COWORK_NAME}.zip" | cut -f1)
 echo ""
 echo "=== Cowork empaquetado ==="
-echo "  CLAUDE.md:   $COWORK_DIR/CLAUDE.md (folder instructions)"
+echo "  CLAUDE.md:   $COWORK_DIR/CLAUDE.md (folder instructions, generado desde AGENTS.md)"
 echo "  Plugin ZIP:  $COWORK_DIR/${COWORK_NAME}.zip ($PLUGIN_SIZE) (skills + MCP, sin agente)"
 echo "  Cowork ZIP:  $COWORK_DIR/${ZIP_NAME} ($ZIP_SIZE) (CLAUDE.md + plugin ZIP)"
 echo ""

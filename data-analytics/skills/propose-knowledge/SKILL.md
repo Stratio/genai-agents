@@ -12,7 +12,7 @@ Guia para analizar una conversacion de analisis y proponer conocimiento de negoc
 
 - Si `$ARGUMENTS` contiene un nombre de dominio, validarlo contra `stratio_list_business_domains` antes de usarlo. Usar el nombre exacto del listado, no la interpretacion del usuario
 - Si no, inferir el dominio de la conversacion actual (buscar llamadas previas a MCPs con `domain_name`)
-- Si no es posible inferirlo, listar dominios disponibles via `stratio_list_business_domains` y preguntar al usuario siguiendo la convencion de preguntas de CLAUDE.md sec 12
+- Si no es posible inferirlo, listar dominios disponibles via `stratio_list_business_domains` y preguntar al usuario siguiendo la convencion de preguntas (sec "Interaccion con el Usuario" de AGENTS.md)
 
 ## 2. Recopilar Contexto de la Conversacion
 
@@ -117,7 +117,7 @@ Mostrar las propuestas organizadas por prioridad y tipo al usuario. Para cada un
 - Contexto (de donde surgio)
 - Tablas relacionadas
 
-Preguntar al usuario siguiendo la convencion de preguntas de CLAUDE.md sec 12 (adaptativa al entorno: interactivas si disponibles, lista numerada en chat si no):
+Preguntar al usuario siguiendo la convencion de preguntas (sec "Interaccion con el Usuario" de AGENTS.md) (adaptativa al entorno: interactivas si disponibles, lista numerada en chat si no):
 - **Enviar todas**: Proponer todo tal como esta
 - **Seleccionar**: El usuario indica cuales enviar (preguntar permitiendo seleccion multiple)
 - **Modificar**: El usuario quiere ajustar alguna definicion antes de enviar

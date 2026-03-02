@@ -70,12 +70,12 @@ Los pack scripts reconocen dos formatos de definicion de skills:
 
 | Formato | Estructura | Ejemplo |
 |---------|-----------|---------|
-| **Canonico** (recomendado) | `skills/<nombre>/SKILL.md` | `.claude/skills/analyze/SKILL.md` |
-| **Plano** | `skills/<nombre>.md` | `.claude/skills/analyze.md` |
+| **Canonico** (recomendado) | `skills/<nombre>/SKILL.md` | `skills/analyze/SKILL.md` |
+| **Plano** | `skills/<nombre>.md` | `skills/analyze.md` |
 
 El formato plano se normaliza automaticamente a canonico al empaquetar (`<nombre>.md` → `<nombre>/SKILL.md`).
 
-Ubicaciones de busqueda (por orden de prioridad): `.claude/skills/` → `.opencode/skills/` → `.agents/skills/` → `skills/`.
+Ubicaciones de busqueda (por orden de prioridad): `skills/` → `.claude/skills/` → `.opencode/skills/` → `.agents/skills/`.
 
 ### Plantillas de output
 
@@ -83,12 +83,12 @@ Si un agente tiene un directorio `output-templates/`, los pack scripts crean `ou
 
 ## Uso directo (sin empaquetar)
 
-Ambos agentes estan preparados para funcionar directamente sin necesidad de empaquetado:
+El formato canonico de instrucciones es `AGENTS.md` + `skills/`. Para usar con cualquier plataforma, empaquetar con el script correspondiente. La raiz del monorepo tiene un symlink `CLAUDE.md → AGENTS.md` para compatibilidad con Claude Code.
 
-- **Claude Code**: Abrir desde la carpeta del agente con `claude .`. Lee `CLAUDE.md` como instrucciones y carga skills desde `.claude/skills/` automaticamente.
-- **OpenCode**: Abrir desde la carpeta del agente. `opencode.json` apunta a `CLAUDE.md` como instructions y reconoce `.claude/skills/` nativamente.
+- **Claude Code**: Empaquetar con `pack_claude_code.sh` para uso fuera del repositorio. Lee instrucciones de `AGENTS.md` (via symlink `CLAUDE.md`). Para uso directo con Claude Code, empaquetar primero con `pack_claude_code.sh`.
+- **OpenCode**: `opencode.json` apunta a `AGENTS.md`. Para uso directo con OpenCode, empaquetar primero con `pack_opencode.sh`.
 
-No necesitan empaquetado para desarrollo local. Los pack scripts solo son necesarios para distribuir o desplegar en entornos donde no se clona el repositorio completo.
+Los pack scripts generan el formato correcto para cada plataforma (renombrando ficheros, reubicando skills, etc.).
 
 ## Requisitos comunes
 

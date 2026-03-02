@@ -1,6 +1,6 @@
 # Tecnicas Analiticas Avanzadas
 
-Activar segun la profundidad seleccionada (ver matriz de activacion en Fase 2 de CLAUDE.md).
+Activar segun la profundidad seleccionada (ver matriz de activacion en Fase 2 del workflow (AGENTS.md)).
 
 ## Rigor estadistico e incertidumbre
 
