@@ -101,18 +101,8 @@ else
     "lsp": "allow", "edit": "allow", "write": "allow",
     "todoread": "allow", "todowrite": "allow", "task": "allow",
     "skill": "allow", "webfetch": "allow",
-    "sql_*": "deny",
-    "sql_stratio_list_business_domains": "allow",
-    "sql_stratio_list_technical_domains": "deny",
-    "sql_stratio_list_domain_tables": "allow",
-    "sql_stratio_get_tables_details": "allow",
-    "sql_stratio_get_table_columns_details": "allow",
-    "sql_stratio_generate_sql": "allow",
-    "sql_stratio_query_data": "allow",
-    "sql_stratio_search_domain_knowledge": "allow",
-    "sql_stratio_execute_sql": "allow",
-    "sql_stratio_profile_data": "allow",
-    "sql_stratio_propose_knowledge": "allow",
+    "sql_*": "allow",
+    "*stratio_list_technical_domains": "deny",
     "bash": { "*": "allow" }
   }
 }
