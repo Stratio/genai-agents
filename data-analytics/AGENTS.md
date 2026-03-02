@@ -347,6 +347,8 @@ Estilos disponibles: **Corporativo** (`corporate`), **Formal/academico** (`acade
 
 Para API de estilos (`build_css`, `get_palette` de `tools/css_builder.py`), ver skill `/report` seccion 6.
 
+**Recursos adicionales**: `templates/pdf/` contiene templates Jinja2 (base.html, cover.html, components/, reports/scaffold.html). `styles/fonts/` contiene fuentes locales woff2 (DM Sans, Inter, JetBrains Mono).
+
 ---
 
 ## 9. Reasoning (Documentacion del Proceso)
@@ -355,7 +357,7 @@ La generacion de reasoning varia segun la profundidad:
 
 | Profundidad | Reasoning | Formato |
 |-------------|-----------|---------|
-| Rapido | No generar fichero. Notas clave en el chat (sec 11) | Solo chat |
+| Rapido | No generar fichero. Notas clave en el chat (sec 10) | Solo chat |
 | Estandar | Generar en `output/[ANALISIS_DIR]/reasoning/` | Solo .md |
 | Profundo | Generar en `output/[ANALISIS_DIR]/reasoning/` | Solo .md (completo + sugerencias) |
 
@@ -365,38 +367,7 @@ Para contenido obligatorio y plantilla, ver skill `/analyze` [reasoning-guide.md
 
 ---
 
-## 10. Convenciones de Directorio
-
-**Nomenclatura**: `YYYY-MM-DD_HHMM_nombre_descriptivo` (minusculas, sin tildes, guiones bajos, max 30 chars en el nombre).
-
-### Referencia de directorios
-
-| Directorio | Contenido |
-|-----------|-----------|
-| `output/MEMORY.md` | Conocimiento curado persistente: preferencias del usuario, patrones de datos, heuristicas aprendidas |
-| `output/ANALYSIS_MEMORY.md` | Indice compacto cronologico de analisis realizados: dominio, resumen en 1 frase y ruta al detalle |
-| `output/[ANALISIS_DIR]/analysis_memory.md` | Detalle completo del analisis: pregunta original, KPIs, insights y Data Quality Score |
-| `output/[ANALISIS_DIR]/plan.md` | Plan aprobado antes de ejecutar: hipotesis, metricas, queries, visualizaciones y estructura |
-| `output/[ANALISIS_DIR]/scripts/` | Scripts Python generados, tests (`test_*.py`), codigo intermedio |
-| `output/[ANALISIS_DIR]/data/` | CSVs intermedios, DataFrames serializados, datos crudos |
-| `output/[ANALISIS_DIR]/assets/` | Graficas PNG/SVG, imagenes, diagramas |
-| `output/[ANALISIS_DIR]/reasoning/` | Documentacion del razonamiento (solo Estandar/Profundo): reasoning.md |
-| `output/[ANALISIS_DIR]/validation/` | Checklist de validacion (solo Estandar/Profundo): validation.md |
-| `output/[ANALISIS_DIR]/` | Deliverables finales: report.md (siempre), report.pdf, report.docx, dashboard.html, presentation.pptx |
-| `tools/` | Scripts pre-construidos reutilizables (css_builder.py, md_to_report.py, pdf_generator.py, docx_generator.py, pptx_layout.py, dashboard_builder.py, image_utils.py) |
-| `tools/pptx_layout.py` | Layout PPTX: constantes de safe area, helpers de posicionamiento, validacion de bounds |
-| `tools/docx_generator.py` | Generador DOCX: DOCXGenerator con scaffold y markdown, estilos via get_palette() |
-| `tools/dashboard_builder.py` | Generador de dashboards web interactivos: DashboardBuilder con filtros, KPI cards, tablas ordenables, datos JSON embebidos |
-| `templates/pdf/` | Templates Jinja2 para PDFs: base.html, cover.html, components/, reports/scaffold.html |
-| `styles/tokens/` | Variables CSS (:root) y @font-face por tema (modern, corporate, academic) |
-| `styles/themes/` | Componentes visuales por tema — browser-safe, sin @page ni hover |
-| `styles/pdf/` | Reglas CSS exclusivas de PDF: @page, running headers, page-breaks (base.css) |
-| `styles/web/` | Reglas CSS exclusivas de web: hover, sticky nav, responsive (base.css) |
-| `styles/fonts/` | Fuentes locales woff2 (DM Sans, Inter, JetBrains Mono) |
-
----
-
-## 11. Interaccion con el Usuario
+## 10. Interaccion con el Usuario
 
 **Convencion de preguntas**: Siempre que estas instrucciones digan "preguntar al usuario con opciones", presentar las opciones de forma clara y estructurada. Si el entorno soporta preguntas interactivas con opciones seleccionables, usarlas. Si no, presentar las opciones como lista numerada en el chat, con formato legible, e indicar al usuario que responda con el numero o nombre de su eleccion. Para seleccion multiple, indicar que puede elegir varias separadas por coma. Aplicar esta convencion en toda referencia a "preguntas al usuario con opciones" en skills y guias.
 
@@ -413,7 +384,7 @@ Para contenido obligatorio y plantilla, ver skill `/analyze` [reasoning-guide.md
 
 ---
 
-## 12. Memoria Persistente
+## 11. Memoria Persistente
 
 Dos ficheros de memoria con propositos distintos:
 
