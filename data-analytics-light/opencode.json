@@ -7,6 +7,7 @@
       "url": "{env:MCP_SQL_URL}",
       "timeout": 90000,
       "headers": {
+        "Authorization": "Bearer ${MCP_SQL_API_KEY:-}",
         "X-API-Key": "{env:MCP_SQL_API_KEY}"
       }
     }

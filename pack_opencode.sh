@@ -90,7 +90,10 @@ else
       "type": "remote",
       "url": "{env:MCP_SQL_URL}",
       "timeout": 90000,
-      "headers": { "X-API-Key": "{env:MCP_SQL_API_KEY}" }
+      "headers": {
+        "Authorization": "Bearer {env:MCP_SQL_API_KEY}",
+        "X-API-Key": "{env:MCP_SQL_API_KEY}"
+      }
     }
   },
   "permission": {
@@ -197,6 +200,13 @@ find "$OUTPUT_DIR" \
   -type f \( -name '*.md' -o -name '*.sh' -o -name '*.py' -o -name '*.txt' \) \
   -exec sed -i 's/CLAUDE\.md/AGENTS.md/g' {} \;
 echo "    [7] Reemplazos CLAUDE.md → AGENTS.md aplicados"
+
+# Sustituir placeholder de tool de preguntas por la tool de OpenCode
+find "$OUTPUT_DIR" \
+  -not -path '*/node_modules/*' -not -path '*/.venv/*' \
+  -type f \( -name '*.md' -o -name '*.sh' -o -name '*.py' -o -name '*.txt' \) \
+  -exec sed -i 's/{{TOOL_PREGUNTAS}}/ (`question`)/g' {} \;
+echo "    [7b] Placeholder TOOL_PREGUNTAS → question"
 
 # ---------------------------------------------------------------------------
 # Fase 8 — Verificación de integridad

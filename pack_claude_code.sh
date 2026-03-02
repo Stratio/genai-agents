@@ -117,7 +117,10 @@ else
     "sql": {
       "type": "http",
       "url": "${MCP_SQL_URL:-http://127.0.0.1:8080/mcp}",
-      "headers": { "X-API-Key": "${MCP_SQL_API_KEY:-}" },
+      "headers": {
+        "X-API-Key": "${MCP_SQL_API_KEY:-}",
+        "Authorization": "Bearer ${MCP_SQL_API_KEY:-}"
+      },
       "allowedTools": [
         "stratio_list_business_domains", "stratio_list_domain_tables",
         "stratio_get_tables_details", "stratio_get_table_columns_details",
@@ -204,6 +207,13 @@ find "$OUTPUT_DIR" \
   -type f \( -name '*.md' -o -name '*.json' -o -name '*.sh' -o -name '*.py' -o -name '*.txt' \) \
   -exec sed -i 's/AGENTS\.md/CLAUDE.md/g' {} \;
 echo "    [7] Reemplazos AGENTS.md → CLAUDE.md aplicados"
+
+# Sustituir placeholder de tool de preguntas por la tool de Claude Code
+find "$OUTPUT_DIR" \
+  -not -path '*/node_modules/*' -not -path '*/.venv/*' \
+  -type f \( -name '*.md' -o -name '*.json' -o -name '*.sh' -o -name '*.py' -o -name '*.txt' \) \
+  -exec sed -i 's/{{TOOL_PREGUNTAS}}/ (`AskUserQuestion`)/g' {} \;
+echo "    [7b] Placeholder TOOL_PREGUNTAS → AskUserQuestion"
 
 # ---------------------------------------------------------------------------
 # Fase 8 — Verificación de integridad
