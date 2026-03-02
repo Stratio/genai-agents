@@ -10,3 +10,4 @@
 * Add pack_claude_cowork.sh, --with-agent and --shared-guides flags for pack_claude_plugin.sh, instructions ZIP artifact and update packaging docs
 * Add interactive dashboard builder for data-analytics: DashboardBuilder tool with filters, KPI cards, Plotly charts, sortable tables, multi-column grid layout, formatValue JS helper, embedded JSON data and 47 unit tests
 * Remove pack_claude_instructions.sh from data-analytics-light: marginal use case, near-total overlap with Project pack, fragile maintenance and char limit risk in claude.ai Custom Instructions
+* Migrate to AGENTS.md as canonical instructions format and skills/ as canonical skills directory; add symlink CLAUDE.md → AGENTS.md at monorepo root for Claude Code compatibility; update all pack scripts and skill cross-references
