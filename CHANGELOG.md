@@ -13,3 +13,4 @@
 * Migrate to AGENTS.md as canonical instructions format and skills/ as canonical skills directory; add symlink CLAUDE.md → AGENTS.md at monorepo root for Claude Code compatibility; update all pack scripts and skill cross-references
 * Remove redundant error handling section from data-analytics agent (section 13 duplicated sections 4/5); move matplotlib backend tip to visualization.md
 * Remove redundant directory conventions section from data-analytics agent (section 10 duplicated sections 2/5/8/9/12); relocate unique entries to section 8; renumber sections; saves ~650 tokens of context window
+* Fix section numbering in data-analytics-light analyze skill: replace misleading alphabetic suffixes (4.5b/c/d, 5.4b/c) with sequential ordinal numbers (4.6–4.10, 5.5–5.8); update all cross-references in AGENTS.md

@@ -153,7 +153,7 @@ Para cada KPI, documentar:
 | Dimensiones | Ejes de corte (region, producto, segmento) |
 | Benchmark | Objetivo, media del sector, o periodo anterior |
 | Fuente | Tabla(s) y columna(s) del dominio |
-| Test estadistico | Si requiere IC o comparacion entre grupos (ver seccion 4.5b de esta skill) |
+| Test estadistico | Si requiere IC o comparacion entre grupos (ver [advanced-analytics.md](advanced-analytics.md)) |
 
 **Benchmark Discovery** — Escala segun profundidad (ver matriz de activacion en AGENTS.md sec 2):
 - **Rapido**: No buscar activamente. Usar comparacion temporal natural si la query ya incluye dimension tiempo
@@ -196,7 +196,7 @@ Para cada visualizacion del plan, definir:
 - **Titulo**: Formulado como insight, no como descripcion
 - **Datos fuente**: Query MCP que alimenta la visualizacion
 
-### 4.6b Tecnicas analiticas avanzadas
+### 4.7 Tecnicas analiticas avanzadas
 
 Activar segun la profundidad seleccionada (ver matriz de activacion en AGENTS.md sec 2):
 - **Estandar**: Consultar [advanced-analytics.md](advanced-analytics.md) cuando sea relevante
@@ -204,13 +204,13 @@ Activar segun la profundidad seleccionada (ver matriz de activacion en AGENTS.md
 
 Cubre: rigor estadistico (tests, IC, effect sizes), analisis prospectivo (escenarios, Monte Carlo), root cause analysis, deteccion de anomalias.
 
-### 4.6c Patrones analiticos adicionales
+### 4.8 Patrones analiticos adicionales
 
 Implementacion detallada de patrones cuyo trigger esta en sec "Patrones analiticos operacionalizados" de AGENTS.md (Lorenz/Gini, mix, indexacion, desviacion vs referencia, gap).
 
 Cuando un patron se active: consultar [analytical-patterns.md](analytical-patterns.md) para query MCP, Python e interpretacion.
 
-### 4.6d Segmentacion y clustering
+### 4.9 Segmentacion y clustering
 
 Para guia completa de segmentacion (RFM, clustering, validacion, profiling), ver [clustering-guide.md](clustering-guide.md).
 
@@ -222,10 +222,10 @@ Usar cuando el usuario pida segmentacion, agrupacion de clientes/productos, o de
 
 Para feature importance como complemento a la segmentacion o al analisis descriptivo, ver [clustering-guide.md](clustering-guide.md) sec 7.
 
-### 4.7 Estructura del deliverable
+### 4.10 Estructura del deliverable
 Secciones, contenido de cada una, formato. Aplicar principios de data storytelling (seccion 6.1)
 
-### 4.8 Presentar plan
+### 4.11 Presentar plan
 Presentar plan completo al usuario y solicitar aprobacion antes de ejecutar.
 
 Al final de la presentacion del plan, incluir una nota breve:
@@ -250,7 +250,7 @@ bash setup_env.sh
 Si hay librerias adicionales, actualizar `requirements.txt` y re-ejecutar setup.
 
 ### 5.2 Obtencion de datos
-- Usar `stratio_query_data(data_question=..., domain_name=..., output_format="dict")` para cada pregunta de datos. **Lanzar en paralelo** todas las queries independientes definidas en el plan (paso 4.4). Solo serializar si una query necesita el resultado de otra para formularse
+- Usar `stratio_query_data(data_question=..., domain_name=..., output_format="dict")` para cada pregunta de datos. **Lanzar en paralelo** todas las queries independientes definidas en el plan (paso 4.5). Solo serializar si una query necesita el resultado de otra para formularse
 - `output_format` solo acepta strings: `"dict"`, `"csv"`, `"markdown"`. Nunca pasar booleanos
 - Maximizar lo que se resuelve en el MCP (joins, agregaciones, filtros) antes de recurrir a pandas. Ver reglas "MCP-first" y "Multiples datasets" en sec "Uso de MCPs" de AGENTS.md
 - NUNCA escribir SQL manualmente
@@ -284,7 +284,7 @@ Aplicar las 7 validaciones de la sec "Validacion post-query" de AGENTS.md ("Vali
 bash -c "source .venv/bin/activate && python output/[ANALISIS_DIR]/scripts/mi_script.py"
 ```
 
-### 5.6b Loop de iteracion
+### 5.7 Loop de iteracion
 
 Tras revisar resultados iniciales, evaluar si requieren iteracion:
 
@@ -293,7 +293,7 @@ Tras revisar resultados iniciales, evaluar si requieren iteracion:
 3. **Limite**: Max 2 iteraciones. Mas → documentar como analisis de seguimiento
 4. **Registro**: Cada iteracion en reasoning: hipotesis → hallazgo → nueva hipotesis → resultado
 
-### 5.6c Complexity Upgrade
+### 5.8 Complexity Upgrade
 
 Si durante la ejecucion se detecta un hallazgo que excede el alcance del nivel de complejidad actual:
 
@@ -309,12 +309,12 @@ Si durante la ejecucion se detecta un hallazgo que excede el alcance del nivel d
    - "No, solo documentar" → Registrar hallazgo en el chat y en reasoning como "area de investigacion futura"
 3. El upgrade NO reinicia el analisis — extiende el analisis actual con fases adicionales
 
-**Diferencia con el loop de iteracion (5.6b):** El loop refina hipotesis dentro del mismo nivel de complejidad. El upgrade cambia el nivel (ej: Triage → Analisis) y activa capacidades adicionales (EDA, hipotesis formales, visualizaciones).
+**Diferencia con el loop de iteracion (5.7):** El loop refina hipotesis dentro del mismo nivel de complejidad. El upgrade cambia el nivel (ej: Triage → Analisis) y activa capacidades adicionales (EDA, hipotesis formales, visualizaciones).
 
-### 5.7 Generacion de deliverables
+### 5.9 Generacion de deliverables
 Cargar la skill `report` para generar los deliverables en los formatos solicitados.
 
-### 5.8 Reasoning
+### 5.10 Reasoning
 
 Generar reasoning segun la profundidad (ver defaults en sec "Reasoning" de AGENTS.md):
 
@@ -323,7 +323,7 @@ Generar reasoning segun la profundidad (ver defaults en sec "Reasoning" de AGENT
 
 Si el usuario solicito override de formatos, aplicar su preferencia.
 
-### 5.9 Validacion de output final
+### 5.11 Validacion de output final
 
 Ejecutar validacion segun la profundidad (ver defaults en sec "Reasoning" de AGENTS.md):
 
@@ -372,7 +372,7 @@ Para principios de data storytelling y mapping hallazgos → narrativa, leer `sk
 Tras presentar el reporte final, preguntar al usuario (siguiendo la convencion de preguntas (sec "Interaccion con el Usuario" de AGENTS.md)):
 
 "¿Deseas guardar este analisis en la memoria persistente? Se actualizaran el registro de analisis (`ANALYSIS_MEMORY.md`) y la memoria de conocimiento (`MEMORY.md`)."
-- **Si** → Continuar con los pasos 7.1, 7.2 y 7.5
+- **Si** → Continuar con los pasos 7.1, 7.2 y 7.3
 - **No** → Saltar todos los pasos de escritura de memoria. Finalizar sin actualizar ningun fichero de memoria
 
 Los pasos siguientes se ejecutan **solo si el usuario responde "Sí"**:
@@ -411,7 +411,7 @@ Añadir entrada al final de `output/ANALYSIS_MEMORY.md` con solo los campos de t
 
 Si `output/ANALYSIS_MEMORY.md` no existe, crearlo con el header `# Memoria de Analisis`. Las entradas se anaden al final (cronologicas).
 
-## 7.5 Memoria de Conocimiento
+### 7.3 Memoria de Conocimiento
 
 Tras escribir en ANALYSIS_MEMORY.md, invocar la skill `/update-memory` para actualizar `output/MEMORY.md` con preferencias, patrones de datos y heuristicas descubiertas en este analisis.
 

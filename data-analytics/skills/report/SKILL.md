@@ -32,7 +32,7 @@ Si el formato no esta especificado, preguntar al usuario las 3 preguntas siguien
 - Si no hay datos: informar al usuario que primero necesita ejecutar un analisis
 - Si hay datos parciales: preguntar si reutilizar o regenerar
 
-### 2.1-2.3 Visualizacion y storytelling
+### 2.1 Visualizacion y storytelling
 
 Leer y seguir `skills-guides/visualization.md` para:
 - Seleccion de tipo de grafica segun pregunta analitica (sec 1)

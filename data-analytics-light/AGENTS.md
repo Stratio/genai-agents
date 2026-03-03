@@ -59,7 +59,7 @@ Antes de planificar metricas, entender la realidad de los datos. Ejecutar profil
 
 ### Fase 1.9 — Defaults
 
-- **Escalamiento durante ejecucion**: Si se detecta anomalia (>30% desviacion), inconsistencia o patron critico → informar al usuario y ofrecer profundizar. Detalle en skill `/analyze` sec 5.4c
+- **Escalamiento durante ejecucion**: Si se detecta anomalia (>30% desviacion), inconsistencia o patron critico → informar al usuario y ofrecer profundizar. Detalle en skill `/analyze` sec 5.6
 
 ### Fase 2 — Preguntas al Usuario (en fase de planificacion, solo lectura)
 
@@ -109,7 +109,7 @@ Agrupar en 1 bloque de preguntas al usuario con opciones seleccionables (detalle
 3. Escribir scripts Python con nombres descriptivos para transformaciones y calculos
 4. Testear funciones clave antes de ejecutar con datos reales (fixtures con DataFrames mock)
 5. Ejecutar scripts con datos reales
-6. **Loop de iteracion**: Si un hallazgo contradice hipotesis o revela patron inesperado, iterar (nuevas queries + actualizar analisis). Max 2 iteraciones; detalle en skill `/analyze` sec 5.4b
+6. **Loop de iteracion**: Si un hallazgo contradice hipotesis o revela patron inesperado, iterar (nuevas queries + actualizar analisis). Max 2 iteraciones; detalle en skill `/analyze` sec 5.5
 7. Generar visualizaciones como soporte visual del analisis
 8. Presentar resultados en el chat: hallazgos con insights accionables, tablas, visualizaciones, recomendaciones priorizadas y limitaciones (ver skill `/analyze` sec 6.1)
 9. Propuesta de conocimiento (opcional): preguntar al usuario si desea proponer terminos de negocio. Nunca proponer automaticamente
@@ -287,7 +287,7 @@ Tres principios core (ver `skills/analyze/visualization.md` para guia completa):
 
 ## 8. [Eliminada]
 
-El agente light no incluye modelado ML formal. Para segmentacion, usar RFM por quintiles o reglas de negocio (ver skill `/analyze` sec 4.5d y [clustering-guide.md](clustering-guide.md)).
+El agente light no incluye modelado ML formal. Para segmentacion, usar RFM por quintiles o reglas de negocio (ver skill `/analyze` sec 4.8 y [clustering-guide.md](clustering-guide.md)).
 
 ---
 

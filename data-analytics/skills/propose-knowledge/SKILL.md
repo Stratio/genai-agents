@@ -64,7 +64,7 @@ Para cada hallazgo:
 - **Ya existe con definicion diferente**: Proponer actualizacion SOLO si la nueva definicion aporta informacion sustancialmente nueva (formula, umbral, contexto adicional). No proponer si es simplemente una reformulacion
 - **No existe**: Proponer como nuevo
 
-## 3.5 Priorizar y Limitar Propuestas
+## 4. Priorizar y Limitar Propuestas
 
 **Limite total: maximo 5 propuestas por ejecucion** (excepcionalmente 6 si hay un sexto `business_concept` de alta relevancia).
 
@@ -89,7 +89,7 @@ Un `business_concept` solo se propone si cumple **AL MENOS 2** de estos criterio
 
 Si un candidato no cumple al menos 2 criterios, descartarlo y documentar el motivo en el reporte.
 
-## 4. Preparar Propuestas
+## 5. Preparar Propuestas
 
 Clasificar cada propuesta en uno de los 3 tipos soportados:
 
@@ -107,7 +107,7 @@ Para cada propuesta, documentar:
 - **Contexto**: Cita o referencia de donde surgio en el analisis
 - **Tablas relacionadas**: Tablas del dominio donde aplica (si corresponde)
 
-## 5. Presentar al Usuario para Aprobacion
+## 6. Presentar al Usuario para Aprobacion
 
 Mostrar las propuestas organizadas por prioridad y tipo al usuario. Para cada una, indicar:
 - Prioridad (P1/P2/P3)
@@ -125,7 +125,7 @@ Preguntar al usuario siguiendo la convencion de preguntas (sec "Interaccion con 
 
 Si el usuario elige "Modificar", preguntar que cambios quiere hacer, aplicarlos y volver a presentar para aprobacion.
 
-## 6. Enviar via MCP
+## 7. Enviar via MCP
 
 Para las propuestas aprobadas, llamar a `stratio_propose_knowledge(business_context=..., domain_name=...)`.
 
@@ -150,7 +150,7 @@ El parametro `business_context` debe ser un texto markdown estructurado con el s
 
 Solo incluir las secciones que tengan propuestas. No incluir secciones vacias.
 
-## 7. Reporte
+## 8. Reporte
 
 Presentar al usuario un resumen final:
 

@@ -87,9 +87,9 @@ Determinar si la pregunta requiere analisis descriptivo, segmentacion por reglas
 | Escenario | Recomendacion |
 |-----------|---------------|
 | Describir que paso y por que | Analisis descriptivo (pandas, agrupaciones, comparativas) |
-| Segmentar clientes/productos | Segmentacion por reglas o RFM → sec 4.5d |
-| Proyectar tendencias | Tecnicas estadisticas (statsmodels, seasonal decompose) → sec 4.5b |
-| Detectar patrones y anomalias | Analisis estadistico avanzado → sec 4.5b |
+| Segmentar clientes/productos | Segmentacion por reglas o RFM → sec 4.8 |
+| Proyectar tendencias | Tecnicas estadisticas (statsmodels, seasonal decompose) → sec 4.6 |
+| Detectar patrones y anomalias | Analisis estadistico avanzado → sec 4.6 |
 
 ### 4.2 Hipotesis
 Formular hipotesis ANTES de consultar datos. Usar la plantilla de sec 3.1. Para cada sub-pregunta identificada en el paso 1:
@@ -121,7 +121,7 @@ Para cada KPI, documentar:
 | Dimensiones | Ejes de corte (region, producto, segmento) |
 | Benchmark | Objetivo, media del sector, o periodo anterior |
 | Fuente | Tabla(s) y columna(s) del dominio |
-| Test estadistico | Si requiere IC o comparacion entre grupos (ver seccion 4.5b de esta skill) |
+| Test estadistico | Si requiere IC o comparacion entre grupos (ver seccion 4.6 de esta skill) |
 
 **Benchmark Discovery** — Escala segun profundidad (ver matriz de activacion):
 - **Rapido**: No buscar activamente. Usar comparacion temporal natural si la query ya incluye dimension tiempo
@@ -162,7 +162,7 @@ Para cada visualizacion del plan, definir:
 - **Titulo**: Formulado como insight, no como descripcion
 - **Datos fuente**: Query MCP que alimenta la visualizacion
 
-### 4.5b Tecnicas analiticas avanzadas
+### 4.6 Tecnicas analiticas avanzadas
 
 Activar segun la profundidad seleccionada (ver matriz de activacion):
 - **Estandar**: Consultar [advanced-analytics.md](advanced-analytics.md) cuando sea relevante
@@ -170,13 +170,13 @@ Activar segun la profundidad seleccionada (ver matriz de activacion):
 
 Cubre: rigor estadistico (tests, IC, effect sizes), analisis prospectivo (escenarios, Monte Carlo), root cause analysis, deteccion de anomalias.
 
-### 4.5c Patrones analiticos adicionales
+### 4.7 Patrones analiticos adicionales
 
 Implementacion detallada de patrones cuyo trigger esta en sec 3.2 (Lorenz/Gini, mix, indexacion, desviacion vs referencia, gap).
 
 Cuando un patron se active: consultar [analytical-patterns.md](analytical-patterns.md) para query MCP, Python e interpretacion.
 
-### 4.5d Segmentacion y clustering
+### 4.8 Segmentacion y clustering
 
 Para guia completa de segmentacion (RFM, clustering, validacion, profiling), ver [clustering-guide.md](clustering-guide.md).
 
@@ -185,10 +185,10 @@ Usar cuando el usuario pida segmentacion, agrupacion de clientes/productos, o de
 - RFM con quintiles y etiquetas de negocio
 - Profiling obligatorio de segmentos
 
-### 4.6 Estructura de la presentacion de resultados
+### 4.9 Estructura de la presentacion de resultados
 Secciones del analisis y orden narrativo para presentar en el chat. Aplicar principios de data storytelling (seccion 6.1)
 
-### 4.7 Presentar plan
+### 4.10 Presentar plan
 Presentar plan completo al usuario y solicitar aprobacion antes de ejecutar
 
 ## 5. Ejecucion
@@ -224,7 +224,7 @@ Aplicar las 7 validaciones de la seccion 4 ("Validacion post-query") a cada resu
 ### 5.4 Ejecucion con datos reales
 Ejecutar scripts con datos reales.
 
-### 5.4b Loop de iteracion
+### 5.5 Loop de iteracion
 
 Tras revisar resultados iniciales, evaluar si requieren iteracion:
 
@@ -233,7 +233,7 @@ Tras revisar resultados iniciales, evaluar si requieren iteracion:
 3. **Limite**: Max 2 iteraciones. Mas → documentar como analisis de seguimiento
 4. **Registro**: Cada iteracion documentar en el chat: hipotesis → hallazgo → nueva hipotesis → resultado
 
-### 5.4c Complexity Upgrade
+### 5.6 Complexity Upgrade
 
 Si durante la ejecucion se detecta un hallazgo que excede el alcance del nivel de complejidad actual:
 
@@ -249,12 +249,12 @@ Si durante la ejecucion se detecta un hallazgo que excede el alcance del nivel d
    - "No, solo documentar" → Registrar hallazgo en el chat como "area de investigacion futura"
 3. El upgrade NO reinicia el analisis — extiende el analisis actual con fases adicionales
 
-**Diferencia con el loop de iteracion (5.4b):** El loop refina hipotesis dentro del mismo nivel de complejidad. El upgrade cambia el nivel (ej: Triage → Analisis) y activa capacidades adicionales (EDA, hipotesis formales, visualizaciones).
+**Diferencia con el loop de iteracion (5.5):** El loop refina hipotesis dentro del mismo nivel de complejidad. El upgrade cambia el nivel (ej: Triage → Analisis) y activa capacidades adicionales (EDA, hipotesis formales, visualizaciones).
 
-### 5.5 Presentacion de resultados
+### 5.7 Presentacion de resultados
 La presentacion de resultados se hace en el chat, siguiendo la estructura de la seccion 6.1. Las visualizaciones generadas se muestran inline como soporte del analisis.
 
-### 5.6 Validacion de output final
+### 5.8 Validacion de output final
 Antes de presentar al usuario, verificar:
 - Las visualizaciones se generaron correctamente
 - Los datos usados son coherentes entre si (totales cuadran, periodos alineados)

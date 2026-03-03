@@ -26,7 +26,7 @@ El reasoning debe incluir todas las secciones siguientes:
    | ID | Hipotesis | Resultado | Esperado | Real | So What |
    ```
 3. **Dominio y tablas utilizadas** — Nombre exacto del dominio y listado de tablas consultadas
-4. **Resumen de calidad de datos** — Data Quality Score de la Fase 1.5 (ALTO/MEDIO/BAJO con %)
+4. **Resumen de calidad de datos** — Data Quality Score de la Fase 1.1 (ALTO/MEDIO/BAJO con %)
 5. **Decisiones tomadas y justificacion** — Elecciones metodologicas, filtros aplicados, exclusiones
 6. **Preguntas realizadas al MCP y resumen de los datos obtenidos** — Cada query con descripcion del resultado
 7. **Analisis realizados y hallazgos clave** — Tecnicas aplicadas y principales insights
