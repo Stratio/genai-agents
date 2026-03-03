@@ -56,14 +56,14 @@ Para exploracion rapida de dominios sin analisis completo, ver la skill `/explor
 3. Obtener detalles de columnas relevantes (`stratio_get_table_columns_details`) y buscar terminologia de negocio (`stratio_search_domain_knowledge`) — lanzar en paralelo, son independientes
 4. Si necesitas aclarar algo, preguntar al usuario
 
-### Fase 1.5 — EDA y Calidad de Datos (en fase de planificacion, solo lectura)
+### Fase 1.1 — EDA y Calidad de Datos (en fase de planificacion, solo lectura)
 
 Antes de planificar metricas, entender la realidad de los datos. Ejecutar profiling siguiendo la mecanica de `skills-guides/exploration.md` sec 7, luego evaluar calidad, generar mini-resumen e informar limitaciones al usuario. Para detalle operativo completo (checklist de suficiencia, Data Quality Score, que evaluar), ver skill `/analyze` sec 2.5.
 
-### Fase 1.9 — Defaults
+### Fase 1.2 — Defaults
 
 - Default de estilo visual: **Corporativo** (si el usuario no elige otro en Bloque 2)
-- **Escalamiento durante ejecucion**: Si se detecta anomalia (>30% desviacion), inconsistencia o patron critico → informar al usuario y ofrecer profundizar. Detalle en skill `/analyze` sec 5.6c
+- **Escalamiento durante ejecucion**: Si se detecta anomalia (>30% desviacion), inconsistencia o patron critico → informar al usuario y ofrecer profundizar. Detalle en skill `/analyze` sec 5.8
 
 ### Fase 2 — Preguntas al Usuario (en fase de planificacion, solo lectura)
 
@@ -83,10 +83,10 @@ Si no selecciona formato en Bloque 1 → Bloque 2 se omite. Resultado: de 6 a 1-
 | Capacidad | Rapido | Estandar | Profundo |
 |-----------|--------|----------|----------|
 | Descubrimiento de dominio (Fase 1) | SI | SI | SI |
-| EDA y calidad de datos (Fase 1.5) | Basico (solo completitud y rango temporal) | Completo | Completo + profiling extendido |
-| Hipotesis previas (3.1) | Opcional | SI | SI |
+| EDA y calidad de datos (Fase 1.1) | Basico (solo completitud y rango temporal) | Completo | Completo + profiling extendido |
+| Hipotesis previas (sec 3.1) | Opcional | SI | SI |
 | Benchmark Discovery (Fase 3) | No buscar activamente; usar comparacion natural si disponible | Best-effort silencioso (pasos 1-3, sin preguntar) | Protocolo completo (5 pasos) |
-| Patrones analiticos (3.2) | Solo comparacion temporal si hay fechas | Auto-activar segun datos | Todos los relevantes |
+| Patrones analiticos (sec 3.2) | Solo comparacion temporal si hay fechas | Auto-activar segun datos | Todos los relevantes |
 | Tests estadisticos (ver `/analyze` [advanced-analytics.md](advanced-analytics.md)) | NO | Cuando relevantes | Sistematicos |
 | Analisis prospectivo (ver `/analyze` [advanced-analytics.md](advanced-analytics.md)) | NO | Solo si el usuario lo pide | Proactivo si los datos lo sugieren |
 | Root cause analysis (ver `/analyze` [advanced-analytics.md](advanced-analytics.md)) | NO | Solo si se detecta anomalia critica | Activo ante cualquier desviacion |
@@ -125,7 +125,7 @@ Si no selecciona formato en Bloque 1 → Bloque 2 se omite. Resultado: de 6 a 1-
 5. **(Si testing = Sí)** Generar tests unitarios (`output/[ANALISIS_DIR]/scripts/test_*.py`) con mocks o subsets de datos
 6. **(Si testing = Sí)** Ejecutar tests. Si fallan, corregir y reintentar
 7. Ejecutar scripts con datos reales
-8. **Loop de iteracion**: Si un hallazgo contradice hipotesis o revela patron inesperado, iterar (nuevas queries + actualizar analisis). Max 2 iteraciones; detalle en skill `/analyze` sec 5.6b
+8. **Loop de iteracion**: Si un hallazgo contradice hipotesis o revela patron inesperado, iterar (nuevas queries + actualizar analisis). Max 2 iteraciones; detalle en skill `/analyze` sec 5.7
 9. Generar visualizaciones en `output/[ANALISIS_DIR]/assets/`
 10. Generar deliverables en el formato solicitado en `output/[ANALISIS_DIR]/`
 11. **(Si profundidad >= Estandar — ver sec 9)** Generar reasoning en `output/[ANALISIS_DIR]/reasoning/reasoning.md`
