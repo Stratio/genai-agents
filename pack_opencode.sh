@@ -90,7 +90,10 @@ else
       "type": "remote",
       "url": "{env:MCP_SQL_URL}",
       "timeout": 90000,
-      "headers": { "X-API-Key": "{env:MCP_SQL_API_KEY}" }
+      "headers": {
+        "Authorization": "Bearer {env:MCP_SQL_API_KEY}",
+        "X-API-Key": "{env:MCP_SQL_API_KEY}"
+      }
     }
   },
   "permission": {
@@ -98,18 +101,8 @@ else
     "lsp": "allow", "edit": "allow", "write": "allow",
     "todoread": "allow", "todowrite": "allow", "task": "allow",
     "skill": "allow", "webfetch": "allow",
-    "sql_*": "deny",
-    "sql_stratio_list_business_domains": "allow",
-    "sql_stratio_list_technical_domains": "deny",
-    "sql_stratio_list_domain_tables": "allow",
-    "sql_stratio_get_tables_details": "allow",
-    "sql_stratio_get_table_columns_details": "allow",
-    "sql_stratio_generate_sql": "allow",
-    "sql_stratio_query_data": "allow",
-    "sql_stratio_search_domain_knowledge": "allow",
-    "sql_stratio_execute_sql": "allow",
-    "sql_stratio_profile_data": "allow",
-    "sql_stratio_propose_knowledge": "allow",
+    "sql_*": "allow",
+    "*stratio_list_technical_domains": "deny",
     "bash": { "*": "allow" }
   }
 }
@@ -197,6 +190,13 @@ find "$OUTPUT_DIR" \
   -type f \( -name '*.md' -o -name '*.sh' -o -name '*.py' -o -name '*.txt' \) \
   -exec sed -i 's/CLAUDE\.md/AGENTS.md/g' {} \;
 echo "    [7] Reemplazos CLAUDE.md → AGENTS.md aplicados"
+
+# Sustituir placeholder de tool de preguntas por la tool de OpenCode
+find "$OUTPUT_DIR" \
+  -not -path '*/node_modules/*' -not -path '*/.venv/*' \
+  -type f \( -name '*.md' -o -name '*.sh' -o -name '*.py' -o -name '*.txt' \) \
+  -exec sed -i 's/{{TOOL_PREGUNTAS}}/ (`question`)/g' {} \;
+echo "    [7b] Placeholder TOOL_PREGUNTAS → question"
 
 # ---------------------------------------------------------------------------
 # Fase 8 — Verificación de integridad

@@ -369,7 +369,7 @@ Para contenido obligatorio y plantilla, ver skill `/analyze` [reasoning-guide.md
 
 ## 10. Interaccion con el Usuario
 
-**Convencion de preguntas**: Siempre que estas instrucciones digan "preguntar al usuario con opciones", presentar las opciones de forma clara y estructurada. Si el entorno soporta preguntas interactivas con opciones seleccionables, usarlas. Si no, presentar las opciones como lista numerada en el chat, con formato legible, e indicar al usuario que responda con el numero o nombre de su eleccion. Para seleccion multiple, indicar que puede elegir varias separadas por coma. Aplicar esta convencion en toda referencia a "preguntas al usuario con opciones" en skills y guias.
+**Convencion de preguntas**: Siempre que estas instrucciones digan "preguntar al usuario con opciones", presentar las opciones de forma clara y estructurada. Si el entorno dispone de una tool para preguntas interactivas{{TOOL_PREGUNTAS}}, invocarla obligatoriamente — nunca escribir las preguntas en el chat cuando una tool de preguntar al usuario este disponible. Si no, presentar las opciones como lista numerada en el chat, con formato legible, e indicar al usuario que responda con el numero o nombre de su eleccion. Para seleccion multiple, indicar que puede elegir varias separadas por coma. Aplicar esta convencion en toda referencia a "preguntas al usuario con opciones" en skills y guias.
 
 - **Idioma de respuesta y deliverables**: Responder en el mismo idioma que usa el usuario. Los reportes, reasoning, validaciones y todo deliverable generado deben redactarse en el idioma del usuario, salvo que este indique explicitamente otro idioma
 - SIEMPRE preguntar el dominio si no esta claro

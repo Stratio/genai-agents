@@ -105,6 +105,8 @@ sed -i 's|(advanced-analytics\.md)|(analyze_advanced-analytics.md)|g' "$PROJECT_
 sed -i 's|(analytical-patterns\.md)|(analyze_analytical-patterns.md)|g' "$PROJECT_DIR"/*.md
 sed -i 's|(clustering-guide\.md)|(analyze_clustering-guide.md)|g' "$PROJECT_DIR"/*.md
 
+sed -i 's/{{TOOL_PREGUNTAS}}/ (`AskUserQuestion`)/g' "$PROJECT_DIR"/*.md
+
 # --- 5. Verificacion ---
 echo ""
 echo "=== Verificacion ==="

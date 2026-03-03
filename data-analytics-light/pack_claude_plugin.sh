@@ -128,7 +128,9 @@ EOF
   else
     sed -i 's|`skills-guides/exploration\.md`|`skills/analyze/exploration.md`|g' "$PLUGIN_DIR/agents/"*.md 2>/dev/null || true
   fi
+  sed -i 's/{{TOOL_PREGUNTAS}}/ (`AskUserQuestion`)/g' "$PLUGIN_DIR/agents/"*.md 2>/dev/null || true
 fi
+sed -i 's/{{TOOL_PREGUNTAS}}/ (`AskUserQuestion`)/g' "$PLUGIN_DIR/skills/"*/SKILL.md 2>/dev/null || true
 
 # --- .mcp.json del plugin ---
 if [ -n "$MCP_URL_RESOLVED" ] || [ -n "$MCP_KEY_RESOLVED" ]; then
@@ -142,7 +144,8 @@ if [ -n "$MCP_URL_RESOLVED" ] || [ -n "$MCP_KEY_RESOLVED" ]; then
       "type": "http",
       "url": "$MCP_URL_VALUE",
       "headers": {
-        "X-API-Key": "$MCP_KEY_VALUE"
+        "X-API-Key": "$MCP_KEY_VALUE",
+        "Authorization": "Bearer $MCP_KEY_VALUE"
       },
       "allowedTools": [
         "stratio_list_business_domains",
@@ -169,7 +172,8 @@ else
       "type": "http",
       "url": "${MCP_SQL_URL:-http://127.0.0.1:8080/mcp}",
       "headers": {
-        "X-API-Key": "${MCP_SQL_API_KEY:-}"
+        "X-API-Key": "${MCP_SQL_API_KEY:-}",
+        "Authorization": "Bearer ${MCP_SQL_API_KEY:-}"
       },
       "allowedTools": [
         "stratio_list_business_domains",

@@ -58,7 +58,7 @@ Antes de preguntar al usuario y planificar metricas, entender la realidad de los
 
 ## 3. Clasificacion y Preguntas al Usuario
 
-> **Nota**: Todas las preguntas con opciones de esta seccion siguen la convencion de preguntas (sec 10) (adaptativa al entorno: interactivas si disponibles, lista numerada en chat si no).
+> **Nota**: Todas las preguntas con opciones de esta seccion siguen la convencion de preguntas (sec 10).
 
 ### 3.0 Triage vs Analisis
 

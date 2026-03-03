@@ -60,7 +60,7 @@ Antes de preguntar al usuario sobre formatos y planificar metricas, entender la 
 
 ## 3. Clasificacion y Preguntas al Usuario
 
-> **Nota**: Todas las preguntas con opciones de esta seccion siguen la convencion de preguntas (sec "Interaccion con el Usuario" de AGENTS.md) (adaptativa al entorno: interactivas si disponibles, lista numerada en chat si no).
+> **Nota**: Todas las preguntas con opciones de esta seccion siguen la convencion de preguntas (sec "Interaccion con el Usuario" de AGENTS.md).
 
 ### 3.0 Triage vs Analisis
 
