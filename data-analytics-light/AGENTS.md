@@ -53,17 +53,17 @@ Para exploracion rapida de dominios sin analisis completo, ver la skill `/explor
 3. Obtener detalles de columnas relevantes (`stratio_get_table_columns_details`) y buscar terminologia de negocio (`stratio_search_domain_knowledge`) — lanzar en paralelo, son independientes
 4. Si necesitas aclarar algo, preguntar al usuario
 
-### Fase 1.5 — EDA y Calidad de Datos (en fase de planificacion, solo lectura)
+### Fase 1.1 — EDA y Calidad de Datos (en fase de planificacion, solo lectura)
 
-Antes de planificar metricas, entender la realidad de los datos. Ejecutar profiling siguiendo la mecanica de `skills-guides/exploration.md` sec 7, luego evaluar calidad, generar mini-resumen e informar limitaciones al usuario. Para detalle operativo completo (checklist de suficiencia, Data Quality Score, que evaluar), ver skill `/analyze` sec 2.5.
+Antes de planificar metricas, entender la realidad de los datos. Ejecutar profiling siguiendo la mecanica de `skills-guides/exploration.md` sec 7, luego evaluar calidad, generar mini-resumen e informar limitaciones al usuario. Para detalle operativo completo (checklist de suficiencia, Data Quality Score, que evaluar), ver skill `/analyze` sec 3.
 
 ### Fase 1.9 — Defaults
 
-- **Escalamiento durante ejecucion**: Si se detecta anomalia (>30% desviacion), inconsistencia o patron critico → informar al usuario y ofrecer profundizar. Detalle en skill `/analyze` sec 5.6
+- **Escalamiento durante ejecucion**: Si se detecta anomalia (>30% desviacion), inconsistencia o patron critico → informar al usuario y ofrecer profundizar. Detalle en skill `/analyze` sec 6.6
 
 ### Fase 2 — Preguntas al Usuario (en fase de planificacion, solo lectura)
 
-Agrupar en 1 bloque de preguntas al usuario con opciones seleccionables (detalle de opciones en skill `/analyze` sec 3):
+Agrupar en 1 bloque de preguntas al usuario con opciones seleccionables (detalle de opciones en skill `/analyze` sec 4):
 
 **Bloque 1** (siempre): Profundidad y Audiencia. En Estandar/Profundo, tambien Testing.
 
@@ -74,7 +74,7 @@ Agrupar en 1 bloque de preguntas al usuario con opciones seleccionables (detalle
 | Capacidad | Rapido | Estandar | Profundo |
 |-----------|--------|----------|----------|
 | Descubrimiento de dominio (Fase 1) | SI | SI | SI |
-| EDA y calidad de datos (Fase 1.5) | Basico (solo completitud y rango temporal) | Completo | Completo + profiling extendido |
+| EDA y calidad de datos (Fase 1.1) | Basico (solo completitud y rango temporal) | Completo | Completo + profiling extendido |
 | Hipotesis previas (3.1) | Opcional | SI | SI |
 | Benchmark Discovery (Fase 3) | No buscar activamente; usar comparacion natural si disponible | Best-effort silencioso (pasos 1-3, sin preguntar) | Protocolo completo (5 pasos) |
 | Patrones analiticos (3.2) | Solo comparacion temporal si hay fechas | Auto-activar segun datos | Todos los relevantes |
@@ -95,10 +95,10 @@ Agrupar en 1 bloque de preguntas al usuario con opciones seleccionables (detalle
    - **Formula**: Calculo exacto (ej: `ingresos_totales / num_clientes_activos`)
    - **Granularidad temporal**: Diario, semanal, mensual, trimestral
    - **Dimensiones de corte**: Ejes de desglose (region, producto, segmento)
-   - **Benchmark/objetivo**: Valor de referencia si existe. Escalar segun profundidad (ver skill `/analyze` sec 4.3)
+   - **Benchmark/objetivo**: Valor de referencia si existe. Escalar segun profundidad (ver skill `/analyze` sec 5.3)
    - **Fuente**: Tabla(s) y columna(s) del dominio
-4. Listar las preguntas de datos que se haran al MCP (ver skill `/analyze` sec 4.4 para buenas practicas de formulacion)
-5. Disenar visualizaciones a generar (ver skill `/analyze` sec 4.5)
+4. Listar las preguntas de datos que se haran al MCP (ver skill `/analyze` sec 5.4 para buenas practicas de formulacion)
+5. Disenar visualizaciones a generar (ver skill `/analyze` sec 5.5)
 6. Definir estructura de la presentacion de resultados en el chat (secciones, orden narrativo)
 7. Presentar el plan completo al usuario y solicitar aprobacion antes de ejecutar
 
@@ -109,9 +109,9 @@ Agrupar en 1 bloque de preguntas al usuario con opciones seleccionables (detalle
 3. Escribir scripts Python con nombres descriptivos para transformaciones y calculos
 4. Testear funciones clave antes de ejecutar con datos reales (fixtures con DataFrames mock)
 5. Ejecutar scripts con datos reales
-6. **Loop de iteracion**: Si un hallazgo contradice hipotesis o revela patron inesperado, iterar (nuevas queries + actualizar analisis). Max 2 iteraciones; detalle en skill `/analyze` sec 5.5
+6. **Loop de iteracion**: Si un hallazgo contradice hipotesis o revela patron inesperado, iterar (nuevas queries + actualizar analisis). Max 2 iteraciones; detalle en skill `/analyze` sec 6.5
 7. Generar visualizaciones como soporte visual del analisis
-8. Presentar resultados en el chat: hallazgos con insights accionables, tablas, visualizaciones, recomendaciones priorizadas y limitaciones (ver skill `/analyze` sec 6.1)
+8. Presentar resultados en el chat: hallazgos con insights accionables, tablas, visualizaciones, recomendaciones priorizadas y limitaciones (ver skill `/analyze` sec 7.1)
 9. Propuesta de conocimiento (opcional): preguntar al usuario si desea proponer terminos de negocio. Nunca proponer automaticamente
 
 ---
@@ -156,7 +156,7 @@ Aplicar este framework en CADA analisis, especialmente durante la planificacion 
    | **Magnitud?** | "Las ventas bajaron" | "Bajaron 12%, ≈€45K/mes" |
    | **Vs. que?** | "Norte va bien" | "Norte +23% vs media nacional, +8% vs target" |
    | **Que hacer?** | "Mejorar retencion" | "Programa fidelizacion en Premium (45% vs 72% benchmark) → ROI €120K/ano" |
-   | **Confianza?** | "Clientes prefieren A" | Adaptar a profundidad (Rapido=cualitativa+n, Estandar=IC95%, Profundo=IC95%+p-valor+effect size). Detalle en skill `/analyze` sec 6.1 |
+   | **Confianza?** | "Clientes prefieren A" | Adaptar a profundidad (Rapido=cualitativa+n, Estandar=IC95%, Profundo=IC95%+p-valor+effect size). Detalle en skill `/analyze` sec 7.1 |
 
    **Regla**: Si un hallazgo no pasa las 4 preguntas, es informacion, no insight. No va al resumen ejecutivo.
 
@@ -249,7 +249,7 @@ Cada resultado de `stratio_query_data` debe pasar estas 7 validaciones antes de 
 
 Si alguna validacion falla: reformular la pregunta al MCP, informar al usuario de la limitacion, y ajustar el plan si es necesario.
 
-Checklist de suficiencia de datos y Data Quality Score: ver skill `/analyze` sec 2.5.
+Checklist de suficiencia de datos y Data Quality Score: ver skill `/analyze` sec 3.
 
 ### Timeouts y reintentos
 
@@ -287,7 +287,7 @@ Tres principios core (ver `skills/analyze/visualization.md` para guia completa):
 
 ## 8. [Eliminada]
 
-El agente light no incluye modelado ML formal. Para segmentacion, usar RFM por quintiles o reglas de negocio (ver skill `/analyze` sec 4.8 y [clustering-guide.md](clustering-guide.md)).
+El agente light no incluye modelado ML formal. Para segmentacion, usar RFM por quintiles o reglas de negocio (ver skill `/analyze` sec 5.8 y [clustering-guide.md](clustering-guide.md)).
 
 ---
 

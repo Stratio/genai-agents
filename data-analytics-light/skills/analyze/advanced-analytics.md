@@ -69,7 +69,7 @@ Activar cuando se detecta un problema, anomalia o desviacion significativa.
 
 | Tipo | Metodo | Implementacion | Criterio |
 |------|--------|----------------|----------|
-| **Outliers estaticos** | IQR o Z-score | `Q1 - 1.5*IQR` / `Q3 + 1.5*IQR`, o `abs(z) > 3` | Ya en EDA (Fase 1.5) |
+| **Outliers estaticos** | IQR o Z-score | `Q1 - 1.5*IQR` / `Q3 + 1.5*IQR`, o `abs(z) > 3` | Ya en EDA (Fase 1.1) |
 | **Anomalias temporales** | Desviacion de tendencia+estacionalidad | `statsmodels.tsa.seasonal_decompose`, residuo > 2*std | Serie >12 puntos |
 | **Cambio de tendencia** | Diferencia de medias pre/post | Media movil + t-test entre ventanas | Ventana minima: 5 puntos |
 | **Anomalias categoricas** | Desviacion de distribucion esperada | Chi-cuadrado vs distribucion historica | p < 0.01 |

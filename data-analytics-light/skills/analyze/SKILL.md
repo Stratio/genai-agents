@@ -28,7 +28,7 @@ Si la peticion requiere analisis (cruce de datos, hipotesis, visualizaciones, mu
 
 Leer y seguir `skills-guides/exploration.md` para los pasos de descubrimiento del dominio (listar dominios, seleccionar, explorar tablas, columnas, terminologia y profiling).
 
-## 2.5. EDA y Calidad de Datos
+## 3. EDA y Calidad de Datos
 
 Antes de preguntar al usuario y planificar metricas, entender la realidad de los datos:
 
@@ -56,15 +56,15 @@ Antes de preguntar al usuario y planificar metricas, entender la realidad de los
    - "**Calidad: ALTO (85%)**. Los datos cubren de enero 2023 a diciembre 2025. La columna `descuento` tiene un 35% de nulos. Se detectaron 12 outliers en `importe_total` (>3 IQR). La distribucion de `categoria_producto` esta concentrada: 3 de 15 categorias representan el 80% de registros."
 6. **Ajustar expectativas**: Si hay limitaciones serias, advertir al usuario de que ciertas metricas o visualizaciones podrian no ser fiables
 
-## 3. Clasificacion y Preguntas al Usuario
+## 4. Clasificacion y Preguntas al Usuario
 
 > **Nota**: Todas las preguntas con opciones de esta seccion siguen la convencion de preguntas (sec 10).
 
-### 3.0 Triage vs Analisis
+### 4.0 Triage vs Analisis
 
 Las preguntas simples (datos puntuales, sin dimensiones de corte) se resuelven en Triage (Fase 0 del workflow) sin invocar esta skill. Todo lo demas es un analisis y sigue el flujo de bloques de preguntas descrito a continuacion.
 
-### 3.1 Bloque 1 — Profundidad, Audiencia y Testing
+### 4.1 Bloque 1 — Profundidad, Audiencia y Testing
 
 Una sola interaccion:
 
@@ -76,23 +76,23 @@ Una sola interaccion:
 
 - Los tests validan transformaciones y cálculos antes de ejecutar con datos reales. Mejoran la precisión pero consumen más tokens, tiempo y coste. **En profundidad Rápido, testing se desactiva automáticamente sin preguntar al usuario.**
 
-## 4. Planificacion
+## 5. Planificacion
 
-Elaborar un plan detallado siguiendo el framework analitico (seccion 3):
+Elaborar un plan detallado siguiendo el framework analitico (sec "Framework Analitico" de AGENTS.md):
 
-### 4.1 Enfoque analitico
+### 5.1 Enfoque analitico
 
 Determinar si la pregunta requiere analisis descriptivo, segmentacion por reglas, o tecnicas estadisticas avanzadas:
 
 | Escenario | Recomendacion |
 |-----------|---------------|
 | Describir que paso y por que | Analisis descriptivo (pandas, agrupaciones, comparativas) |
-| Segmentar clientes/productos | Segmentacion por reglas o RFM → sec 4.8 |
-| Proyectar tendencias | Tecnicas estadisticas (statsmodels, seasonal decompose) → sec 4.6 |
-| Detectar patrones y anomalias | Analisis estadistico avanzado → sec 4.6 |
+| Segmentar clientes/productos | Segmentacion por reglas o RFM → sec 5.8 |
+| Proyectar tendencias | Tecnicas estadisticas (statsmodels, seasonal decompose) → sec 5.6 |
+| Detectar patrones y anomalias | Analisis estadistico avanzado → sec 5.6 |
 
-### 4.2 Hipotesis
-Formular hipotesis ANTES de consultar datos. Usar la plantilla de sec 3.1. Para cada sub-pregunta identificada en el paso 1:
+### 5.2 Hipotesis
+Formular hipotesis ANTES de consultar datos. Usar la plantilla de sec "Pensamiento analitico" de AGENTS.md. Para cada sub-pregunta identificada en el paso 1:
 - Que esperamos encontrar y por que
 - Que resultado seria sorprendente
 - Documentar las hipotesis en el plan para validarlas luego con datos
@@ -109,7 +109,7 @@ Formular hipotesis ANTES de consultar datos. Usar la plantilla de sec 3.1. Para 
 → Confianza: Alta (3 anos de datos, patron consistente)
 ```
 
-### 4.3 Metricas y KPIs
+### 5.3 Metricas y KPIs
 
 Para cada KPI, documentar:
 
@@ -121,7 +121,7 @@ Para cada KPI, documentar:
 | Dimensiones | Ejes de corte (region, producto, segmento) |
 | Benchmark | Objetivo, media del sector, o periodo anterior |
 | Fuente | Tabla(s) y columna(s) del dominio |
-| Test estadistico | Si requiere IC o comparacion entre grupos (ver seccion 4.6 de esta skill) |
+| Test estadistico | Si requiere IC o comparacion entre grupos (ver seccion 5.6 de esta skill) |
 
 **Benchmark Discovery** — Escala segun profundidad (ver matriz de activacion):
 - **Rapido**: No buscar activamente. Usar comparacion temporal natural si la query ya incluye dimension tiempo
@@ -132,7 +132,7 @@ Para cada KPI, documentar:
   Sin benchmark → reportar el dato normalmente
 - **Profundo**: Pasos 1-3 + tendencia si >6 puntos temporales + preguntar al usuario
 
-### 4.4 Preguntas de datos
+### 5.4 Preguntas de datos
 Lista de preguntas en lenguaje natural para `stratio_query_data`. NUNCA escribir SQL.
 
 **Buenas practicas para formular preguntas al MCP:**
@@ -149,9 +149,9 @@ Lista de preguntas en lenguaje natural para `stratio_query_data`. NUNCA escribir
 3. **Queries de detalle**: Top/bottom N, outliers → profundizar en los hallazgos
 4. **Queries de validacion**: Cruces de datos, checks de consistencia → asegurar fiabilidad
 
-Este orden es para **planificar** las preguntas. En **ejecucion** (sec 5.0), lanzar en paralelo todas las queries independientes — tipicamente las categorias 1, 2 y 3 se pueden ejecutar simultaneamente. Solo las de categoria 4 (validacion cruzada) pueden requerir resultados previos.
+Este orden es para **planificar** las preguntas. En **ejecucion** (sec 6.0), lanzar en paralelo todas las queries independientes — tipicamente las categorias 1, 2 y 3 se pueden ejecutar simultaneamente. Solo las de categoria 4 (validacion cruzada) pueden requerir resultados previos.
 
-### 4.5 Visualizaciones
+### 5.5 Visualizaciones
 
 Ver [visualization.md](visualization.md) para principios de visualizacion y data storytelling.
 
@@ -162,7 +162,7 @@ Para cada visualizacion del plan, definir:
 - **Titulo**: Formulado como insight, no como descripcion
 - **Datos fuente**: Query MCP que alimenta la visualizacion
 
-### 4.6 Tecnicas analiticas avanzadas
+### 5.6 Tecnicas analiticas avanzadas
 
 Activar segun la profundidad seleccionada (ver matriz de activacion):
 - **Estandar**: Consultar [advanced-analytics.md](advanced-analytics.md) cuando sea relevante
@@ -170,13 +170,13 @@ Activar segun la profundidad seleccionada (ver matriz de activacion):
 
 Cubre: rigor estadistico (tests, IC, effect sizes), analisis prospectivo (escenarios, Monte Carlo), root cause analysis, deteccion de anomalias.
 
-### 4.7 Patrones analiticos adicionales
+### 5.7 Patrones analiticos adicionales
 
 Implementacion detallada de patrones cuyo trigger esta en sec 3.2 (Lorenz/Gini, mix, indexacion, desviacion vs referencia, gap).
 
 Cuando un patron se active: consultar [analytical-patterns.md](analytical-patterns.md) para query MCP, Python e interpretacion.
 
-### 4.8 Segmentacion y clustering
+### 5.8 Segmentacion y clustering
 
 Para guia completa de segmentacion (RFM, clustering, validacion, profiling), ver [clustering-guide.md](clustering-guide.md).
 
@@ -185,26 +185,26 @@ Usar cuando el usuario pida segmentacion, agrupacion de clientes/productos, o de
 - RFM con quintiles y etiquetas de negocio
 - Profiling obligatorio de segmentos
 
-### 4.9 Estructura de la presentacion de resultados
-Secciones del analisis y orden narrativo para presentar en el chat. Aplicar principios de data storytelling (seccion 6.1)
+### 5.9 Estructura de la presentacion de resultados
+Secciones del analisis y orden narrativo para presentar en el chat. Aplicar principios de data storytelling (seccion 7.1)
 
-### 4.10 Presentar plan
+### 5.10 Presentar plan
 Presentar plan completo al usuario y solicitar aprobacion antes de ejecutar
 
-## 5. Ejecucion
+## 6. Ejecucion
 
-### 5.0 Obtencion de datos
-- Usar `stratio_query_data(data_question=..., domain_name=..., output_format="dict")` para cada pregunta de datos. **Lanzar en paralelo** todas las queries independientes definidas en el plan (paso 4.4). Solo serializar si una query necesita el resultado de otra para formularse
+### 6.0 Obtencion de datos
+- Usar `stratio_query_data(data_question=..., domain_name=..., output_format="dict")` para cada pregunta de datos. **Lanzar en paralelo** todas las queries independientes definidas en el plan (paso 5.4). Solo serializar si una query necesita el resultado de otra para formularse
 - `output_format` solo acepta strings: `"dict"`, `"csv"`, `"markdown"`. Nunca pasar booleanos
 - Maximizar lo que se resuelve en el MCP (joins, agregaciones, filtros) antes de recurrir a pandas. Ver reglas "MCP-first" y "Multiples datasets" en seccion 4
 - NUNCA escribir SQL manualmente
 - Si una query falla, reformular la pregunta en lenguaje natural
 - Guardar datos intermedios como CSV solo si un script posterior los necesita como input
 
-### 5.1 Validacion post-query (obligatorio)
+### 6.1 Validacion post-query (obligatorio)
 Aplicar las 7 validaciones de la seccion 4 ("Validacion post-query") a cada resultado recibido. Cuando se lanzan queries en paralelo, validar cada resultado conforme llega. Si alguna falla: reformular la pregunta al MCP, informar al usuario, ajustar el plan.
 
-### 5.2 Desarrollo de scripts
+### 6.2 Desarrollo de scripts
 - Escribir scripts con nombres descriptivos que incluyan contexto del analisis
 - Cada script debe:
   - Leer datos de CSVs guardados previamente o recibir datos como parametro
@@ -212,7 +212,7 @@ Aplicar las 7 validaciones de la seccion 4 ("Validacion post-query") a cada resu
   - Generar visualizaciones
 - **Datasets grandes (>100k filas)**: Usar muestreo estratificado para desarrollo rapido, datos completos para la version final
 
-### 5.3 Testing
+### 6.3 Testing
 
 > **Solo si la profundidad es Estándar/Profundo Y el usuario eligió "Sí" en la pregunta de testing del Bloque 1.** En profundidad Rápido o si el usuario eligió "No", omitir esta sección y ejecutar directamente el script con datos reales.
 
@@ -221,19 +221,19 @@ Aplicar las 7 validaciones de la seccion 4 ("Validacion post-query") a cada resu
 - Validar transformaciones, calculos y formatos de salida
 - Solo proceder si los tests pasan
 
-### 5.4 Ejecucion con datos reales
+### 6.4 Ejecucion con datos reales
 Ejecutar scripts con datos reales.
 
-### 5.5 Loop de iteracion
+### 6.5 Loop de iteracion
 
 Tras revisar resultados iniciales, evaluar si requieren iteracion:
 
 1. **Trigger**: Hallazgo contradice hipotesis, patron inesperado, o pregunta critica no prevista
-2. **Accion**: Documentar hallazgo → formular nueva(s) pregunta(s) → queries MCP adicionales (5.0-5.1) → actualizar scripts
+2. **Accion**: Documentar hallazgo → formular nueva(s) pregunta(s) → queries MCP adicionales (6.0-6.1) → actualizar scripts
 3. **Limite**: Max 2 iteraciones. Mas → documentar como analisis de seguimiento
 4. **Registro**: Cada iteracion documentar en el chat: hipotesis → hallazgo → nueva hipotesis → resultado
 
-### 5.6 Complexity Upgrade
+### 6.6 Complexity Upgrade
 
 Si durante la ejecucion se detecta un hallazgo que excede el alcance del nivel de complejidad actual:
 
@@ -249,22 +249,22 @@ Si durante la ejecucion se detecta un hallazgo que excede el alcance del nivel d
    - "No, solo documentar" → Registrar hallazgo en el chat como "area de investigacion futura"
 3. El upgrade NO reinicia el analisis — extiende el analisis actual con fases adicionales
 
-**Diferencia con el loop de iteracion (5.5):** El loop refina hipotesis dentro del mismo nivel de complejidad. El upgrade cambia el nivel (ej: Triage → Analisis) y activa capacidades adicionales (EDA, hipotesis formales, visualizaciones).
+**Diferencia con el loop de iteracion (6.5):** El loop refina hipotesis dentro del mismo nivel de complejidad. El upgrade cambia el nivel (ej: Triage → Analisis) y activa capacidades adicionales (EDA, hipotesis formales, visualizaciones).
 
-### 5.7 Presentacion de resultados
-La presentacion de resultados se hace en el chat, siguiendo la estructura de la seccion 6.1. Las visualizaciones generadas se muestran inline como soporte del analisis.
+### 6.7 Presentacion de resultados
+La presentacion de resultados se hace en el chat, siguiendo la estructura de la seccion 7.1. Las visualizaciones generadas se muestran inline como soporte del analisis.
 
-### 5.8 Validacion de output final
+### 6.8 Validacion de output final
 Antes de presentar al usuario, verificar:
 - Las visualizaciones se generaron correctamente
 - Los datos usados son coherentes entre si (totales cuadran, periodos alineados)
-- Los hallazgos pasan el checklist "So What?" de la seccion 6.1
+- Los hallazgos pasan el checklist "So What?" de la seccion 7.1
 
 Si alguna visualizacion falla, regenerarla o presentar los datos en formato tabla.
 
-## 6. Reporte Final
+## 7. Reporte Final
 
-### 6.1 Estructura del reporte en chat
+### 7.1 Estructura del reporte en chat
 
 Al presentar hallazgos en la conversacion, seguir esta estructura:
 
@@ -293,7 +293,7 @@ Si un hallazgo no pasa las 4 preguntas → es informacion, no insight. No va al 
 
 Para principios de data storytelling y mapping hallazgos → narrativa, leer [visualization.md](visualization.md) secciones 3 y 4.
 
-## 7. Propuesta de Conocimiento (Opcional)
+## 8. Propuesta de Conocimiento (Opcional)
 
 Tras presentar el reporte final, preguntar al usuario siguiendo la convencion de preguntas (sec 10):
 - **Si**: Analizar conversacion y proponer conocimiento al dominio
