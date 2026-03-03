@@ -6,7 +6,7 @@ Guia detallada para generar el reasoning de cada analisis. El reasoning document
 
 | Profundidad | Reasoning | Formato |
 |-------------|-----------|---------|
-| Rapido | No generar fichero. Incluir notas clave en el chat (ver SKILL.md sec 6.1) | Solo chat |
+| Rapido | No generar fichero. Incluir notas clave en el chat (ver SKILL.md sec 7.1) | Solo chat |
 | Estandar | Generar en `output/[ANALISIS_DIR]/reasoning/reasoning.md` | Solo .md |
 | Profundo | Generar en `output/[ANALISIS_DIR]/reasoning/reasoning.md` | Solo .md (completo + sugerencias detalladas) |
 

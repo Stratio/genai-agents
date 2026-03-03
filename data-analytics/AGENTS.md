@@ -58,18 +58,18 @@ Para exploracion rapida de dominios sin analisis completo, ver la skill `/explor
 
 ### Fase 1.1 — EDA y Calidad de Datos (en fase de planificacion, solo lectura)
 
-Antes de planificar metricas, entender la realidad de los datos. Ejecutar profiling siguiendo la mecanica de `skills-guides/exploration.md` sec 7, luego evaluar calidad, generar mini-resumen e informar limitaciones al usuario. Para detalle operativo completo (checklist de suficiencia, Data Quality Score, que evaluar), ver skill `/analyze` sec 2.5.
+Antes de planificar metricas, entender la realidad de los datos. Ejecutar profiling siguiendo la mecanica de `skills-guides/exploration.md` sec 7, luego evaluar calidad, generar mini-resumen e informar limitaciones al usuario. Para detalle operativo completo (checklist de suficiencia, Data Quality Score, que evaluar), ver skill `/analyze` sec 3.
 
 ### Fase 1.2 — Defaults
 
 - Default de estilo visual: **Corporativo** (si el usuario no elige otro en Bloque 2)
-- **Escalamiento durante ejecucion**: Si se detecta anomalia (>30% desviacion), inconsistencia o patron critico → informar al usuario y ofrecer profundizar. Detalle en skill `/analyze` sec 5.8
+- **Escalamiento durante ejecucion**: Si se detecta anomalia (>30% desviacion), inconsistencia o patron critico → informar al usuario y ofrecer profundizar. Detalle en skill `/analyze` sec 6.8
 
 ### Fase 2 — Preguntas al Usuario (en fase de planificacion, solo lectura)
 
 Leer `output/MEMORY.md` sec Preferencias (si existe) para ofrecer defaults personalizados al usuario.
 
-Agrupar en maximo 2 bloques de preguntas al usuario con opciones seleccionables (detalle de opciones en skill `/analyze` sec 3):
+Agrupar en maximo 2 bloques de preguntas al usuario con opciones seleccionables (detalle de opciones en skill `/analyze` sec 4):
 
 **Bloque 1** (siempre): Profundidad + Audiencia + Formato (permitir seleccion multiple). En Estandar/Profundo, tambien Testing
 **Bloque 2** (solo si selecciono formato en Bloque 1): Estructura + Estilo
@@ -108,10 +108,10 @@ Si no selecciona formato en Bloque 1 → Bloque 2 se omite. Resultado: de 6 a 1-
    - **Formula**: Calculo exacto (ej: `ingresos_totales / num_clientes_activos`)
    - **Granularidad temporal**: Diario, semanal, mensual, trimestral
    - **Dimensiones de corte**: Ejes de desglose (region, producto, segmento)
-   - **Benchmark/objetivo**: Valor de referencia si existe. Escalar segun profundidad (ver skill `/analyze` sec 4.4)
+   - **Benchmark/objetivo**: Valor de referencia si existe. Escalar segun profundidad (ver skill `/analyze` sec 5.4)
    - **Fuente**: Tabla(s) y columna(s) del dominio
-5. Listar las preguntas de datos que se haran al MCP (ver skill `/analyze` sec 4.5 para buenas practicas de formulacion)
-6. Disenar visualizaciones a generar (ver skill `/analyze` sec 4.6)
+5. Listar las preguntas de datos que se haran al MCP (ver skill `/analyze` sec 5.5 para buenas practicas de formulacion)
+6. Disenar visualizaciones a generar (ver skill `/analyze` sec 5.6)
 7. Definir estructura del deliverable
 8. Presentar el plan completo al usuario y solicitar aprobacion antes de ejecutar. Incluir una nota sutil invitando a compartir documentacion adicional, benchmarks o datos complementarios si los tiene (sin convertirlo en pregunta bloqueante)
 
@@ -125,14 +125,14 @@ Si no selecciona formato en Bloque 1 → Bloque 2 se omite. Resultado: de 6 a 1-
 5. **(Si testing = Sí)** Generar tests unitarios (`output/[ANALISIS_DIR]/scripts/test_*.py`) con mocks o subsets de datos
 6. **(Si testing = Sí)** Ejecutar tests. Si fallan, corregir y reintentar
 7. Ejecutar scripts con datos reales
-8. **Loop de iteracion**: Si un hallazgo contradice hipotesis o revela patron inesperado, iterar (nuevas queries + actualizar analisis). Max 2 iteraciones; detalle en skill `/analyze` sec 5.7
+8. **Loop de iteracion**: Si un hallazgo contradice hipotesis o revela patron inesperado, iterar (nuevas queries + actualizar analisis). Max 2 iteraciones; detalle en skill `/analyze` sec 6.7
 9. Generar visualizaciones en `output/[ANALISIS_DIR]/assets/`
 10. Generar deliverables en el formato solicitado en `output/[ANALISIS_DIR]/`
 11. **(Si profundidad >= Estandar — ver sec 9)** Generar reasoning en `output/[ANALISIS_DIR]/reasoning/reasoning.md`
 12. **Validacion de output final**: Ejecutar checklist segun profundidad (Rapido: Bloque A en chat; Estandar: A+B+C en .md; Profundo: A+B+C+D en .md). No bloquea la entrega. Ver skill `/analyze` [validation-guide.md](validation-guide.md)
 13. Reportar resultados en el chat: resumen de hallazgos + rutas de archivos generados + resumen de validacion
 14. Propuesta de conocimiento (opcional): preguntar al usuario si desea analizar la conversacion para proponer terminos de negocio y preferencias a la capa de `Stratio Governance`. Si acepta, seguir el workflow de /propose-knowledge. Nunca proponer automaticamente
-15. **Memoria de analisis**: Preguntar al usuario si desea guardar en memoria persistente. Si acepta, escribir entrada en `output/ANALYSIS_MEMORY.md` y actualizar `output/MEMORY.md` (ver skill `/analyze` sec 7). Si rechaza, omitir todos los pasos de escritura de memoria
+15. **Memoria de analisis**: Preguntar al usuario si desea guardar en memoria persistente. Si acepta, escribir entrada en `output/ANALYSIS_MEMORY.md` y actualizar `output/MEMORY.md` (ver skill `/analyze` sec 8). Si rechaza, omitir todos los pasos de escritura de memoria
 
 ---
 
@@ -176,7 +176,7 @@ Aplicar este framework en CADA analisis, especialmente durante la planificacion 
    | **Magnitud?** | "Las ventas bajaron" | "Bajaron 12%, ≈€45K/mes" |
    | **Vs. que?** | "Norte va bien" | "Norte +23% vs media nacional, +8% vs target" |
    | **Que hacer?** | "Mejorar retencion" | "Programa fidelizacion en Premium (45% vs 72% benchmark) → ROI €120K/ano" |
-   | **Confianza?** | "Clientes prefieren A" | Adaptar a profundidad (Rapido=cualitativa+n, Estandar=IC95%, Profundo=IC95%+p-valor+effect size). Detalle en skill `/analyze` sec 6.1 |
+   | **Confianza?** | "Clientes prefieren A" | Adaptar a profundidad (Rapido=cualitativa+n, Estandar=IC95%, Profundo=IC95%+p-valor+effect size). Detalle en skill `/analyze` sec 7.1 |
 
    **Regla**: Si un hallazgo no pasa las 4 preguntas, es informacion, no insight. No va al resumen ejecutivo.
 
@@ -272,7 +272,7 @@ Cada resultado de `stratio_query_data` debe pasar estas 7 validaciones antes de 
 
 Si alguna validacion falla: reformular la pregunta al MCP, informar al usuario de la limitacion, y ajustar el plan si es necesario.
 
-Checklist de suficiencia de datos y Data Quality Score: ver skill `/analyze` sec 2.5.
+Checklist de suficiencia de datos y Data Quality Score: ver skill `/analyze` sec 3.
 
 ### Timeouts y reintentos
 
@@ -390,8 +390,8 @@ Dos ficheros de memoria con propositos distintos:
 
 | Fichero | Proposito | Escritura |
 |---------|-----------|-----------|
-| `output/ANALYSIS_MEMORY.md` | Indice compacto de analisis completados: dominio, resumen en 1 frase y ruta al detalle | Automatica (skill `/analyze` sec 7) |
-| `output/[ANALISIS_DIR]/analysis_memory.md` | Detalle completo del analisis: pregunta, KPIs, insights, Data Quality Score | Automatica (skill `/analyze` sec 7) |
+| `output/ANALYSIS_MEMORY.md` | Indice compacto de analisis completados: dominio, resumen en 1 frase y ruta al detalle | Automatica (skill `/analyze` sec 8) |
+| `output/[ANALISIS_DIR]/analysis_memory.md` | Detalle completo del analisis: pregunta, KPIs, insights, Data Quality Score | Automatica (skill `/analyze` sec 8) |
 | `output/MEMORY.md` | Conocimiento curado: preferencias, patrones de datos, heuristicas | Automatica (skill `/update-memory`) |
 
 **Reglas de uso**:

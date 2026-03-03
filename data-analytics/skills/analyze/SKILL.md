@@ -29,7 +29,7 @@ Si la peticion requiere analisis (cruce de datos, hipotesis, visualizaciones, mu
 
 Leer y seguir `skills-guides/exploration.md` para los pasos de descubrimiento del dominio (listar dominios, seleccionar, explorar tablas, columnas, terminologia y profiling).
 
-## 2.5. EDA y Calidad de Datos
+## 3. EDA y Calidad de Datos
 
 Antes de preguntar al usuario sobre formatos y planificar metricas, entender la realidad de los datos:
 
@@ -58,18 +58,18 @@ Antes de preguntar al usuario sobre formatos y planificar metricas, entender la 
    - "**Calidad: ALTO (85%)**. Los datos cubren de enero 2023 a diciembre 2025. La columna `descuento` tiene un 35% de nulos. Se detectaron 12 outliers en `importe_total` (>3 IQR). La distribucion de `categoria_producto` esta concentrada: 3 de 15 categorias representan el 80% de registros."
 6. **Ajustar expectativas**: Si hay limitaciones serias, advertir al usuario de que ciertas metricas o visualizaciones podrian no ser fiables
 
-## 3. Clasificacion y Preguntas al Usuario
+## 4. Clasificacion y Preguntas al Usuario
 
 > **Nota**: Todas las preguntas con opciones de esta seccion siguen la convencion de preguntas (sec "Interaccion con el Usuario" de AGENTS.md).
 
-### 3.0 Triage vs Analisis
+### 4.0 Triage vs Analisis
 
 Las preguntas simples (datos puntuales, sin dimensiones de corte) se resuelven en Triage (Fase 0 del workflow) sin invocar esta skill. Todo lo demas es un analisis y sigue el flujo de bloques de preguntas descrito a continuacion.
 
 **Defaults generales:**
 - Estilo visual: **Corporativo** (si el usuario no elige otro en Bloque 2)
 
-### 3.1 Bloque 1 — Profundidad, Audiencia y Formato
+### 4.1 Bloque 1 — Profundidad, Audiencia y Formato
 
 Una sola interaccion:
 
@@ -86,7 +86,7 @@ Una sola interaccion:
 - Si no selecciona formato → no hay deliverables, el analisis se entrega solo en chat + report.md automatico
 - Requisitos adicionales via opcion "Other" (filtros temporales, segmentos, metricas obligatorias)
 
-### 3.2 Bloque 2 — Estructura y Estilo (solo si selecciono formato en Bloque 1)
+### 4.2 Bloque 2 — Estructura y Estilo (solo si selecciono formato en Bloque 1)
 
 Una sola interaccion con 2 preguntas. Las opciones son literales — no inventar, no omitir, no sustituir:
 
@@ -97,19 +97,19 @@ Una sola interaccion con 2 preguntas. Las opciones son literales — no inventar
 
 Si no selecciono formato en Bloque 1 → Bloque 2 se omite completamente. Resultado: de 6 a 1-2 interacciones.
 
-## 4. Planificacion
+## 5. Planificacion
 
 Elaborar un plan detallado siguiendo el framework analitico (sec "Framework Analitico" de AGENTS.md):
 
-### 4.0 Contexto historico
+### 5.0 Contexto historico
 Leer en paralelo (si existen):
 - `output/ANALYSIS_MEMORY.md` — triage rapido: buscar entradas del mismo dominio. Si hay una entrada relevante, leer su fichero `analysis_memory.md` referenciado en el campo **Detalle** para obtener KPIs, insights y baselines de referencia
 - `output/MEMORY.md` — sec "Patrones de Datos Conocidos" del dominio para anticipar problemas de datos conocidos
 
-### 4.1 Librerias adicionales
+### 5.1 Librerias adicionales
 Evaluar si `requirements.txt` necesita ampliarse
 
-### 4.2 Enfoque analitico: descriptivo, segmentacion o feature importance
+### 5.2 Enfoque analitico: descriptivo, segmentacion o feature importance
 
 Determinar si la pregunta requiere solo analisis descriptivo o tambien segmentacion/clustering o feature importance:
 
@@ -122,7 +122,7 @@ Determinar si la pregunta requiere solo analisis descriptivo o tambien segmentac
 
 **Deteccion automatica**: Si la pregunta menciona "segmentar", "agrupar", "perfiles" → clustering. Si menciona "que factores influyen", "que explica" → feature importance. Si pide proyeccion temporal → proyeccion lineal (no ML). Inferir el tipo de la pregunta y los datos, no preguntar al usuario.
 
-### 4.3 Hipotesis
+### 5.3 Hipotesis
 Formular hipotesis ANTES de consultar datos. Usar la plantilla de sec "Pensamiento analitico" de AGENTS.md. Para cada sub-pregunta identificada en el paso 1:
 - Que esperamos encontrar y por que
 - Que resultado seria sorprendente
@@ -141,7 +141,7 @@ Formular hipotesis ANTES de consultar datos. Usar la plantilla de sec "Pensamien
 → Confianza: Alta (3 anos de datos, patron consistente)
 ```
 
-### 4.4 Metricas y KPIs
+### 5.4 Metricas y KPIs
 
 Para cada KPI, documentar:
 
@@ -166,7 +166,7 @@ Para cada KPI, documentar:
 
 Documentar el benchmark en el campo "Benchmark" del KPI. Los datos sin benchmark se reportan con normalidad — la ausencia solo se marca como limitacion en profundidad Profundo.
 
-### 4.5 Preguntas de datos
+### 5.5 Preguntas de datos
 Lista de preguntas en lenguaje natural para `stratio_query_data`. NUNCA escribir SQL.
 
 **Buenas practicas para formular preguntas al MCP:**
@@ -183,9 +183,9 @@ Lista de preguntas en lenguaje natural para `stratio_query_data`. NUNCA escribir
 3. **Queries de detalle**: Top/bottom N, outliers → profundizar en los hallazgos
 4. **Queries de validacion**: Cruces de datos, checks de consistencia → asegurar fiabilidad
 
-Este orden es para **planificar** las preguntas. En **ejecucion** (sec 5.2), lanzar en paralelo todas las queries independientes — tipicamente las categorias 1, 2 y 3 se pueden ejecutar simultaneamente. Solo las de categoria 4 (validacion cruzada) pueden requerir resultados previos.
+Este orden es para **planificar** las preguntas. En **ejecucion** (sec 6.2), lanzar en paralelo todas las queries independientes — tipicamente las categorias 1, 2 y 3 se pueden ejecutar simultaneamente. Solo las de categoria 4 (validacion cruzada) pueden requerir resultados previos.
 
-### 4.6 Visualizaciones
+### 5.6 Visualizaciones
 
 Leer y seguir `skills-guides/visualization.md` para seleccion de graficas y principios de visualizacion.
 
@@ -196,7 +196,7 @@ Para cada visualizacion del plan, definir:
 - **Titulo**: Formulado como insight, no como descripcion
 - **Datos fuente**: Query MCP que alimenta la visualizacion
 
-### 4.7 Tecnicas analiticas avanzadas
+### 5.7 Tecnicas analiticas avanzadas
 
 Activar segun la profundidad seleccionada (ver matriz de activacion en AGENTS.md sec 2):
 - **Estandar**: Consultar [advanced-analytics.md](advanced-analytics.md) cuando sea relevante
@@ -204,13 +204,13 @@ Activar segun la profundidad seleccionada (ver matriz de activacion en AGENTS.md
 
 Cubre: rigor estadistico (tests, IC, effect sizes), analisis prospectivo (escenarios, Monte Carlo), root cause analysis, deteccion de anomalias.
 
-### 4.8 Patrones analiticos adicionales
+### 5.8 Patrones analiticos adicionales
 
 Implementacion detallada de patrones cuyo trigger esta en sec "Patrones analiticos operacionalizados" de AGENTS.md (Lorenz/Gini, mix, indexacion, desviacion vs referencia, gap).
 
 Cuando un patron se active: consultar [analytical-patterns.md](analytical-patterns.md) para query MCP, Python e interpretacion.
 
-### 4.9 Segmentacion y clustering
+### 5.9 Segmentacion y clustering
 
 Para guia completa de segmentacion (RFM, clustering, validacion, profiling), ver [clustering-guide.md](clustering-guide.md).
 
@@ -222,10 +222,10 @@ Usar cuando el usuario pida segmentacion, agrupacion de clientes/productos, o de
 
 Para feature importance como complemento a la segmentacion o al analisis descriptivo, ver [clustering-guide.md](clustering-guide.md) sec 7.
 
-### 4.10 Estructura del deliverable
-Secciones, contenido de cada una, formato. Aplicar principios de data storytelling (seccion 6.1)
+### 5.10 Estructura del deliverable
+Secciones, contenido de cada una, formato. Aplicar principios de data storytelling (seccion 7.1)
 
-### 4.11 Presentar plan
+### 5.11 Presentar plan
 Presentar plan completo al usuario y solicitar aprobacion antes de ejecutar.
 
 Al final de la presentacion del plan, incluir una nota breve:
@@ -233,34 +233,34 @@ Al final de la presentacion del plan, incluir una nota breve:
 
 No convertir esta nota en pregunta bloqueante. Es una invitacion, no un paso obligatorio. Si el usuario no aporta nada, continuar sin esperar respuesta adicional mas alla de la aprobacion del plan.
 
-## 5. Ejecucion
+## 6. Ejecucion
 
-### 5.0 Determinar carpeta del analisis
+### 6.0 Determinar carpeta del analisis
 Generar nombre `YYYY-MM-DD_HHMM_nombre_descriptivo` (minusculas, sin tildes, guiones bajos, max 30 chars en el nombre). Declarar en chat. Crear subdirectorios: `output/[ANALISIS_DIR]/scripts/`, `output/[ANALISIS_DIR]/data/`, `output/[ANALISIS_DIR]/assets/`. Si profundidad >= Estandar, crear tambien `output/[ANALISIS_DIR]/reasoning/` y `output/[ANALISIS_DIR]/validation/`.
 
 Persistir el plan aprobado en `output/[ANALISIS_DIR]/plan.md`.
-Escribir el plan tal como fue formulado en la Fase 3 (seccion 4) y aprobado por el usuario:
+Escribir el plan tal como fue formulado en la Fase 3 (seccion 5) y aprobado por el usuario:
 hipotesis, metricas/KPIs, queries de datos, visualizaciones, estructura del deliverable,
 complejidad, profundidad, formatos y estilo.
 
-### 5.1 Setup del entorno
+### 6.1 Setup del entorno
 ```bash
 bash setup_env.sh
 ```
 Si hay librerias adicionales, actualizar `requirements.txt` y re-ejecutar setup.
 
-### 5.2 Obtencion de datos
-- Usar `stratio_query_data(data_question=..., domain_name=..., output_format="dict")` para cada pregunta de datos. **Lanzar en paralelo** todas las queries independientes definidas en el plan (paso 4.5). Solo serializar si una query necesita el resultado de otra para formularse
+### 6.2 Obtencion de datos
+- Usar `stratio_query_data(data_question=..., domain_name=..., output_format="dict")` para cada pregunta de datos. **Lanzar en paralelo** todas las queries independientes definidas en el plan (paso 5.5). Solo serializar si una query necesita el resultado de otra para formularse
 - `output_format` solo acepta strings: `"dict"`, `"csv"`, `"markdown"`. Nunca pasar booleanos
 - Maximizar lo que se resuelve en el MCP (joins, agregaciones, filtros) antes de recurrir a pandas. Ver reglas "MCP-first" y "Multiples datasets" en sec "Uso de MCPs" de AGENTS.md
 - NUNCA escribir SQL manualmente
 - Si una query falla, reformular la pregunta en lenguaje natural
 - Guardar datos intermedios en `output/[ANALISIS_DIR]/data/` como CSV si son necesarios para scripts posteriores
 
-### 5.3 Validacion post-query (obligatorio)
+### 6.3 Validacion post-query (obligatorio)
 Aplicar las 7 validaciones de la sec "Validacion post-query" de AGENTS.md ("Validacion post-query") a cada resultado recibido. Cuando se lanzan queries en paralelo, validar cada resultado conforme llega. Si alguna falla: reformular la pregunta al MCP, informar al usuario, ajustar el plan.
 
-### 5.4 Desarrollo de scripts
+### 6.4 Desarrollo de scripts
 - Escribir scripts en `output/[ANALISIS_DIR]/scripts/` con nombres descriptivos que incluyan contexto del analisis
 - Cada script debe:
   - Leer datos de `output/[ANALISIS_DIR]/data/` (CSVs guardados previamente) o recibir datos como parametro
@@ -269,7 +269,7 @@ Aplicar las 7 validaciones de la sec "Validacion post-query" de AGENTS.md ("Vali
   - Producir outputs en `output/[ANALISIS_DIR]/`
 - **Datasets grandes (>100k filas)**: Usar muestreo estratificado para desarrollo rapido, datos completos para la version final
 
-### 5.5 Testing
+### 6.5 Testing
 
 > **Solo si la profundidad es Estándar/Profundo Y el usuario eligió "Sí" en la pregunta de testing del Bloque 1.** En profundidad Rápido o si el usuario eligió "No", omitir esta sección y ejecutar directamente el script con datos reales.
 
@@ -279,21 +279,21 @@ Aplicar las 7 validaciones de la sec "Validacion post-query" de AGENTS.md ("Vali
 - Ejecutar: `bash -c "source .venv/bin/activate && pytest output/[ANALISIS_DIR]/scripts/test_*.py -v"`
 - Solo proceder si los tests pasan
 
-### 5.6 Ejecucion con datos reales
+### 6.6 Ejecucion con datos reales
 ```bash
 bash -c "source .venv/bin/activate && python output/[ANALISIS_DIR]/scripts/mi_script.py"
 ```
 
-### 5.7 Loop de iteracion
+### 6.7 Loop de iteracion
 
 Tras revisar resultados iniciales, evaluar si requieren iteracion:
 
 1. **Trigger**: Hallazgo contradice hipotesis, patron inesperado, o pregunta critica no prevista
-2. **Accion**: Documentar hallazgo → formular nueva(s) pregunta(s) → queries MCP adicionales (5.2-5.3) → actualizar scripts
+2. **Accion**: Documentar hallazgo → formular nueva(s) pregunta(s) → queries MCP adicionales (6.2-6.3) → actualizar scripts
 3. **Limite**: Max 2 iteraciones. Mas → documentar como analisis de seguimiento
 4. **Registro**: Cada iteracion en reasoning: hipotesis → hallazgo → nueva hipotesis → resultado
 
-### 5.8 Complexity Upgrade
+### 6.8 Complexity Upgrade
 
 Si durante la ejecucion se detecta un hallazgo que excede el alcance del nivel de complejidad actual:
 
@@ -309,21 +309,21 @@ Si durante la ejecucion se detecta un hallazgo que excede el alcance del nivel d
    - "No, solo documentar" → Registrar hallazgo en el chat y en reasoning como "area de investigacion futura"
 3. El upgrade NO reinicia el analisis — extiende el analisis actual con fases adicionales
 
-**Diferencia con el loop de iteracion (5.7):** El loop refina hipotesis dentro del mismo nivel de complejidad. El upgrade cambia el nivel (ej: Triage → Analisis) y activa capacidades adicionales (EDA, hipotesis formales, visualizaciones).
+**Diferencia con el loop de iteracion (6.7):** El loop refina hipotesis dentro del mismo nivel de complejidad. El upgrade cambia el nivel (ej: Triage → Analisis) y activa capacidades adicionales (EDA, hipotesis formales, visualizaciones).
 
-### 5.9 Generacion de deliverables
+### 6.9 Generacion de deliverables
 Cargar la skill `report` para generar los deliverables en los formatos solicitados.
 
-### 5.10 Reasoning
+### 6.10 Reasoning
 
 Generar reasoning segun la profundidad (ver defaults en sec "Reasoning" de AGENTS.md):
 
-- **Rapido**: No generar fichero. Las notas clave se incluyen en el reporte del chat (sec 6.1).
+- **Rapido**: No generar fichero. Las notas clave se incluyen en el reporte del chat (sec 7.1).
 - **Estandar/Profundo**: Seguir la guia completa en [reasoning-guide.md](reasoning-guide.md). Generar solo `.md`.
 
 Si el usuario solicito override de formatos, aplicar su preferencia.
 
-### 5.11 Validacion de output final
+### 6.11 Validacion de output final
 
 Ejecutar validacion segun la profundidad (ver defaults en sec "Reasoning" de AGENTS.md):
 
@@ -335,9 +335,9 @@ Para detalle de cada bloque, umbrales y criterios PASS/WARNING/FAIL, ver [valida
 
 Si el usuario solicito override de formatos, aplicar su preferencia.
 
-## 6. Reporte Final
+## 7. Reporte Final
 
-### 6.1 Estructura del reporte en chat
+### 7.1 Estructura del reporte en chat
 
 Al presentar hallazgos en la conversacion, seguir esta estructura:
 
@@ -367,17 +367,17 @@ Si un hallazgo no pasa las 4 preguntas → es informacion, no insight. No va al 
 
 Para principios de data storytelling y mapping hallazgos → narrativa, leer `skills-guides/visualization.md` secciones 3 y 4.
 
-## 7. Memoria de Analisis (Confirmacion requerida)
+## 8. Memoria de Analisis (Confirmacion requerida)
 
 Tras presentar el reporte final, preguntar al usuario (siguiendo la convencion de preguntas (sec "Interaccion con el Usuario" de AGENTS.md)):
 
 "¿Deseas guardar este analisis en la memoria persistente? Se actualizaran el registro de analisis (`ANALYSIS_MEMORY.md`) y la memoria de conocimiento (`MEMORY.md`)."
-- **Si** → Continuar con los pasos 7.1, 7.2 y 7.3
+- **Si** → Continuar con los pasos 8.1, 8.2 y 8.3
 - **No** → Saltar todos los pasos de escritura de memoria. Finalizar sin actualizar ningun fichero de memoria
 
 Los pasos siguientes se ejecutan **solo si el usuario responde "Sí"**:
 
-### 7.1 Crear fichero de detalle del analisis
+### 8.1 Crear fichero de detalle del analisis
 
 Crear `output/[ANALISIS_DIR]/analysis_memory.md` con el contenido completo:
 
@@ -393,7 +393,7 @@ Crear `output/[ANALISIS_DIR]/analysis_memory.md` con el contenido completo:
 - **Data Quality Score**: ALTO/MEDIO/BAJO (N%)
 ```
 
-### 7.2 Añadir entrada compacta al indice
+### 8.2 Añadir entrada compacta al indice
 
 Añadir entrada al final de `output/ANALYSIS_MEMORY.md` con solo los campos de triage:
 
@@ -411,11 +411,11 @@ Añadir entrada al final de `output/ANALYSIS_MEMORY.md` con solo los campos de t
 
 Si `output/ANALYSIS_MEMORY.md` no existe, crearlo con el header `# Memoria de Analisis`. Las entradas se anaden al final (cronologicas).
 
-### 7.3 Memoria de Conocimiento
+### 8.3 Memoria de Conocimiento
 
 Tras escribir en ANALYSIS_MEMORY.md, invocar la skill `/update-memory` para actualizar `output/MEMORY.md` con preferencias, patrones de datos y heuristicas descubiertas en este analisis.
 
-## 8. Propuesta de Conocimiento (Opcional)
+## 9. Propuesta de Conocimiento (Opcional)
 
 Tras presentar el reporte final, preguntar al usuario siguiendo la convencion de preguntas (sec "Interaccion con el Usuario" de AGENTS.md):
 - **Si**: Analizar conversacion y proponer conocimiento al dominio
