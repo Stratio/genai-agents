@@ -4,6 +4,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+MONOREPO_ROOT="$SCRIPT_DIR"
 
 # ---------------------------------------------------------------------------
 # Fase 0 — Parseo y validación
@@ -165,6 +166,70 @@ else
 fi
 
 # ---------------------------------------------------------------------------
+# Fase 5.1 — Shared skills (opcional)
+# ---------------------------------------------------------------------------
+SHARED_GUIDES_NEEDED=()
+
+if [[ -f "$AGENT_ABS/shared-skills" ]]; then
+  N_SHARED=0
+  while IFS= read -r skill_name || [[ -n "$skill_name" ]]; do
+    # Ignorar lineas vacias y comentarios
+    [[ -z "$skill_name" || "$skill_name" == \#* ]] && continue
+    skill_src="$MONOREPO_ROOT/shared-skills/$skill_name"
+    skill_dst="$OUTPUT_DIR/.claude/skills/$skill_name"
+    if [[ ! -d "$skill_src" ]]; then
+      echo "    WARN: shared skill '$skill_name' no encontrada en $skill_src — omitida" >&2
+      continue
+    fi
+    # Prioridad local: si ya existe en el output, no sobreescribir
+    if [[ -d "$skill_dst" ]]; then
+      echo "    [5.1] '$skill_name' omitida (version local tiene prioridad)"
+      continue
+    fi
+    cp -r "$skill_src" "$skill_dst"
+    rm -f "$skill_dst/skill-guides"
+    N_SHARED=$((N_SHARED + 1))
+    # Acumular guides declarados en la skill
+    if [[ -f "$skill_src/skill-guides" ]]; then
+      while IFS= read -r guide || [[ -n "$guide" ]]; do
+        [[ -z "$guide" || "$guide" == \#* ]] && continue
+        SHARED_GUIDES_NEEDED+=("$guide")
+      done < "$skill_src/skill-guides"
+    fi
+  done < "$AGENT_ABS/shared-skills"
+  echo "    [5.1] $N_SHARED shared skill(s) incluidas"
+else
+  echo "    [5.1] Sin shared-skills declaradas (continuando sin error)"
+fi
+
+# Acumular guides declarados directamente por el agente
+if [[ -f "$AGENT_ABS/shared-guides" ]]; then
+  while IFS= read -r guide || [[ -n "$guide" ]]; do
+    [[ -z "$guide" || "$guide" == \#* ]] && continue
+    SHARED_GUIDES_NEEDED+=("$guide")
+  done < "$AGENT_ABS/shared-guides"
+fi
+
+# Copiar shared-skill-guides al output (deduplicando)
+if [[ ${#SHARED_GUIDES_NEEDED[@]} -gt 0 ]]; then
+  mkdir -p "$OUTPUT_DIR/.claude/skills-guides"
+  declare -A _GUIDES_SEEN=()
+  N_GUIDES=0
+  for guide in "${SHARED_GUIDES_NEEDED[@]}"; do
+    [[ -n "${_GUIDES_SEEN[$guide]:-}" ]] && continue
+    _GUIDES_SEEN[$guide]=1
+    guide_src="$MONOREPO_ROOT/shared-skill-guides/$guide"
+    if [[ ! -f "$guide_src" ]]; then
+      echo "    WARN: shared guide '$guide' no encontrado en $guide_src — omitido" >&2
+      continue
+    fi
+    cp "$guide_src" "$OUTPUT_DIR/.claude/skills-guides/$guide"
+    N_GUIDES=$((N_GUIDES + 1))
+  done
+  echo "    [5.1] $N_GUIDES shared guide(s) copiados a .claude/skills-guides/"
+fi
+
+# ---------------------------------------------------------------------------
 # Fase 5.5 — Output templates (opcional)
 # ---------------------------------------------------------------------------
 if [[ -d "$AGENT_ABS/output-templates" ]]; then
@@ -187,12 +252,15 @@ rsync -a \
   --exclude=.agents/ \
   --exclude=opencode.json \
   --exclude=skills/ \
+  --exclude=shared-skills \
+  --exclude=shared-guides \
   --exclude='pack_*.sh' \
   --exclude=output/ \
   --exclude=output-templates/ \
   --exclude=dist/ \
   --exclude=.venv/ \
   --exclude='__pycache__/' \
+  --exclude='.pytest_cache/' \
   --exclude='*.pyc' \
   --exclude=.idea/ \
   --exclude=node_modules/ \

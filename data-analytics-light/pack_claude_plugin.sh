@@ -2,6 +2,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+MONOREPO_ROOT="$(dirname "$SCRIPT_DIR")"
 cd "$SCRIPT_DIR"
 
 # --- Parsear argumentos CLI ---
@@ -85,20 +86,94 @@ else
   echo "WARN: No se encontro directorio de skills — el plugin no tendra skills."
 fi
 
-# --- Copiar skills-guides ---
+# --- Copiar shared skills (si las declara el agente) ---
+if [ -f "shared-skills" ]; then
+  while IFS= read -r skill_name || [ -n "$skill_name" ]; do
+    [ -z "$skill_name" ] || [[ "$skill_name" == \#* ]] && continue
+    skill_src="$MONOREPO_ROOT/shared-skills/$skill_name"
+    skill_dst="$PLUGIN_DIR/skills/$skill_name"
+    if [ ! -d "$skill_src" ]; then
+      echo "  WARN: shared skill '$skill_name' no encontrada en $skill_src — omitida" >&2
+      continue
+    fi
+    # Prioridad local
+    if [ -d "$skill_dst" ]; then
+      echo "  '$skill_name' omitida (version local tiene prioridad)"
+      continue
+    fi
+    cp -r "$skill_src" "$skill_dst"
+    # Eliminar fichero skill-guides del output (no es parte del SKILL.md)
+    rm -f "$skill_dst/skill-guides"
+    echo "  Shared skill '$skill_name' incluida"
+  done < "shared-skills"
+fi
+
+# --- Recopilar lista de guides necesarios (shared-skill-guides + locales) ---
+GUIDES_NEEDED=()
+# Desde shared-skills/*/skill-guides
+if [ -f "shared-skills" ]; then
+  while IFS= read -r skill_name || [ -n "$skill_name" ]; do
+    [ -z "$skill_name" ] || [[ "$skill_name" == \#* ]] && continue
+    skill_src="$MONOREPO_ROOT/shared-skills/$skill_name"
+    if [ -f "$skill_src/skill-guides" ]; then
+      while IFS= read -r guide || [ -n "$guide" ]; do
+        [ -z "$guide" ] || [[ "$guide" == \#* ]] && continue
+        GUIDES_NEEDED+=("shared:$guide")
+      done < "$skill_src/skill-guides"
+    fi
+  done < "shared-skills"
+fi
+# Desde shared-guides del agente
+if [ -f "shared-guides" ]; then
+  while IFS= read -r guide || [ -n "$guide" ]; do
+    [ -z "$guide" ] || [[ "$guide" == \#* ]] && continue
+    GUIDES_NEEDED+=("shared:$guide")
+  done < "shared-guides"
+fi
+# Guides locales (si existen)
 if [ -d "skills-guides" ]; then
+  for f in skills-guides/*.md; do
+    [ -f "$f" ] || continue
+    GUIDES_NEEDED+=("local:$(basename "$f")")
+  done
+fi
+
+# --- Copiar skills-guides ---
+# Construir lista deduplicada de guides a copiar
+declare -A _GUIDES_MAP=()
+for entry in "${GUIDES_NEEDED[@]}"; do
+  src_type="${entry%%:*}"
+  guide_name="${entry#*:}"
+  _GUIDES_MAP["$guide_name"]="$src_type"
+done
+
+if [ ${#_GUIDES_MAP[@]} -gt 0 ]; then
   if [ "$SHARED_GUIDES" = true ]; then
-    # Modo compartido: skills-guides/ en la raiz del plugin, referenciado con ruta relativa
     echo "Copiando skills-guides a raiz del plugin (modo compartido)..."
     mkdir -p "$PLUGIN_DIR/skills-guides"
-    cp skills-guides/*.md "$PLUGIN_DIR/skills-guides/"
+    for guide_name in "${!_GUIDES_MAP[@]}"; do
+      src_type="${_GUIDES_MAP[$guide_name]}"
+      if [ "$src_type" = "shared" ]; then
+        guide_src="$MONOREPO_ROOT/shared-skill-guides/$guide_name"
+      else
+        guide_src="skills-guides/$guide_name"
+      fi
+      [ -f "$guide_src" ] && cp "$guide_src" "$PLUGIN_DIR/skills-guides/$guide_name"
+    done
     sed -i 's|`skills-guides/exploration\.md`|`../../skills-guides/exploration.md`|g' "$PLUGIN_DIR/skills/"*/SKILL.md 2>/dev/null || true
   else
-    # Modo por defecto: duplicar junto al SKILL.md de cada skill que los usa
     echo "Copiando skills-guides a skills..."
     for skill_dir in "$PLUGIN_DIR/skills/analyze" "$PLUGIN_DIR/skills/explore-data"; do
       if [ -d "$skill_dir" ]; then
-        cp skills-guides/*.md "$skill_dir/"
+        for guide_name in "${!_GUIDES_MAP[@]}"; do
+          src_type="${_GUIDES_MAP[$guide_name]}"
+          if [ "$src_type" = "shared" ]; then
+            guide_src="$MONOREPO_ROOT/shared-skill-guides/$guide_name"
+          else
+            guide_src="skills-guides/$guide_name"
+          fi
+          [ -f "$guide_src" ] && cp "$guide_src" "$skill_dir/$guide_name"
+        done
       fi
     done
     sed -i 's|`skills-guides/exploration\.md`|`exploration.md`|g' "$PLUGIN_DIR/skills/"*/SKILL.md 2>/dev/null || true

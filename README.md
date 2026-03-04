@@ -81,6 +81,70 @@ Ubicaciones de busqueda (por orden de prioridad): `skills/` → `.claude/skills/
 
 Si un agente tiene un directorio `output-templates/`, los pack scripts crean `output/` en el paquete con ese contenido. Esto permite versionar en git las plantillas semilla (ficheros de memoria inicial, etc.) sin versionar el runtime — `**/output/` sigue en `.gitignore`.
 
+## Skills compartidas
+
+`shared-skills/` agrupa skills reutilizables entre varios agentes del monorepo. Los pack scripts las incluyen automáticamente en el output de cada agente que las declare, sin necesidad de duplicar código.
+
+### Skills disponibles
+
+| Skill | Descripcion | Agentes que la usan |
+|-------|-------------|---------------------|
+| `propose-knowledge` | Proponer terminos de negocio y preferencias a Stratio Governance tras un analisis | data-analytics, data-analytics-light |
+| `explore-data` | Exploracion rapida de dominios, tablas, columnas y terminologia gobernada | data-analytics, data-analytics-light |
+
+Los guides compartidos (documentacion tecnica que las skills referencian) viven en `shared-skill-guides/`:
+
+| Guide | Usado por |
+|-------|-----------|
+| `exploration.md` | `explore-data`, `analyze` |
+
+### Usar una shared skill en un agente
+
+1. Crear (si no existe) el fichero `shared-skills` en la carpeta del agente con el nombre de la skill, una por línea:
+
+   ```
+   propose-knowledge
+   explore-data
+   ```
+
+2. Si el `AGENTS.md` del agente referencia directamente algún guide de `shared-skill-guides/`, declararlo también en `shared-guides`:
+
+   ```
+   exploration.md
+   ```
+
+3. Empaquetar con normalidad — los pack scripts incluyen las shared skills y copian los guides al output:
+
+   ```bash
+   bash pack_claude_code.sh --agent mi-agente
+   ```
+
+Si el agente tiene en `skills/` una skill con el mismo nombre, la versión local tiene prioridad sobre la shared.
+
+### Crear una shared skill nueva
+
+1. Crear la carpeta y el `SKILL.md` en `shared-skills/`:
+
+   ```
+   shared-skills/
+   └── mi-skill/
+       ├── SKILL.md       # Definicion de la skill (autocontenida o casi)
+       └── skill-guides   # (Opcional) Lista de shared-skill-guides que necesita
+   ```
+
+2. Si la skill necesita guides externos, añadir los ficheros en `shared-skill-guides/` y listarlos en `skill-guides`:
+
+   ```
+   # shared-skills/mi-skill/skill-guides
+   mi-guide.md
+   ```
+
+3. Declarar la skill en los agentes que deban incluirla (fichero `shared-skills` en cada agente).
+
+Una shared skill debe ser lo más autocontenida posible: sin dependencias de herramientas Python, estilos ni templates específicos de un agente. Si una skill depende fuertemente de artefactos de un agente concreto, mantenerla como skill local en ese agente.
+
+**Contenido del SKILL.md:** No referenciar `AGENTS.md` ni `CLAUDE.md` directamente — los pack scripts sustituyen estos nombres según la plataforma, pero una referencia directa puede quedar mal en algún destino. Usar formulaciones genéricas como "siguiendo la convención de preguntas al usuario" o "según las instrucciones del agente". Las referencias a `skills-guides/<fichero>` funcionan sin cambios en todos los formatos de output.
+
 ## Uso directo (sin empaquetar)
 
 El formato canonico de instrucciones es `AGENTS.md` + `skills/`. Para usar con cualquier plataforma, empaquetar con el script correspondiente. La raiz del monorepo tiene un symlink `CLAUDE.md → AGENTS.md` para compatibilidad con Claude Code.
@@ -116,14 +180,18 @@ Esta guía explica cómo añadir un agente al monorepo para usarlo en **OpenCode
 mi-agente/
 ├── AGENTS.md              # Instrucciones principales — rol, workflow, reglas
 ├── opencode.json          # Configuracion OpenCode (MCPs, permisos)
-├── skills/                # Capacidades invocables por el usuario
+├── skills/                # Skills propias del agente (invocables por el usuario)
 │   └── mi-skill/
 │       └── SKILL.md       # Definicion de la skill (frontmatter YAML + cuerpo)
-├── skills-guides/         # (Opcional) Guias tecnicas compartidas entre skills
+├── skills-guides/         # (Opcional) Guias tecnicas locales compartidas entre skills
+├── shared-skills          # (Opcional) Lista de shared skills del monorepo a incluir
+├── shared-guides          # (Opcional) Lista de shared-skill-guides que AGENTS.md usa directamente
 └── output-templates/      # (Opcional) Semillas de memoria persistente
 ```
 
-Los directorios `skills-guides/` y `output-templates/` son opcionales: usar `skills-guides/` cuando varias skills comparten documentación técnica extensa; usar `output-templates/` solo si el agente necesita persistir memoria entre sesiones.
+Los directorios `skills-guides/` y `output-templates/` son opcionales: usar `skills-guides/` cuando varias skills del agente comparten documentación técnica extensa; usar `output-templates/` solo si el agente necesita persistir memoria entre sesiones.
+
+Los ficheros `shared-skills` y `shared-guides` (texto plano, una entrada por línea) permiten incluir skills y guides del monorepo sin duplicarlos. Ver [Skills compartidas](#skills-compartidas) para el detalle.
 
 ### 2. AGENTS.md — Instrucciones del agente
 
@@ -168,6 +236,8 @@ Instrucciones operativas detalladas...
 ```
 
 El frontmatter YAML es obligatorio: `name` es el identificador, `description` lo usa el agente para decidir cuándo activarla, `argument-hint` aparece como placeholder en la UI. Las secciones del cuerpo son instrucciones paso a paso que sigue el agente al ejecutar la skill. Si varias skills comparten documentación, extraerla a `skills-guides/` y referenciarla desde el cuerpo de la skill.
+
+Para reutilizar skills ya existentes en el monorepo sin duplicarlas, ver la sección [Skills compartidas](#skills-compartidas) — el sistema de shared skills evita mantener copies de skills idénticas en cada agente.
 
 ### 4. opencode.json — Configurar herramientas externas
 

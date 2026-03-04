@@ -1,7 +1,5 @@
 # Guia Compartida: Descubrimiento y Exploracion de Dominios
 
-Pasos comunes para explorar dominios gobernados. Usada por `/explore-data` y `/analyze`.
-
 ## 1. Listar Dominios
 
 Ejecutar `stratio_list_business_domains` para mostrar todos los dominios disponibles con sus nombres de negocio.
