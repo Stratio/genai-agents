@@ -105,3 +105,105 @@ bash setup_env.sh
 ```
 
 Esto crea un `.venv/` local con las dependencias definidas en `requirements.txt`.
+
+## Crear un agente nuevo
+
+Esta guía explica cómo añadir un agente al monorepo para usarlo en **OpenCode** o en el **framework de agentes de Stratio GenAI**. Un agente se compone de tres piezas: **instrucciones** (`AGENTS.md`), **skills** (`skills/`) y **configuración de herramientas** (`opencode.json`). El script `pack_opencode.sh` se encarga de empaquetarlo.
+
+### 1. Estructura de carpetas
+
+```
+mi-agente/
+├── AGENTS.md              # Instrucciones principales — rol, workflow, reglas
+├── opencode.json          # Configuracion OpenCode (MCPs, permisos)
+├── skills/                # Capacidades invocables por el usuario
+│   └── mi-skill/
+│       └── SKILL.md       # Definicion de la skill (frontmatter YAML + cuerpo)
+├── skills-guides/         # (Opcional) Guias tecnicas compartidas entre skills
+└── output-templates/      # (Opcional) Semillas de memoria persistente
+```
+
+Los directorios `skills-guides/` y `output-templates/` son opcionales: usar `skills-guides/` cuando varias skills comparten documentación técnica extensa; usar `output-templates/` solo si el agente necesita persistir memoria entre sesiones.
+
+### 2. AGENTS.md — Instrucciones del agente
+
+Define el **rol**, el **workflow** y las **reglas transversales** del agente. Estructura orientativa:
+
+```markdown
+# [Nombre del Agente]
+
+## Rol y Contexto
+Descripcion del agente: qué hace, para quién, y con qué herramientas opera.
+
+## Workflow Obligatorio
+Fases de ejecucion numeradas. Ejemplo: triage → exploracion → preguntas → plan → ejecucion.
+Cuanto mas detallado, mas predecible el comportamiento del agente.
+
+## Reglas Transversales
+Normas que aplican a toda sesion (idioma de respuesta, validaciones obligatorias,
+herramientas que tiene prohibido usar, etc.).
+
+## Skills Disponibles
+Lista de skills y cuando activar cada una.
+```
+
+### 3. Skills — Definir capacidades
+
+Cada skill encapsula un workflow específico que el usuario puede invocar (ej: `/analizar`, `/generar-informe`). Formato de `SKILL.md`:
+
+```markdown
+---
+name: mi-skill
+description: Descripcion de cuando usar esta skill y que hace
+argument-hint: [argumento esperado, ej: pregunta o tema]
+---
+
+# Skill: Mi Skill
+
+## 1. Primer Paso
+Instrucciones operativas detalladas...
+
+## 2. Segundo Paso
+...
+```
+
+El frontmatter YAML es obligatorio: `name` es el identificador, `description` lo usa el agente para decidir cuándo activarla, `argument-hint` aparece como placeholder en la UI. Las secciones del cuerpo son instrucciones paso a paso que sigue el agente al ejecutar la skill. Si varias skills comparten documentación, extraerla a `skills-guides/` y referenciarla desde el cuerpo de la skill.
+
+### 4. opencode.json — Configurar herramientas externas
+
+La configuración de OpenCode declara las instrucciones, los MCPs disponibles y los permisos del agente:
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": ["AGENTS.md"],
+  "mcp": {
+    "mi-servidor": {
+      "type": "remote",
+      "url": "{env:MI_SERVIDOR_URL}",
+      "timeout": 90000,
+      "headers": { "Authorization": "Bearer {env:MI_API_KEY}" }
+    }
+  },
+  "permission": {
+    "read": "allow",
+    "glob": "allow",
+    "grep": "allow",
+    "bash": { "*": "allow" }
+  }
+}
+```
+
+Las variables de entorno se referencian con la sintaxis `{env:NOMBRE_VAR}`. Si el agente no usa MCPs externos, omitir el bloque `mcp`.
+
+### 5. Empaquetar
+
+```bash
+# Empaquetar para OpenCode
+bash pack_opencode.sh --agent mi-agente
+
+# Con nombre personalizado (kebab-case)
+bash pack_opencode.sh --agent mi-agente --name nombre-personalizado
+```
+
+El output se genera en `mi-agente/dist/opencode/mi-agente/` (excluido de git por `.gitignore`). Para empaquetar todos los agentes del monorepo de una vez: `make package`.
