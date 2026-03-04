@@ -36,3 +36,14 @@ Scripts genericos que funcionan con cualquier agente del monorepo:
 | `pack_opencode.sh` | OpenCode | `{agente}/opencode/{nombre}/` |
 
 Uso: `bash pack_claude_code.sh --agent <ruta-agente> [--name <nombre-kebab>]`
+
+## Añadir un nuevo agente
+
+La guía completa de creación está en `README.md` (sección "Crear un agente nuevo"). Checklist de integración en el monorepo:
+
+1. Crear carpeta `mi-agente/` con estructura mínima:
+   - `AGENTS.md` — rol, workflow, reglas del agente
+   - `opencode.json` — MCPs y permisos para OpenCode (si usa OpenCode)
+   - `skills/` — opcional; si el agente tiene skills, formato canónico `skills/<nombre>/SKILL.md`
+2. Añadir `mi-agente` al fichero `release-modules` (una línea por agente) para que `make package` lo incluya
+3. Actualizar la tabla de agentes en `README.md`
