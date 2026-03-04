@@ -32,13 +32,15 @@ Los pack scripts solo son necesarios para distribuir el agente fuera del reposit
 
 ## Skills disponibles
 
-| Skill | Comando | Descripcion |
-|-------|---------|-------------|
-| Analisis | `/analyze` | Analisis completo de datos BI/BA: descubrimiento de dominio, EDA, planificacion de KPIs, queries MCP, analisis Python, visualizaciones e informes |
-| Exploracion | `/explore-data` | Exploracion rapida de dominios, tablas, columnas y terminologia de negocio |
-| Informe | `/report` | Generacion de informes profesionales multi-formato (PDF, DOCX, web, PowerPoint) |
-| Memoria | `/update-memory` | Actualizar memoria persistente con preferencias, patrones y heuristicas |
-| Conocimiento | `/propose-knowledge` | Proponer terminos de negocio descubiertos a Stratio Governance |
+| Skill | Comando | Origen | Descripcion |
+|-------|---------|--------|-------------|
+| Analisis | `/analyze` | local | Analisis completo de datos BI/BA: descubrimiento de dominio, EDA, planificacion de KPIs, queries MCP, analisis Python, visualizaciones e informes |
+| Exploracion | `/explore-data` | **shared** | Exploracion rapida de dominios, tablas, columnas y terminologia de negocio |
+| Informe | `/report` | local | Generacion de informes profesionales multi-formato (PDF, DOCX, web, PowerPoint) |
+| Memoria | `/update-memory` | local | Actualizar memoria persistente con preferencias, patrones y heuristicas |
+| Conocimiento | `/propose-knowledge` | **shared** | Proponer terminos de negocio descubiertos a Stratio Governance |
+
+Las skills marcadas como **shared** viven en `shared-skills/` en la raiz del monorepo y se comparten con otros agentes. Las locales viven en `skills/` de este agente.
 
 ## Herramientas de generacion
 

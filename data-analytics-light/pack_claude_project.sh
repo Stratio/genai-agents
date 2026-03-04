@@ -2,6 +2,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+MONOREPO_ROOT="$(dirname "$SCRIPT_DIR")"
 cd "$SCRIPT_DIR"
 
 # --- Parsear argumentos CLI ---
@@ -34,7 +35,30 @@ cp setup_env.sh "$PROJECT_DIR/setup_env.sh"
 
 # --- 2. skills-guides/ → prefijo skills-guides_ ---
 echo "Copiando skills-guides..."
-cp skills-guides/exploration.md "$PROJECT_DIR/skills-guides_exploration.md"
+# Leer shared-guides del agente para saber que guides incluir
+if [ -f "shared-guides" ]; then
+  while IFS= read -r guide || [ -n "$guide" ]; do
+    [ -z "$guide" ] || [[ "$guide" == \#* ]] && continue
+    guide_src="$MONOREPO_ROOT/shared-skill-guides/$guide"
+    guide_flat="skills-guides_$(echo "$guide" | tr '/' '_')"
+    if [ -f "$guide_src" ]; then
+      cp "$guide_src" "$PROJECT_DIR/$guide_flat"
+    else
+      echo "WARN: shared guide '$guide' no encontrado en $guide_src" >&2
+    fi
+  done < "shared-guides"
+fi
+# Copiar guides locales restantes (si existen)
+if [ -d "skills-guides" ]; then
+  for f in skills-guides/*.md; do
+    [ -f "$f" ] || continue
+    base=$(basename "$f")
+    # No duplicar los que ya vienen de shared-skill-guides
+    dst="$PROJECT_DIR/skills-guides_$base"
+    [ -f "$dst" ] && continue
+    cp "$f" "$dst"
+  done
+fi
 
 # --- 3. Skills ---
 echo "Copiando skills..."
@@ -74,7 +98,7 @@ if [ -n "$HAS_FLAT" ]; then
   SKILLS_SRC="$SKILLS_NORM"
 fi
 
-# analyze: SKILL.md → analyze.md, subficheros → analyze_*.md
+# analyze: SKILL.md → analyze.md, subficheros → analyze_*.md (caso especial: tiene subficheros)
 cp "$SKILLS_SRC/analyze/SKILL.md" "$PROJECT_DIR/analyze.md"
 for f in "$SKILLS_SRC"/analyze/*.md; do
   base=$(basename "$f")
@@ -82,15 +106,35 @@ for f in "$SKILLS_SRC"/analyze/*.md; do
   cp "$f" "$PROJECT_DIR/analyze_${base}"
 done
 
-# explore-data: SKILL.md → explore-data.md
-cp "$SKILLS_SRC/explore-data/SKILL.md" "$PROJECT_DIR/explore-data.md"
-
-# propose-knowledge: SKILL.md → propose-knowledge.md
-cp "$SKILLS_SRC/propose-knowledge/SKILL.md" "$PROJECT_DIR/propose-knowledge.md"
+# Otras skills locales (formato simple: <nombre>/SKILL.md → <nombre>.md)
+for skill_dir in "$SKILLS_SRC"/*/; do
+  skill_name=$(basename "$skill_dir")
+  [ "$skill_name" = "analyze" ] && continue
+  [ -f "$skill_dir/SKILL.md" ] || continue
+  cp "$skill_dir/SKILL.md" "$PROJECT_DIR/${skill_name}.md"
+done
 
 # Limpiar directorio temporal si se creó
 if [ -n "$SKILLS_NORM" ]; then
   rm -rf "$SKILLS_NORM"
+fi
+
+# Shared skills (desde manifiesto shared-skills del agente)
+if [ -f "shared-skills" ]; then
+  while IFS= read -r skill_name || [ -n "$skill_name" ]; do
+    [ -z "$skill_name" ] || [[ "$skill_name" == \#* ]] && continue
+    # Prioridad local: si ya existe en el output, no sobreescribir
+    if [ -f "$PROJECT_DIR/${skill_name}.md" ]; then
+      echo "  '$skill_name' omitida (version local tiene prioridad)"
+      continue
+    fi
+    skill_src="$MONOREPO_ROOT/shared-skills/$skill_name/SKILL.md"
+    if [ -f "$skill_src" ]; then
+      cp "$skill_src" "$PROJECT_DIR/${skill_name}.md"
+    else
+      echo "WARN: shared skill '$skill_name' no encontrada en $skill_src" >&2
+    fi
+  done < "shared-skills"
 fi
 
 # --- 4. Reemplazos de referencias en todos los .md copiados ---
@@ -104,6 +148,13 @@ sed -i 's|skills-guides/visualization\.md|skills-guides_visualization.md|g' "$PR
 sed -i 's|(advanced-analytics\.md)|(analyze_advanced-analytics.md)|g' "$PROJECT_DIR"/*.md
 sed -i 's|(analytical-patterns\.md)|(analyze_analytical-patterns.md)|g' "$PROJECT_DIR"/*.md
 sed -i 's|(clustering-guide\.md)|(analyze_clustering-guide.md)|g' "$PROJECT_DIR"/*.md
+sed -i 's|(visualization\.md)|(analyze_visualization.md)|g' "$PROJECT_DIR"/*.md
+
+# Patron C: rutas de subficheros de analyze en texto plano (sin parentesis)
+sed -i 's|skills/analyze/visualization\.md|analyze_visualization.md|g' "$PROJECT_DIR"/*.md
+
+# Patron D: AGENTS.md → CLAUDE.md (referencias en texto plano dentro de skills)
+sed -i 's/AGENTS\.md/CLAUDE.md/g' "$PROJECT_DIR"/*.md
 
 sed -i 's/{{TOOL_PREGUNTAS}}/ (`AskUserQuestion`)/g' "$PROJECT_DIR"/*.md
 
@@ -120,6 +171,7 @@ BROKEN=$(grep -rn 'skills-guides/' "$PROJECT_DIR"/*.md 2>/dev/null || true)
 BROKEN+=$(grep -rn '(advanced-analytics\.md)' "$PROJECT_DIR"/*.md 2>/dev/null || true)
 BROKEN+=$(grep -rn '(analytical-patterns\.md)' "$PROJECT_DIR"/*.md 2>/dev/null || true)
 BROKEN+=$(grep -rn '(clustering-guide\.md)' "$PROJECT_DIR"/*.md 2>/dev/null || true)
+BROKEN+=$(grep -rn '(visualization\.md)' "$PROJECT_DIR"/*.md 2>/dev/null || true)
 
 if [ -n "$BROKEN" ]; then
   echo "  WARN: Referencias posiblemente sin actualizar:"

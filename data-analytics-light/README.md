@@ -118,11 +118,13 @@ Los pack scripts generan el formato correcto para cada plataforma (renombrando f
 
 ## Skills disponibles
 
-| Skill | Comando | Descripcion |
-|-------|---------|-------------|
-| Analisis | `/analyze` | Analisis de datos BI/BA: descubrimiento de dominio, EDA, planificacion de KPIs, queries MCP, analisis Python y visualizaciones |
-| Exploracion | `/explore-data` | Exploracion rapida de dominios, tablas, columnas y terminologia de negocio |
-| Conocimiento | `/propose-knowledge` | Proponer terminos de negocio descubiertos a Stratio Governance |
+| Skill | Comando | Origen | Descripcion |
+|-------|---------|--------|-------------|
+| Analisis | `/analyze` | local | Analisis de datos BI/BA: descubrimiento de dominio, EDA, planificacion de KPIs, queries MCP, analisis Python y visualizaciones |
+| Exploracion | `/explore-data` | **shared** | Exploracion rapida de dominios, tablas, columnas y terminologia de negocio |
+| Conocimiento | `/propose-knowledge` | **shared** | Proponer terminos de negocio descubiertos a Stratio Governance |
+
+Las skills marcadas como **shared** viven en `shared-skills/` en la raiz del monorepo y se comparten con `data-analytics`. Las locales viven en `skills/` de este agente.
 
 **Nota**: Este agente no usa memoria persistente en ficheros — el output principal es el chat.
 
