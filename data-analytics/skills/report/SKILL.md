@@ -98,7 +98,13 @@ Documentando:
 
 ## 7. Entrega
 
-Reportar en el chat:
+**Antes de reportar**, ejecutar verificación de existencia:
+```bash
+ls -lh output/[ANALISIS_DIR]/
+```
+Si algún fichero solicitado no aparece en el listado → volver al paso 5 (generación) y regenerarlo. Solo reportar al usuario cuando todos los ficheros estén confirmados en disco.
+
+A continuación reportar en el chat:
 - Formato(s) generado(s)
 - Ruta(s) de los archivos
 - Vista previa del contenido (resumen ejecutivo)

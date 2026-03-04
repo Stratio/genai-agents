@@ -127,7 +127,11 @@ Si no selecciona formato en Bloque 1 → Bloque 2 se omite. Resultado: de 6 a 1-
 7. Ejecutar scripts con datos reales
 8. **Loop de iteracion**: Si un hallazgo contradice hipotesis o revela patron inesperado, iterar (nuevas queries + actualizar analisis). Max 2 iteraciones; detalle en skill `/analyze` sec 6.7
 9. Generar visualizaciones en `output/[ANALISIS_DIR]/assets/`
-10. Generar deliverables en el formato solicitado en `output/[ANALISIS_DIR]/`
+10. Generar deliverables en el formato solicitado en `output/[ANALISIS_DIR]/`. Tras generar cada fichero, verificar su existencia con:
+    ```bash
+    ls -lh output/[ANALISIS_DIR]/<fichero>
+    ```
+    Si el comando devuelve error o el fichero no aparece → regenerar antes de continuar. No reportar al usuario hasta que todos los ficheros estén confirmados en disco.
 11. **(Si profundidad >= Estandar — ver sec 9)** Generar reasoning en `output/[ANALISIS_DIR]/reasoning/reasoning.md`
 12. **Validacion de output final**: Ejecutar checklist segun profundidad (Rapido: Bloque A en chat; Estandar: A+B+C en .md; Profundo: A+B+C+D en .md). No bloquea la entrega. Ver skill `/analyze` [validation-guide.md](validation-guide.md)
 13. Reportar resultados en el chat: resumen de hallazgos + rutas de archivos generados + resumen de validacion
