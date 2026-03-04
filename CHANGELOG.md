@@ -15,3 +15,4 @@
 * Remove redundant directory conventions section from data-analytics agent (section 10 duplicated sections 2/5/8/9/12); relocate unique entries to section 8; renumber sections; saves ~650 tokens of context window
 * Fix section numbering in data-analytics-light analyze skill: replace misleading alphabetic suffixes (4.5b/c/d, 5.4b/c) with sequential ordinal numbers (4.6–4.10, 5.5–5.8); update all cross-references in AGENTS.md
 * Add new agent creation guide to README (structure, AGENTS.md, skills, opencode.json, packaging); add packaging files matrix table to data-analytics-light README; gitignore OpenCode workspace local files
+* Add step 6 "Probar en OpenCode" to new agent guide: copy dist package to working dir, export MCP env vars, open OpenCode and edit opencode.json
