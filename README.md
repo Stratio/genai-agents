@@ -207,3 +207,29 @@ bash pack_opencode.sh --agent mi-agente --name nombre-personalizado
 ```
 
 El output se genera en `mi-agente/dist/opencode/mi-agente/` (excluido de git por `.gitignore`). Para empaquetar todos los agentes del monorepo de una vez: `make package`.
+
+### 6. Probar en OpenCode
+
+La carpeta `dist/` se sobreescribe en cada ejecución de `pack_opencode.sh`, así que antes de abrir OpenCode conviene copiar el paquete generado a una ruta de trabajo:
+
+```bash
+cp -r mi-agente/dist/opencode/mi-agente ~/agentes/mi-agente
+```
+
+Si el `opencode.json` referencia variables de entorno para servidores MCP, exportarlas en el terminal antes de abrir OpenCode:
+
+```bash
+export MI_SERVIDOR_URL="https://mi-servidor.ejemplo.com/mcp"
+export MI_API_KEY="mi-token-secreto"
+```
+
+A continuación, abrir OpenCode desde la carpeta del agente:
+
+```bash
+cd ~/agentes/mi-agente
+opencode
+```
+
+Al arrancar, OpenCode carga automáticamente `AGENTS.md` como instrucciones del agente, las skills disponibles en `skills/` y conecta con los servidores MCP definidos en `opencode.json`. Las skills se invocan con `/nombre-skill` en el chat.
+
+El archivo `opencode.json` se puede editar a mano en cualquier momento para añadir, quitar o reconfigurar servidores MCP — solo hace falta reiniciar OpenCode para que los cambios surtan efecto.
