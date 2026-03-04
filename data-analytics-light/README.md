@@ -30,6 +30,27 @@ Los scripts de plugin y cowork aceptan tambien `--url <MCP_URL>` y `--key <API_K
 | `pack_claude_code.sh` | Claude Code CLI | `dist/claude_code/<nombre>/` | `bash ../pack_claude_code.sh --agent data-analytics-light` |
 | `pack_opencode.sh` | OpenCode | `dist/opencode/<nombre>/` | `bash ../pack_opencode.sh --agent data-analytics-light` |
 
+### Ficheros incluidos por paquete
+
+| Fichero fuente | `claude_project` | `claude_plugin` | `claude_plugin --with-agent` | `claude_cowork` | `claude_code` | `opencode` |
+|---|---|---|---|---|---|---|
+| `AGENTS.md` | ✅ → `CLAUDE.md` | ❌ | ✅ → `agents/<n>.md` | ✅ → `CLAUDE.md`¹ | ✅ → `CLAUDE.md` | ✅ → `AGENTS.md` |
+| `requirements.txt` | ✅ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| `setup_env.sh` | ✅ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| `skills/` | ✅² | ✅³ | ✅³ | ✅ (en ZIP) | ✅ (en `.claude/skills/`) | ✅ (en `.opencode/skills/`) |
+| `skills-guides/` | ✅⁴ | ✅⁵ | ✅⁵ | ✅ (en ZIP) | ✅ (junto a skills) | ✅ (junto a skills) |
+| `.mcp.json` | ❌ | ✅ | ✅ | ✅ (en ZIP) | ✅ | ❌ |
+| `opencode.json` | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
+| `plugin.json` | ❌ | ✅ | ✅ | ✅ (en ZIP) | ❌ | ❌ |
+| `settings.json` | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ |
+| `.claude/settings.local.json` | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ |
+
+¹ Generado (no copia directa): referencias `skills-guides/` → `skills/analyze/`, placeholder `{{TOOL_PREGUNTAS}}` resuelto.
+² Aplanadas en raíz: `analyze.md`, `analyze_*.md`, `explore-data.md`, `propose-knowledge.md`; guías prefijadas: `skills-guides_exploration.md`.
+³ Estructura canónica: `skills/<skill>/SKILL.md` + subficheros.
+⁴ Guías renombradas con prefijo: `skills-guides_exploration.md`.
+⁵ Default: duplicadas junto a cada skill; con `--shared-guides`: en directorio `skills-guides/` raíz.
+
 ### Empaquetado como Claude Plugin
 
 Genera un ZIP listo para instalar como plugin en Claude Code. Las guias compartidas de `skills-guides/` se copian junto al `SKILL.md` de cada skill que las usa (patron de los plugins oficiales de Anthropic). El script soporta dos variantes:

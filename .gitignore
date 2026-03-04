@@ -17,3 +17,6 @@ __pycache__/
 
 # Generated packaging artifacts (pack scripts + CI/CD build)
 **/dist/
+
+# OpenCode workspace local (generado automáticamente, no versionar)
+**/.opencode/
