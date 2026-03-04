@@ -260,6 +260,27 @@ Para implementacion detallada de cada tecnica, ver skill `/analyze` [advanced-an
 - **Profiling (`stratio_profile_data`)**: Requiere SQL como parametro — generarla SIEMPRE con `stratio_generate_sql`, nunca escribirla manualmente. NUNCA anadir LIMIT a la SQL; usar el parametro `limit` de la tool. Detalle completo en `skills-guides/exploration.md` sec 7
 - **Ejecucion en paralelo**: Cuando el plan define multiples preguntas de datos independientes (ninguna necesita el resultado de otra para formularse), lanzar TODAS las llamadas a `stratio_query_data` en una sola respuesta para que se ejecuten en paralelo. Aplica tambien a llamadas de metadata (`stratio_get_table_columns_details`, `stratio_profile_data`, etc.). Solo serializar cuando una query depende del resultado de otra (ej: necesitas un valor de la query A para formular la query B)
 
+### Manejo de respuestas de aclaracion del MCP
+
+`stratio_query_data` y `stratio_generate_sql` pueden responder con una solicitud de aclaracion
+en lugar de datos (ej: "¿A que periodo te refieres?", "¿'Activos' incluye usuarios con compra
+en 30 o 90 dias?"). Esto no es un error — es el motor pidiendo contexto adicional.
+
+Protocolo en cascada (seguir en orden):
+1. **Buscar en el dominio**: Llamar a `stratio_search_domain_knowledge` con el termino ambiguo.
+   Si se encuentra la definicion, rellamar con `additional_context` incluyendo la definicion
+2. **Inferir del plan**: Si el plan de analisis ya define el termino o periodo, anadirlo
+   directamente a `additional_context` y rellamar
+3. **Preguntar al usuario**: Solo si los pasos 1-2 no resuelven la ambiguedad. Presentar
+   la pregunta con opciones concretas (nunca texto libre si hay opciones claras)
+4. **Reformular**: Si persiste la ambiguedad, reformular la pregunta de datos con mayor
+   especificidad (fechas explicitas, definiciones incrustadas en el texto)
+5. **Informar y continuar**: Si el MCP no puede responder tras estos pasos, documentar
+   la limitacion y continuar el analisis con los datos disponibles
+
+Maximo 2 iteraciones de aclaracion por query. Si tras ambas iteraciones no hay datos,
+informar al usuario y omitir esa metrica del analisis.
+
 ### Validacion post-query (obligatorio)
 
 Cada resultado de `stratio_query_data` debe pasar estas 7 validaciones antes de usarse en el analisis. Cuando se lanzan queries en paralelo, validar cada resultado conforme se recibe:

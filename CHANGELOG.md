@@ -16,3 +16,4 @@
 * Fix section numbering in data-analytics-light analyze skill: replace misleading alphabetic suffixes (4.5b/c/d, 5.4b/c) with sequential ordinal numbers (4.6–4.10, 5.5–5.8); update all cross-references in AGENTS.md
 * Add new agent creation guide to README (structure, AGENTS.md, skills, opencode.json, packaging); add packaging files matrix table to data-analytics-light README; gitignore OpenCode workspace local files
 * Add step 6 "Probar en OpenCode" to new agent guide: copy dist package to working dir, export MCP env vars, open OpenCode and edit opencode.json
+* Add MCP clarification response protocol (cascade: domain search → infer from plan → ask user → reformulate → inform and continue; max 2 iterations per query) to both agents and exploration guide; add new agent integration checklist to monorepo AGENTS.md
