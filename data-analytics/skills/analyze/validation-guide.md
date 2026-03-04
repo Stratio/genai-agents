@@ -20,7 +20,13 @@ Anadir `--docx` si solicito DOCX.
 
 ### Bloque A — Integridad de archivos
 
-Verificar que todos los archivos declarados en el plan existen:
+**Comando de verificación (OBLIGATORIO ejecutar):**
+```bash
+ls -lh output/[ANALISIS_DIR]/
+```
+Revisar que cada fichero declarado en el plan aparece en el listado con tamaño > 0 bytes.
+
+**Si un deliverable no aparece o tiene 0 bytes → FAIL bloqueante**: regenerar el fichero antes de continuar con la validación. No pasar al Bloque B hasta que el Bloque A sea PASS.
 
 | Item | Verificacion | Criterio |
 |------|-------------|----------|
@@ -127,4 +133,5 @@ Para 1-2 KPIs clave del analisis:
 
 ## Regla general
 
-La validacion **no bloquea la entrega**. Si hay WARNINGs o FAILs, se reportan en el chat junto con el resumen de hallazgos, pero el analisis se entrega igualmente. El objetivo es transparencia, no bloqueo.
+- **Bloque A (integridad de archivos)**: FAIL es **bloqueante** — regenerar los ficheros faltantes antes de continuar.
+- **Bloques B, C, D**: la validacion **no bloquea la entrega**. Si hay WARNINGs o FAILs, se reportan en el chat junto con el resumen de hallazgos, pero el analisis se entrega igualmente. El objetivo es transparencia, no bloqueo.
