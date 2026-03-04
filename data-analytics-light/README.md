@@ -9,6 +9,11 @@ Agente ligero de Business Intelligence y Business Analytics. Mismo motor analiti
 - Visualizaciones profesionales (matplotlib, seaborn, plotly)
 - Output directo en chat con insights accionables
 
+## Requisitos
+
+- Python 3.10+ (dependencias en `requirements.txt`; instalar con `bash setup_env.sh`)
+- Acceso a un servidor MCP de Stratio. La configuracion esta en `.mcp.json` (Claude Code / claude.ai) y en `opencode.json` (OpenCode), ambos preconfigurados para leer la URL y credenciales desde variables de entorno
+
 ## Scripts de empaquetado
 
 Todos los scripts son no-interactivos (CI/CD-friendly). Si no se pasa `--name`, usan `data-analytics-light` por defecto.
@@ -127,15 +132,3 @@ Los pack scripts generan el formato correcto para cada plataforma (renombrando f
 Las skills marcadas como **shared** viven en `shared-skills/` en la raiz del monorepo y se comparten con `data-analytics`. Las locales viven en `skills/` de este agente.
 
 **Nota**: Este agente no usa memoria persistente en ficheros — el output principal es el chat.
-
-## Setup
-
-```bash
-bash setup_env.sh
-```
-
-## Uso
-
-```bash
-claude .
-```

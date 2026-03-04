@@ -12,6 +12,11 @@ Agente completo de Business Intelligence y Business Analytics para Claude Code y
 - Documentacion del razonamiento y validacion de output
 - Memoria persistente de analisis y preferencias
 
+## Requisitos
+
+- Python 3.10+ (dependencias en `requirements.txt`; instalar con `bash setup_env.sh`)
+- Acceso a un servidor MCP de Stratio. La configuracion esta en `.mcp.json` (Claude Code / claude.ai) y en `opencode.json` (OpenCode), ambos preconfigurados para leer la URL y credenciales desde variables de entorno
+
 ## Scripts de empaquetado
 
 Scripts genericos en la raiz del monorepo (desde `../`):
@@ -65,15 +70,3 @@ El agente mantiene memoria entre sesiones en dos ficheros:
 - `output/ANALYSIS_MEMORY.md` — Indice cronologico de analisis realizados con dominio, resumen y ruta al detalle
 
 Las plantillas iniciales (semilla) estan versionadas en `output-templates/`. Los pack scripts las copian a `output/` al empaquetar. En uso directo, el agente las crea en `output/` automaticamente.
-
-## Setup
-
-```bash
-bash setup_env.sh
-```
-
-## Uso
-
-```bash
-claude .
-```

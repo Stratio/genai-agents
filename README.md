@@ -1,6 +1,8 @@
 # genai-agents
 
-Coleccion de agentes de IA generativa para analisis de datos de negocio. Compatibles con **Claude Code**, **Claude Cowork**, **claude.ai**, **OpenCode**, **OpenWork** y herramientas compatibles con MCP.
+Coleccion de agentes y skills de IA generativa construidos sobre las herramientas de datos de Stratio: capa semantica gobernada, dominios de datos, Stratio Data Governance y analisis con acceso al virtualizador de datos con informacion de sus dominios y colecciones.
+
+El repositorio esta orientado principalmente a **OpenCode**, la herramienta opensource sobre la que Stratio basa su Agent Builder en la plataforma GenAI. Algunos agentes incluyen ademas empaquetados para otras plataformas como **claude.ai Projects** o **Claude Desktop** (Claude Cowork).
 
 ## Agentes
 
@@ -145,34 +147,24 @@ Una shared skill debe ser lo más autocontenida posible: sin dependencias de her
 
 **Contenido del SKILL.md:** No referenciar `AGENTS.md` ni `CLAUDE.md` directamente — los pack scripts sustituyen estos nombres según la plataforma, pero una referencia directa puede quedar mal en algún destino. Usar formulaciones genéricas como "siguiendo la convención de preguntas al usuario" o "según las instrucciones del agente". Las referencias a `skills-guides/<fichero>` funcionan sin cambios en todos los formatos de output.
 
-## Uso directo (sin empaquetar)
+## Formato y compatibilidad con herramientas de desarrollo
 
-El formato canonico de instrucciones es `AGENTS.md` + `skills/`. Para usar con cualquier plataforma, empaquetar con el script correspondiente. La raiz del monorepo tiene un symlink `CLAUDE.md → AGENTS.md` para compatibilidad con Claude Code.
+Los agentes siguen el formato `AGENTS.md` + `skills/`, reconocido por **OpenCode**, **Cursor**, plugins de **GitHub Copilot** y otras herramientas compatibles con el estandar de instrucciones de agente.
 
-- **Claude Code**: Empaquetar con `pack_claude_code.sh` para uso fuera del repositorio. Lee instrucciones de `AGENTS.md` (via symlink `CLAUDE.md`). Para uso directo con Claude Code, empaquetar primero con `pack_claude_code.sh`.
-- **OpenCode**: `opencode.json` apunta a `AGENTS.md`. Para uso directo con OpenCode, empaquetar primero con `pack_opencode.sh`.
+Un agente se compone de:
 
-Los pack scripts generan el formato correcto para cada plataforma (renombrando ficheros, reubicando skills, etc.).
+- `AGENTS.md` (o `CLAUDE.md`) — instrucciones del agente: rol, workflow, reglas (**obligatorio**)
+- `skills/` — skills invocables por el usuario (opcional)
+- `opencode.json` — configuracion de MCPs y permisos para OpenCode (opcional)
+- `.mcp.json` — configuracion de MCPs para Claude Code / claude.ai (opcional)
 
-## Requisitos comunes
+Con estos ficheros, basta ejecutar el script de empaquetado correspondiente para generar el paquete listo para usar en la plataforma destino.
 
-- Python 3.10+
-- Acceso a un servidor MCP de Stratio (configurado en `.mcp.json` de cada agente)
-
-## Setup
-
-Cada agente tiene su propio entorno virtual y dependencias. Desde la carpeta de cada agente:
-
-```bash
-cd data-analytics/    # o data-analytics-light/
-bash setup_env.sh
-```
-
-Esto crea un `.venv/` local con las dependencias definidas en `requirements.txt`.
+La raiz del monorepo incluye un symlink `CLAUDE.md → AGENTS.md` para poder abrir el proyecto directamente con **Claude Code** y programar nuevos agentes con su asistente de codigo.
 
 ## Crear un agente nuevo
 
-Esta guía explica cómo añadir un agente al monorepo para usarlo en **OpenCode** o en el **framework de agentes de Stratio GenAI**. Un agente se compone de tres piezas: **instrucciones** (`AGENTS.md`), **skills** (`skills/`) y **configuración de herramientas** (`opencode.json`). El script `pack_opencode.sh` se encarga de empaquetarlo.
+Esta guía explica cómo añadir un agente al monorepo para usarlo en **OpenCode**, **Claude Code** o el **framework de agentes de Stratio GenAI**. Un agente se compone de tres piezas: **instrucciones** (`AGENTS.md`), **skills** (`skills/`) y **configuración de herramientas**. Añadiendo `opencode.json` y/o `.mcp.json` el agente puede funcionar en ambas plataformas a la vez. Los scripts `pack_opencode.sh` y `pack_claude_code.sh` se encargan de empaquetarlo para cada destino.
 
 ### 1. Estructura de carpetas
 
@@ -239,9 +231,13 @@ El frontmatter YAML es obligatorio: `name` es el identificador, `description` lo
 
 Para reutilizar skills ya existentes en el monorepo sin duplicarlas, ver la sección [Skills compartidas](#skills-compartidas) — el sistema de shared skills evita mantener copies de skills idénticas en cada agente.
 
-### 4. opencode.json — Configurar herramientas externas
+### 4. Configurar herramientas externas (MCPs)
 
-La configuración de OpenCode declara las instrucciones, los MCPs disponibles y los permisos del agente:
+Cada plataforma tiene su propio fichero de configuración. Se pueden crear ambos para que el agente funcione en OpenCode y en Claude Code a la vez.
+
+#### 4a. `opencode.json` — OpenCode
+
+Declara las instrucciones, los MCPs disponibles y los permisos del agente:
 
 ```json
 {
@@ -266,21 +262,50 @@ La configuración de OpenCode declara las instrucciones, los MCPs disponibles y 
 
 Las variables de entorno se referencian con la sintaxis `{env:NOMBRE_VAR}`. Si el agente no usa MCPs externos, omitir el bloque `mcp`.
 
+El bloque `permission` controla tanto los comandos bash/ficheros como las herramientas MCP expuestas. Para las herramientas MCP el patrón es `{nombre-servidor}_*` (todas las tools de ese servidor) o `*{nombre-tool}` (una tool concreta en cualquier servidor).
+
+#### 4b. `.mcp.json` — Claude Code / claude.ai
+
+Declara los servidores MCP disponibles para Claude Code:
+
+```json
+{
+  "mcpServers": {
+    "mi-servidor": {
+      "type": "http",
+      "url": "${MI_SERVIDOR_URL:-http://127.0.0.1:8080/mcp}",
+      "headers": { "Authorization": "Bearer ${MI_API_KEY:-}" },
+      "allowedTools": ["nombre_tool_1", "nombre_tool_2"]
+    }
+  }
+}
+```
+
+Las variables de entorno usan sintaxis bash `${VAR:-valor_por_defecto}`. `allowedTools` restringe qué herramientas del servidor MCP se exponen al agente. Los permisos de bash y sistema de ficheros los gestiona Claude Code por su cuenta (fuera de este fichero).
+
 ### 5. Empaquetar
 
 ```bash
 # Empaquetar para OpenCode
 bash pack_opencode.sh --agent mi-agente
 
+# Empaquetar para Claude Code
+bash pack_claude_code.sh --agent mi-agente
+
 # Con nombre personalizado (kebab-case)
 bash pack_opencode.sh --agent mi-agente --name nombre-personalizado
+
+# Empaquetar para ambas plataformas a la vez
+make package
 ```
 
-El output se genera en `mi-agente/dist/opencode/mi-agente/` (excluido de git por `.gitignore`). Para empaquetar todos los agentes del monorepo de una vez: `make package`.
+El output se genera en `mi-agente/dist/opencode/mi-agente/` y `mi-agente/dist/claude_code/mi-agente/` respectivamente (excluidos de git por `.gitignore`).
 
-### 6. Probar en OpenCode
+### 6. Probar
 
-La carpeta `dist/` se sobreescribe en cada ejecución de `pack_opencode.sh`, así que antes de abrir OpenCode conviene copiar el paquete generado a una ruta de trabajo:
+La carpeta `dist/` se sobreescribe en cada ejecución de los scripts de empaquetado, así que antes de abrir el agente conviene copiar el paquete generado a una ruta de trabajo.
+
+#### 6a. Probar en OpenCode
 
 ```bash
 cp -r mi-agente/dist/opencode/mi-agente ~/agentes/mi-agente
@@ -303,3 +328,15 @@ opencode
 Al arrancar, OpenCode carga automáticamente `AGENTS.md` como instrucciones del agente, las skills disponibles en `skills/` y conecta con los servidores MCP definidos en `opencode.json`. Las skills se invocan con `/nombre-skill` en el chat.
 
 El archivo `opencode.json` se puede editar a mano en cualquier momento para añadir, quitar o reconfigurar servidores MCP — solo hace falta reiniciar OpenCode para que los cambios surtan efecto.
+
+#### 6b. Probar en Claude Code
+
+```bash
+cp -r mi-agente/dist/claude_code/mi-agente ~/agentes/mi-agente-cc
+export MI_SERVIDOR_URL="https://mi-servidor.ejemplo.com/mcp"
+export MI_API_KEY="mi-token-secreto"
+cd ~/agentes/mi-agente-cc
+claude .
+```
+
+Al arrancar, Claude Code carga `CLAUDE.md` como instrucciones del agente y las skills disponibles en `.claude/skills/`. Los servidores MCP se leen de `.mcp.json`. Las skills se invocan con `/nombre-skill` en el chat.
