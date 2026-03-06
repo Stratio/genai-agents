@@ -47,6 +47,7 @@ Scripts genericos que funcionan con cualquier agente del monorepo:
 |--------|-------------------|--------|
 | `pack_claude_code.sh` | Claude Code CLI | `{agente}/claude_code/{nombre}/` |
 | `pack_opencode.sh` | OpenCode | `{agente}/opencode/{nombre}/` |
+| `pack_shared_skills.sh` | Todas (skills sueltas) | `dist/shared-skills.zip` o `dist/{skill}.zip` |
 
 Uso: `bash pack_claude_code.sh --agent <ruta-agente> [--name <nombre-kebab>]`
 
@@ -63,7 +64,7 @@ Uso: `bash pack_claude_code.sh --agent <ruta-agente> [--name <nombre-kebab>]`
 - No referenciar `AGENTS.md` ni `CLAUDE.md` directamente — usar formulaciones genericas como "segun las instrucciones del agente" o "siguiendo la convencion de preguntas al usuario". Los pack scripts sustituyen estos nombres segun la plataforma destino, pero una referencia directa puede quedar mal en alguna plataforma
 - No depender de herramientas Python, estilos, templates ni rutas especificas de un agente concreto — si la skill necesita eso, debe ser local
 - Las referencias a `output/MEMORY.md` son aceptables si estan condicionadas a la existencia del fichero (`si existe`) — agentes sin memoria simplemente la ignoran
-- Las referencias a guides deben usar la ruta `skills-guides/<fichero>` (sin prefijo de plataforma) — los pack scripts la resuelven correctamente en el output
+- Las referencias a guides en el SKILL.md deben usar la ruta `skills-guides/<fichero>` (sin prefijo de plataforma) — los pack scripts genéricos copian cada guide **dentro** de la carpeta de la skill y reescriben las referencias para que sean locales (autocontenida). Los guides declarados en `shared-guides` del agente se copian además a `skills-guides/` para que `AGENTS.md` los referencie
 
 ### Usar una shared skill en un agente
 

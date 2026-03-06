@@ -18,3 +18,4 @@
 * Add step 6 "Probar en OpenCode" to new agent guide: copy dist package to working dir, export MCP env vars, open OpenCode and edit opencode.json
 * Add MCP clarification response protocol (cascade: domain search → infer from plan → ask user → reformulate → inform and continue; max 2 iterations per query) to both agents and exploration guide; add new agent integration checklist to monorepo AGENTS.md
 * Expand new agent guide to cover Claude Code: add .mcp.json config section (4b), Claude Code pack command (step 5), and Claude Code test instructions (step 6b); update root and per-agent READMEs with platform compatibility and Requisitos sections
+* Make shared skills self-contained: pack_claude_code.sh and pack_opencode.sh now embed skill guides inside each skill folder and rewrite local references; add pack_shared_skills.sh for standalone skill packaging; complete packaging docs with missing shared-skill zips and script tables

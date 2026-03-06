@@ -168,6 +168,22 @@ if [[ -f "$AGENT_ABS/shared-skills" ]]; then
     fi
     cp -r "$skill_src" "$skill_dst"
     rm -f "$skill_dst/skill-guides"
+    # Copiar guides declarados DENTRO de la skill (autocontenida)
+    if [[ -f "$skill_src/skill-guides" ]]; then
+      while IFS= read -r guide || [[ -n "$guide" ]]; do
+        [[ -z "$guide" || "$guide" == \#* ]] && continue
+        guide_src="$MONOREPO_ROOT/shared-skill-guides/$guide"
+        if [[ -d "$guide_src" ]]; then
+          cp -r "$guide_src" "$skill_dst/$guide"
+        elif [[ -f "$guide_src" ]]; then
+          cp "$guide_src" "$skill_dst/$guide"
+        else
+          echo "    WARN: shared guide '$guide' no encontrado — omitido" >&2
+        fi
+      done < "$skill_src/skill-guides"
+      # Actualizar referencias en la skill para que sean locales
+      find "$skill_dst" -type f -name '*.md' -exec sed -i 's|skills-guides/||g' {} \;
+    fi
     N_SHARED=$((N_SHARED + 1))
     if [[ -f "$skill_src/skill-guides" ]]; then
       while IFS= read -r guide || [[ -n "$guide" ]]; do
@@ -196,11 +212,14 @@ if [[ ${#SHARED_GUIDES_NEEDED[@]} -gt 0 ]]; then
     [[ -n "${_GUIDES_SEEN[$guide]:-}" ]] && continue
     _GUIDES_SEEN[$guide]=1
     guide_src="$MONOREPO_ROOT/shared-skill-guides/$guide"
-    if [[ ! -f "$guide_src" ]]; then
+    if [[ -d "$guide_src" ]]; then
+      cp -r "$guide_src" "$OUTPUT_DIR/.opencode/skills-guides/$guide"
+    elif [[ -f "$guide_src" ]]; then
+      cp "$guide_src" "$OUTPUT_DIR/.opencode/skills-guides/$guide"
+    else
       echo "    WARN: shared guide '$guide' no encontrado en $guide_src — omitido" >&2
       continue
     fi
-    cp "$guide_src" "$OUTPUT_DIR/.opencode/skills-guides/$guide"
     N_GUIDES=$((N_GUIDES + 1))
   done
   echo "    [5.1] $N_GUIDES shared guide(s) copiados a .opencode/skills-guides/"
