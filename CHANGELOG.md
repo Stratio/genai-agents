@@ -21,3 +21,4 @@
 * Make shared skills self-contained: pack_claude_code.sh and pack_opencode.sh now embed skill guides inside each skill folder and rewrite local references; add pack_shared_skills.sh for standalone skill packaging; complete packaging docs with missing shared-skill zips and script tables
 * Add TLS note to new agent guide: document NODE_TLS_REJECT_UNAUTHORIZED=0 workaround for MCP servers using self-signed certificates in development and pre-production environments
 * Improve README intro: rewrite opening description to mention Stratio Semantic Data Layer, Stratio Governance (domains, semantic layers, data quality, business terms) and Stratio Virtualizer
+* Clarify Cowork packaging docs: replace bullet list with table for the three generated artefacts, add note that plugins do not support CLAUDE.md (goes as folder instruction separately), fix incorrect AGENTS.md reference in usage steps
