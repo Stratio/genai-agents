@@ -40,8 +40,16 @@ if [ -f "shared-guides" ]; then
   while IFS= read -r guide || [ -n "$guide" ]; do
     [ -z "$guide" ] || [[ "$guide" == \#* ]] && continue
     guide_src="$MONOREPO_ROOT/shared-skill-guides/$guide"
-    guide_flat="skills-guides_$(echo "$guide" | tr '/' '_')"
-    if [ -f "$guide_src" ]; then
+    if [ -d "$guide_src" ]; then
+      # Aplanar directorio: cada fichero interno se convierte en skills-guides_dir_file.md
+      while IFS= read -r sub_file; do
+        [ -f "$sub_file" ] || continue
+        rel="${sub_file#$guide_src/}"
+        flat_name="skills-guides_${guide}_$(echo "$rel" | tr '/' '_')"
+        cp "$sub_file" "$PROJECT_DIR/$flat_name"
+      done < <(find "$guide_src" -type f)
+    elif [ -f "$guide_src" ]; then
+      guide_flat="skills-guides_$(echo "$guide" | tr '/' '_')"
       cp "$guide_src" "$PROJECT_DIR/$guide_flat"
     else
       echo "WARN: shared guide '$guide' no encontrado en $guide_src" >&2
@@ -50,13 +58,23 @@ if [ -f "shared-guides" ]; then
 fi
 # Copiar guides locales restantes (si existen)
 if [ -d "skills-guides" ]; then
-  for f in skills-guides/*.md; do
-    [ -f "$f" ] || continue
-    base=$(basename "$f")
-    # No duplicar los que ya vienen de shared-skill-guides
-    dst="$PROJECT_DIR/skills-guides_$base"
-    [ -f "$dst" ] && continue
-    cp "$f" "$dst"
+  for entry in skills-guides/*; do
+    [ -e "$entry" ] || continue
+    base=$(basename "$entry")
+    if [ -d "$entry" ]; then
+      # Aplanar directorio local
+      while IFS= read -r sub_file; do
+        [ -f "$sub_file" ] || continue
+        rel="${sub_file#$entry/}"
+        flat_name="skills-guides_${base}_$(echo "$rel" | tr '/' '_')"
+        [ -f "$PROJECT_DIR/$flat_name" ] && continue
+        cp "$sub_file" "$PROJECT_DIR/$flat_name"
+      done < <(find "$entry" -type f)
+    elif [ -f "$entry" ]; then
+      dst="$PROJECT_DIR/skills-guides_$base"
+      [ -f "$dst" ] && continue
+      cp "$entry" "$dst"
+    fi
   done
 fi
 

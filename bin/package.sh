@@ -37,6 +37,26 @@ while IFS= read -r module; do
 
 done < "$REPO_ROOT/release-modules"
 
+# --- Pack shared-skills ---
+echo "  [shared-skills] Empaquetando shared skills..."
+bash "$REPO_ROOT/pack_shared_skills.sh" --name shared-skills
+if [[ -f "$DIST_DIR/shared-skills.zip" ]]; then
+  mv "$DIST_DIR/shared-skills.zip" "$DIST_DIR/shared-skills-${VERSION}.zip"
+  echo "    -> dist/shared-skills-${VERSION}.zip"
+fi
+
+# --- Pack shared-skills individuales ---
+for skill_dir in "$REPO_ROOT/shared-skills"/*/; do
+  [[ -d "$skill_dir" ]] || continue
+  skill_name="$(basename "$skill_dir")"
+  echo "  [shared-skills] Empaquetando skill individual '$skill_name'..."
+  bash "$REPO_ROOT/pack_shared_skills.sh" --skill "$skill_name"
+  if [[ -f "$DIST_DIR/${skill_name}.zip" ]]; then
+    mv "$DIST_DIR/${skill_name}.zip" "$DIST_DIR/shared-skill-${skill_name}-${VERSION}.zip"
+    echo "    -> dist/shared-skill-${skill_name}-${VERSION}.zip"
+  fi
+done
+
 # --- Pack adicionales de data-analytics-light ---
 DAL_DIR="$REPO_ROOT/data-analytics-light"
 if [[ -d "$DAL_DIR" ]]; then

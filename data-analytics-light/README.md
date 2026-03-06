@@ -43,7 +43,7 @@ Los scripts de plugin y cowork aceptan tambien `--url <MCP_URL>` y `--key <API_K
 | `requirements.txt` | ✅ | ❌ | ❌ | ❌ | ✅ | ✅ |
 | `setup_env.sh` | ✅ | ❌ | ❌ | ❌ | ✅ | ✅ |
 | `skills/` | ✅² | ✅³ | ✅³ | ✅ (en ZIP) | ✅ (en `.claude/skills/`) | ✅ (en `.opencode/skills/`) |
-| `skills-guides/` | ✅⁴ | ✅⁵ | ✅⁵ | ✅ (en ZIP) | ✅ (junto a skills) | ✅ (junto a skills) |
+| `skills-guides/` | ✅⁴ | ✅⁵ | ✅⁵ | ✅ (en ZIP) | ✅⁶ | ✅⁶ |
 | `.mcp.json` | ❌ | ✅ | ✅ | ✅ (en ZIP) | ✅ | ❌ |
 | `opencode.json` | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
 | `plugin.json` | ❌ | ✅ | ✅ | ✅ (en ZIP) | ❌ | ❌ |
@@ -55,6 +55,7 @@ Los scripts de plugin y cowork aceptan tambien `--url <MCP_URL>` y `--key <API_K
 ³ Estructura canónica: `skills/<skill>/SKILL.md` + subficheros.
 ⁴ Guías renombradas con prefijo: `skills-guides_exploration.md`.
 ⁵ Default: duplicadas junto a cada skill; con `--shared-guides`: en directorio `skills-guides/` raíz.
+⁶ Guides dentro de cada skill (autocontenida) + en `skills-guides/` para referencias desde `CLAUDE.md`/`AGENTS.md`.
 
 ### Empaquetado como Claude Plugin
 

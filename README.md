@@ -19,6 +19,7 @@ Scripts en la raiz del monorepo para empaquetar cualquier agente en el formato d
 |--------|-------------------|--------|
 | `pack_claude_code.sh` | Claude Code CLI | `{agente}/dist/claude_code/{nombre}/` |
 | `pack_opencode.sh` | OpenCode | `{agente}/dist/opencode/{nombre}/` |
+| `pack_shared_skills.sh` | Todas (skills sueltas) | `dist/shared-skills.zip` o `dist/{skill}.zip` |
 
 ```bash
 # Empaquetar data-analytics para Claude Code
@@ -47,6 +48,9 @@ genai-agents/
     data-analytics-light-claude-plugin-agent-{v}.zip
     data-analytics-light-claude-cowork-{v}.zip
     data-analytics-light-claude-project-{v}.zip
+    shared-skills-{v}.zip                        # Todas las shared skills juntas
+    shared-skill-propose-knowledge-{v}.zip       # Skill individual
+    shared-skill-explore-data-{v}.zip            # Skill individual
     genai-agents-sources-{v}.zip                 # Fuentes del repositorio
     genai-agents-{v}.zip                        # ZIP global con todos los anteriores
 
@@ -115,10 +119,21 @@ Los guides compartidos (documentacion tecnica que las skills referencian) viven 
    exploration.md
    ```
 
-3. Empaquetar con normalidad — los pack scripts incluyen las shared skills y copian los guides al output:
+3. Empaquetar con normalidad — los pack scripts genéricos (`pack_claude_code.sh`, `pack_opencode.sh`) copian cada guide declarado en `skill-guides` **dentro** de la carpeta de la skill en el output y reescriben las referencias en `SKILL.md` para que sean locales (skill autocontenida). Los guides declarados en `shared-guides` del agente se copian además a `skills-guides/` para que `AGENTS.md`/`CLAUDE.md` los referencie:
 
    ```bash
    bash pack_claude_code.sh --agent mi-agente
+   ```
+
+   Output resultante (ejemplo con `explore-data` que declara `exploration.md`):
+   ```
+   .claude/
+     skills/
+       explore-data/
+         SKILL.md              # referencia "exploration.md" (local)
+         exploration.md         # guide dentro de la skill
+     skills-guides/
+       exploration.md           # para AGENTS.md (posible duplicado, ok)
    ```
 
 Si el agente tiene en `skills/` una skill con el mismo nombre, la versión local tiene prioridad sobre la shared.
@@ -145,7 +160,7 @@ Si el agente tiene en `skills/` una skill con el mismo nombre, la versión local
 
 Una shared skill debe ser lo más autocontenida posible: sin dependencias de herramientas Python, estilos ni templates específicos de un agente. Si una skill depende fuertemente de artefactos de un agente concreto, mantenerla como skill local en ese agente.
 
-**Contenido del SKILL.md:** No referenciar `AGENTS.md` ni `CLAUDE.md` directamente — los pack scripts sustituyen estos nombres según la plataforma, pero una referencia directa puede quedar mal en algún destino. Usar formulaciones genéricas como "siguiendo la convención de preguntas al usuario" o "según las instrucciones del agente". Las referencias a `skills-guides/<fichero>` funcionan sin cambios en todos los formatos de output.
+**Contenido del SKILL.md:** No referenciar `AGENTS.md` ni `CLAUDE.md` directamente — los pack scripts sustituyen estos nombres según la plataforma, pero una referencia directa puede quedar mal en algún destino. Usar formulaciones genéricas como "siguiendo la convención de preguntas al usuario" o "según las instrucciones del agente". Las referencias a guides deben usar la ruta `skills-guides/<fichero>` en el fuente — los pack scripts genéricos copian el guide dentro de la skill y reescriben la referencia para que sea local (autocontenida).
 
 ## Formato y compatibilidad con herramientas de desarrollo
 

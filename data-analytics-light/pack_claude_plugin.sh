@@ -158,7 +158,11 @@ if [ ${#_GUIDES_MAP[@]} -gt 0 ]; then
       else
         guide_src="skills-guides/$guide_name"
       fi
-      [ -f "$guide_src" ] && cp "$guide_src" "$PLUGIN_DIR/skills-guides/$guide_name"
+      if [ -d "$guide_src" ]; then
+        cp -r "$guide_src" "$PLUGIN_DIR/skills-guides/$guide_name"
+      elif [ -f "$guide_src" ]; then
+        cp "$guide_src" "$PLUGIN_DIR/skills-guides/$guide_name"
+      fi
     done
     sed -i 's|`skills-guides/exploration\.md`|`../../skills-guides/exploration.md`|g' "$PLUGIN_DIR/skills/"*/SKILL.md 2>/dev/null || true
   else
@@ -172,7 +176,11 @@ if [ ${#_GUIDES_MAP[@]} -gt 0 ]; then
           else
             guide_src="skills-guides/$guide_name"
           fi
-          [ -f "$guide_src" ] && cp "$guide_src" "$skill_dir/$guide_name"
+          if [ -d "$guide_src" ]; then
+            cp -r "$guide_src" "$skill_dir/$guide_name"
+          elif [ -f "$guide_src" ]; then
+            cp "$guide_src" "$skill_dir/$guide_name"
+          fi
         done
       fi
     done
