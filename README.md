@@ -333,6 +333,14 @@ export MI_SERVIDOR_URL="https://mi-servidor.ejemplo.com/mcp"
 export MI_API_KEY="mi-token-secreto"
 ```
 
+> **Nota sobre TLS:** Si los servidores MCP utilizan certificados TLS autofirmados (habitual en entornos de desarrollo o pre-producción), Node.js rechazará la conexión por defecto. Para permitirla, exportar también:
+>
+> ```bash
+> export NODE_TLS_REJECT_UNAUTHORIZED=0
+> ```
+>
+> Esta variable desactiva la validación de certificados TLS en todas las conexiones de Node.js del proceso. Usarla **solo en entornos de confianza** — nunca en producción.
+
 A continuación, abrir OpenCode desde la carpeta del agente:
 
 ```bash
@@ -353,5 +361,13 @@ export MI_API_KEY="mi-token-secreto"
 cd ~/agentes/mi-agente-cc
 claude .
 ```
+
+> **Nota sobre TLS:** Si los servidores MCP utilizan certificados TLS autofirmados (habitual en entornos de desarrollo o pre-producción), Node.js rechazará la conexión por defecto. Para permitirla, exportar también:
+>
+> ```bash
+> export NODE_TLS_REJECT_UNAUTHORIZED=0
+> ```
+>
+> Esta variable desactiva la validación de certificados TLS en todas las conexiones de Node.js del proceso. Usarla **solo en entornos de confianza** — nunca en producción.
 
 Al arrancar, Claude Code carga `CLAUDE.md` como instrucciones del agente y las skills disponibles en `.claude/skills/`. Los servidores MCP se leen de `.mcp.json`. Las skills se invocan con `/nombre-skill` en el chat.
