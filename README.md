@@ -1,6 +1,6 @@
 # genai-agents
 
-Coleccion de agentes y skills de IA generativa construidos sobre las herramientas de datos de Stratio: capa semantica gobernada, dominios de datos, Stratio Data Governance y analisis con acceso al virtualizador de datos con informacion de sus dominios y colecciones.
+Coleccion de agentes y skills de IA generativa que explotan la **Stratio Semantic Data Layer**, la capa de datos semantizados que **Stratio Governance** genera a partir de sus dominios de datos, capas semanticas, reglas de calidad del dato y business terms, produciendo colecciones listas para consumo analitico. Gracias a **Stratio Virtualizer**, un motor basado en Apache Spark, el acceso a los datos es independiente del datastore subyacente y compatible con big data. Los agentes de este repositorio se conectan a Governance para consultar, analizar y generar informes sobre esos datos gobernados.
 
 El repositorio esta orientado principalmente a **OpenCode**, la herramienta opensource sobre la que Stratio basa su Agent Builder en la plataforma GenAI. Algunos agentes incluyen ademas empaquetados para otras plataformas como **claude.ai Projects** o **Claude Desktop** (Claude Cowork).
 
