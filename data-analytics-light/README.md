@@ -78,11 +78,15 @@ El resultado se encuentra en `dist/claude_plugins/data-analytics-light/data-anal
 
 ### Empaquetado como Claude Cowork
 
-Genera un paquete para configurar el agente en Claude Cowork sin reemplazar al orquestador. Contiene:
+Genera un paquete para configurar el agente en Claude Cowork sin reemplazar al orquestador. El script produce tres ficheros:
 
-- `CLAUDE.md` — folder instructions (generado desde AGENTS.md) con referencias actualizadas para el contexto del plugin
-- `<nombre>.zip` — plugin ZIP (solo skills + MCP, sin agente)
-- `<nombre>-cowork.zip` — ZIP final con ambos ficheros
+| Fichero | Que es | Para que sirve |
+|---------|--------|----------------|
+| `CLAUDE.md` | Folder instructions (generado desde AGENTS.md) | Instrucciones del agente — Cowork las lee automaticamente del directorio de trabajo |
+| `<nombre>.zip` | Plugin ZIP (solo skills + MCP, sin agente) | Se instala como plugin en Cowork; aporta las skills y la conexion MCP |
+| `<nombre>-cowork.zip` | ZIP de distribucion con los dos ficheros anteriores | Para enviar/compartir el paquete completo; el usuario lo descomprime y usa cada pieza por separado |
+
+> **Nota:** Los plugins de Claude no incluyen instrucciones de agente (CLAUDE.md) — solo skills, MCP y hooks. Por eso el `CLAUDE.md` va aparte, como fichero del directorio de trabajo.
 
 ```bash
 bash pack_claude_cowork.sh --name data-analytics-light --url https://mcp.ejemplo.com --key mi-api-key
@@ -92,11 +96,12 @@ El resultado se encuentra en `dist/claude_cowork/data-analytics-light/`.
 
 **Como usarlo en Cowork:**
 
-1. Copiar `CLAUDE.md` al directorio de trabajo del proyecto en Cowork (actua como folder instructions)
-2. Instalar el ZIP del plugin en Cowork (aporta las skills `/analyze`, `/explore-data`, `/propose-knowledge` y la conexion MCP)
-3. El orquestador de Cowork lee las instrucciones del fichero AGENTS.md y delega a las skills del plugin cuando corresponda
+1. Descomprimir `<nombre>-cowork.zip` (o usar los ficheros sueltos del directorio `dist/`)
+2. Copiar `CLAUDE.md` al directorio de trabajo del proyecto en Cowork — Cowork lo lee automaticamente como folder instructions
+3. Instalar `<nombre>.zip` como plugin en Cowork (aporta las skills `/analyze`, `/explore-data`, `/propose-knowledge` y la conexion MCP)
+4. El orquestador de Cowork lee las instrucciones del `CLAUDE.md` y delega a las skills del plugin cuando corresponda
 
-**Diferencia con el plugin con agente:** En Cowork con agente, el plugin sustituye al orquestador — funciona como Claude Code CLI dentro de Cowork. Con el paquete Cowork, el orquestador mantiene el control y puede coordinar con otros plugins/agentes.
+**Diferencia con el plugin con agente:** En Cowork con agente (`pack_claude_plugin.sh --with-agent`), el plugin sustituye al orquestador — funciona como Claude Code CLI dentro de Cowork. Con el paquete Cowork, el orquestador mantiene el control y puede coordinar con otros plugins/agentes.
 
 ### Empaquetado como Claude Project (claude.ai)
 
