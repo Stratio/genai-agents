@@ -135,21 +135,7 @@ Para cada KPI, documentar:
 ### 5.4 Preguntas de datos
 Lista de preguntas en lenguaje natural para `stratio_query_data`. NUNCA escribir SQL.
 
-**Buenas practicas para formular preguntas al MCP:**
-- **Ser especifico con periodos**: "ventas mensuales del ultimo anio" en vez de "ventas"
-- **Incluir dimensiones**: "por region y categoria de producto"
-- **Especificar metricas**: "total de ingresos y numero de transacciones"
-- **Usar additional_context**: Para definiciones no obvias (ej: "Clientes activos = al menos 1 compra en 90 dias")
-- **Una pregunta = un dataset**: No mezclar preguntas no relacionadas
-- **Pensar en granularidad**: Necesito datos agregados o detalle transaccional?
-
-**Estrategia de queries** — orden de PLANIFICACION (pensar de lo general a lo especifico):
-1. **Contexto general**: Totales, conteos basicos → entender la magnitud del dataset
-2. **Queries dimensionales**: Por tiempo, segmento, region → encontrar patrones y tendencias
-3. **Queries de detalle**: Top/bottom N, outliers → profundizar en los hallazgos
-4. **Queries de validacion**: Cruces de datos, checks de consistencia → asegurar fiabilidad
-
-Este orden es para **planificar** las preguntas. En **ejecucion** (sec 6.0), lanzar en paralelo todas las queries independientes — tipicamente las categorias 1, 2 y 3 se pueden ejecutar simultaneamente. Solo las de categoria 4 (validacion cruzada) pueden requerir resultados previos.
+Para buenas practicas de formulacion y estrategia de queries (orden de planificacion, ejecucion en paralelo), ver `skills-guides/stratio-data-tools.md` sec 7.
 
 ### 5.5 Visualizaciones
 
@@ -195,14 +181,11 @@ Presentar plan completo al usuario y solicitar aprobacion antes de ejecutar
 
 ### 6.0 Obtencion de datos
 - Usar `stratio_query_data(data_question=..., domain_name=..., output_format="dict")` para cada pregunta de datos. **Lanzar en paralelo** todas las queries independientes definidas en el plan (paso 5.4). Solo serializar si una query necesita el resultado de otra para formularse
-- `output_format` solo acepta strings: `"dict"`, `"csv"`, `"markdown"`. Nunca pasar booleanos
-- Maximizar lo que se resuelve en el MCP (joins, agregaciones, filtros) antes de recurrir a pandas. Ver reglas "MCP-first" y "Multiples datasets" en seccion 4
-- NUNCA escribir SQL manualmente
-- Si una query falla, reformular la pregunta en lenguaje natural
+- Seguir todas las reglas de `skills-guides/stratio-data-tools.md` (MCP-first, output_format, no SQL manual, ejecucion en paralelo)
 - Guardar datos intermedios como CSV solo si un script posterior los necesita como input
 
 ### 6.1 Validacion post-query (obligatorio)
-Aplicar las 7 validaciones de la seccion 4 ("Validacion post-query") a cada resultado recibido. Cuando se lanzan queries en paralelo, validar cada resultado conforme llega. Si alguna falla: reformular la pregunta al MCP, informar al usuario, ajustar el plan.
+Aplicar las 7 validaciones de `skills-guides/stratio-data-tools.md` sec 5 a cada resultado recibido. Cuando se lanzan queries en paralelo, validar cada resultado conforme llega. Si alguna falla: reformular la pregunta al MCP, informar al usuario, ajustar el plan.
 
 ### 6.2 Desarrollo de scripts
 - Escribir scripts con nombres descriptivos que incluyan contexto del analisis

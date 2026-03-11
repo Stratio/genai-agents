@@ -12,7 +12,7 @@ Si no hay dominio claro, preguntar al usuario cual le interesa (presentar domini
 
 ## 2. Regla CRITICA de domain_name
 
-El `domain_name` usado en TODAS las llamadas MCP posteriores debe ser **exactamente** el valor devuelto por `stratio_list_business_domains`. NUNCA traducirlo, interpretarlo, parafrasearlo ni inferirlo. Si hay duda, volver a llamar a `stratio_list_business_domains`.
+Ver `skills-guides/stratio-data-tools.md` sec 3 (regla de inmutabilidad de `domain_name`). Aplicar siempre.
 
 ## 3. Explorar Tablas
 
@@ -48,11 +48,9 @@ Para cada tabla de interes:
 
 ## 7. Perfilado Estadistico
 
-`stratio_profile_data` requiere una query SQL como parametro. **NUNCA escribir esa SQL manualmente.**
-Generar siempre la SQL primero con `stratio_generate_sql(data_question="...", domain_name="...")`
-y pasar el resultado a `stratio_profile_data(query=<sql_generada>)`.
+Para las reglas de uso de `stratio_profile_data` (generar SQL con `stratio_generate_sql`, nunca SQL manual, usar parametro `limit` en vez de LIMIT en SQL), ver `skills-guides/stratio-data-tools.md` sec 3.
 
-Usar `stratio_profile_data` con profiling adaptativo segun tamano estimado:
+Umbrales adaptativos de profiling segun tamano estimado:
 
 | Filas estimadas | Estrategia | Parametro limit |
 |----------------|------------|-----------------|
@@ -60,24 +58,8 @@ Usar `stratio_profile_data` con profiling adaptativo segun tamano estimado:
 | 100K - 1M | Muestreo | `limit=100000` |
 | >1M | Muestreo + alerta | `limit=100000` + informar al usuario |
 
-NUNCA modificar las queries SQL anadiendo LIMIT. Usar el parametro `limit` de la tool. Documentar en reasoning si se uso muestreo.
+Documentar en reasoning si se uso muestreo.
 
 ## 8. Respuestas de aclaracion del MCP
 
-`stratio_query_data` y `stratio_generate_sql` pueden devolver una solicitud de aclaracion en lugar de datos. Reconocer este patron: el mensaje describe que informacion adicional necesita el motor para formular la query (ej: ambiguedad temporal, definicion de un termino de negocio, alcance de un segmento).
-
-**Esto no es un error ni un dataset vacio** — es el MCP esperando contexto adicional para continuar.
-
-Protocolo en cascada (aplicar en orden, parar en el primer paso que resuelva la ambiguedad):
-
-1. **Resolver con conocimiento del dominio**: Llamar a `stratio_search_domain_knowledge` con el termino o concepto ambiguo. Si se encuentra la definicion, rellamar a la tool original anadiendo la definicion en `additional_context`.
-
-2. **Inferir del contexto del analisis**: Si el plan ya establece el periodo, el segmento o la definicion relevante (hipotesis, KPIs definidos), incluirlo directamente en `additional_context` y rellamar sin preguntar al usuario.
-
-3. **Preguntar al usuario**: Solo si los pasos 1-2 no resuelven la ambiguedad. Presentar la pregunta concreta que el MCP necesita, con las opciones disponibles si las hay (nunca preguntas abiertas si se pueden ofrecer opciones).
-
-4. **Reformular la pregunta**: Si con el contexto disponible aun no se puede aclarar, reformular la pregunta de datos con mayor especificidad: fechas explicitas, definiciones incrustadas en el texto de la pregunta, acotacion del alcance.
-
-5. **Informar y continuar**: Si tras los pasos anteriores el MCP sigue sin poder responder, documentar la limitacion y continuar el analisis con los datos disponibles. No bloquear el analisis por una sola metrica no resuelta.
-
-**Limite**: Maximo 2 iteraciones de aclaracion por query. Si tras ambas iteraciones no hay datos, informar al usuario y omitir esa metrica.
+Ver `skills-guides/stratio-data-tools.md` sec 4 para el protocolo completo de cascada ante respuestas de aclaracion del MCP (5 pasos + maximo 2 iteraciones por query).

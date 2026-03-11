@@ -196,89 +196,11 @@ Para implementacion detallada de cada tecnica, ver skill `/analyze` [advanced-an
 
 ---
 
-## 4. Uso de MCPs (Datos) — REGLA FUNDAMENTAL
+## 4. Uso de MCPs (Datos)
 
-**NUNCA escribas SQL manualmente.** El sistema MCP tiene un motor sofisticado de generacion de queries que entiende el dominio gobernado, sus reglas de negocio, relaciones entre tablas y restricciones. Siempre delega la generacion y ejecucion de queries al MCP.
-
-### Como obtener datos — siempre via MCP
-
-| Paso | Herramienta MCP | Proposito |
-|------|----------------|-----------|
-| 1 | `stratio_list_business_domains` | Descubrir dominios disponibles |
-| 2 | `stratio_list_domain_tables` | Conocer tablas del dominio |
-| 3 | `stratio_get_tables_details` | Entender reglas de negocio y contexto |
-| 4 | `stratio_get_table_columns_details` | Conocer columnas, tipos y significado |
-| 5 | `stratio_search_domain_knowledge` | Entender terminologia y definiciones |
-| 6 | `stratio_query_data` | **Obtener datos** (pregunta en lenguaje natural -> datos) |
-| 7 | `stratio_generate_sql` | Ver el SQL antes de ejecutar (opcional, para revision) |
-| 8 | `stratio_execute_sql` | Re-ejecutar SQL generado por el MCP (nunca SQL manual) |
-| 9 | `stratio_profile_data` | EDA estadistico rapido |
-| 10 | `stratio_propose_knowledge` | Proponer terminos de negocio descubiertos |
-
-### Reglas estrictas
-
-- **INMUTABILIDAD de `domain_name`**: El parametro `domain_name` en TODAS las llamadas MCP debe ser **exactamente** el valor devuelto por `stratio_list_business_domains`. NUNCA traducirlo, interpretarlo, parafrasearlo ni inferirlo. Si el dominio se llama `semantic_AnaliticaBanca`, usar `"semantic_AnaliticaBanca"` — no `"Banca Particulares"`, no `"Analítica Banca"`, no `"banca"`. Si hay duda sobre el nombre exacto, volver a llamar a `stratio_list_business_domains` para confirmarlo
-- NUNCA uses `stratio_list_technical_domains`. Solo trabaja con dominios semanticos/de negocio via `stratio_list_business_domains`. Los dominios tecnicos no estan gobernados y carecen de contexto de negocio necesario para el analisis
-- NUNCA escribas queries SQL directamente. Siempre usa `stratio_query_data` o `stratio_generate_sql`
-- Para agregaciones simples (totales, promedios, conteos): `stratio_query_data` directamente
-- Para analisis avanzados: intentar siempre resolver con `stratio_query_data` (el MCP soporta joins, agregaciones, window functions, subconsultas). Usar Python/pandas solo cuando el calculo no sea expresable en SQL (tests estadisticos, transformaciones iterativas). En ese caso, obtener los datos con `output_format="dict"` y procesarlos en pandas
-- **MCP-first**: Resolver siempre en el MCP todo lo que pueda expresarse como query SQL. El MCP genera SQL que entiende el dominio gobernado, sus relaciones y reglas de negocio. Usar Python/pandas SOLO para lo que SQL no puede resolver: tests estadisticos, transformaciones iterativas, logica procedural, o preparacion de datos para visualizacion. Para multiples datasets:
-  - **Una query MCP** cuando: el resultado requiere datos de varias tablas relacionadas (el MCP genera los JOINs), o agregaciones con filtros complejos. Siempre intentar esto primero
-  - **Multiples queries independientes** cuando: se necesitan cortes ortogonales de los datos (ej: una query temporal + una query por segmento + una query de ranking). Lanzar en paralelo
-  - **Combinar en pandas** solo cuando: se necesitan calculos que SQL no puede resolver (estadistica) sobre datos de varias queries, o transformaciones iterativas sobre el detalle transaccional
-  - **Inconsistencias**: Si dos queries dan totales diferentes, verificar granularidad y filtros. Reformular con `additional_context` para alinear
-- Puedes proporcionar `additional_context` al MCP para guiar la generacion (ej: definiciones de negocio, filtros especificos)
-- **`output_format` es un string**: Los valores validos son `"dict"`, `"csv"` o `"markdown"`. Es opcional (default: `"dict"`). NUNCA pasar un booleano (`true`/`false`). Si no necesitas un formato especifico, omitir el parametro
-- Si una query falla o da resultados inesperados: reformular la pregunta en lenguaje natural, no intentar escribir SQL
-- **Profiling (`stratio_profile_data`)**: Requiere SQL como parametro — generarla SIEMPRE con `stratio_generate_sql`, nunca escribirla manualmente. NUNCA anadir LIMIT a la SQL; usar el parametro `limit` de la tool. Detalle completo en `skills-guides/exploration.md` sec 7
-- **Ejecucion en paralelo**: Cuando el plan define multiples preguntas de datos independientes (ninguna necesita el resultado de otra para formularse), lanzar TODAS las llamadas a `stratio_query_data` en una sola respuesta para que se ejecuten en paralelo. Aplica tambien a llamadas de metadata (`stratio_get_table_columns_details`, `stratio_profile_data`, etc.). Solo serializar cuando una query depende del resultado de otra (ej: necesitas un valor de la query A para formular la query B)
-
-### Manejo de respuestas de aclaracion del MCP
-
-`stratio_query_data` y `stratio_generate_sql` pueden responder con una solicitud de aclaracion
-en lugar de datos (ej: "¿A que periodo te refieres?", "¿'Activos' incluye usuarios con compra
-en 30 o 90 dias?"). Esto no es un error — es el motor pidiendo contexto adicional.
-
-Protocolo en cascada (seguir en orden):
-1. **Buscar en el dominio**: Llamar a `stratio_search_domain_knowledge` con el termino ambiguo.
-   Si se encuentra la definicion, rellamar con `additional_context` incluyendo la definicion
-2. **Inferir del plan**: Si el plan de analisis ya define el termino o periodo, anadirlo
-   directamente a `additional_context` y rellamar
-3. **Preguntar al usuario**: Solo si los pasos 1-2 no resuelven la ambiguedad. Presentar
-   la pregunta con opciones concretas (nunca texto libre si hay opciones claras)
-4. **Reformular**: Si persiste la ambiguedad, reformular la pregunta de datos con mayor
-   especificidad (fechas explicitas, definiciones incrustadas en el texto)
-5. **Informar y continuar**: Si el MCP no puede responder tras estos pasos, documentar
-   la limitacion y continuar el analisis con los datos disponibles
-
-Maximo 2 iteraciones de aclaracion por query. Si tras ambas iteraciones no hay datos,
-informar al usuario y omitir esa metrica del analisis.
-
-### Validacion post-query (obligatorio)
-
-Cada resultado de `stratio_query_data` debe pasar estas 7 validaciones antes de usarse en el analisis. Cuando se lanzan queries en paralelo, validar cada resultado conforme se recibe:
-1. **Dataset no vacio** (>0 filas). Si vacio: reformular pregunta o alertar al usuario
-2. **Columnas esperadas presentes**. Si faltan: revisar formulacion de la pregunta
-3. **Tipos de datos coherentes** (fechas son fechas, numericos son numericos)
-4. **Rango temporal** cubre el periodo solicitado
-5. **Proporcion de nulos** en columnas clave (<50%). Si excede: documentar limitacion
-6. **Valores en rangos razonables** (no hay edades de 500 anos, importes negativos inesperados)
-7. **Sanity check de negocio**: Verificar que los resultados tienen sentido:
-   - Magnitudes razonables (crecimiento del 500% MoM es probablemente error de datos)
-   - Consistencia con conocimiento del dominio (`stratio_search_domain_knowledge`)
-   - Si un hallazgo parece "demasiado bueno/malo", investigar antes de reportar
-
-Si alguna validacion falla: reformular la pregunta al MCP, informar al usuario de la limitacion, y ajustar el plan si es necesario.
+Todas las reglas de uso de MCPs Stratio (herramientas disponibles, reglas estrictas, MCP-first, domain_name inmutable, output_format, profiling, ejecucion en paralelo, cascada de aclaracion, validacion post-query, timeouts y buenas practicas) estan en `skills-guides/stratio-data-tools.md`. Seguir TODAS las reglas definidas alli.
 
 Checklist de suficiencia de datos y Data Quality Score: ver skill `/analyze` sec 3.
-
-### Timeouts y reintentos
-
-Si el MCP tarda demasiado o devuelve error:
-1. **Simplificar la pregunta**: Reducir dimensiones o periodo temporal
-2. **Dividir la query**: Partir una pregunta compleja en varias mas simples
-3. **Reformular**: Expresar la misma pregunta de forma diferente
-4. No reintentar la misma pregunta mas de 2 veces — si persiste, informar al usuario
 
 ---
 
