@@ -164,7 +164,7 @@ if [ ${#_GUIDES_MAP[@]} -gt 0 ]; then
         cp "$guide_src" "$PLUGIN_DIR/skills-guides/$guide_name"
       fi
     done
-    sed -i 's|`skills-guides/exploration\.md`|`../../skills-guides/exploration.md`|g' "$PLUGIN_DIR/skills/"*/SKILL.md 2>/dev/null || true
+    sed -i 's|`skills-guides/stratio-data-tools\.md`|`../../skills-guides/stratio-data-tools.md`|g' "$PLUGIN_DIR/skills/"*/SKILL.md 2>/dev/null || true
   else
     echo "Copiando skills-guides a skills..."
     for skill_dir in "$PLUGIN_DIR/skills/analyze" "$PLUGIN_DIR/skills/explore-data"; do
@@ -184,7 +184,7 @@ if [ ${#_GUIDES_MAP[@]} -gt 0 ]; then
         done
       fi
     done
-    sed -i 's|`skills-guides/exploration\.md`|`exploration.md`|g' "$PLUGIN_DIR/skills/"*/SKILL.md 2>/dev/null || true
+    sed -i 's|`skills-guides/stratio-data-tools\.md`|`stratio-data-tools.md`|g' "$PLUGIN_DIR/skills/"*/SKILL.md 2>/dev/null || true
   fi
 fi
 
@@ -207,9 +207,9 @@ YAMLEOF
 EOF
   # Actualizar referencias a skills-guides/ en agent
   if [ "$SHARED_GUIDES" = true ]; then
-    sed -i 's|`skills-guides/exploration\.md`|`skills-guides/exploration.md`|g' "$PLUGIN_DIR/agents/"*.md 2>/dev/null || true
+    sed -i 's|`skills-guides/stratio-data-tools\.md`|`skills-guides/stratio-data-tools.md`|g' "$PLUGIN_DIR/agents/"*.md 2>/dev/null || true
   else
-    sed -i 's|`skills-guides/exploration\.md`|`skills/analyze/exploration.md`|g' "$PLUGIN_DIR/agents/"*.md 2>/dev/null || true
+    sed -i 's|`skills-guides/stratio-data-tools\.md`|`skills/analyze/stratio-data-tools.md`|g' "$PLUGIN_DIR/agents/"*.md 2>/dev/null || true
   fi
   sed -i 's/{{TOOL_PREGUNTAS}}/ (`AskUserQuestion`)/g' "$PLUGIN_DIR/agents/"*.md 2>/dev/null || true
 fi

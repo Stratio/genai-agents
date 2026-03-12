@@ -10,7 +10,7 @@ Guia para explorar rapidamente los datos disponibles en los dominios gobernados.
 
 ## 1. Descubrimiento del Dominio
 
-Leer y seguir `skills-guides/exploration.md` para los pasos de descubrimiento del dominio (listar dominios, seleccionar, explorar tablas, columnas, terminologia y profiling).
+Leer y seguir `skills-guides/stratio-data-tools.md` sec 4-5 para los pasos de descubrimiento del dominio (listar dominios, seleccionar, explorar tablas, columnas, terminologia y profiling).
 
 Si el usuario proporciona un argumento ($ARGUMENTS) que coincide con un dominio conocido, saltar directamente a explorar tablas. Si no, preguntar al usuario cual dominio explorar siguiendo la convencion de preguntas al usuario (adaptativa al entorno: interactivas si disponibles, lista numerada en chat si no). Preguntar si quiere profundizar en alguna tabla especifica o ver todas.
 

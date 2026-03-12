@@ -159,7 +159,7 @@ fi
 echo "Actualizando referencias internas..."
 
 # Patron A: rutas skills-guides/
-sed -i 's|skills-guides/exploration\.md|skills-guides_exploration.md|g' "$PROJECT_DIR"/*.md
+sed -i 's|skills-guides/stratio-data-tools\.md|skills-guides_stratio-data-tools.md|g' "$PROJECT_DIR"/*.md
 sed -i 's|skills-guides/visualization\.md|skills-guides_visualization.md|g' "$PROJECT_DIR"/*.md
 
 # Patron B: links markdown a subficheros de analyze — buscar con parentesis

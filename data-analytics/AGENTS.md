@@ -58,7 +58,7 @@ Para exploracion rapida de dominios sin analisis completo, ver la skill `/explor
 
 ### Fase 1.1 — EDA y Calidad de Datos (en fase de planificacion, solo lectura)
 
-Antes de planificar metricas, entender la realidad de los datos. Ejecutar profiling siguiendo la mecanica de `skills-guides/exploration.md` sec 7, luego evaluar calidad, generar mini-resumen e informar limitaciones al usuario. Para detalle operativo completo (checklist de suficiencia, Data Quality Score, que evaluar), ver skill `/analyze` sec 3.
+Antes de planificar metricas, entender la realidad de los datos. Ejecutar profiling siguiendo la mecanica de `skills-guides/stratio-data-tools.md` sec 5, luego evaluar calidad, generar mini-resumen e informar limitaciones al usuario. Para detalle operativo completo (checklist de suficiencia, Data Quality Score, que evaluar), ver skill `/analyze` sec 3.
 
 ### Fase 1.2 — Defaults
 

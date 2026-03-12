@@ -26,13 +26,13 @@ Si la peticion requiere analisis (cruce de datos, hipotesis, visualizaciones, mu
 
 ## 2. Descubrimiento de Dominio
 
-Leer y seguir `skills-guides/exploration.md` para los pasos de descubrimiento del dominio (listar dominios, seleccionar, explorar tablas, columnas, terminologia y profiling).
+Leer y seguir `skills-guides/stratio-data-tools.md` sec 4 para los pasos de descubrimiento del dominio (listar dominios, seleccionar, explorar tablas, columnas y terminologia).
 
 ## 3. EDA y Calidad de Datos
 
 Antes de preguntar al usuario y planificar metricas, entender la realidad de los datos:
 
-1. **Profiling**: Ejecutar `stratio_profile_data` sobre las tablas clave identificadas en el paso 2. Seguir la mecanica y umbrales adaptativos de `skills-guides/exploration.md` sec 7
+1. **Profiling**: Ejecutar `stratio_profile_data` sobre las tablas clave identificadas en el paso 2. Seguir la mecanica y umbrales adaptativos de `skills-guides/stratio-data-tools.md` sec 5
 2. **Evaluar calidad**:
    - **Completitud**: % de nulos por columna. Marcar columnas con >50% nulos como limitacion
    - **Rango temporal**: Verificar que los datos cubren el periodo que el usuario necesita
@@ -135,7 +135,7 @@ Para cada KPI, documentar:
 ### 5.4 Preguntas de datos
 Lista de preguntas en lenguaje natural para `stratio_query_data`. NUNCA escribir SQL.
 
-Para buenas practicas de formulacion y estrategia de queries (orden de planificacion, ejecucion en paralelo), ver `skills-guides/stratio-data-tools.md` sec 7.
+Para buenas practicas de formulacion y estrategia de queries (orden de planificacion, ejecucion en paralelo), ver `skills-guides/stratio-data-tools.md` sec 9.
 
 ### 5.5 Visualizaciones
 
@@ -185,7 +185,7 @@ Presentar plan completo al usuario y solicitar aprobacion antes de ejecutar
 - Guardar datos intermedios como CSV solo si un script posterior los necesita como input
 
 ### 6.1 Validacion post-query (obligatorio)
-Aplicar las 7 validaciones de `skills-guides/stratio-data-tools.md` sec 5 a cada resultado recibido. Cuando se lanzan queries en paralelo, validar cada resultado conforme llega. Si alguna falla: reformular la pregunta al MCP, informar al usuario, ajustar el plan.
+Aplicar las 7 validaciones de `skills-guides/stratio-data-tools.md` sec 7 a cada resultado recibido. Cuando se lanzan queries en paralelo, validar cada resultado conforme llega. Si alguna falla: reformular la pregunta al MCP, informar al usuario, ajustar el plan.
 
 ### 6.2 Desarrollo de scripts
 - Escribir scripts con nombres descriptivos que incluyan contexto del analisis

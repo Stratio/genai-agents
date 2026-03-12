@@ -37,7 +37,67 @@
 - **Profiling (`stratio_profile_data`)**: Requiere SQL como parametro — generarla SIEMPRE con `stratio_generate_sql`, nunca escribirla manualmente. NUNCA anadir LIMIT a la SQL; usar el parametro `limit` de la tool
 - **Ejecucion en paralelo**: Cuando el plan define multiples preguntas de datos independientes (ninguna necesita el resultado de otra para formularse), lanzar TODAS las llamadas a `stratio_query_data` en una sola respuesta para que se ejecuten en paralelo. Aplica tambien a llamadas de metadata (`stratio_get_table_columns_details`, `stratio_profile_data`, etc.). Solo serializar cuando una query depende del resultado de otra (ej: necesitas un valor de la query A para formular la query B)
 
-## 4. Respuestas de Aclaracion del MCP
+## 4. Workflow de Descubrimiento de Dominio
+
+Pasos para explorar un dominio gobernado y entender sus datos antes de un analisis.
+
+### 4.1 Listar Dominios
+
+Ejecutar `stratio_list_business_domains` para mostrar todos los dominios disponibles con sus nombres de negocio.
+
+Si el usuario proporciona un dominio:
+- Si coincide con un dominio conocido, ir directamente al paso 4.2
+- Si no, preguntar al usuario cual dominio explorar mostrando la lista
+
+Si no hay dominio claro, preguntar al usuario cual le interesa (presentar dominios como opciones seleccionables).
+
+### 4.2 Explorar Tablas
+
+1. `stratio_list_domain_tables(domain_name)` para listar todas las tablas del dominio
+2. Presentar las tablas con sus descripciones en formato tabla markdown
+
+### 4.3 Detalle de Tablas
+
+Para las tablas de interes:
+1. `stratio_get_tables_details(domain_name, table_names)` para obtener:
+   - Descripcion completa
+   - Contexto de negocio
+   - Terminos de negocio asociados
+   - Reglas de negocio
+   - Comportamientos SQL
+2. Presentar la informacion de forma estructurada
+
+### 4.4 Columnas
+
+Para cada tabla de interes:
+1. `stratio_get_table_columns_details(domain_name, table_name)` para obtener nombre, tipo y descripcion de negocio
+2. Presentar en tabla markdown ordenada logicamente
+
+**Lanzar en paralelo** los pasos 4.3 y 4.4 cuando sean sobre tablas independientes. Tambien lanzar paso 4.5 en paralelo si ya se conocen los terminos a buscar.
+
+### 4.5 Terminologia de Negocio
+
+`stratio_search_domain_knowledge(question, domain_name)` para buscar:
+- Definiciones de terminos de negocio
+- Reglas de calculo
+- Politicas de datos
+- Glosario del dominio
+
+## 5. Perfilado Estadistico
+
+Para las reglas de uso de `stratio_profile_data` (generar SQL con `stratio_generate_sql`, nunca SQL manual, usar parametro `limit` en vez de LIMIT en SQL), ver sec 3.
+
+Umbrales adaptativos de profiling segun tamano estimado:
+
+| Filas estimadas | Estrategia | Parametro limit |
+|----------------|------------|-----------------|
+| <100K | Completo | No configurar (default) |
+| 100K - 1M | Muestreo | `limit=100000` |
+| >1M | Muestreo + alerta | `limit=100000` + informar al usuario |
+
+Documentar en reasoning si se uso muestreo.
+
+## 6. Respuestas de Aclaracion del MCP
 
 `stratio_query_data` y `stratio_generate_sql` pueden responder con una solicitud de aclaracion
 en lugar de datos (ej: "¿A que periodo te refieres?", "¿'Activos' incluye usuarios con compra
@@ -58,7 +118,7 @@ Protocolo en cascada (seguir en orden):
 Maximo 2 iteraciones de aclaracion por query. Si tras ambas iteraciones no hay datos,
 informar al usuario y omitir esa metrica del analisis.
 
-## 5. Validacion Post-Query
+## 7. Validacion Post-Query
 
 Cada resultado de `stratio_query_data` debe pasar estas 7 validaciones antes de usarse en el analisis. Cuando se lanzan queries en paralelo, validar cada resultado conforme se recibe:
 1. **Dataset no vacio** (>0 filas). Si vacio: reformular pregunta o alertar al usuario
@@ -74,7 +134,7 @@ Cada resultado de `stratio_query_data` debe pasar estas 7 validaciones antes de 
 
 Si alguna validacion falla: reformular la pregunta al MCP, informar al usuario de la limitacion, y ajustar el plan si es necesario.
 
-## 6. Timeouts y Reintentos
+## 8. Timeouts y Reintentos
 
 Si el MCP tarda demasiado o devuelve error:
 1. **Simplificar la pregunta**: Reducir dimensiones o periodo temporal
@@ -82,7 +142,7 @@ Si el MCP tarda demasiado o devuelve error:
 3. **Reformular**: Expresar la misma pregunta de forma diferente
 4. No reintentar la misma pregunta mas de 2 veces — si persiste, informar al usuario
 
-## 7. Buenas Practicas para Formular Preguntas
+## 9. Buenas Practicas para Formular Preguntas
 
 - **Ser especifico con periodos**: "ventas mensuales del ultimo anio" en vez de "ventas"
 - **Incluir dimensiones**: "por region y categoria de producto"
