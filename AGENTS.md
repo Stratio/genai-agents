@@ -7,8 +7,9 @@ Monorepo con agentes de IA generativa para analisis de datos de negocio.
 ```
 genai-agents/
   shared-skills/           # Skills compartidas entre agentes (autocontenidas o casi)
-    propose-knowledge/     #   skill-guides (fichero): lista de shared-skill-guides que necesita
+    propose-knowledge/
     explore-data/
+    stratio-data/
   shared-skill-guides/     # Guides compartidos (no son skills; copiados a skills-guides/ en el output)
     stratio-data-tools.md
   data-analytics/          # Agente completo (analisis + informes multi-formato)
