@@ -53,7 +53,7 @@ mkdir -p "$COWORK_DIR"
 
 # --- Paso 3: Copiar CLAUDE.md con referencias actualizadas ---
 echo "Copiando AGENTS.md con referencias actualizadas..."
-sed 's|`skills-guides/exploration\.md`|`skills/analyze/exploration.md`|g' AGENTS.md > "$COWORK_DIR/CLAUDE.md"
+sed 's|`skills-guides/stratio-data-tools\.md`|`skills/analyze/stratio-data-tools.md`|g' AGENTS.md > "$COWORK_DIR/CLAUDE.md"
 sed -i 's/{{TOOL_PREGUNTAS}}/ (`AskUserQuestion`)/g' "$COWORK_DIR/CLAUDE.md"
 
 # --- Paso 4: Copiar plugin ZIP ---

@@ -102,7 +102,7 @@ Los guides compartidos (documentacion tecnica que las skills referencian) viven 
 
 | Guide | Usado por |
 |-------|-----------|
-| `exploration.md` | `explore-data`, `analyze` |
+| `stratio-data-tools.md` | `explore-data`, `analyze`, `AGENTS.md` |
 
 ### Usar una shared skill en un agente
 
@@ -116,7 +116,7 @@ Los guides compartidos (documentacion tecnica que las skills referencian) viven 
 2. Si el `AGENTS.md` del agente referencia directamente algún guide de `shared-skill-guides/`, declararlo también en `shared-guides`:
 
    ```
-   exploration.md
+   stratio-data-tools.md
    ```
 
 3. Empaquetar con normalidad — los pack scripts genéricos (`pack_claude_code.sh`, `pack_opencode.sh`) copian cada guide declarado en `skill-guides` **dentro** de la carpeta de la skill en el output y reescriben las referencias en `SKILL.md` para que sean locales (skill autocontenida). Los guides declarados en `shared-guides` del agente se copian además a `skills-guides/` para que `AGENTS.md`/`CLAUDE.md` los referencie:
@@ -125,15 +125,15 @@ Los guides compartidos (documentacion tecnica que las skills referencian) viven 
    bash pack_claude_code.sh --agent mi-agente
    ```
 
-   Output resultante (ejemplo con `explore-data` que declara `exploration.md`):
+   Output resultante (ejemplo con `explore-data` que declara `stratio-data-tools.md`):
    ```
    .claude/
      skills/
        explore-data/
-         SKILL.md              # referencia "exploration.md" (local)
-         exploration.md         # guide dentro de la skill
+         SKILL.md                  # referencia "stratio-data-tools.md" (local)
+         stratio-data-tools.md     # guide dentro de la skill
      skills-guides/
-       exploration.md           # para AGENTS.md (posible duplicado, ok)
+       stratio-data-tools.md       # para AGENTS.md (posible duplicado, ok)
    ```
 
 Si el agente tiene en `skills/` una skill con el mismo nombre, la versión local tiene prioridad sobre la shared.

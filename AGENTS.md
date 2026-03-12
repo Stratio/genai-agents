@@ -10,7 +10,7 @@ genai-agents/
     propose-knowledge/     #   skill-guides (fichero): lista de shared-skill-guides que necesita
     explore-data/
   shared-skill-guides/     # Guides compartidos (no son skills; copiados a skills-guides/ en el output)
-    exploration.md
+    stratio-data-tools.md
   data-analytics/          # Agente completo (analisis + informes multi-formato)
     shared-skills          # Lista de shared skills que incluye este agente
     shared-guides          # Lista de shared-skill-guides que AGENTS.md referencia directamente

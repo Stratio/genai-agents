@@ -51,9 +51,9 @@ Los scripts de plugin y cowork aceptan tambien `--url <MCP_URL>` y `--key <API_K
 | `.claude/settings.local.json` | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ |
 
 ¹ Generado (no copia directa): referencias `skills-guides/` → `skills/analyze/`, placeholder `{{TOOL_PREGUNTAS}}` resuelto.
-² Aplanadas en raíz: `analyze.md`, `analyze_*.md`, `explore-data.md`, `propose-knowledge.md`; guías prefijadas: `skills-guides_exploration.md`.
+² Aplanadas en raíz: `analyze.md`, `analyze_*.md`, `explore-data.md`, `propose-knowledge.md`; guías prefijadas: `skills-guides_stratio-data-tools.md`.
 ³ Estructura canónica: `skills/<skill>/SKILL.md` + subficheros.
-⁴ Guías renombradas con prefijo: `skills-guides_exploration.md`.
+⁴ Guías renombradas con prefijo: `skills-guides_stratio-data-tools.md`.
 ⁵ Default: duplicadas junto a cada skill; con `--shared-guides`: en directorio `skills-guides/` raíz.
 ⁶ Guides dentro de cada skill (autocontenida) + en `skills-guides/` para referencias desde `CLAUDE.md`/`AGENTS.md`.
 
