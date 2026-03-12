@@ -51,6 +51,7 @@ genai-agents/
     shared-skills-{v}.zip                        # Todas las shared skills juntas
     shared-skill-propose-knowledge-{v}.zip       # Skill individual
     shared-skill-explore-data-{v}.zip            # Skill individual
+    shared-skill-stratio-data-{v}.zip            # Skill individual
     genai-agents-sources-{v}.zip                 # Fuentes del repositorio
     genai-agents-{v}.zip                        # ZIP global con todos los anteriores
 
@@ -97,6 +98,7 @@ Si un agente tiene un directorio `output-templates/`, los pack scripts crean `ou
 |-------|-------------|---------------------|
 | `propose-knowledge` | Proponer terminos de negocio y preferencias a Stratio Governance tras un analisis | data-analytics, data-analytics-light |
 | `explore-data` | Exploracion rapida de dominios, tablas, columnas y terminologia gobernada | data-analytics, data-analytics-light |
+| `stratio-data` | Referencia de MCPs de datos Stratio: reglas, patrones de uso y buenas practicas | (independiente) |
 
 Los guides compartidos (documentacion tecnica que las skills referencian) viven en `shared-skill-guides/`:
 
