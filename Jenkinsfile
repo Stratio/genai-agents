@@ -14,5 +14,7 @@ hose {
     DEV = { config ->
         doCompile(config)
         doUT(config)
+        doPackage(config)
+        doDeploy(config)
     }
 }
