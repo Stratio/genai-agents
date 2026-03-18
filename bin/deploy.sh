@@ -5,6 +5,7 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 VERSION=$(cat "$REPO_ROOT/VERSION" | tr -d '[:space:]')
 DIST_DIR="$REPO_ROOT/dist"
+USERNAME="stratio"
 
 echo "==> Deploy genai-agents v$VERSION"
 echo ""
@@ -48,7 +49,7 @@ for zip in "$DIST_DIR"/*.zip; do
   ZIP_NAME=$(basename "$zip")
   echo "Subiendo $ZIP_NAME a $NEXUS_URL..."
 
-  curl --fail-with-body -u "${NEXUS_USER}:${NEXUS_PASSWORD}" \
+  curl --fail-with-body -u "${USERNAME}:${NEXUSPASS}" \
        --upload-file "$zip" \
        "${NEXUS_URL}/${ZIP_NAME}"
 done
