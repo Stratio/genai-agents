@@ -20,5 +20,37 @@ for zip in "$DIST_DIR"/*.zip; do
   echo "  $(basename "$zip") ($SIZE)"
 done
 
-echo ""
-echo "NOTA: Destino de deploy pendiente de definir. Este script es un stub."
+echo "Iniciando subida de artefactos a Nexus..."
+
+NEXUS_BASE_URL="http://qa.int.stratio.com/repository"
+# Repositorios raw según tipo de build
+NEXUS_RAW_RELEASES="raw"
+NEXUS_RAW_SNAPSHOTS="raw-snapshots"
+NEXUS_RAW_STAGING="raw-staging"
+
+# Por defecto: snapshot
+NEXUS_REPO="$NEXUS_RAW_SNAPSHOTS"
+# RELEASE / PRE_RELEASE / MILESTONE: JOB_NAME=Release/...
+if [[ "${JOB_NAME:-}" == Release* ]]; then
+  NEXUS_REPO="$NEXUS_RAW_RELEASES"
+fi
+# PR: JOB_NAME=.../PR-XX
+if [[ "${JOB_NAME:-}" == *PR-* ]]; then
+  NEXUS_REPO="$NEXUS_RAW_STAGING"
+fi
+
+echo "JOB_NAME = ${JOB_NAME:-<no definido>}"
+echo "Repositorio Nexus seleccionado: $NEXUS_REPO"
+
+NEXUS_URL="${NEXUS_BASE_URL}/${NEXUS_REPO}/genai-agents/${VERSION}"
+
+for zip in "$DIST_DIR"/*.zip; do
+  ZIP_NAME=$(basename "$zip")
+  echo "Subiendo $ZIP_NAME a $NEXUS_URL..."
+
+  curl --fail-with-body -u "${NEXUS_USER}:${NEXUS_PASSWORD}" \
+       --upload-file "$zip" \
+       "${NEXUS_URL}/${ZIP_NAME}"
+done
+
+echo "Deploy finalizado correctamente."
