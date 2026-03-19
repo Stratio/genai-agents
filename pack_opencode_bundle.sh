@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # pack_opencode_bundle.sh — Genera un ZIP compuesto con dos sub-ZIPs para OpenCode:
-#   1. {name}-opencode-no-shared.zip  → agente sin las shared skills declaradas
+#   1. {name}-opencode-agent.zip    → agente sin las shared skills declaradas
 #   2. {name}-shared-skills.zip       → shared skills del agente (autocontenidas)
 #   Resultado: dist/{name}-opencode-bundle.zip
 #
@@ -135,7 +135,7 @@ trap 'rm -rf "$STAGING_NO_SHARED" "$BUNDLE_STAGING"' EXIT
 
 mkdir -p "$BUNDLE_STAGING"
 
-ZIP_NO_SHARED="${AGENT_NAME}-opencode-no-shared.zip"
+ZIP_NO_SHARED="${AGENT_NAME}-opencode-agent.zip"
 echo "    [4] Generando $ZIP_NO_SHARED..."
 (cd "$STAGING_NO_SHARED" && zip -r "$BUNDLE_STAGING/$ZIP_NO_SHARED" . -q)
 ZIP_SIZE=$(du -sh "$BUNDLE_STAGING/$ZIP_NO_SHARED" | cut -f1)
