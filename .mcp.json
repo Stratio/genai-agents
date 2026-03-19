@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "gov": {
+      "type": "http",
+      "url": "${MCP_SQL_URL:-http://127.0.0.1:8080/mcp}",
+      "headers": {
+        "X-API-Key": "${MCP_SQL_API_KEY:-}",
+        "Authorization": "Bearer ${MCP_SQL_API_KEY:-}"
+      },
+      "allowedTools": [
+        "*"
+      ]
+    }
+  }
+}

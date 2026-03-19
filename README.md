@@ -10,6 +10,7 @@ El repositorio esta orientado principalmente a **OpenCode**, la herramienta open
 |--------|-------------|-------------|---------|
 | **data-analytics** | Agente completo de BI/BA con analisis avanzado, clustering, informes multi-formato (PDF, DOCX, web, PowerPoint) y documentacion del razonamiento | Claude Code, OpenCode, OpenWork | `data-analytics/` |
 | **data-analytics-light** | Agente ligero de BI/BA orientado a analisis en chat, sin generacion de informes formales. Incluye scripts de empaquetado para multiples plataformas | Claude Code, Claude Cowork, claude.ai, OpenCode | `data-analytics-light/` |
+| **semantic-layer** | Agente especializado en construccion y mantenimiento de capas semanticas en Stratio Governance: terminos tecnicos, ontologias, vistas de negocio, SQL mappings, terminos semanticos y business terms | Claude Code, Claude Cowork, claude.ai, OpenCode | `semantic-layer/` |
 
 ## Empaquetado
 
@@ -31,7 +32,7 @@ bash pack_opencode.sh --agent data-analytics --name mi-agente
 
 El nombre debe ser kebab-case. Si se omite, se usa el basename del directorio del agente. Los directorios generados estan excluidos del repositorio (`.gitignore`).
 
-`data-analytics-light` incluye ademas scripts de empaquetado para los diferentes formatos de Claude (Projects, Plugin y Cowork), con instrucciones detalladas de como configurar cada formato en la plataforma destino — ver [`data-analytics-light/README.md`](data-analytics-light/README.md).
+`data-analytics-light` y `semantic-layer` incluyen ademas scripts de empaquetado para los diferentes formatos de Claude (Projects, Plugin y Cowork). Ver [`data-analytics-light/README.md`](data-analytics-light/README.md) para instrucciones detalladas de como configurar cada formato en la plataforma destino.
 
 ### Estructura de outputs (`make package`)
 
@@ -48,10 +49,23 @@ genai-agents/
     data-analytics-light-claude-plugin-agent-{v}.zip
     data-analytics-light-claude-cowork-{v}.zip
     data-analytics-light-claude-project-{v}.zip
+    semantic-layer-claude-code-{v}.zip
+    semantic-layer-opencode-{v}.zip
+    semantic-layer-claude-plugin-{v}.zip
+    semantic-layer-claude-plugin-agent-{v}.zip
+    semantic-layer-claude-cowork-{v}.zip
+    semantic-layer-claude-project-{v}.zip
     shared-skills-{v}.zip                        # Todas las shared skills juntas
     shared-skill-propose-knowledge-{v}.zip       # Skill individual
     shared-skill-explore-data-{v}.zip            # Skill individual
     shared-skill-stratio-data-{v}.zip            # Skill individual
+    shared-skill-stratio-semantic-layer-{v}.zip  # Skill individual
+    shared-skill-generate-technical-terms-{v}.zip
+    shared-skill-create-ontology-{v}.zip
+    shared-skill-create-business-views-{v}.zip
+    shared-skill-create-sql-mappings-{v}.zip
+    shared-skill-create-semantic-terms-{v}.zip
+    shared-skill-manage-business-terms-{v}.zip
     genai-agents-sources-{v}.zip                 # Fuentes del repositorio
     genai-agents-{v}.zip                        # ZIP global con todos los anteriores
 
@@ -67,6 +81,14 @@ genai-agents/
       claude_plugins/data-analytics-light/
       claude_cowork/data-analytics-light/
       claude_projects/data-analytics-light/
+
+  semantic-layer/
+    dist/                                       # Artefactos intermedios
+      claude_code/semantic-layer/
+      opencode/semantic-layer/
+      claude_plugins/semantic-layer/
+      claude_cowork/semantic-layer/
+      claude_projects/semantic-layer/
 ```
 
 `make clean` elimina todos los `dist/` (raiz + agentes).
@@ -99,12 +121,20 @@ Si un agente tiene un directorio `output-templates/`, los pack scripts crean `ou
 | `propose-knowledge` | Proponer terminos de negocio y preferencias a Stratio Governance tras un analisis | data-analytics, data-analytics-light |
 | `explore-data` | Exploracion rapida de dominios, tablas, columnas y terminologia gobernada | data-analytics, data-analytics-light |
 | `stratio-data` | Referencia de MCPs de datos Stratio: reglas, patrones de uso y buenas practicas | (independiente) |
+| `stratio-semantic-layer` | Referencia de MCPs de capa semantica Stratio: reglas, patrones de uso y buenas practicas para tools de gobernanza | semantic-layer |
+| `generate-technical-terms` | Generar o regenerar terminos tecnicos (descripciones de tablas y columnas) para un dominio | semantic-layer |
+| `create-ontology` | Crear o ampliar ontologias con planificacion interactiva | semantic-layer |
+| `create-business-views` | Crear o regenerar vistas de negocio y SQL mappings a partir de una ontologia | semantic-layer |
+| `create-sql-mappings` | Crear o actualizar SQL mappings de vistas existentes | semantic-layer |
+| `create-semantic-terms` | Generar o regenerar terminos semanticos de negocio para vistas | semantic-layer |
+| `manage-business-terms` | Crear Business Terms en el diccionario con relaciones a activos de datos | semantic-layer |
 
 Los guides compartidos (documentacion tecnica que las skills referencian) viven en `shared-skill-guides/`:
 
 | Guide | Usado por |
 |-------|-----------|
-| `stratio-data-tools.md` | `explore-data`, `analyze`, `AGENTS.md` |
+| `stratio-data-tools.md` | `explore-data`, `analyze`, `AGENTS.md` (data-analytics, data-analytics-light) |
+| `stratio-semantic-layer-tools.md` | `stratio-semantic-layer`, `AGENTS.md` (semantic-layer) |
 
 ### Usar una shared skill en un agente
 
