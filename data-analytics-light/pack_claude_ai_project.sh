@@ -15,9 +15,9 @@ while [[ $# -gt 0 ]]; do
 done
 
 # --- Nombre: argumento CLI o default ---
-PROJECT_NAME="${ARG_NAME:-semantic-layer}"
+PROJECT_NAME="${ARG_NAME:-data-analytics-light}"
 
-PROJECT_DIR="dist/claude_projects/$PROJECT_NAME"
+PROJECT_DIR="dist/claude_ai_projects/$PROJECT_NAME"
 
 # --- Limpiar si existe ---
 if [ -d "$PROJECT_DIR" ]; then
@@ -27,9 +27,11 @@ fi
 
 mkdir -p "$PROJECT_DIR"
 
-# --- 1. Fichero raiz ---
+# --- 1. Ficheros raiz (sin cambio de nombre) ---
 echo "Copiando ficheros raiz..."
 cp AGENTS.md "$PROJECT_DIR/CLAUDE.md"
+cp requirements.txt "$PROJECT_DIR/requirements.txt"
+cp setup_env.sh "$PROJECT_DIR/setup_env.sh"
 
 # --- 2. skills-guides/ → prefijo skills-guides_ ---
 echo "Copiando skills-guides..."
@@ -91,35 +93,48 @@ elif [ -d ".agents/skills" ]; then
   SKILLS_SRC=".agents/skills"
 fi
 
-# Copiar skills locales (formato: <nombre>/SKILL.md → <nombre>.md)
-if [ -n "$SKILLS_SRC" ]; then
-  # Normalizar: detectar si hay .md sueltos (formato plano)
-  SKILLS_NORM=""
-  HAS_FLAT=$(find "$SKILLS_SRC" -maxdepth 1 -name '*.md' -not -name 'SKILL.md' 2>/dev/null | head -1)
-  if [ -n "$HAS_FLAT" ]; then
-    SKILLS_NORM=$(mktemp -d)
-    cp -r "$SKILLS_SRC/." "$SKILLS_NORM/"
-    for md_file in "$SKILLS_NORM"/*.md; do
-      [ -f "$md_file" ] || continue
-      skill_name="$(basename "$md_file" .md)"
-      mkdir -p "$SKILLS_NORM/$skill_name"
-      mv "$md_file" "$SKILLS_NORM/$skill_name/SKILL.md"
-    done
-    SKILLS_SRC="$SKILLS_NORM"
-  fi
+if [ -z "$SKILLS_SRC" ]; then
+  echo "ERROR: No se encontro directorio de skills" >&2
+  exit 1
+fi
 
-  for skill_dir in "$SKILLS_SRC"/*/; do
-    skill_name=$(basename "$skill_dir")
-    [ -f "$skill_dir/SKILL.md" ] || continue
-    cp "$skill_dir/SKILL.md" "$PROJECT_DIR/${skill_name}.md"
+# Normalizar: detectar si el origen usa formato plano (analyze.md) o canónico (analyze/SKILL.md)
+# y crear un directorio temporal normalizado si es necesario
+SKILLS_NORM=""
+# Comprobar si hay .md sueltos en la raíz de SKILLS_SRC (formato plano)
+HAS_FLAT=$(find "$SKILLS_SRC" -maxdepth 1 -name '*.md' -not -name 'SKILL.md' 2>/dev/null | head -1)
+if [ -n "$HAS_FLAT" ]; then
+  # Formato plano: normalizar a canónico en directorio temporal
+  SKILLS_NORM=$(mktemp -d)
+  cp -r "$SKILLS_SRC/." "$SKILLS_NORM/"
+  for md_file in "$SKILLS_NORM"/*.md; do
+    [ -f "$md_file" ] || continue
+    skill_name="$(basename "$md_file" .md)"
+    mkdir -p "$SKILLS_NORM/$skill_name"
+    mv "$md_file" "$SKILLS_NORM/$skill_name/SKILL.md"
   done
+  SKILLS_SRC="$SKILLS_NORM"
+fi
 
-  # Limpiar directorio temporal si se creo
-  if [ -n "$SKILLS_NORM" ]; then
-    rm -rf "$SKILLS_NORM"
-  fi
-else
-  echo "WARN: No se encontro directorio de skills"
+# analyze: SKILL.md → analyze.md, subficheros → analyze_*.md (caso especial: tiene subficheros)
+cp "$SKILLS_SRC/analyze/SKILL.md" "$PROJECT_DIR/analyze.md"
+for f in "$SKILLS_SRC"/analyze/*.md; do
+  base=$(basename "$f")
+  [ "$base" = "SKILL.md" ] && continue
+  cp "$f" "$PROJECT_DIR/analyze_${base}"
+done
+
+# Otras skills locales (formato simple: <nombre>/SKILL.md → <nombre>.md)
+for skill_dir in "$SKILLS_SRC"/*/; do
+  skill_name=$(basename "$skill_dir")
+  [ "$skill_name" = "analyze" ] && continue
+  [ -f "$skill_dir/SKILL.md" ] || continue
+  cp "$skill_dir/SKILL.md" "$PROJECT_DIR/${skill_name}.md"
+done
+
+# Limpiar directorio temporal si se creó
+if [ -n "$SKILLS_NORM" ]; then
+  rm -rf "$SKILLS_NORM"
 fi
 
 # Shared skills (desde manifiesto shared-skills del agente)
@@ -144,9 +159,19 @@ fi
 echo "Actualizando referencias internas..."
 
 # Patron A: rutas skills-guides/
-sed -i 's|skills-guides/stratio-semantic-layer-tools\.md|skills-guides_stratio-semantic-layer-tools.md|g' "$PROJECT_DIR"/*.md
+sed -i 's|skills-guides/stratio-data-tools\.md|skills-guides_stratio-data-tools.md|g' "$PROJECT_DIR"/*.md
+sed -i 's|skills-guides/visualization\.md|skills-guides_visualization.md|g' "$PROJECT_DIR"/*.md
 
-# Patron B: AGENTS.md → CLAUDE.md (referencias en texto plano dentro de skills)
+# Patron B: links markdown a subficheros de analyze — buscar con parentesis
+sed -i 's|(advanced-analytics\.md)|(analyze_advanced-analytics.md)|g' "$PROJECT_DIR"/*.md
+sed -i 's|(analytical-patterns\.md)|(analyze_analytical-patterns.md)|g' "$PROJECT_DIR"/*.md
+sed -i 's|(clustering-guide\.md)|(analyze_clustering-guide.md)|g' "$PROJECT_DIR"/*.md
+sed -i 's|(visualization\.md)|(analyze_visualization.md)|g' "$PROJECT_DIR"/*.md
+
+# Patron C: rutas de subficheros de analyze en texto plano (sin parentesis)
+sed -i 's|skills/analyze/visualization\.md|analyze_visualization.md|g' "$PROJECT_DIR"/*.md
+
+# Patron D: AGENTS.md → CLAUDE.md (referencias en texto plano dentro de skills)
 sed -i 's/AGENTS\.md/CLAUDE.md/g' "$PROJECT_DIR"/*.md
 
 sed -i 's/{{TOOL_PREGUNTAS}}/ (`AskUserQuestion`)/g' "$PROJECT_DIR"/*.md
@@ -156,11 +181,15 @@ echo ""
 echo "=== Verificacion ==="
 
 # Contar ficheros
-FILE_COUNT=$(ls -1 "$PROJECT_DIR"/*.md 2>/dev/null | wc -l)
+FILE_COUNT=$(ls -1 "$PROJECT_DIR"/*.md "$PROJECT_DIR"/*.txt "$PROJECT_DIR"/*.sh 2>/dev/null | wc -l)
 echo "  Ficheros generados: $FILE_COUNT"
 
-# Buscar referencias rotas (rutas skills-guides/ que no fueron sustituidas)
+# Buscar referencias rotas (rutas con / que no sean URLs ni rutas de output/)
 BROKEN=$(grep -rn 'skills-guides/' "$PROJECT_DIR"/*.md 2>/dev/null || true)
+BROKEN+=$(grep -rn '(advanced-analytics\.md)' "$PROJECT_DIR"/*.md 2>/dev/null || true)
+BROKEN+=$(grep -rn '(analytical-patterns\.md)' "$PROJECT_DIR"/*.md 2>/dev/null || true)
+BROKEN+=$(grep -rn '(clustering-guide\.md)' "$PROJECT_DIR"/*.md 2>/dev/null || true)
+BROKEN+=$(grep -rn '(visualization\.md)' "$PROJECT_DIR"/*.md 2>/dev/null || true)
 
 if [ -n "$BROKEN" ]; then
   echo "  WARN: Referencias posiblemente sin actualizar:"
@@ -171,9 +200,10 @@ fi
 
 # --- 6. ZIP ---
 echo ""
+# Generar ZIP siempre (CI/CD-friendly, sin interaccion)
 ZIP_NAME="${PROJECT_NAME}.zip"
 (cd "$PROJECT_DIR" && zip -r "../_tmp_${ZIP_NAME}" . -q)
-mv "dist/claude_projects/_tmp_${ZIP_NAME}" "$PROJECT_DIR/${ZIP_NAME}"
+mv "dist/claude_ai_projects/_tmp_${ZIP_NAME}" "$PROJECT_DIR/${ZIP_NAME}"
 ZIP_SIZE=$(du -sh "$PROJECT_DIR/${ZIP_NAME}" | cut -f1)
 echo "  ZIP: $PROJECT_DIR/${ZIP_NAME} ($ZIP_SIZE)"
 

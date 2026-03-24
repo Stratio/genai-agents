@@ -43,7 +43,7 @@ genai-agents/
 - Cada shared skill puede declarar que guides de `shared-skill-guides/` necesita en un fichero `skill-guides` dentro de su carpeta
 - Si un agente tiene en `skills/` una skill con el mismo nombre que una shared skill → la version local tiene prioridad
 - Scripts de empaquetado genericos en la raiz del monorepo: `pack_claude_code.sh` y `pack_opencode.sh` (cualquier agente)
-- Scripts de empaquetado especificos de plataforma en `data-analytics-light/` y `semantic-layer/` (`pack_claude_project.sh`, `pack_claude_plugin.sh`, `pack_claude_cowork.sh`)
+- Scripts de empaquetado especificos de plataforma en `data-analytics-light/` y `semantic-layer/` (`pack_claude_ai_project.sh`, `pack_claude_cowork.sh`)
 - El `.gitignore` raiz cubre todos los agentes
 
 ## Resumen de agentes
@@ -52,7 +52,7 @@ genai-agents/
 Agente completo de BI/BA: consulta de datos gobernados via MCP, analisis con Python (pandas, scipy, scikit-learn), visualizaciones (matplotlib, seaborn, plotly), generacion de informes (PDF, DOCX, web, PowerPoint), documentacion del razonamiento, validacion, gestion de la memoria entre sesiones.
 
 ### data-analytics-light
-Agente ligero de BI/BA: mismo motor analitico pero orientado a conversacion. Sin generacion de informes formales — el output principal es el chat. Incluye scripts de empaquetado para Claude Projects, Claude Plugin y Claude Cowork.
+Agente ligero de BI/BA: mismo motor analitico pero orientado a conversacion. Sin generacion de informes formales — el output principal es el chat. Incluye scripts de empaquetado para Claude AI Projects y Claude Cowork.
 
 ### semantic-layer
 Agente especializado en construccion y mantenimiento de capas semanticas en Stratio Governance. Orquesta la creacion de colecciones de datos (dominios tecnicos), terminos tecnicos, ontologias, vistas de negocio, SQL mappings, terminos semanticos y business terms via MCPs de gobernanza. No ejecuta queries de datos ni genera ficheros — su output es interaccion con tools MCP + resumenes en chat. Puede leer ficheros locales del usuario para enriquecer la planificacion.

@@ -25,7 +25,7 @@ if [[ -f "$REPO_ROOT/release-modules" ]]; then
     fi
 
     # Legacy: limpiar directorios de artefactos pre-migracion a dist/
-    for legacy_dir in claude_code opencode claude_projects claude_plugins; do
+    for legacy_dir in claude_code opencode claude_projects claude_ai_projects claude_plugins; do
       if [[ -d "$MODULE_DIR/$legacy_dir" ]]; then
         rm -rf "$MODULE_DIR/$legacy_dir"
         echo "  [OK] $module/$legacy_dir (legacy)"

@@ -32,7 +32,7 @@ bash pack_opencode.sh --agent data-analytics --name mi-agente
 
 El nombre debe ser kebab-case. Si se omite, se usa el basename del directorio del agente. Los directorios generados estan excluidos del repositorio (`.gitignore`).
 
-`data-analytics-light` y `semantic-layer` incluyen ademas scripts de empaquetado para los diferentes formatos de Claude (Projects, Plugin y Cowork). Ver [`data-analytics-light/README.md`](data-analytics-light/README.md) para instrucciones detalladas de como configurar cada formato en la plataforma destino.
+`data-analytics-light` y `semantic-layer` incluyen ademas scripts de empaquetado para los diferentes formatos de Claude (AI Projects y Cowork). Ver [`data-analytics-light/README.md`](data-analytics-light/README.md) para instrucciones detalladas de como configurar cada formato en la plataforma destino.
 
 ### Estructura de outputs (`make package`)
 
@@ -45,16 +45,12 @@ genai-agents/
     data-analytics-opencode-{v}.zip
     data-analytics-light-claude-code-{v}.zip
     data-analytics-light-opencode-{v}.zip
-    data-analytics-light-claude-plugin-{v}.zip
-    data-analytics-light-claude-plugin-agent-{v}.zip
     data-analytics-light-claude-cowork-{v}.zip
-    data-analytics-light-claude-project-{v}.zip
+    data-analytics-light-claude-ai-project-{v}.zip
     semantic-layer-claude-code-{v}.zip
     semantic-layer-opencode-{v}.zip
-    semantic-layer-claude-plugin-{v}.zip
-    semantic-layer-claude-plugin-agent-{v}.zip
     semantic-layer-claude-cowork-{v}.zip
-    semantic-layer-claude-project-{v}.zip
+    semantic-layer-claude-ai-project-{v}.zip
     shared-skills-{v}.zip                        # Todas las shared skills juntas
     shared-skill-propose-knowledge-{v}.zip       # Skill individual
     shared-skill-explore-data-{v}.zip            # Skill individual
@@ -79,17 +75,15 @@ genai-agents/
     dist/                                       # Artefactos intermedios
       claude_code/data-analytics-light/
       opencode/data-analytics-light/
-      claude_plugins/data-analytics-light/
       claude_cowork/data-analytics-light/
-      claude_projects/data-analytics-light/
+      claude_ai_projects/data-analytics-light/
 
   semantic-layer/
     dist/                                       # Artefactos intermedios
       claude_code/semantic-layer/
       opencode/semantic-layer/
-      claude_plugins/semantic-layer/
       claude_cowork/semantic-layer/
-      claude_projects/semantic-layer/
+      claude_ai_projects/semantic-layer/
 ```
 
 `make clean` elimina todos los `dist/` (raiz + agentes).

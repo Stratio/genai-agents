@@ -22,11 +22,10 @@ Todos los scripts son no-interactivos (CI/CD-friendly). Si no se pasa `--name`, 
 
 | Script | Plataforma destino | Output | Ejemplo |
 |--------|-------------------|--------|---------|
-| `pack_claude_project.sh` | claude.ai (Projects) | `dist/claude_projects/<nombre>/` | `bash pack_claude_project.sh --name data-analytics-light` |
-| `pack_claude_plugin.sh` | Claude Code (Plugin) | `dist/claude_plugins/<nombre>/` | `bash pack_claude_plugin.sh --name data-analytics-light --with-agent` |
+| `pack_claude_ai_project.sh` | claude.ai (Projects) | `dist/claude_ai_projects/<nombre>/` | `bash pack_claude_ai_project.sh --name data-analytics-light` |
 | `pack_claude_cowork.sh` | Claude Cowork | `dist/claude_cowork/<nombre>/` | `bash pack_claude_cowork.sh --name data-analytics-light` |
 
-Los scripts de plugin y cowork aceptan tambien `--url <MCP_URL>` y `--key <API_KEY>`. Si se omiten, quedan como variables de entorno template para configurar despues. El script de plugin acepta `--with-agent` para incluir el agente en el paquete y `--shared-guides` para colocar las guias en un directorio compartido en la raiz del plugin en vez de duplicarlas junto a cada skill (ver detalles abajo).
+El script de cowork acepta tambien `--url <MCP_URL>` y `--key <API_KEY>`. Si se omiten, quedan como variables de entorno template para configurar despues.
 
 ### Scripts genericos (desde la raiz del monorepo)
 
@@ -37,48 +36,26 @@ Los scripts de plugin y cowork aceptan tambien `--url <MCP_URL>` y `--key <API_K
 
 ### Ficheros incluidos por paquete
 
-| Fichero fuente | `claude_project` | `claude_plugin` | `claude_plugin --with-agent` | `claude_cowork` | `claude_code` | `opencode` |
-|---|---|---|---|---|---|---|
-| `AGENTS.md` | ✅ → `CLAUDE.md` | ❌ | ✅ → `agents/<n>.md` | ✅ → `CLAUDE.md`¹ | ✅ → `CLAUDE.md` | ✅ → `AGENTS.md` |
-| `requirements.txt` | ✅ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| `setup_env.sh` | ✅ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| `skills/` | ✅² | ✅³ | ✅³ | ✅ (en ZIP) | ✅ (en `.claude/skills/`) | ✅ (en `.opencode/skills/`) |
-| `skills-guides/` | ✅⁴ | ✅⁵ | ✅⁵ | ✅ (en ZIP) | ✅⁶ | ✅⁶ |
-| `.mcp.json` | ❌ | ✅ | ✅ | ✅ (en ZIP) | ✅ | ❌ |
-| `opencode.json` | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
-| `plugin.json` | ❌ | ✅ | ✅ | ✅ (en ZIP) | ❌ | ❌ |
-| `settings.json` | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ |
-| `.claude/settings.local.json` | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ |
+| Fichero fuente | `claude_ai_project` | `claude_cowork` | `claude_code` | `opencode` |
+|---|---|---|---|---|
+| `AGENTS.md` | ✅ → `CLAUDE.md` | ✅ → `CLAUDE.md`¹ | ✅ → `CLAUDE.md` | ✅ → `AGENTS.md` |
+| `requirements.txt` | ✅ | ❌ | ✅ | ✅ |
+| `setup_env.sh` | ✅ | ❌ | ✅ | ✅ |
+| `skills/` | ✅² | ✅ (en ZIP) | ✅ (en `.claude/skills/`) | ✅ (en `.opencode/skills/`) |
+| `skills-guides/` | ✅³ | ✅ (en ZIP) | ✅⁴ | ✅⁴ |
+| `.mcp.json` | ❌ | ✅ (en ZIP) | ✅ | ❌ |
+| `opencode.json` | ❌ | ❌ | ❌ | ✅ |
+| `plugin.json` | ❌ | ✅ (en ZIP) | ❌ | ❌ |
+| `.claude/settings.local.json` | ❌ | ❌ | ✅ | ❌ |
 
 ¹ Generado (no copia directa): referencias `skills-guides/` → `skills/analyze/`, placeholder `{{TOOL_PREGUNTAS}}` resuelto.
 ² Aplanadas en raíz: `analyze.md`, `analyze_*.md`, `explore-data.md`, `propose-knowledge.md`; guías prefijadas: `skills-guides_stratio-data-tools.md`.
-³ Estructura canónica: `skills/<skill>/SKILL.md` + subficheros.
-⁴ Guías renombradas con prefijo: `skills-guides_stratio-data-tools.md`.
-⁵ Default: duplicadas junto a cada skill; con `--shared-guides`: en directorio `skills-guides/` raíz.
-⁶ Guides dentro de cada skill (autocontenida) + en `skills-guides/` para referencias desde `CLAUDE.md`/`AGENTS.md`.
-
-### Empaquetado como Claude Plugin
-
-Genera un ZIP listo para instalar como plugin en Claude Code. Las guias compartidas de `skills-guides/` se copian junto al `SKILL.md` de cada skill que las usa (patron de los plugins oficiales de Anthropic). El script soporta dos variantes:
-
-- **Con agente** (`--with-agent`): Para Claude Code CLI. El paquete incluye `agents/<nombre>.md` (con `AGENTS.md` como instrucciones) y `settings.json` — el agente del plugin toma el control como hilo principal. Funciona tambien en Cowork, pero reemplaza al orquestador (pierde la capacidad de coordinacion con otros plugins/agentes).
-- **Sin agente** (default): Solo skills + MCP. Uso interno por `pack_claude_cowork.sh`, no se distribuye como entregable independiente porque las skills referencian secciones de AGENTS.md.
-
-```bash
-# Plugin con agente (para Claude Code CLI)
-bash pack_claude_plugin.sh --name data-analytics-light --with-agent --url https://mcp.ejemplo.com --key mi-api-key
-
-# Plugin sin agente (uso interno por pack_claude_cowork.sh)
-bash pack_claude_plugin.sh --name data-analytics-light
-```
-
-El resultado se encuentra en `dist/claude_plugins/data-analytics-light/data-analytics-light.zip`.
-
-**Guias compartidas** (`--shared-guides`): Por defecto las guias de `skills-guides/` se duplican junto al `SKILL.md` de cada skill que las usa. Con `--shared-guides` se colocan en un directorio `skills-guides/` en la raiz del plugin y las skills las referencian con ruta relativa. Esto evita duplicacion pero depende de que Claude resuelva rutas relativas entre directorios del plugin.
+³ Guías renombradas con prefijo: `skills-guides_stratio-data-tools.md`.
+⁴ Guides dentro de cada skill (autocontenida) + en `skills-guides/` para referencias desde `CLAUDE.md`/`AGENTS.md`.
 
 ### Empaquetado como Claude Cowork
 
-Genera un paquete para configurar el agente en Claude Cowork sin reemplazar al orquestador. El script produce tres ficheros:
+Genera un paquete para configurar el agente en Claude Cowork sin reemplazar al orquestador. El script construye el plugin internamente (skills + MCP, sin agente) y lo combina con las instrucciones del agente. Produce tres ficheros:
 
 | Fichero | Que es | Para que sirve |
 |---------|--------|----------------|
@@ -101,20 +78,18 @@ El resultado se encuentra en `dist/claude_cowork/data-analytics-light/`.
 3. Instalar `<nombre>.zip` como plugin en Cowork (aporta las skills `/analyze`, `/explore-data`, `/propose-knowledge` y la conexion MCP)
 4. El orquestador de Cowork lee las instrucciones del `CLAUDE.md` y delega a las skills del plugin cuando corresponda
 
-**Diferencia con el plugin con agente:** En Cowork con agente (`pack_claude_plugin.sh --with-agent`), el plugin sustituye al orquestador — funciona como Claude Code CLI dentro de Cowork. Con el paquete Cowork, el orquestador mantiene el control y puede coordinar con otros plugins/agentes.
-
-### Empaquetado como Claude Project (claude.ai)
+### Empaquetado como Claude AI Project (claude.ai)
 
 Genera los ficheros aplanados (skills, guias, requirements, setup) + un ZIP:
 
 ```bash
-bash pack_claude_project.sh --name data-analytics-light
+bash pack_claude_ai_project.sh --name data-analytics-light
 ```
 
 Para configurarlo en claude.ai:
 
 1. Crear un nuevo **Project** en [claude.ai](https://claude.ai)
-2. Abrir `dist/claude_projects/data-analytics-light/` y subir **todos los ficheros** (excepto `CLAUDE.md` y el ZIP) a la seccion de archivos del proyecto
+2. Abrir `dist/claude_ai_projects/data-analytics-light/` y subir **todos los ficheros** (excepto `CLAUDE.md` y el ZIP) a la seccion de archivos del proyecto
 3. Abrir `CLAUDE.md` del paquete generado, copiar **todo su contenido** y pegarlo en el campo **Instructions** del proyecto
 4. Guardar el proyecto — el agente estara listo para usar
 
