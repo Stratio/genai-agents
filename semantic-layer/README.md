@@ -30,11 +30,10 @@ Todos los scripts son no-interactivos (CI/CD-friendly). Si no se pasa `--name`, 
 
 | Script | Plataforma destino | Output | Ejemplo |
 |--------|-------------------|--------|---------|
-| `pack_claude_project.sh` | claude.ai (Projects) | `dist/claude_projects/<nombre>/` | `bash pack_claude_project.sh --name semantic-layer` |
-| `pack_claude_plugin.sh` | Claude Code (Plugin) | `dist/claude_plugins/<nombre>/` | `bash pack_claude_plugin.sh --name semantic-layer --with-agent` |
+| `pack_claude_ai_project.sh` | claude.ai (Projects) | `dist/claude_ai_projects/<nombre>/` | `bash pack_claude_ai_project.sh --name semantic-layer` |
 | `pack_claude_cowork.sh` | Claude Cowork | `dist/claude_cowork/<nombre>/` | `bash pack_claude_cowork.sh --name semantic-layer` |
 
-Los scripts de plugin y cowork aceptan tambien `--gov-url <URL>`, `--gov-key <KEY>`, `--sql-url <URL>` y `--sql-key <KEY>` para configurar los dos servidores MCP. Si se omiten, quedan como variables de entorno template para configurar despues. El script de plugin acepta `--with-agent` para incluir el agente en el paquete y `--shared-guides` para colocar las guias en un directorio compartido en la raiz del plugin en vez de duplicarlas junto a cada skill (ver detalles abajo).
+El script de cowork acepta tambien `--gov-url <URL>`, `--gov-key <KEY>`, `--sql-url <URL>` y `--sql-key <KEY>` para configurar los dos servidores MCP. Si se omiten, quedan como variables de entorno template para configurar despues.
 
 ### Scripts genericos (desde la raiz del monorepo)
 
@@ -45,46 +44,24 @@ Los scripts de plugin y cowork aceptan tambien `--gov-url <URL>`, `--gov-key <KE
 
 ### Ficheros incluidos por paquete
 
-| Fichero fuente | `claude_project` | `claude_plugin` | `claude_plugin --with-agent` | `claude_cowork` | `claude_code` | `opencode` |
-|---|---|---|---|---|---|---|
-| `AGENTS.md` | ✅ → `CLAUDE.md` | ❌ | ✅ → `agents/<n>.md` | ✅ → `CLAUDE.md`¹ | ✅ → `CLAUDE.md` | ✅ → `AGENTS.md` |
-| `skills/` | ✅² | ✅³ | ✅³ | ✅ (en ZIP) | ✅ (en `.claude/skills/`) | ✅ (en `.opencode/skills/`) |
-| `skills-guides/` | ✅⁴ | ✅⁵ | ✅⁵ | ✅ (en ZIP) | ✅⁶ | ✅⁶ |
-| `.mcp.json` | ❌ | ✅ | ✅ | ✅ (en ZIP) | ✅ | ❌ |
-| `opencode.json` | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
-| `plugin.json` | ❌ | ✅ | ✅ | ✅ (en ZIP) | ❌ | ❌ |
-| `settings.json` | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ |
-| `.claude/settings.local.json` | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ |
+| Fichero fuente | `claude_ai_project` | `claude_cowork` | `claude_code` | `opencode` |
+|---|---|---|---|---|
+| `AGENTS.md` | ✅ → `CLAUDE.md` | ✅ → `CLAUDE.md`¹ | ✅ → `CLAUDE.md` | ✅ → `AGENTS.md` |
+| `skills/` | ✅² | ✅ (en ZIP) | ✅ (en `.claude/skills/`) | ✅ (en `.opencode/skills/`) |
+| `skills-guides/` | ✅³ | ✅ (en ZIP) | ✅⁴ | ✅⁴ |
+| `.mcp.json` | ❌ | ✅ (en ZIP) | ✅ | ❌ |
+| `opencode.json` | ❌ | ❌ | ❌ | ✅ |
+| `plugin.json` | ❌ | ✅ (en ZIP) | ❌ | ❌ |
+| `.claude/settings.local.json` | ❌ | ❌ | ✅ | ❌ |
 
 ¹ Generado (no copia directa): referencias `skills-guides/` → `skills/stratio-semantic-layer/`, placeholder `{{TOOL_PREGUNTAS}}` resuelto.
 ² Aplanadas en raiz: `build-semantic-layer.md`, `stratio-semantic-layer.md`, `generate-technical-terms.md`, etc.; guias prefijadas: `skills-guides_stratio-semantic-layer-tools.md`.
-³ Estructura canonica: `skills/<skill>/SKILL.md` + subficheros.
-⁴ Guias renombradas con prefijo: `skills-guides_stratio-semantic-layer-tools.md`.
-⁵ Default: duplicadas junto a cada skill; con `--shared-guides`: en directorio `skills-guides/` raiz.
-⁶ Guides dentro de cada skill (autocontenida) + en `skills-guides/` para referencias desde `CLAUDE.md`/`AGENTS.md`.
-
-### Empaquetado como Claude Plugin
-
-Genera un ZIP listo para instalar como plugin en Claude Code. Las guias compartidas de `skills-guides/` se copian junto al `SKILL.md` de cada skill que las usa (patron de los plugins oficiales de Anthropic). El script soporta dos variantes:
-
-- **Con agente** (`--with-agent`): Para Claude Code CLI. El paquete incluye `agents/<nombre>.md` (con `AGENTS.md` como instrucciones) y `settings.json` — el agente del plugin toma el control como hilo principal. Funciona tambien en Cowork, pero reemplaza al orquestador (pierde la capacidad de coordinacion con otros plugins/agentes).
-- **Sin agente** (default): Solo skills + MCP. Uso interno por `pack_claude_cowork.sh`, no se distribuye como entregable independiente porque las skills referencian secciones de AGENTS.md.
-
-```bash
-# Plugin con agente (para Claude Code CLI)
-bash pack_claude_plugin.sh --name semantic-layer --with-agent --gov-url https://gov.ejemplo.com --sql-url https://sql.ejemplo.com
-
-# Plugin sin agente (uso interno por pack_claude_cowork.sh)
-bash pack_claude_plugin.sh --name semantic-layer
-```
-
-El resultado se encuentra en `dist/claude_plugins/semantic-layer/semantic-layer.zip`.
-
-**Guias compartidas** (`--shared-guides`): Por defecto las guias de `skills-guides/` se duplican junto al `SKILL.md` de cada skill que las usa. Con `--shared-guides` se colocan en un directorio `skills-guides/` en la raiz del plugin y las skills las referencian con ruta relativa. Esto evita duplicacion pero depende de que Claude resuelva rutas relativas entre directorios del plugin.
+³ Guias renombradas con prefijo: `skills-guides_stratio-semantic-layer-tools.md`.
+⁴ Guides dentro de cada skill (autocontenida) + en `skills-guides/` para referencias desde `CLAUDE.md`/`AGENTS.md`.
 
 ### Empaquetado como Claude Cowork
 
-Genera un paquete para configurar el agente en Claude Cowork sin reemplazar al orquestador. El script produce tres ficheros:
+Genera un paquete para configurar el agente en Claude Cowork sin reemplazar al orquestador. El script construye el plugin internamente (skills + MCP, sin agente) y lo combina con las instrucciones del agente. Produce tres ficheros:
 
 | Fichero | Que es | Para que sirve |
 |---------|--------|----------------|
@@ -107,20 +84,18 @@ El resultado se encuentra en `dist/claude_cowork/semantic-layer/`.
 3. Instalar `<nombre>.zip` como plugin en Cowork (aporta las skills `/build-semantic-layer`, `/stratio-semantic-layer`, `/generate-technical-terms`, `/create-ontology`, `/create-business-views`, `/create-sql-mappings`, `/create-semantic-terms`, `/manage-business-terms`, `/create-data-collection` y la conexion MCP)
 4. El orquestador de Cowork lee las instrucciones del `CLAUDE.md` y delega a las skills del plugin cuando corresponda
 
-**Diferencia con el plugin con agente:** En Cowork con agente (`pack_claude_plugin.sh --with-agent`), el plugin sustituye al orquestador — funciona como Claude Code CLI dentro de Cowork. Con el paquete Cowork, el orquestador mantiene el control y puede coordinar con otros plugins/agentes.
-
-### Empaquetado como Claude Project (claude.ai)
+### Empaquetado como Claude AI Project (claude.ai)
 
 Genera los ficheros aplanados (skills, guias) + un ZIP:
 
 ```bash
-bash pack_claude_project.sh --name semantic-layer
+bash pack_claude_ai_project.sh --name semantic-layer
 ```
 
 Para configurarlo en claude.ai:
 
 1. Crear un nuevo **Project** en [claude.ai](https://claude.ai)
-2. Abrir `dist/claude_projects/semantic-layer/` y subir **todos los ficheros** (excepto `CLAUDE.md` y el ZIP) a la seccion de archivos del proyecto
+2. Abrir `dist/claude_ai_projects/semantic-layer/` y subir **todos los ficheros** (excepto `CLAUDE.md` y el ZIP) a la seccion de archivos del proyecto
 3. Abrir `CLAUDE.md` del paquete generado, copiar **todo su contenido** y pegarlo en el campo **Instructions** del proyecto
 4. Guardar el proyecto — el agente estara listo para usar
 

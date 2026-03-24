@@ -2,6 +2,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+MONOREPO_ROOT="$(dirname "$SCRIPT_DIR")"
 cd "$SCRIPT_DIR"
 
 # --- Parsear argumentos CLI ---
@@ -32,34 +33,214 @@ if [ -d "$COWORK_DIR" ]; then
   rm -rf "$COWORK_DIR"
 fi
 
-# --- Paso 1: Generar plugin sin agente ---
-echo "Generando plugin sin agente..."
-PLUGIN_ARGS=(--name "$COWORK_NAME")
-[ -n "$ARG_URL" ] && PLUGIN_ARGS+=(--url "$ARG_URL")
-[ -n "$ARG_KEY" ] && PLUGIN_ARGS+=(--key "$ARG_KEY")
-bash pack_claude_plugin.sh "${PLUGIN_ARGS[@]}"
+# ============================================================
+# Paso 1: Construir plugin inline (skills + MCP, sin agente)
+# ============================================================
+echo "Construyendo plugin inline..."
+PLUGIN_BUILD="$COWORK_DIR/_plugin_build"
+mkdir -p "$PLUGIN_BUILD/.claude-plugin"
+mkdir -p "$PLUGIN_BUILD/skills"
 
-PLUGIN_DIR="dist/claude_plugins/$COWORK_NAME"
-PLUGIN_ZIP="$PLUGIN_DIR/${COWORK_NAME}.zip"
+# --- plugin.json ---
+cat > "$PLUGIN_BUILD/.claude-plugin/plugin.json" <<EOF
+{
+  "name": "$COWORK_NAME",
+  "description": "BI/BA Analytics Agent (Light)",
+  "version": "1.0.0"
+}
+EOF
 
-if [ ! -f "$PLUGIN_ZIP" ]; then
-  echo "ERROR: No se encontro el ZIP del plugin en $PLUGIN_ZIP"
-  exit 1
+# --- Copiar skills locales ---
+echo "Copiando skills..."
+SKILLS_SRC=""
+if [ -d "skills" ]; then
+  SKILLS_SRC="skills"
+elif [ -d ".claude/skills" ]; then
+  SKILLS_SRC=".claude/skills"
+elif [ -d ".opencode/skills" ]; then
+  SKILLS_SRC=".opencode/skills"
+elif [ -d ".agents/skills" ]; then
+  SKILLS_SRC=".agents/skills"
 fi
 
-# --- Paso 2: Crear directorio cowork ---
-echo "Creando estructura cowork..."
-mkdir -p "$COWORK_DIR"
+if [ -n "$SKILLS_SRC" ]; then
+  cp -r "$SKILLS_SRC"/* "$PLUGIN_BUILD/skills/"
+  # Normalizar: archivos .md sueltos → subcarpeta/SKILL.md
+  for md_file in "$PLUGIN_BUILD/skills/"*.md; do
+    [ -f "$md_file" ] || continue
+    skill_name="$(basename "$md_file" .md)"
+    mkdir -p "$PLUGIN_BUILD/skills/$skill_name"
+    mv "$md_file" "$PLUGIN_BUILD/skills/$skill_name/SKILL.md"
+  done
+  echo "  Skills copiadas desde $SKILLS_SRC"
+else
+  echo "WARN: No se encontro directorio de skills — el plugin no tendra skills."
+fi
 
-# --- Paso 3: Copiar CLAUDE.md con referencias actualizadas ---
-echo "Copiando AGENTS.md con referencias actualizadas..."
+# --- Copiar shared skills (si las declara el agente) ---
+if [ -f "shared-skills" ]; then
+  while IFS= read -r skill_name || [ -n "$skill_name" ]; do
+    [ -z "$skill_name" ] || [[ "$skill_name" == \#* ]] && continue
+    skill_src="$MONOREPO_ROOT/shared-skills/$skill_name"
+    skill_dst="$PLUGIN_BUILD/skills/$skill_name"
+    if [ ! -d "$skill_src" ]; then
+      echo "  WARN: shared skill '$skill_name' no encontrada en $skill_src — omitida" >&2
+      continue
+    fi
+    # Prioridad local
+    if [ -d "$skill_dst" ]; then
+      echo "  '$skill_name' omitida (version local tiene prioridad)"
+      continue
+    fi
+    cp -r "$skill_src" "$skill_dst"
+    # Eliminar fichero skill-guides del output
+    rm -f "$skill_dst/skill-guides"
+    echo "  Shared skill '$skill_name' incluida"
+  done < "shared-skills"
+fi
+
+# --- Recopilar y copiar skills-guides (inline: dentro de cada skill) ---
+GUIDES_NEEDED=()
+# Desde shared-skills/*/skill-guides
+if [ -f "shared-skills" ]; then
+  while IFS= read -r skill_name || [ -n "$skill_name" ]; do
+    [ -z "$skill_name" ] || [[ "$skill_name" == \#* ]] && continue
+    skill_src="$MONOREPO_ROOT/shared-skills/$skill_name"
+    if [ -f "$skill_src/skill-guides" ]; then
+      while IFS= read -r guide || [ -n "$guide" ]; do
+        [ -z "$guide" ] || [[ "$guide" == \#* ]] && continue
+        GUIDES_NEEDED+=("shared:$guide")
+      done < "$skill_src/skill-guides"
+    fi
+  done < "shared-skills"
+fi
+# Desde shared-guides del agente
+if [ -f "shared-guides" ]; then
+  while IFS= read -r guide || [ -n "$guide" ]; do
+    [ -z "$guide" ] || [[ "$guide" == \#* ]] && continue
+    GUIDES_NEEDED+=("shared:$guide")
+  done < "shared-guides"
+fi
+# Guides locales
+if [ -d "skills-guides" ]; then
+  for f in skills-guides/*.md; do
+    [ -f "$f" ] || continue
+    GUIDES_NEEDED+=("local:$(basename "$f")")
+  done
+fi
+
+# Construir lista deduplicada
+declare -A _GUIDES_MAP=()
+for entry in "${GUIDES_NEEDED[@]}"; do
+  src_type="${entry%%:*}"
+  guide_name="${entry#*:}"
+  _GUIDES_MAP["$guide_name"]="$src_type"
+done
+
+if [ ${#_GUIDES_MAP[@]} -gt 0 ]; then
+  echo "Copiando skills-guides a skills..."
+  for skill_dir in "$PLUGIN_BUILD/skills/analyze" "$PLUGIN_BUILD/skills/explore-data"; do
+    if [ -d "$skill_dir" ]; then
+      for guide_name in "${!_GUIDES_MAP[@]}"; do
+        src_type="${_GUIDES_MAP[$guide_name]}"
+        if [ "$src_type" = "shared" ]; then
+          guide_src="$MONOREPO_ROOT/shared-skill-guides/$guide_name"
+        else
+          guide_src="skills-guides/$guide_name"
+        fi
+        if [ -d "$guide_src" ]; then
+          cp -r "$guide_src" "$skill_dir/$guide_name"
+        elif [ -f "$guide_src" ]; then
+          cp "$guide_src" "$skill_dir/$guide_name"
+        fi
+      done
+    fi
+  done
+  sed -i 's|`skills-guides/stratio-data-tools\.md`|`stratio-data-tools.md`|g' "$PLUGIN_BUILD/skills/"*/SKILL.md 2>/dev/null || true
+fi
+
+# --- Sustitucion de placeholders ---
+sed -i 's/{{TOOL_PREGUNTAS}}/ (`AskUserQuestion`)/g' "$PLUGIN_BUILD/skills/"*/SKILL.md 2>/dev/null || true
+
+# --- .mcp.json del plugin ---
+if [ -n "$ARG_URL" ] || [ -n "$ARG_KEY" ]; then
+  MCP_URL_VALUE="${ARG_URL:-\$\{MCP_SQL_URL:-http://127.0.0.1:8080/mcp\}}"
+  MCP_KEY_VALUE="${ARG_KEY:-\$\{MCP_SQL_API_KEY:-\}}"
+  cat > "$PLUGIN_BUILD/.mcp.json" <<EOF
+{
+  "mcpServers": {
+    "sql": {
+      "type": "http",
+      "url": "$MCP_URL_VALUE",
+      "headers": {
+        "X-API-Key": "$MCP_KEY_VALUE",
+        "Authorization": "Bearer $MCP_KEY_VALUE"
+      },
+      "allowedTools": [
+        "stratio_list_business_domains",
+        "stratio_list_domain_tables",
+        "stratio_get_tables_details",
+        "stratio_get_table_columns_details",
+        "stratio_generate_sql",
+        "stratio_query_data",
+        "stratio_search_domain_knowledge",
+        "stratio_execute_sql",
+        "stratio_profile_data",
+        "stratio_propose_knowledge"
+      ]
+    }
+  }
+}
+EOF
+else
+  cat > "$PLUGIN_BUILD/.mcp.json" <<'EOF'
+{
+  "mcpServers": {
+    "sql": {
+      "type": "http",
+      "url": "${MCP_SQL_URL:-http://127.0.0.1:8080/mcp}",
+      "headers": {
+        "X-API-Key": "${MCP_SQL_API_KEY:-}",
+        "Authorization": "Bearer ${MCP_SQL_API_KEY:-}"
+      },
+      "allowedTools": [
+        "stratio_list_business_domains",
+        "stratio_list_domain_tables",
+        "stratio_get_tables_details",
+        "stratio_get_table_columns_details",
+        "stratio_generate_sql",
+        "stratio_query_data",
+        "stratio_search_domain_knowledge",
+        "stratio_execute_sql",
+        "stratio_profile_data",
+        "stratio_propose_knowledge"
+      ]
+    }
+  }
+}
+EOF
+fi
+
+# --- Generar plugin ZIP ---
+PLUGIN_ZIP_NAME="${COWORK_NAME}.zip"
+echo "Generando plugin ZIP..."
+(cd "$PLUGIN_BUILD" && zip -r "../${PLUGIN_ZIP_NAME}" . -q)
+
+# ============================================================
+# Paso 2: Generar CLAUDE.md desde AGENTS.md
+# ============================================================
+echo "Generando CLAUDE.md desde AGENTS.md..."
 sed 's|`skills-guides/stratio-data-tools\.md`|`skills/analyze/stratio-data-tools.md`|g' AGENTS.md > "$COWORK_DIR/CLAUDE.md"
 sed -i 's/{{TOOL_PREGUNTAS}}/ (`AskUserQuestion`)/g' "$COWORK_DIR/CLAUDE.md"
 
-# --- Paso 4: Copiar plugin ZIP ---
-cp "$PLUGIN_ZIP" "$COWORK_DIR/${COWORK_NAME}.zip"
+# ============================================================
+# Paso 3: Limpiar build temporal
+# ============================================================
+rm -rf "$PLUGIN_BUILD"
 
-# --- Paso 5: Generar ZIP final ---
+# ============================================================
+# Paso 4: Generar ZIP final (CLAUDE.md + plugin.zip)
+# ============================================================
 ZIP_NAME="${COWORK_NAME}-cowork.zip"
 echo "Generando $ZIP_NAME..."
 (cd "$COWORK_DIR" && zip -r "../_tmp_${ZIP_NAME}" . -q)

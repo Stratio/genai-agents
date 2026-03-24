@@ -64,7 +64,7 @@ if [[ -d "$DAL_DIR" ]]; then
     [[ ! -f "$pack_script" ]] && continue
     SCRIPT_NAME=$(basename "$pack_script")
 
-    # Extraer tipo del nombre: pack_claude_project.sh -> project
+    # Extraer tipo del nombre: pack_claude_ai_project.sh -> ai_project
     PACK_TYPE="${SCRIPT_NAME#pack_claude_}"
     PACK_TYPE="${PACK_TYPE%.sh}"
 
@@ -76,28 +76,21 @@ if [[ -d "$DAL_DIR" ]]; then
 
     # Buscar el directorio de output generado
     case "$PACK_TYPE" in
-      project)   OUTPUT_SUBDIR="dist/claude_projects/data-analytics-light" ;;
-      plugin)    OUTPUT_SUBDIR="dist/claude_plugins/data-analytics-light" ;;
-      cowork)    OUTPUT_SUBDIR="dist/claude_cowork/data-analytics-light" ;;
+      ai_project) OUTPUT_SUBDIR="dist/claude_ai_projects/data-analytics-light" ;;
+      cowork)     OUTPUT_SUBDIR="dist/claude_cowork/data-analytics-light" ;;
       *) echo "  WARN: Tipo desconocido: $PACK_TYPE"; continue ;;
     esac
+
+    # Normalizar PACK_TYPE para el nombre del ZIP (ai_project -> ai-project)
+    ZIP_TYPE=$(echo "$PACK_TYPE" | tr '_' '-')
 
     # Los pack scripts generan un ZIP dentro del directorio
     ZIP_FILE=$(find "$DAL_DIR/$OUTPUT_SUBDIR" -name '*.zip' -maxdepth 1 2>/dev/null | head -1)
     if [[ -n "$ZIP_FILE" ]]; then
-      cp "$ZIP_FILE" "$DIST_DIR/data-analytics-light-claude-${PACK_TYPE}-${VERSION}.zip"
-      echo "    -> dist/data-analytics-light-claude-${PACK_TYPE}-${VERSION}.zip"
+      cp "$ZIP_FILE" "$DIST_DIR/data-analytics-light-claude-${ZIP_TYPE}-${VERSION}.zip"
+      echo "    -> dist/data-analytics-light-claude-${ZIP_TYPE}-${VERSION}.zip"
     fi
   done
-
-  # Plugin con agente (para Claude Code CLI)
-  echo "  [data-analytics-light] Generando plugin con agente..."
-  (cd "$DAL_DIR" && bash pack_claude_plugin.sh --name data-analytics-light --with-agent)
-  ZIP_FILE=$(find "$DAL_DIR/dist/claude_plugins/data-analytics-light" -name '*.zip' -maxdepth 1 2>/dev/null | head -1)
-  if [[ -n "$ZIP_FILE" ]]; then
-    cp "$ZIP_FILE" "$DIST_DIR/data-analytics-light-claude-plugin-agent-${VERSION}.zip"
-    echo "    -> dist/data-analytics-light-claude-plugin-agent-${VERSION}.zip"
-  fi
 fi
 
 # --- Pack adicionales de semantic-layer ---
@@ -107,7 +100,7 @@ if [[ -d "$SL_DIR" ]]; then
     [[ ! -f "$pack_script" ]] && continue
     SCRIPT_NAME=$(basename "$pack_script")
 
-    # Extraer tipo del nombre: pack_claude_project.sh -> project
+    # Extraer tipo del nombre: pack_claude_ai_project.sh -> ai_project
     PACK_TYPE="${SCRIPT_NAME#pack_claude_}"
     PACK_TYPE="${PACK_TYPE%.sh}"
 
@@ -119,28 +112,21 @@ if [[ -d "$SL_DIR" ]]; then
 
     # Buscar el directorio de output generado
     case "$PACK_TYPE" in
-      project)   OUTPUT_SUBDIR="dist/claude_projects/semantic-layer" ;;
-      plugin)    OUTPUT_SUBDIR="dist/claude_plugins/semantic-layer" ;;
-      cowork)    OUTPUT_SUBDIR="dist/claude_cowork/semantic-layer" ;;
+      ai_project) OUTPUT_SUBDIR="dist/claude_ai_projects/semantic-layer" ;;
+      cowork)     OUTPUT_SUBDIR="dist/claude_cowork/semantic-layer" ;;
       *) echo "  WARN: Tipo desconocido: $PACK_TYPE"; continue ;;
     esac
+
+    # Normalizar PACK_TYPE para el nombre del ZIP (ai_project -> ai-project)
+    ZIP_TYPE=$(echo "$PACK_TYPE" | tr '_' '-')
 
     # Los pack scripts generan un ZIP dentro del directorio
     ZIP_FILE=$(find "$SL_DIR/$OUTPUT_SUBDIR" -name '*.zip' -maxdepth 1 2>/dev/null | head -1)
     if [[ -n "$ZIP_FILE" ]]; then
-      cp "$ZIP_FILE" "$DIST_DIR/semantic-layer-claude-${PACK_TYPE}-${VERSION}.zip"
-      echo "    -> dist/semantic-layer-claude-${PACK_TYPE}-${VERSION}.zip"
+      cp "$ZIP_FILE" "$DIST_DIR/semantic-layer-claude-${ZIP_TYPE}-${VERSION}.zip"
+      echo "    -> dist/semantic-layer-claude-${ZIP_TYPE}-${VERSION}.zip"
     fi
   done
-
-  # Plugin con agente (para Claude Code CLI)
-  echo "  [semantic-layer] Generando plugin con agente..."
-  (cd "$SL_DIR" && bash pack_claude_plugin.sh --name semantic-layer --with-agent)
-  ZIP_FILE=$(find "$SL_DIR/dist/claude_plugins/semantic-layer" -name '*.zip' -maxdepth 1 2>/dev/null | head -1)
-  if [[ -n "$ZIP_FILE" ]]; then
-    cp "$ZIP_FILE" "$DIST_DIR/semantic-layer-claude-plugin-agent-${VERSION}.zip"
-    echo "    -> dist/semantic-layer-claude-plugin-agent-${VERSION}.zip"
-  fi
 fi
 
 # --- Zip de fuentes ---
