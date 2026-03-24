@@ -21,7 +21,8 @@
         "stratio_list_technical_domain_concepts",
         "stratio_create_collection_description",
         "stratio_delete_ontology_classes",
-        "stratio_delete_business_views"
+        "stratio_delete_business_views",
+        "stratio_create_data_collection"
       ]
     },
     "sql": {
@@ -37,7 +38,8 @@
         "stratio_get_tables_details",
         "stratio_get_table_columns_details",
         "stratio_list_business_domains",
-        "stratio_search_domain_knowledge"
+        "stratio_search_domain_knowledge",
+        "stratio_search_data_dictionary"
       ]
     }
   }

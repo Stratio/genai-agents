@@ -22,6 +22,7 @@
 | **Terminos semanticos** | `stratio_create_semantic_terms(domain, view_names?, user_instructions?, regenerate?)` | Generar terminos semanticos. Con `regenerate=true`: DESTRUCTIVO, borra y recrea |
 | **Business terms** | `stratio_create_business_term(domain, name, description, type, related_assets)` | Crear business term en el diccionario con relaciones a activos |
 | | `stratio_list_business_asset_types()` | Listar tipos de activos disponibles para business terms |
+| **Colecciones** | `stratio_create_data_collection(collection_name, description, table_metadata_paths?, path_metadata_paths?)` | Crear coleccion de datos (dominio tecnico) con tablas y paths. `collection_name` sin espacios (usar underscores). Refresca vista tecnica automaticamente |
 | **Utilidad** | `stratio_list_technical_domain_concepts(domain)` | Listar vistas de negocio existentes con estado de mappings y terminos semanticos |
 | | `stratio_create_collection_description(domain, user_instructions?)` | Generar SOLO la descripcion del dominio/coleccion (sin tocar tablas) |
 
@@ -35,6 +36,7 @@
 | `stratio_get_table_columns_details(domain, table)` | Columnas de una tabla: nombres, tipos, descripciones de negocio |
 | `stratio_list_business_domains` | Listar dominios semanticos publicados (prefijo `semantic_`) |
 | `stratio_search_domain_knowledge(question, domain)` | Buscar conocimiento en dominios tecnicos y semanticos |
+| `stratio_search_data_dictionary(search_text, search_type?)` | Buscar tablas y paths en el diccionario de datos tecnico. `search_type`: `'tables'`, `'paths'` o `'both'` (defecto). Resultados ordenados por relevancia, con `metadata_path`, `name`, `subtype` (Table/Path), `alias`, `data_store`, `description` |
 
 ## 3. Reglas Estrictas
 
@@ -45,6 +47,7 @@
 - **Operaciones destructivas (`regenerate=true`, `delete_*`)**: SIEMPRE confirmacion explicita del usuario con advertencia clara de que se pierde. Patron: detectar existencia → informar que se pierde → preguntar (saltar/ejecutar/cancelar) → confirmacion adicional para la accion destructiva
 - **Ontologias son ADD+DELETE**: `stratio_update_ontology` anade clases nuevas. `stratio_delete_ontology_classes` borra clases especificas (protegido: clases con vistas Published dependientes se saltan automaticamente). No se pueden modificar clases existentes
 - **Nomenclatura de ontologias**: Sin espacios (usar guiones bajos), sin caracteres especiales
+- **Nomenclatura de colecciones**: Sin espacios (usar guiones bajos), sin caracteres especiales — misma convencion que ontologias
 
 ## 4. Workflow de Descubrimiento de Dominio Tecnico
 
@@ -94,6 +97,7 @@ Antes de cualquier operacion, verificar que no exista ya:
 
 | Artefacto | Como detectar | Si ya existe |
 |-----------|--------------|-------------|
+| Coleccion de datos | `stratio_list_technical_domains` → verificar si el dominio ya existe | Si ya existe, informar. Opciones: usar existente / crear nueva con otro nombre |
 | Terminos tecnicos | `stratio_list_domain_tables(domain)` → tablas con descripcion | Informar. Opciones: saltar / regenerar (destructivo) / cancelar |
 | Descripcion de dominio | `stratio_list_technical_domains` → si el dominio tiene descripcion | Informar. Opciones: saltar / regenerar (destructivo) / cancelar |
 | Ontologia | `stratio_list_ontologies` + `stratio_get_ontology_info` | Opciones: ampliar (`update_ontology`) / borrar clases (`delete_ontology_classes`) / crear nueva |

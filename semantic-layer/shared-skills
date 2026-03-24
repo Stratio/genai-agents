@@ -5,3 +5,4 @@ create-business-views
 create-sql-mappings
 create-semantic-terms
 manage-business-terms
+create-data-collection

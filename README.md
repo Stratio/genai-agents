@@ -10,7 +10,7 @@ El repositorio esta orientado principalmente a **OpenCode**, la herramienta open
 |--------|-------------|-------------|---------|
 | **data-analytics** | Agente completo de BI/BA con analisis avanzado, clustering, informes multi-formato (PDF, DOCX, web, PowerPoint) y documentacion del razonamiento | Claude Code, OpenCode, OpenWork | `data-analytics/` |
 | **data-analytics-light** | Agente ligero de BI/BA orientado a analisis en chat, sin generacion de informes formales. Incluye scripts de empaquetado para multiples plataformas | Claude Code, Claude Cowork, claude.ai, OpenCode | `data-analytics-light/` |
-| **semantic-layer** | Agente especializado en construccion y mantenimiento de capas semanticas en Stratio Governance: terminos tecnicos, ontologias, vistas de negocio, SQL mappings, terminos semanticos y business terms | Claude Code, Claude Cowork, claude.ai, OpenCode | `semantic-layer/` |
+| **semantic-layer** | Agente especializado en construccion y mantenimiento de capas semanticas en Stratio Governance: creacion de colecciones de datos (dominios tecnicos), terminos tecnicos, ontologias, vistas de negocio, SQL mappings, terminos semanticos y business terms | Claude Code, Claude Cowork, claude.ai, OpenCode | `semantic-layer/` |
 
 ## Empaquetado
 
@@ -66,6 +66,7 @@ genai-agents/
     shared-skill-create-sql-mappings-{v}.zip
     shared-skill-create-semantic-terms-{v}.zip
     shared-skill-manage-business-terms-{v}.zip
+    shared-skill-create-data-collection-{v}.zip
     genai-agents-sources-{v}.zip                 # Fuentes del repositorio
     genai-agents-{v}.zip                        # ZIP global con todos los anteriores
 
@@ -128,6 +129,7 @@ Si un agente tiene un directorio `output-templates/`, los pack scripts crean `ou
 | `create-sql-mappings` | Crear o actualizar SQL mappings de vistas existentes | semantic-layer |
 | `create-semantic-terms` | Generar o regenerar terminos semanticos de negocio para vistas | semantic-layer |
 | `manage-business-terms` | Crear Business Terms en el diccionario con relaciones a activos de datos | semantic-layer |
+| `create-data-collection` | Buscar tablas y paths en el diccionario de datos tecnico y crear una nueva coleccion (dominio tecnico) | semantic-layer |
 
 Los guides compartidos (documentacion tecnica que las skills referencian) viven en `shared-skill-guides/`:
 

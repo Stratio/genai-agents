@@ -7,7 +7,7 @@ argument-hint: [dominio tecnico (opcional)]
 
 # Skill: Construir Capa Semantica (Pipeline Completo)
 
-Orquesta las 5 fases del pipeline de construccion de la capa semantica de un dominio tecnico. Diagnostica el estado actual, propone un plan de ejecucion y ejecuta cada fase en secuencia.
+Orquesta las 5 fases del pipeline de construccion de la capa semantica de un dominio tecnico. Si el dominio no existe, permite crear una nueva coleccion de datos como paso previo. Diagnostica el estado actual, propone un plan de ejecucion y ejecuta cada fase en secuencia.
 
 **Importante**: Esta skill llama a las tools MCP directamente (inline). NO delega a otras skills — las skills no pueden invocar otras skills programaticamente. Las shared skills de cada fase existen para uso independiente por el usuario; el pipeline las replica de forma integrada.
 
@@ -17,7 +17,26 @@ Para referencia completa de tools y reglas, ver `skills-guides/stratio-semantic-
 
 ### 1. Determinar dominio
 
-Ejecutar `stratio_list_technical_domains` para listar dominios disponibles. Si `$ARGUMENTS` contiene nombre de dominio, validar contra el listado. Si no coincide o no hay argumento, presentar opciones y preguntar al usuario siguiendo la convencion de preguntas al usuario.
+Ejecutar `stratio_list_technical_domains` para listar dominios disponibles.
+
+- Si `$ARGUMENTS` contiene nombre de dominio y coincide con uno existente → usarlo y continuar con el paso 2.
+- Si no coincide o no hay argumento → presentar opciones al usuario siguiendo la convencion de preguntas al usuario:
+  - Lista de dominios existentes (seleccion)
+  - **Crear nueva coleccion de datos**
+
+Si el usuario elige un dominio existente → continuar con el paso 2.
+
+#### 1b. Crear coleccion de datos (si el usuario lo solicita)
+
+1. **Busqueda**: Preguntar terminos de busqueda. Ejecutar `stratio_search_data_dictionary(search_text, search_type?)`. Presentar resultados en tabla (tipo, nombre, metadata_path, data_store, descripcion). Si no hay resultados, ofrecer refinar el termino o cambiar `search_type`. Permitir iteraciones de busqueda acumulando selecciones.
+
+2. **Seleccion**: El usuario selecciona tablas y/o paths (seleccion multiple). Mostrar resumen acumulado por tipo (Tables/Paths). Ofrecer buscar mas o continuar.
+
+3. **Nombre y descripcion**: Proponer `collection_name` (sin espacios, usar underscores) y `description`. El usuario puede editar. Verificar que el nombre no exista en `stratio_list_technical_domains`.
+
+4. **Creacion**: Confirmar con el usuario. Separar seleccion por subtype: Table → `table_metadata_paths`, Path → `path_metadata_paths`. Invocar `stratio_create_data_collection(collection_name, description, table_metadata_paths?, path_metadata_paths?)`. Presentar resultado (tablas insertadas / fallidas). Si hay fallidas, ofrecer reintentar solo las fallidas (max 2 reintentos).
+
+5. **Continuar pipeline**: Usar el nombre de la coleccion recien creada como `domain_name` para el resto del pipeline. Continuar con el paso 2 (diagnostico).
 
 ### 2. Diagnostico completo
 
