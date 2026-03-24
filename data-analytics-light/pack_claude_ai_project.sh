@@ -17,7 +17,7 @@ done
 # --- Nombre: argumento CLI o default ---
 PROJECT_NAME="${ARG_NAME:-data-analytics-light}"
 
-PROJECT_DIR="dist/claude_projects/$PROJECT_NAME"
+PROJECT_DIR="dist/claude_ai_projects/$PROJECT_NAME"
 
 # --- Limpiar si existe ---
 if [ -d "$PROJECT_DIR" ]; then
@@ -203,7 +203,7 @@ echo ""
 # Generar ZIP siempre (CI/CD-friendly, sin interaccion)
 ZIP_NAME="${PROJECT_NAME}.zip"
 (cd "$PROJECT_DIR" && zip -r "../_tmp_${ZIP_NAME}" . -q)
-mv "dist/claude_projects/_tmp_${ZIP_NAME}" "$PROJECT_DIR/${ZIP_NAME}"
+mv "dist/claude_ai_projects/_tmp_${ZIP_NAME}" "$PROJECT_DIR/${ZIP_NAME}"
 ZIP_SIZE=$(du -sh "$PROJECT_DIR/${ZIP_NAME}" | cut -f1)
 echo "  ZIP: $PROJECT_DIR/${ZIP_NAME} ($ZIP_SIZE)"
 

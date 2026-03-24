@@ -6,22 +6,24 @@ MONOREPO_ROOT="$(dirname "$SCRIPT_DIR")"
 cd "$SCRIPT_DIR"
 
 # --- Parsear argumentos CLI ---
-ARG_NAME="" ARG_URL="" ARG_KEY=""
+ARG_NAME="" ARG_GOV_URL="" ARG_GOV_KEY="" ARG_SQL_URL="" ARG_SQL_KEY=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --name)  ARG_NAME="$2"; shift 2 ;;
-    --url)   ARG_URL="$2"; shift 2 ;;
-    --key)   ARG_KEY="$2"; shift 2 ;;
-    *) echo "ERROR: Argumento desconocido: $1"; echo "Uso: $0 [--name NOMBRE] [--url MCP_URL] [--key API_KEY]"; exit 1 ;;
+    --name)    ARG_NAME="$2"; shift 2 ;;
+    --gov-url) ARG_GOV_URL="$2"; shift 2 ;;
+    --gov-key) ARG_GOV_KEY="$2"; shift 2 ;;
+    --sql-url) ARG_SQL_URL="$2"; shift 2 ;;
+    --sql-key) ARG_SQL_KEY="$2"; shift 2 ;;
+    *) echo "ERROR: Argumento desconocido: $1"; echo "Uso: $0 [--name NOMBRE] [--gov-url URL] [--gov-key KEY] [--sql-url URL] [--sql-key KEY]"; exit 1 ;;
   esac
 done
 
 # --- Nombre: argumento CLI o default ---
-COWORK_NAME="${ARG_NAME:-data-analytics-light}"
+COWORK_NAME="${ARG_NAME:-semantic-layer}"
 
 # Validar kebab-case
 if ! echo "$COWORK_NAME" | grep -qE '^[a-z][a-z0-9]*(-[a-z0-9]+)*$'; then
-  echo "ERROR: El nombre debe ser kebab-case (ej: mi-agente, data-analytics-light)."
+  echo "ERROR: El nombre debe ser kebab-case (ej: mi-agente, semantic-layer)."
   exit 1
 fi
 
@@ -45,7 +47,7 @@ mkdir -p "$PLUGIN_BUILD/skills"
 cat > "$PLUGIN_BUILD/.claude-plugin/plugin.json" <<EOF
 {
   "name": "$COWORK_NAME",
-  "description": "BI/BA Analytics Agent (Light)",
+  "description": "Semantic Layer Builder Agent",
   "version": "1.0.0"
 }
 EOF
@@ -139,7 +141,8 @@ done
 
 if [ ${#_GUIDES_MAP[@]} -gt 0 ]; then
   echo "Copiando skills-guides a skills..."
-  for skill_dir in "$PLUGIN_BUILD/skills/analyze" "$PLUGIN_BUILD/skills/explore-data"; do
+  # Copiar guide dentro de la skill que lo declara (stratio-semantic-layer)
+  for skill_dir in "$PLUGIN_BUILD/skills/stratio-semantic-layer"; do
     if [ -d "$skill_dir" ]; then
       for guide_name in "${!_GUIDES_MAP[@]}"; do
         src_type="${_GUIDES_MAP[$guide_name]}"
@@ -156,37 +159,60 @@ if [ ${#_GUIDES_MAP[@]} -gt 0 ]; then
       done
     fi
   done
-  sed -i 's|`skills-guides/stratio-data-tools\.md`|`stratio-data-tools.md`|g' "$PLUGIN_BUILD/skills/"*/SKILL.md 2>/dev/null || true
+  sed -i 's|`skills-guides/stratio-semantic-layer-tools\.md`|`stratio-semantic-layer-tools.md`|g' "$PLUGIN_BUILD/skills/"*/SKILL.md 2>/dev/null || true
 fi
 
 # --- Sustitucion de placeholders ---
 sed -i 's/{{TOOL_PREGUNTAS}}/ (`AskUserQuestion`)/g' "$PLUGIN_BUILD/skills/"*/SKILL.md 2>/dev/null || true
 
-# --- .mcp.json del plugin ---
-if [ -n "$ARG_URL" ] || [ -n "$ARG_KEY" ]; then
-  MCP_URL_VALUE="${ARG_URL:-\$\{MCP_SQL_URL:-http://127.0.0.1:8080/mcp\}}"
-  MCP_KEY_VALUE="${ARG_KEY:-\$\{MCP_SQL_API_KEY:-\}}"
+# --- .mcp.json del plugin (2 servidores: gov + sql) ---
+GOV_URL_VALUE="${ARG_GOV_URL:-\$\{MCP_GOV_URL:-http://127.0.0.1:8080/mcp\}}"
+GOV_KEY_VALUE="${ARG_GOV_KEY:-\$\{MCP_GOV_API_KEY:-\}}"
+SQL_URL_VALUE="${ARG_SQL_URL:-\$\{MCP_SQL_URL:-http://127.0.0.1:8080/mcp\}}"
+SQL_KEY_VALUE="${ARG_SQL_KEY:-\$\{MCP_SQL_API_KEY:-\}}"
+
+if [ -n "$ARG_GOV_URL" ] || [ -n "$ARG_GOV_KEY" ] || [ -n "$ARG_SQL_URL" ] || [ -n "$ARG_SQL_KEY" ]; then
   cat > "$PLUGIN_BUILD/.mcp.json" <<EOF
 {
   "mcpServers": {
-    "sql": {
+    "gov": {
       "type": "http",
-      "url": "$MCP_URL_VALUE",
+      "url": "$GOV_URL_VALUE",
       "headers": {
-        "X-API-Key": "$MCP_KEY_VALUE",
-        "Authorization": "Bearer $MCP_KEY_VALUE"
+        "X-API-Key": "$GOV_KEY_VALUE",
+        "Authorization": "Bearer $GOV_KEY_VALUE"
       },
       "allowedTools": [
-        "stratio_list_business_domains",
+        "stratio_list_ontologies",
+        "stratio_get_ontology_info",
+        "stratio_create_ontology",
+        "stratio_update_ontology",
+        "stratio_create_technical_terms",
+        "stratio_create_business_views",
+        "stratio_create_sql_mappings",
+        "stratio_create_semantic_terms",
+        "stratio_create_business_term",
+        "stratio_list_business_asset_types",
+        "stratio_list_technical_domain_concepts",
+        "stratio_create_collection_description",
+        "stratio_delete_ontology_classes",
+        "stratio_delete_business_views"
+      ]
+    },
+    "sql": {
+      "type": "http",
+      "url": "$SQL_URL_VALUE",
+      "headers": {
+        "X-API-Key": "$SQL_KEY_VALUE",
+        "Authorization": "Bearer $SQL_KEY_VALUE"
+      },
+      "allowedTools": [
+        "stratio_list_technical_domains",
         "stratio_list_domain_tables",
         "stratio_get_tables_details",
         "stratio_get_table_columns_details",
-        "stratio_generate_sql",
-        "stratio_query_data",
-        "stratio_search_domain_knowledge",
-        "stratio_execute_sql",
-        "stratio_profile_data",
-        "stratio_propose_knowledge"
+        "stratio_list_business_domains",
+        "stratio_search_domain_knowledge"
       ]
     }
   }
@@ -196,6 +222,30 @@ else
   cat > "$PLUGIN_BUILD/.mcp.json" <<'EOF'
 {
   "mcpServers": {
+    "gov": {
+      "type": "http",
+      "url": "${MCP_GOV_URL:-http://127.0.0.1:8080/mcp}",
+      "headers": {
+        "X-API-Key": "${MCP_GOV_API_KEY:-}",
+        "Authorization": "Bearer ${MCP_GOV_API_KEY:-}"
+      },
+      "allowedTools": [
+        "stratio_list_ontologies",
+        "stratio_get_ontology_info",
+        "stratio_create_ontology",
+        "stratio_update_ontology",
+        "stratio_create_technical_terms",
+        "stratio_create_business_views",
+        "stratio_create_sql_mappings",
+        "stratio_create_semantic_terms",
+        "stratio_create_business_term",
+        "stratio_list_business_asset_types",
+        "stratio_list_technical_domain_concepts",
+        "stratio_create_collection_description",
+        "stratio_delete_ontology_classes",
+        "stratio_delete_business_views"
+      ]
+    },
     "sql": {
       "type": "http",
       "url": "${MCP_SQL_URL:-http://127.0.0.1:8080/mcp}",
@@ -204,16 +254,12 @@ else
         "Authorization": "Bearer ${MCP_SQL_API_KEY:-}"
       },
       "allowedTools": [
-        "stratio_list_business_domains",
+        "stratio_list_technical_domains",
         "stratio_list_domain_tables",
         "stratio_get_tables_details",
         "stratio_get_table_columns_details",
-        "stratio_generate_sql",
-        "stratio_query_data",
-        "stratio_search_domain_knowledge",
-        "stratio_execute_sql",
-        "stratio_profile_data",
-        "stratio_propose_knowledge"
+        "stratio_list_business_domains",
+        "stratio_search_domain_knowledge"
       ]
     }
   }
@@ -230,7 +276,7 @@ echo "Generando plugin ZIP..."
 # Paso 2: Generar CLAUDE.md desde AGENTS.md
 # ============================================================
 echo "Generando CLAUDE.md desde AGENTS.md..."
-sed 's|`skills-guides/stratio-data-tools\.md`|`skills/analyze/stratio-data-tools.md`|g' AGENTS.md > "$COWORK_DIR/CLAUDE.md"
+sed 's|`skills-guides/stratio-semantic-layer-tools\.md`|`skills/stratio-semantic-layer/stratio-semantic-layer-tools.md`|g' AGENTS.md > "$COWORK_DIR/CLAUDE.md"
 sed -i 's/{{TOOL_PREGUNTAS}}/ (`AskUserQuestion`)/g' "$COWORK_DIR/CLAUDE.md"
 
 # ============================================================
