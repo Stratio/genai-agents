@@ -35,11 +35,15 @@ while IFS= read -r module; do
     echo "    -> dist/${module}-opencode-${VERSION}.zip"
   fi
 
-  echo "  [$module] Empaquetando opencode bundle (agente + shared skills por separado)..."
-  bash "$REPO_ROOT/pack_opencode_bundle.sh" --agent "$module" --name "$module"
-  if [[ -f "$DIST_DIR/${module}-opencode-bundle.zip" ]]; then
-    mv "$DIST_DIR/${module}-opencode-bundle.zip" "$DIST_DIR/${module}-opencode-bundle-${VERSION}.zip"
-    echo "    -> dist/${module}-opencode-bundle-${VERSION}.zip"
+  if [[ "$module" != "data-analytics-light" ]]; then
+    echo "  [$module] Empaquetando Stratio cowork (agente + mcps + shared skills por separado)..."
+    bash "$REPO_ROOT/pack_stratio_cowork.sh" --agent "$module" --name "$module" || {
+      echo "  WARN: pack_stratio_cowork.sh falló para $module — continuando"
+    }
+    if [[ -f "$DIST_DIR/${module}-opencode-bundle.zip" ]]; then
+      mv "$DIST_DIR/${module}-opencode-bundle.zip" "$DIST_DIR/${module}-opencode-bundle-${VERSION}.zip"
+      echo "    -> dist/${module}-opencode-bundle-${VERSION}.zip"
+    fi
   fi
 
 done < "$REPO_ROOT/release-modules"

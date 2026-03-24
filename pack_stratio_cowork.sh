@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# pack_opencode_bundle.sh — Genera un ZIP compuesto con dos sub-ZIPs para OpenCode:
+# pack_stratio_cowork.sh — Genera un ZIP compuesto con dos sub-ZIPs para OpenCode:
 #   1. {name}-opencode-agent.zip    → agente sin las shared skills declaradas
 #   2. {name}-shared-skills.zip       → shared skills del agente (autocontenidas)
-#   Resultado: dist/{name}-opencode-bundle.zip
+#   Resultado: dist/{name}-stratio-cowork.zip
 #
-# Uso: bash pack_opencode_bundle.sh --agent <path> [--name <nombre-kebab>]
+# Uso: bash pack_stratio_cowork.sh --agent <path> [--name <nombre-kebab>]
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -21,14 +21,14 @@ while [[ $# -gt 0 ]]; do
     --agent) AGENT_PATH="$2"; shift 2 ;;
     --name)  AGENT_NAME="$2"; shift 2 ;;
     *) echo "ERROR: argumento desconocido: $1" >&2
-       echo "Uso: bash pack_opencode_bundle.sh --agent <path> [--name <nombre-kebab>]" >&2
+       echo "Uso: bash pack_stratio_cowork.sh --agent <path> [--name <nombre-kebab>]" >&2
        exit 1 ;;
   esac
 done
 
 if [[ -z "$AGENT_PATH" ]]; then
   echo "ERROR: --agent es obligatorio" >&2
-  echo "Uso: bash pack_opencode_bundle.sh --agent <path> [--name <nombre-kebab>]" >&2
+  echo "Uso: bash pack_stratio_cowork.sh --agent <path> [--name <nombre-kebab>]" >&2
   exit 1
 fi
 
@@ -84,7 +84,7 @@ echo "    [1] ${#SHARED_SKILLS[@]} shared skill(s) detectadas: ${SHARED_SKILLS[*
 # Fase 2 — Empaquetar agente completo con pack_opencode.sh
 # ---------------------------------------------------------------------------
 echo "    [2] Ejecutando pack_opencode.sh..."
-bash "$MONOREPO_ROOT/pack_opencode.sh" --agent "$AGENT_PATH" --name "$AGENT_NAME"
+bash "$MONOREPO_ROOT/pack_opencode.sh" --agent "$AGENT_ABS" --name "$AGENT_NAME"
 
 STAGING_FULL="$AGENT_ABS/dist/opencode/$AGENT_NAME"
 
@@ -209,11 +209,11 @@ fi
 # Fase 6 — ZIP contenedor
 # ---------------------------------------------------------------------------
 mkdir -p "$MONOREPO_ROOT/dist"
-BUNDLE_ZIP="$MONOREPO_ROOT/dist/${AGENT_NAME}-opencode-bundle.zip"
+BUNDLE_ZIP="$MONOREPO_ROOT/dist/${AGENT_NAME}-stratio-cowork.zip"
 rm -f "$BUNDLE_ZIP"
 (cd "$BUNDLE_STAGING" && zip -r "$BUNDLE_ZIP" . -q)
 BUNDLE_SIZE=$(du -sh "$BUNDLE_ZIP" | cut -f1)
-echo "    [6] Bundle generado: dist/${AGENT_NAME}-opencode-bundle.zip ($BUNDLE_SIZE)"
+echo "    [6] Bundle generado: dist/${AGENT_NAME}-stratio-cowork.zip ($BUNDLE_SIZE)"
 
 # ---------------------------------------------------------------------------
 # Fase 7 — Verificación de integridad
@@ -276,7 +276,7 @@ if [[ "$ERRORS" -gt 0 ]]; then
   exit 1
 fi
 
-echo "==> OK — dist/${AGENT_NAME}-opencode-bundle.zip"
+echo "==> OK — dist/${AGENT_NAME}-stratio-cowork.zip"
 echo "    Contiene:"
 echo "      - $ZIP_NO_SHARED  (agente sin shared skills)"
 echo "      - $ZIP_SHARED  (${#SHARED_SKILLS[@]} shared skill(s))"
