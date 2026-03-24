@@ -196,6 +196,16 @@ ZIP_SIZE=$(du -sh "$BUNDLE_STAGING/$ZIP_SHARED" | cut -f1)
 echo "    [5] $ZIP_SHARED generado ($N_SKILLS_PACKED skill(s), $N_GUIDES_PACKED guide(s)) ($ZIP_SIZE)"
 
 # ---------------------------------------------------------------------------
+# Fase 5.5 — Incluir fichero mcps (si existe en el agente)
+# ---------------------------------------------------------------------------
+if [[ -f "$AGENT_ABS/mcps" ]]; then
+  cp "$AGENT_ABS/mcps" "$BUNDLE_STAGING/mcps"
+  echo "    [5.5] Fichero mcps incluido"
+else
+  echo "    [5.5] Sin fichero mcps — omitido"
+fi
+
+# ---------------------------------------------------------------------------
 # Fase 6 — ZIP contenedor
 # ---------------------------------------------------------------------------
 mkdir -p "$MONOREPO_ROOT/dist"
@@ -253,6 +263,14 @@ if [[ "$SKILLS_REFS" -gt 0 ]]; then
   ERRORS=$((ERRORS + 1))
 fi
 
+# Si el agente declara mcps, debe estar en el bundle
+if [[ -f "$AGENT_ABS/mcps" ]]; then
+  if ! echo "$BUNDLE_CONTENTS" | grep -q "^mcps$"; then
+    echo "    ERROR: fichero mcps no encontrado en el bundle" >&2
+    ERRORS=$((ERRORS + 1))
+  fi
+fi
+
 if [[ "$ERRORS" -gt 0 ]]; then
   echo "==> FALLO: $ERRORS error(es) de verificación" >&2
   exit 1
@@ -262,3 +280,4 @@ echo "==> OK — dist/${AGENT_NAME}-opencode-bundle.zip"
 echo "    Contiene:"
 echo "      - $ZIP_NO_SHARED  (agente sin shared skills)"
 echo "      - $ZIP_SHARED  (${#SHARED_SKILLS[@]} shared skill(s))"
+[[ -f "$AGENT_ABS/mcps" ]] && echo "      - mcps  (listado de MCPs)"
