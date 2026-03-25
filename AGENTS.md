@@ -55,7 +55,7 @@ Agente completo de BI/BA: consulta de datos gobernados via MCP, analisis con Pyt
 Agente ligero de BI/BA: mismo motor analitico pero orientado a conversacion. Sin generacion de informes formales — el output principal es el chat. Incluye scripts de empaquetado para Claude AI Projects y Claude Cowork.
 
 ### semantic-layer
-Agente especializado en construccion y mantenimiento de capas semanticas en Stratio Governance. Orquesta la creacion de colecciones de datos (dominios tecnicos), terminos tecnicos, ontologias, vistas de negocio, SQL mappings, terminos semanticos y business terms via MCPs de gobernanza. No ejecuta queries de datos ni genera ficheros — su output es interaccion con tools MCP + resumenes en chat. Puede leer ficheros locales del usuario para enriquecer la planificacion.
+Agente especializado en construccion y mantenimiento de capas semanticas en Stratio Governance. Orquesta la creacion de colecciones de datos (dominios tecnicos), terminos tecnicos, ontologias, vistas de negocio, SQL mappings, publicacion de vistas, terminos semanticos y business terms via MCPs de gobernanza. No ejecuta queries de datos ni genera ficheros — su output es interaccion con tools MCP + resumenes en chat. Puede leer ficheros locales del usuario para enriquecer la planificacion.
 
 ## Scripts de empaquetado (raiz)
 

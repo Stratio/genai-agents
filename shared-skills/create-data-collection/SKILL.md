@@ -14,7 +14,7 @@ Busca tablas y paths en el diccionario de datos tecnico y crea una nueva colecci
 |------|----------|-----------|
 | `search_data_dictionary(search_text, search_type?)` | sql | Buscar tablas y paths en el diccionario. `search_type`: `'tables'`, `'paths'` o `'both'` (defecto). Resultados ordenados por relevancia. Cada resultado: `metadata_path`, `name`, `subtype` (Table/Path), `alias?`, `data_store?`, `description?` |
 | `create_data_collection(collection_name, description, table_metadata_paths?, path_metadata_paths?)` | gov | Crear coleccion + asociar tablas/paths + refrescar vista tecnica. `collection_name` sin espacios (usar underscores). Al menos una de las dos listas obligatoria. Los `metadata_path` provienen de resultados de `search_data_dictionary` |
-| `list_technical_domains` | sql | Verificar que el nombre de coleccion no exista ya |
+| `list_technical_domains(refresh?)` | sql | Verificar que el nombre no exista ya. Tras crear la coleccion, llamar con `refresh=true` para precalentar la cache |
 
 **Reglas clave**: `collection_name` sin espacios ni caracteres especiales (usar underscores) — misma convencion que ontologias. Al menos un `table_metadata_paths` o `path_metadata_paths` requerido. Los `metadata_path` se obtienen de los resultados de `search_data_dictionary`. Confirmacion explicita antes de crear. La busqueda es read-only e idempotente; la creacion no es idempotente.
 
@@ -84,7 +84,11 @@ Presentar resultado: `tables_inserted`, `tables_failed`, `message`.
 
 Si hay fallidas: informar cuales y ofrecer reintentar solo las fallidas (maximo 2 reintentos).
 
-### 6. Resumen y siguiente paso
+### 6. Precalentar cache
+
+Tras una creacion exitosa, ejecutar `list_technical_domains(refresh=true)` para forzar el refresco de la cache. No es necesario esperar ni reintentar — el objetivo es que cuando el usuario invoque `/build-semantic-layer` a continuacion, el dominio ya este visible sin esperas. Si la llamada falla, ignorar el error (no es critico).
+
+### 7. Resumen y siguiente paso
 
 Presentar resumen de la coleccion creada con el resultado final.
 

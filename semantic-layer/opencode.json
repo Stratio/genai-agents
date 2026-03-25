@@ -5,7 +5,7 @@
     "stratio_gov": {
       "type": "remote",
       "url": "{env:MCP_GOV_URL}",
-      "timeout": 300000,
+      "timeout": 600000,
       "headers": {
         "Authorization": "Bearer {env:MCP_GOV_API_KEY}",
         "X-API-Key": "{env:MCP_GOV_API_KEY}"

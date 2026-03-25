@@ -8,7 +8,7 @@
 
 | Paso | Herramienta MCP | Proposito |
 |------|----------------|-----------|
-| 1 | `list_business_domains` | Descubrir dominios disponibles |
+| 1 | `list_business_domains(refresh?)` | Descubrir dominios disponibles. `refresh` (boolean, default false): bypass de cache — usar si un dominio recien publicado no aparece |
 | 2 | `list_domain_tables` | Conocer tablas del dominio |
 | 3 | `get_tables_details` | Entender reglas de negocio y contexto |
 | 4 | `get_table_columns_details` | Conocer columnas, tipos y significado |

@@ -14,7 +14,7 @@ Genera o regenera terminos semanticos de negocio en el glosario de Stratio Gover
 | Tool | Servidor | Proposito |
 |------|----------|-----------|
 | `list_technical_domains` | sql | Descubrir dominios tecnicos disponibles |
-| `list_technical_domain_concepts(domain)` | gov | Listar vistas con estado de terminos semanticos y mappings |
+| `list_technical_domain_concepts(domain)` | gov | Listar vistas con estado de gobernanza, terminos semanticos y mappings |
 | `create_semantic_terms(domain, view_names?, user_instructions?, regenerate?)` | gov | Crear terminos semanticos. Con `regenerate=true`: DESTRUCTIVO, borra y recrea |
 
 **Reglas clave**: `domain_name` inmutable. Confirmacion obligatoria para `regenerate=true`. Ofrecer `user_instructions` antes de invocar. Pre-requisito: las vistas deben tener SQL mapping antes de generar terminos semanticos.
@@ -23,20 +23,20 @@ Genera o regenera terminos semanticos de negocio en el glosario de Stratio Gover
 
 ### 1. Determinar dominio
 
-Si `$ARGUMENTS` contiene nombre de dominio, validar contra `list_technical_domains`. Si no, listar y preguntar al usuario siguiendo la convencion de preguntas al usuario.
+Si `$ARGUMENTS` contiene nombre de dominio, validar contra `list_technical_domains`. Si no coincide, reintentar con `list_technical_domains(refresh=true)` por si es una coleccion recien creada. Si ahora coincide, continuar. Si no coincide o no hay argumento, listar y preguntar al usuario siguiendo la convencion de preguntas al usuario.
 
 ### 2. Evaluar estado
 
-Ejecutar `list_technical_domain_concepts(domain)` para obtener el listado de vistas con su estado de terminos semanticos y mappings.
+Ejecutar `list_technical_domain_concepts(domain)` para obtener el listado de vistas con su estado de gobernanza, mappings y terminos semanticos.
 
 Presentar resumen:
 ```
 ## Terminos Semanticos — [domain_name]
-| Vista | Mapping | Terminos semanticos |
-|-------|---------|---------------------|
-| Vista1 | ✓ | ✓ |
-| Vista2 | ✓ | ✗ |
-| Vista3 | ✗ | — |
+| Vista | Estado | Mapping | Terminos semanticos |
+|-------|--------|---------|---------------------|
+| Vista1 | Draft | ✓ | ✓ |
+| Vista2 | Pending Publish | ✓ | ✗ |
+| Vista3 | Draft | ✗ | — |
 ```
 
 ### 3. Verificar pre-requisito
@@ -74,4 +74,4 @@ Si hay errores, reintentar la vista fallida con `user_instructions` mejoradas (m
 Basado en la respuesta de la tool:
 - Terminos creados/regenerados
 - Errores si los hubo
-- Siguiente paso sugerido: "La capa semantica esta lista para revision en la UI de Governance. Puedes crear business terms con `/manage-business-terms` para enriquecer el diccionario"
+- Siguiente paso sugerido: "La capa semantica esta lista para revision. Si las vistas aun estan en estado Draft, puedes enviarlas a Pending Publish pidiendo publicarlas directamente. Puedes crear business terms con `/manage-business-terms` para enriquecer el diccionario"

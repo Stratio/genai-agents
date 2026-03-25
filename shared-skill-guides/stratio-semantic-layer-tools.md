@@ -18,33 +18,35 @@
 | **Terminos tecnicos** | `create_technical_terms(domain, table_names?, user_instructions?, regenerate?)` | Generar descripciones de tablas y columnas. Salta existentes. Con `regenerate=true`: DESTRUCTIVO, borra y recrea |
 | **Vistas de negocio** | `create_business_views(domain, ontology, class_names?, regenerate?)` | Crear vistas + mappings. Salta existentes. Con `regenerate=true`: DESTRUCTIVO, borra y recrea |
 | | `delete_business_views(domain, view_names)` | DESTRUCTIVO: borrar vistas especificas sin recrear (protegido por Published) |
+| | `publish_business_views(domain, view_names?)` | Publicar vistas (Draft → Pending Publish). Sin `view_names`, publica todas. Devuelve `published`, `failed` (transicion no permitida) y `not_found`. Idempotente |
 | **Mappings SQL** | `create_sql_mappings(domain, view_names?, user_instructions?)` | Crear o actualizar mappings SQL de vistas existentes |
 | **Terminos semanticos** | `create_semantic_terms(domain, view_names?, user_instructions?, regenerate?)` | Generar terminos semanticos. Con `regenerate=true`: DESTRUCTIVO, borra y recrea |
 | **Business terms** | `create_business_term(domain, name, description, type, related_assets)` | Crear business term en el diccionario con relaciones a activos |
 | | `list_business_asset_types()` | Listar tipos de activos disponibles para business terms |
 | **Colecciones** | `create_data_collection(collection_name, description, table_metadata_paths?, path_metadata_paths?)` | Crear coleccion de datos (dominio tecnico) con tablas y paths. `collection_name` sin espacios (usar underscores). Refresca vista tecnica automaticamente |
-| **Utilidad** | `list_technical_domain_concepts(domain)` | Listar vistas de negocio existentes con estado de mappings y terminos semanticos |
+| **Utilidad** | `list_technical_domain_concepts(domain)` | Listar vistas de negocio existentes con estado de gobernanza (Draft/Pending Publish/Published), mappings y terminos semanticos |
 | | `create_collection_description(domain, user_instructions?)` | Generar SOLO la descripcion del dominio/coleccion (sin tocar tablas) |
 
 ### Servidor `sql` (exploracion de dominios)
 
 | Herramienta MCP | Proposito |
 |----------------|-----------|
-| `list_technical_domains` | Descubrir dominios tecnicos disponibles (incluye descripcion si existe) |
+| `list_technical_domains(refresh?)` | Descubrir dominios tecnicos disponibles (incluye descripcion si existe). `refresh` (boolean, default false): bypass de cache — usar tras crear o eliminar colecciones de datos |
 | `list_domain_tables(domain)` | Listar tablas de un dominio con sus descripciones (indica si tienen terminos tecnicos) |
 | `get_tables_details(domain, tables)` | Detalle de tablas: reglas de negocio, contexto |
 | `get_table_columns_details(domain, table)` | Columnas de una tabla: nombres, tipos, descripciones de negocio |
-| `list_business_domains` | Listar dominios semanticos publicados (prefijo `semantic_`) |
+| `list_business_domains(refresh?)` | Listar dominios semanticos publicados (prefijo `semantic_`). `refresh` (boolean, default false): bypass de cache — usar cuando un dominio semantico recien publicado no aparezca |
 | `search_domain_knowledge(question, domain)` | Buscar conocimiento en dominios tecnicos y semanticos |
 | `search_data_dictionary(search_text, search_type?)` | Buscar tablas y paths en el diccionario de datos tecnico. `search_type`: `'tables'`, `'paths'` o `'both'` (defecto). Resultados ordenados por relevancia, con `metadata_path`, `name`, `subtype` (Table/Path), `alias`, `data_store`, `description` |
 
 ## 3. Reglas Estrictas
 
 - **INMUTABILIDAD de `domain_name`**: El parametro `domain_name` en TODAS las llamadas MCP debe ser **exactamente** el valor devuelto por `list_technical_domains`. NUNCA traducirlo, interpretarlo, parafrasearlo ni inferirlo. Si el dominio se llama `AnaliticaBanca`, usar `"AnaliticaBanca"` — no `"Banca Particulares"`, no `"Analítica Banca"`, no `"banca"`. Si hay duda sobre el nombre exacto, volver a llamar a `list_technical_domains` para confirmarlo
-- **Dominios tecnicos para creacion**: Las tools de creacion (`create_technical_terms`, `create_ontology`, `create_business_views`, `create_sql_mappings`, `create_semantic_terms`) usan dominios tecnicos. Los dominios semanticos (`semantic_*`) son el RESULTADO del proceso, no la entrada
+- **Dominios tecnicos para creacion y publicacion**: Las tools de creacion (`create_technical_terms`, `create_ontology`, `create_business_views`, `create_sql_mappings`, `create_semantic_terms`) y publicacion (`publish_business_views`) usan dominios tecnicos. Los dominios semanticos (`semantic_*`) son el RESULTADO del proceso, no la entrada
 - **Dominios semanticos para exploracion**: `list_business_domains` y `search_domain_knowledge` permiten explorar capas semanticas ya publicadas
 - **`user_instructions` siempre ofrecido**: Antes de invocar cualquier tool que acepte `user_instructions`, ofrecer al usuario la oportunidad de aportar contexto adicional. El agente puede **leer ficheros locales** del usuario (documentacion, glosarios, especificaciones, CSVs, ontologias .owl/.ttl) para extraer informacion relevante y pasarla como contexto. Preguntar si tiene ficheros o contexto de dominio que quiera aportar. No es bloqueante — si el usuario no aporta, continuar sin el parametro. **No sugerir opciones que la tool controla internamente** (idioma, formato de salida) — centrarse en contexto de dominio, definiciones de negocio y reglas especificas
 - **Operaciones destructivas (`regenerate=true`, `delete_*`)**: SIEMPRE confirmacion explicita del usuario con advertencia clara de que se pierde. Patron: detectar existencia → informar que se pierde → preguntar (saltar/ejecutar/cancelar) → confirmacion adicional para la accion destructiva
+- **Publicacion de vistas (`publish_business_views`)**: Confirmar con el usuario listando las vistas que se van a publicar. Verificar estado previo con `list_technical_domain_concepts`. No es destructiva ni requiere confirmacion de tipo "destructiva", pero es un cambio de estado de gobernanza que el usuario debe aprobar. Presentar resultado: vistas publicadas + fallidas + no encontradas
 - **Ontologias son ADD+DELETE**: `update_ontology` anade clases nuevas. `delete_ontology_classes` borra clases especificas (protegido: clases con vistas Published dependientes se saltan automaticamente). No se pueden modificar clases existentes
 - **Nomenclatura de ontologias**: Sin espacios (usar guiones bajos), sin caracteres especiales
 - **Nomenclatura de colecciones**: Sin espacios (usar guiones bajos), sin caracteres especiales — misma convencion que ontologias
@@ -62,6 +64,8 @@ Si el usuario proporciona un dominio:
 - Si no coincide, preguntar al usuario cual dominio explorar mostrando la lista
 
 Si no hay dominio claro, preguntar al usuario cual le interesa (presentar dominios como opciones seleccionables).
+
+Si el usuario indica que acaba de crear una coleccion y el dominio no aparece en la lista, reintentar con `list_technical_domains(refresh=true)` para bypass de cache antes de concluir que no existe.
 
 ### 4.2 Explorar Tablas
 
@@ -85,7 +89,7 @@ Lanzar 4.3 en paralelo cuando sean sobre tablas independientes.
 
 Cuando una capa semantica generada se aprueba en la UI de Stratio Governance, se publica como un nuevo dominio de negocio con prefijo `semantic_` (ej: `semantic_mi_dominio`).
 
-- `list_business_domains` → buscar dominios con prefijo `semantic_`
+- `list_business_domains` → buscar dominios con prefijo `semantic_`. Si un dominio semantico recien publicado no aparece, reintentar con `list_business_domains(refresh=true)`
 - `list_domain_tables(domain)` → tablas del dominio semantico publicado
 - `search_domain_knowledge(question, domain)` → buscar conocimiento en dominio tecnico o semantico
 
@@ -97,11 +101,12 @@ Antes de cualquier operacion, verificar que no exista ya:
 
 | Artefacto | Como detectar | Si ya existe |
 |-----------|--------------|-------------|
-| Coleccion de datos | `list_technical_domains` → verificar si el dominio ya existe | Si ya existe, informar. Opciones: usar existente / crear nueva con otro nombre |
+| Coleccion de datos | `list_technical_domains` → verificar si el dominio ya existe. Si se acaba de crear y no aparece, usar `refresh=true` | Si ya existe, informar. Opciones: usar existente / crear nueva con otro nombre |
 | Terminos tecnicos | `list_domain_tables(domain)` → tablas con descripcion | Informar. Opciones: saltar / regenerar (destructivo) / cancelar |
 | Descripcion de dominio | `list_technical_domains` → si el dominio tiene descripcion | Informar. Opciones: saltar / regenerar (destructivo) / cancelar |
 | Ontologia | `list_ontologies` + `get_ontology_info` | Opciones: ampliar (`update_ontology`) / borrar clases (`delete_ontology_classes`) / crear nueva |
 | Vistas de negocio | `list_technical_domain_concepts(domain)` | Informar vistas existentes. Opciones: saltar / borrar especificas (`delete_business_views`) / regenerar (`create_business_views(regenerate=true)`) |
+| Publicacion de vistas | `list_technical_domain_concepts(domain)` → estado de cada vista | Si ya Pending Publish o Published, informar. Solo las vistas en Draft se pueden publicar |
 | SQL Mappings | `list_technical_domain_concepts(domain)` → estado de mapping por vista | `create_sql_mappings` sobrescribe mappings existentes |
 | Terminos semanticos | `list_technical_domain_concepts(domain)` → estado de terminos por vista | Informar. Opciones: saltar / regenerar (destructivo) / cancelar |
 
@@ -117,4 +122,4 @@ Antes de cualquier operacion, verificar que no exista ya:
 
 - **Tools de lectura** (`list_*`, `get_*`, `search_*`): Lanzar en paralelo siempre que sean independientes
 - **Creacion**: Secuencial dentro de una misma fase
-- **Entre fases**: Secuencia estricta obligatoria: terminos tecnicos → ontologia → vistas de negocio → mappings SQL → terminos semanticos. Cada fase depende de los artefactos de la anterior
+- **Entre fases**: Secuencia estricta obligatoria: terminos tecnicos → ontologia → vistas de negocio → mappings SQL → (publicacion opcional) → terminos semanticos. Cada fase depende de los artefactos de la anterior. La publicacion puede hacerse tras completar mappings o en cualquier momento posterior
