@@ -175,45 +175,23 @@ if [ -n "$ARG_GOV_URL" ] || [ -n "$ARG_GOV_KEY" ] || [ -n "$ARG_SQL_URL" ] || [ 
   cat > "$PLUGIN_BUILD/.mcp.json" <<EOF
 {
   "mcpServers": {
-    "gov": {
+    "stratio_gov": {
       "type": "http",
       "url": "$GOV_URL_VALUE",
       "headers": {
         "X-API-Key": "$GOV_KEY_VALUE",
         "Authorization": "Bearer $GOV_KEY_VALUE"
       },
-      "allowedTools": [
-        "stratio_list_ontologies",
-        "stratio_get_ontology_info",
-        "stratio_create_ontology",
-        "stratio_update_ontology",
-        "stratio_create_technical_terms",
-        "stratio_create_business_views",
-        "stratio_create_sql_mappings",
-        "stratio_create_semantic_terms",
-        "stratio_create_business_term",
-        "stratio_list_business_asset_types",
-        "stratio_list_technical_domain_concepts",
-        "stratio_create_collection_description",
-        "stratio_delete_ontology_classes",
-        "stratio_delete_business_views"
-      ]
+      "allowedTools": ["*"]
     },
-    "sql": {
+    "stratio_data": {
       "type": "http",
       "url": "$SQL_URL_VALUE",
       "headers": {
         "X-API-Key": "$SQL_KEY_VALUE",
         "Authorization": "Bearer $SQL_KEY_VALUE"
       },
-      "allowedTools": [
-        "stratio_list_technical_domains",
-        "stratio_list_domain_tables",
-        "stratio_get_tables_details",
-        "stratio_get_table_columns_details",
-        "stratio_list_business_domains",
-        "stratio_search_domain_knowledge"
-      ]
+      "allowedTools": ["*"]
     }
   }
 }
@@ -222,45 +200,23 @@ else
   cat > "$PLUGIN_BUILD/.mcp.json" <<'EOF'
 {
   "mcpServers": {
-    "gov": {
+    "stratio_gov": {
       "type": "http",
       "url": "${MCP_GOV_URL:-http://127.0.0.1:8080/mcp}",
       "headers": {
         "X-API-Key": "${MCP_GOV_API_KEY:-}",
         "Authorization": "Bearer ${MCP_GOV_API_KEY:-}"
       },
-      "allowedTools": [
-        "stratio_list_ontologies",
-        "stratio_get_ontology_info",
-        "stratio_create_ontology",
-        "stratio_update_ontology",
-        "stratio_create_technical_terms",
-        "stratio_create_business_views",
-        "stratio_create_sql_mappings",
-        "stratio_create_semantic_terms",
-        "stratio_create_business_term",
-        "stratio_list_business_asset_types",
-        "stratio_list_technical_domain_concepts",
-        "stratio_create_collection_description",
-        "stratio_delete_ontology_classes",
-        "stratio_delete_business_views"
-      ]
+      "allowedTools": ["*"]
     },
-    "sql": {
+    "stratio_data": {
       "type": "http",
       "url": "${MCP_SQL_URL:-http://127.0.0.1:8080/mcp}",
       "headers": {
         "X-API-Key": "${MCP_SQL_API_KEY:-}",
         "Authorization": "Bearer ${MCP_SQL_API_KEY:-}"
       },
-      "allowedTools": [
-        "stratio_list_technical_domains",
-        "stratio_list_domain_tables",
-        "stratio_get_tables_details",
-        "stratio_get_table_columns_details",
-        "stratio_list_business_domains",
-        "stratio_search_domain_knowledge"
-      ]
+      "allowedTools": ["*"]
     }
   }
 }

@@ -17,9 +17,9 @@ Esta guia define el workflow completo para realizar un analisis de Business Inte
 ### 1.1 Triage rapido
 
 Si la peticion se resuelve con una sola llamada MCP (ver Fase 0), responder directamente:
-- Definiciones/conceptos → `stratio_search_domain_knowledge` → chat
-- Estructura/columnas → `stratio_list_domain_tables` / `stratio_get_table_columns_details` → chat
-- Dato puntual → `stratio_query_data` → chat
+- Definiciones/conceptos → `search_domain_knowledge` → chat
+- Estructura/columnas → `list_domain_tables` / `get_table_columns_details` → chat
+- Dato puntual → `query_data` → chat
 - En estos casos, NO continuar con el resto del workflow
 
 Si la peticion requiere analisis (cruce de datos, hipotesis, visualizaciones, multiples metricas), continuar con seccion 2.
@@ -32,7 +32,7 @@ Leer y seguir `skills-guides/stratio-data-tools.md` sec 4 para los pasos de desc
 
 Antes de preguntar al usuario y planificar metricas, entender la realidad de los datos:
 
-1. **Profiling**: Ejecutar `stratio_profile_data` sobre las tablas clave identificadas en el paso 2. Seguir la mecanica y umbrales adaptativos de `skills-guides/stratio-data-tools.md` sec 5
+1. **Profiling**: Ejecutar `profile_data` sobre las tablas clave identificadas en el paso 2. Seguir la mecanica y umbrales adaptativos de `skills-guides/stratio-data-tools.md` sec 5
 2. **Evaluar calidad**:
    - **Completitud**: % de nulos por columna. Marcar columnas con >50% nulos como limitacion
    - **Rango temporal**: Verificar que los datos cubren el periodo que el usuario necesita
@@ -126,14 +126,14 @@ Para cada KPI, documentar:
 **Benchmark Discovery** — Escala segun profundidad (ver matriz de activacion):
 - **Rapido**: No buscar activamente. Usar comparacion temporal natural si la query ya incluye dimension tiempo
 - **Estandar**: Best-effort silencioso:
-  1. `stratio_search_domain_knowledge("target/objetivo de [nombre_KPI]", domain)`
+  1. `search_domain_knowledge("target/objetivo de [nombre_KPI]", domain)`
   2. Query MCP adicional para mismo KPI en periodo T-1
   3. Si no hay referencia externa: media/mediana como referencia interna
   Sin benchmark → reportar el dato normalmente
 - **Profundo**: Pasos 1-3 + tendencia si >6 puntos temporales + preguntar al usuario
 
 ### 5.4 Preguntas de datos
-Lista de preguntas en lenguaje natural para `stratio_query_data`. NUNCA escribir SQL.
+Lista de preguntas en lenguaje natural para `query_data`. NUNCA escribir SQL.
 
 Para buenas practicas de formulacion y estrategia de queries (orden de planificacion, ejecucion en paralelo), ver `skills-guides/stratio-data-tools.md` sec 9.
 
@@ -180,7 +180,7 @@ Presentar plan completo al usuario y solicitar aprobacion antes de ejecutar
 ## 6. Ejecucion
 
 ### 6.0 Obtencion de datos
-- Usar `stratio_query_data(data_question=..., domain_name=..., output_format="dict")` para cada pregunta de datos. **Lanzar en paralelo** todas las queries independientes definidas en el plan (paso 5.4). Solo serializar si una query necesita el resultado de otra para formularse
+- Usar `query_data(data_question=..., domain_name=..., output_format="dict")` para cada pregunta de datos. **Lanzar en paralelo** todas las queries independientes definidas en el plan (paso 5.4). Solo serializar si una query necesita el resultado de otra para formularse
 - Seguir todas las reglas de `skills-guides/stratio-data-tools.md` (MCP-first, output_format, no SQL manual, ejecucion en paralelo)
 - Guardar datos intermedios como CSV solo si un script posterior los necesita como input
 

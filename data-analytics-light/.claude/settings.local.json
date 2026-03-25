@@ -13,26 +13,7 @@
       "Bash",
       "WebSearch",
       "WebFetch(domain:127.0.0.1)",
-      "mcp__sql-fifteen__stratio_list_business_domains",
-      "mcp__sql-fifteen__stratio_list_domain_tables",
-      "mcp__sql-fifteen__stratio_get_tables_details",
-      "mcp__sql-fifteen__stratio_get_table_columns_details",
-      "mcp__sql-fifteen__stratio_generate_sql",
-      "mcp__sql-fifteen__stratio_query_data",
-      "mcp__sql-fifteen__stratio_execute_sql",
-      "mcp__sql-fifteen__stratio_profile_data",
-      "mcp__sql-fifteen__stratio_search_domain_knowledge",
-      "mcp__sql-fifteen__stratio_propose_knowledge",
-      "mcp__sql__stratio_list_business_domains",
-      "mcp__sql__stratio_list_domain_tables",
-      "mcp__sql__stratio_get_tables_details",
-      "mcp__sql__stratio_get_table_columns_details",
-      "mcp__sql__stratio_generate_sql",
-      "mcp__sql__stratio_query_data",
-      "mcp__sql__stratio_execute_sql",
-      "mcp__sql__stratio_profile_data",
-      "mcp__sql__stratio_search_domain_knowledge",
-      "mcp__sql__stratio_propose_knowledge",
+      "mcp__stratio_data__*",
       "Bash(poetry *)",
       "Bash(python *)",
       "Bash(python3 *)",
@@ -67,6 +48,6 @@
   },
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
-    "sql"
+    "stratio_data"
   ]
 }

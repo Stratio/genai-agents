@@ -169,25 +169,14 @@ if [ -n "$ARG_URL" ] || [ -n "$ARG_KEY" ]; then
   cat > "$PLUGIN_BUILD/.mcp.json" <<EOF
 {
   "mcpServers": {
-    "sql": {
+    "stratio_data": {
       "type": "http",
       "url": "$MCP_URL_VALUE",
       "headers": {
         "X-API-Key": "$MCP_KEY_VALUE",
         "Authorization": "Bearer $MCP_KEY_VALUE"
       },
-      "allowedTools": [
-        "stratio_list_business_domains",
-        "stratio_list_domain_tables",
-        "stratio_get_tables_details",
-        "stratio_get_table_columns_details",
-        "stratio_generate_sql",
-        "stratio_query_data",
-        "stratio_search_domain_knowledge",
-        "stratio_execute_sql",
-        "stratio_profile_data",
-        "stratio_propose_knowledge"
-      ]
+      "allowedTools": ["*"]
     }
   }
 }
@@ -196,25 +185,14 @@ else
   cat > "$PLUGIN_BUILD/.mcp.json" <<'EOF'
 {
   "mcpServers": {
-    "sql": {
+    "stratio_data": {
       "type": "http",
       "url": "${MCP_SQL_URL:-http://127.0.0.1:8080/mcp}",
       "headers": {
         "X-API-Key": "${MCP_SQL_API_KEY:-}",
         "Authorization": "Bearer ${MCP_SQL_API_KEY:-}"
       },
-      "allowedTools": [
-        "stratio_list_business_domains",
-        "stratio_list_domain_tables",
-        "stratio_get_tables_details",
-        "stratio_get_table_columns_details",
-        "stratio_generate_sql",
-        "stratio_query_data",
-        "stratio_search_domain_knowledge",
-        "stratio_execute_sql",
-        "stratio_profile_data",
-        "stratio_propose_knowledge"
-      ]
+      "allowedTools": ["*"]
     }
   }
 }

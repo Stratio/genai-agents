@@ -177,7 +177,7 @@ class PDFGenerator:
         self,
         output_path: str | Path,
         embed_images: bool = True,
-        also_save_html: bool = True,
+        also_save_html: bool = False,
     ) -> Path:
         """Save the rendered report as PDF (and optionally HTML).
 

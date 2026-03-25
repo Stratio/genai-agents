@@ -4,8 +4,8 @@ Agente especializado en construccion y mantenimiento de capas semanticas en Stra
 
 ## Capacidades
 
-- Construccion de capas semanticas via MCPs de gobernanza (servidor `gov`)
-- Exploracion de dominios tecnicos y capas semanticas publicadas (servidor `sql`)
+- Construccion de capas semanticas via MCPs de gobernanza (servidor `stratio_gov`)
+- Exploracion de dominios tecnicos y capas semanticas publicadas (servidor `stratio_data`)
 - Pipeline completo de 5 fases: terminos tecnicos → ontologia → vistas de negocio → SQL mappings → terminos semanticos
 - Planificacion interactiva de ontologias (con lectura de ficheros locales .owl/.ttl, CSVs, documentos de negocio)
 - Diagnostico de estado de la capa semantica de un dominio
@@ -17,8 +17,8 @@ Este agente no ejecuta queries de datos, no genera ficheros en disco y no analiz
 ## Requisitos
 
 - Acceso a dos servidores MCP de Stratio:
-  - `gov` (gobernanza): creacion y gestion de artefactos semanticos
-  - `sql` (exploracion): consulta de dominios y diccionario de datos
+  - `stratio_gov` (gobernanza): creacion y gestion de artefactos semanticos
+  - `stratio_data` (exploración): consulta de dominios y diccionario de datos
 - Variables de entorno: `MCP_GOV_URL`, `MCP_GOV_API_KEY`, `MCP_SQL_URL`, `MCP_SQL_API_KEY`
 - Configuracion preconfigurada en `.mcp.json` (Claude Code / claude.ai) y en `opencode.json` (OpenCode), ambos preconfigurados para leer la URL y credenciales desde variables de entorno
 

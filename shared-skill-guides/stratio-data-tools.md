@@ -8,24 +8,24 @@
 
 | Paso | Herramienta MCP | Proposito |
 |------|----------------|-----------|
-| 1 | `stratio_list_business_domains` | Descubrir dominios disponibles |
-| 2 | `stratio_list_domain_tables` | Conocer tablas del dominio |
-| 3 | `stratio_get_tables_details` | Entender reglas de negocio y contexto |
-| 4 | `stratio_get_table_columns_details` | Conocer columnas, tipos y significado |
-| 5 | `stratio_search_domain_knowledge` | Entender terminologia y definiciones |
-| 6 | `stratio_query_data` | **Obtener datos** (pregunta en lenguaje natural -> datos) |
-| 7 | `stratio_generate_sql` | Ver el SQL antes de ejecutar (opcional, para revision) |
-| 8 | `stratio_execute_sql` | Re-ejecutar SQL generado por el MCP (nunca SQL manual) |
-| 9 | `stratio_profile_data` | EDA estadistico rapido |
-| 10 | `stratio_propose_knowledge` | Proponer terminos de negocio descubiertos |
+| 1 | `list_business_domains` | Descubrir dominios disponibles |
+| 2 | `list_domain_tables` | Conocer tablas del dominio |
+| 3 | `get_tables_details` | Entender reglas de negocio y contexto |
+| 4 | `get_table_columns_details` | Conocer columnas, tipos y significado |
+| 5 | `search_domain_knowledge` | Entender terminologia y definiciones |
+| 6 | `query_data` | **Obtener datos** (pregunta en lenguaje natural -> datos) |
+| 7 | `generate_sql` | Ver el SQL antes de ejecutar (opcional, para revision) |
+| 8 | `execute_sql` | Re-ejecutar SQL generado por el MCP (nunca SQL manual) |
+| 9 | `profile_data` | EDA estadistico rapido |
+| 10 | `propose_knowledge` | Proponer terminos de negocio descubiertos |
 
 ## 3. Reglas Estrictas
 
-- **INMUTABILIDAD de `domain_name`**: El parametro `domain_name` en TODAS las llamadas MCP debe ser **exactamente** el valor devuelto por `stratio_list_business_domains`. NUNCA traducirlo, interpretarlo, parafrasearlo ni inferirlo. Si el dominio se llama `semantic_AnaliticaBanca`, usar `"semantic_AnaliticaBanca"` — no `"Banca Particulares"`, no `"Analítica Banca"`, no `"banca"`. Si hay duda sobre el nombre exacto, volver a llamar a `stratio_list_business_domains` para confirmarlo
-- NUNCA uses `stratio_list_technical_domains`. Solo trabaja con dominios semanticos/de negocio via `stratio_list_business_domains`. Los dominios tecnicos no estan gobernados y carecen de contexto de negocio necesario para el analisis
-- NUNCA escribas queries SQL directamente. Siempre usa `stratio_query_data` o `stratio_generate_sql`
-- Para agregaciones simples (totales, promedios, conteos): `stratio_query_data` directamente
-- Para analisis avanzados: intentar siempre resolver con `stratio_query_data` (el MCP soporta joins, agregaciones, window functions, subconsultas). Usar Python/pandas solo cuando el calculo no sea expresable en SQL (tests estadisticos, segmentacion, transformaciones iterativas, logica procedural). En ese caso, obtener los datos con `output_format="dict"` y procesarlos en pandas
+- **INMUTABILIDAD de `domain_name`**: El parametro `domain_name` en TODAS las llamadas MCP debe ser **exactamente** el valor devuelto por `list_business_domains`. NUNCA traducirlo, interpretarlo, parafrasearlo ni inferirlo. Si el dominio se llama `semantic_AnaliticaBanca`, usar `"semantic_AnaliticaBanca"` — no `"Banca Particulares"`, no `"Analítica Banca"`, no `"banca"`. Si hay duda sobre el nombre exacto, volver a llamar a `list_business_domains` para confirmarlo
+- NUNCA uses `list_technical_domains`. Solo trabaja con dominios semanticos/de negocio via `list_business_domains`. Los dominios tecnicos no estan gobernados y carecen de contexto de negocio necesario para el analisis
+- NUNCA escribas queries SQL directamente. Siempre usa `query_data` o `generate_sql`
+- Para agregaciones simples (totales, promedios, conteos): `query_data` directamente
+- Para analisis avanzados: intentar siempre resolver con `query_data` (el MCP soporta joins, agregaciones, window functions, subconsultas). Usar Python/pandas solo cuando el calculo no sea expresable en SQL (tests estadisticos, segmentacion, transformaciones iterativas, logica procedural). En ese caso, obtener los datos con `output_format="dict"` y procesarlos en pandas
 - **MCP-first**: Resolver siempre en el MCP todo lo que pueda expresarse como query SQL. El MCP genera SQL que entiende el dominio gobernado, sus relaciones y reglas de negocio. Usar Python/pandas SOLO para lo que SQL no puede resolver: tests estadisticos, segmentacion, transformaciones iterativas, logica procedural, o preparacion de datos para visualizacion. Para multiples datasets:
   - **Una query MCP** cuando: el resultado requiere datos de varias tablas relacionadas (el MCP genera los JOINs), o agregaciones con filtros complejos. Siempre intentar esto primero
   - **Multiples queries independientes** cuando: se necesitan cortes ortogonales de los datos (ej: una query temporal + una query por segmento + una query de ranking). Lanzar en paralelo
@@ -34,8 +34,8 @@
 - Puedes proporcionar `additional_context` al MCP para guiar la generacion (ej: definiciones de negocio, filtros especificos)
 - **`output_format` es un string**: Los valores validos son `"dict"`, `"csv"` o `"markdown"`. Es opcional (default: `"dict"`). NUNCA pasar un booleano (`true`/`false`). Si no necesitas un formato especifico, omitir el parametro
 - Si una query falla o da resultados inesperados: reformular la pregunta en lenguaje natural, no intentar escribir SQL
-- **Profiling (`stratio_profile_data`)**: Requiere SQL como parametro — generarla SIEMPRE con `stratio_generate_sql`, nunca escribirla manualmente. NUNCA anadir LIMIT a la SQL; usar el parametro `limit` de la tool
-- **Ejecucion en paralelo**: Cuando el plan define multiples preguntas de datos independientes (ninguna necesita el resultado de otra para formularse), lanzar TODAS las llamadas a `stratio_query_data` en una sola respuesta para que se ejecuten en paralelo. Aplica tambien a llamadas de metadata (`stratio_get_table_columns_details`, `stratio_profile_data`, etc.). Solo serializar cuando una query depende del resultado de otra (ej: necesitas un valor de la query A para formular la query B)
+- **Profiling (`profile_data`)**: Requiere SQL como parametro — generarla SIEMPRE con `generate_sql`, nunca escribirla manualmente. NUNCA anadir LIMIT a la SQL; usar el parametro `limit` de la tool
+- **Ejecucion en paralelo**: Cuando el plan define multiples preguntas de datos independientes (ninguna necesita el resultado de otra para formularse), lanzar TODAS las llamadas a `query_data` en una sola respuesta para que se ejecuten en paralelo. Aplica tambien a llamadas de metadata (`get_table_columns_details`, `profile_data`, etc.). Solo serializar cuando una query depende del resultado de otra (ej: necesitas un valor de la query A para formular la query B)
 
 ## 4. Workflow de Descubrimiento de Dominio
 
@@ -43,7 +43,7 @@ Pasos para explorar un dominio gobernado y entender sus datos antes de un analis
 
 ### 4.1 Listar Dominios
 
-Ejecutar `stratio_list_business_domains` para mostrar todos los dominios disponibles con sus nombres de negocio.
+Ejecutar `list_business_domains` para mostrar todos los dominios disponibles con sus nombres de negocio.
 
 Si el usuario proporciona un dominio:
 - Si coincide con un dominio conocido, ir directamente al paso 4.2
@@ -53,13 +53,13 @@ Si no hay dominio claro, preguntar al usuario cual le interesa (presentar domini
 
 ### 4.2 Explorar Tablas
 
-1. `stratio_list_domain_tables(domain_name)` para listar todas las tablas del dominio
+1. `list_domain_tables(domain_name)` para listar todas las tablas del dominio
 2. Presentar las tablas con sus descripciones en formato tabla markdown
 
 ### 4.3 Detalle de Tablas
 
 Para las tablas de interes:
-1. `stratio_get_tables_details(domain_name, table_names)` para obtener:
+1. `get_tables_details(domain_name, table_names)` para obtener:
    - Descripcion completa
    - Contexto de negocio
    - Terminos de negocio asociados
@@ -70,14 +70,14 @@ Para las tablas de interes:
 ### 4.4 Columnas
 
 Para cada tabla de interes:
-1. `stratio_get_table_columns_details(domain_name, table_name)` para obtener nombre, tipo y descripcion de negocio
+1. `get_table_columns_details(domain_name, table_name)` para obtener nombre, tipo y descripcion de negocio
 2. Presentar en tabla markdown ordenada logicamente
 
 **Lanzar en paralelo** los pasos 4.3 y 4.4 cuando sean sobre tablas independientes. Tambien lanzar paso 4.5 en paralelo si ya se conocen los terminos a buscar.
 
 ### 4.5 Terminologia de Negocio
 
-`stratio_search_domain_knowledge(question, domain_name)` para buscar:
+`search_domain_knowledge(question, domain_name)` para buscar:
 - Definiciones de terminos de negocio
 - Reglas de calculo
 - Politicas de datos
@@ -85,7 +85,7 @@ Para cada tabla de interes:
 
 ## 5. Perfilado Estadistico
 
-Para las reglas de uso de `stratio_profile_data` (generar SQL con `stratio_generate_sql`, nunca SQL manual, usar parametro `limit` en vez de LIMIT en SQL), ver sec 3.
+Para las reglas de uso de `profile_data` (generar SQL con `generate_sql`, nunca SQL manual, usar parametro `limit` en vez de LIMIT en SQL), ver sec 3.
 
 Umbrales adaptativos de profiling segun tamano estimado:
 
@@ -99,12 +99,12 @@ Documentar en reasoning si se uso muestreo.
 
 ## 6. Respuestas de Aclaracion del MCP
 
-`stratio_query_data` y `stratio_generate_sql` pueden responder con una solicitud de aclaracion
+`query_data` y `generate_sql` pueden responder con una solicitud de aclaracion
 en lugar de datos (ej: "¿A que periodo te refieres?", "¿'Activos' incluye usuarios con compra
 en 30 o 90 dias?"). Esto no es un error — es el motor pidiendo contexto adicional.
 
 Protocolo en cascada (seguir en orden):
-1. **Buscar en el dominio**: Llamar a `stratio_search_domain_knowledge` con el termino ambiguo.
+1. **Buscar en el dominio**: Llamar a `search_domain_knowledge` con el termino ambiguo.
    Si se encuentra la definicion, rellamar con `additional_context` incluyendo la definicion
 2. **Inferir del plan**: Si el plan de analisis ya define el termino o periodo, anadirlo
    directamente a `additional_context` y rellamar
@@ -120,7 +120,7 @@ informar al usuario y omitir esa metrica del analisis.
 
 ## 7. Validacion Post-Query
 
-Cada resultado de `stratio_query_data` debe pasar estas 7 validaciones antes de usarse en el analisis. Cuando se lanzan queries en paralelo, validar cada resultado conforme se recibe:
+Cada resultado de `query_data` debe pasar estas 7 validaciones antes de usarse en el analisis. Cuando se lanzan queries en paralelo, validar cada resultado conforme se recibe:
 1. **Dataset no vacio** (>0 filas). Si vacio: reformular pregunta o alertar al usuario
 2. **Columnas esperadas presentes**. Si faltan: revisar formulacion de la pregunta
 3. **Tipos de datos coherentes** (fechas son fechas, numericos son numericos)
@@ -129,7 +129,7 @@ Cada resultado de `stratio_query_data` debe pasar estas 7 validaciones antes de 
 6. **Valores en rangos razonables** (no hay edades de 500 anos, importes negativos inesperados)
 7. **Sanity check de negocio**: Verificar que los resultados tienen sentido:
    - Magnitudes razonables (crecimiento del 500% MoM es probablemente error de datos)
-   - Consistencia con conocimiento del dominio (`stratio_search_domain_knowledge`)
+   - Consistencia con conocimiento del dominio (`search_domain_knowledge`)
    - Si un hallazgo parece "demasiado bueno/malo", investigar antes de reportar
 
 Si alguna validacion falla: reformular la pregunta al MCP, informar al usuario de la limitacion, y ajustar el plan si es necesario.
