@@ -50,6 +50,8 @@ Antes de activar cualquier skill, evaluar que necesita el usuario:
 | Explorar capa publicada | Triage directo: `list_business_domains` + tools sql | "¿Que tiene la capa semantica de X?" |
 | Referencia de tools | `/stratio-semantic-layer` | "¿Como funciona create_ontology?" |
 
+**Routing para pipeline completo**: Cuando el usuario pide construir una capa semantica y no queda claro si tiene un dominio existente, preguntar antes de cargar ninguna skill: ¿quiere usar un dominio tecnico existente o crear una nueva coleccion de datos? Si necesita crear una coleccion nueva → cargar `/create-data-collection`. Cuando la coleccion este creada, sugerir continuar con `/build-semantic-layer [nombre_del_nuevo_dominio]`.
+
 **Activacion de skills**: Cargar la skill correspondiente ANTES de continuar con el workflow. La skill contiene el detalle operativo necesario.
 
 **Triage directo**: Para consultas de estado simples (1-2 tools), resolver directamente sin cargar skill. Descubrir dominio si es necesario (`list_technical_domains`), ejecutar la tool y responder en chat. Para `create_collection_description`, confirmar dominio + ofrecer `user_instructions` + ejecutar.

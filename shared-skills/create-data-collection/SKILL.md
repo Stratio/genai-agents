@@ -28,6 +28,8 @@ Si `$ARGUMENTS` contiene texto, usarlo como semilla de busqueda inicial y pasar 
 
 Ejecutar `search_data_dictionary(search_text, search_type?)` con el termino proporcionado. `search_type` por defecto `'both'`.
 
+**Busqueda por palabras clave**: La herramienta funciona mejor con terminos cortos o palabras clave individuales que con frases largas o multiples palabras. Si el usuario describe lo que busca en lenguaje natural, extraer los terminos mas relevantes y buscarlos por separado (ej: "tablas de clientes con sus contratos" → buscar primero "clientes", luego "contratos"). Evitar enviar frases completas como search_text.
+
 Presentar resultados en tabla:
 
 ```
@@ -50,11 +52,12 @@ Seleccion actual: Tables: N, Paths: M
 
 Ofrecer opciones: buscar mas elementos o continuar con la creacion.
 
-### 4. Proponer nombre y descripcion
+### 4. Solicitar nombre y descripcion
 
-- Proponer `collection_name` basado en el contexto (sin espacios, usar underscores — misma convencion que ontologias)
-- Proponer `description` basada en las tablas/paths seleccionados
-- El usuario puede editar ambos valores
+- **Nombre**: Preguntar al usuario que nombre quiere para la coleccion (`collection_name` sin espacios, usar underscores — misma convencion que ontologias). Si el usuario no tiene preferencia, puede sugerirse un nombre derivado unicamente de los terminos de busqueda reales usados (ej: busco "clientes" → sugiere `clientes`). No inferir temas o propositos de negocio no mencionados por el usuario.
+- **Descripcion**: Preguntar al usuario que descripcion quiere para la coleccion. No inventar descripcion. Si el usuario no tiene preferencia, presentar los nombres y descripciones disponibles de las tablas/paths seleccionados como contexto para que el decida, pero no fabricar contexto de negocio ni tematicas.
+
+**Regla**: No inventar contexto de negocio, tematicas ni propositos que no hayan sido aportados por el usuario o derivados de los metadatos reales de las tablas seleccionadas (nombres, descripciones devueltas por `search_data_dictionary`).
 
 Verificar que el nombre propuesto no coincida con un dominio existente ejecutando `list_technical_domains`. Si ya existe, informar y pedir un nombre alternativo.
 
