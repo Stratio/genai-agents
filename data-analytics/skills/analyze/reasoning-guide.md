@@ -14,7 +14,7 @@ Guia detallada para generar el reasoning de cada analisis. El reasoning document
 ```bash
 bash -c "source .venv/bin/activate && python tools/md_to_report.py output/[ANALISIS_DIR]/reasoning/reasoning.md --style corporate"
 ```
-Anadir `--docx` si solicito DOCX.
+Anadir `--html` si solicito HTML. Anadir `--docx` si solicito DOCX.
 
 ## Contenido obligatorio
 

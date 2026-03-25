@@ -10,7 +10,7 @@ Referencia operativa para el pipeline de documento dentro de `/report`.
 4. Ambos modos generan portada automatica, numeracion de paginas, headers, e imagenes embebidas en base64
 5. Generar script: `output/[ANALISIS_DIR]/scripts/generate_pdf.py` que importe y use `PDFGenerator`
 6. Guardar en `output/[ANALISIS_DIR]/report.pdf`
-7. `save()` genera automáticamente `report.html` junto al PDF (mismo contenido renderizado). Si por algún motivo no se desea, pasar `also_save_html=False`
+7. `save()` por defecto no guarda el HTML (artefacto intermedio de build). Pasar `also_save_html=True` solo si se necesita una version web estatica del documento ademas del PDF
 8. Generar DOCX: instanciar `DOCXGenerator(style=estilo)` con los MISMOS datos que el PDF. Si scaffold → `render_scaffold()` con los mismos parametros. Si al vuelo → `render_from_markdown()` con el markdown source
 9. Guardar en `output/[ANALISIS_DIR]/report.docx`
 

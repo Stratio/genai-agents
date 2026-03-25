@@ -13,21 +13,21 @@ Crea o actualiza SQL mappings para vistas de negocio existentes en Stratio Gover
 
 | Tool | Servidor | Proposito |
 |------|----------|-----------|
-| `stratio_list_technical_domains` | sql | Descubrir dominios tecnicos disponibles |
-| `stratio_list_technical_domain_concepts(domain)` | gov | Listar vistas con estado de mapping |
-| `stratio_create_sql_mappings(domain, view_names?, user_instructions?)` | gov | Crear o actualizar mappings SQL de vistas existentes |
+| `list_technical_domains` | sql | Descubrir dominios tecnicos disponibles |
+| `list_technical_domain_concepts(domain)` | gov | Listar vistas con estado de mapping |
+| `create_sql_mappings(domain, view_names?, user_instructions?)` | gov | Crear o actualizar mappings SQL de vistas existentes |
 
-**Reglas clave**: `domain_name` inmutable. Ofrecer `user_instructions` antes de invocar. `stratio_create_sql_mappings` sobrescribe mappings existentes (no es destructivo a nivel de vista, solo reemplaza el mapping SQL).
+**Reglas clave**: `domain_name` inmutable. Ofrecer `user_instructions` antes de invocar. `create_sql_mappings` sobrescribe mappings existentes (no es destructivo a nivel de vista, solo reemplaza el mapping SQL).
 
 ## Workflow
 
 ### 1. Determinar dominio
 
-Si `$ARGUMENTS` contiene nombre de dominio, validar contra `stratio_list_technical_domains`. Si no, listar y preguntar al usuario siguiendo la convencion de preguntas al usuario.
+Si `$ARGUMENTS` contiene nombre de dominio, validar contra `list_technical_domains`. Si no, listar y preguntar al usuario siguiendo la convencion de preguntas al usuario.
 
 ### 2. Evaluar estado
 
-Ejecutar `stratio_list_technical_domain_concepts(domain)` para obtener el listado de vistas con su estado de mapping.
+Ejecutar `list_technical_domain_concepts(domain)` para obtener el listado de vistas con su estado de mapping.
 
 Presentar resumen:
 ```
@@ -57,7 +57,7 @@ No sugerir opciones que la tool controla internamente (idioma, formato de salida
 
 ### 5. Ejecucion
 
-Invocar `stratio_create_sql_mappings(domain, view_names?, user_instructions?)`. La tool devuelve un resumen de lo procesado — presentar al usuario directamente.
+Invocar `create_sql_mappings(domain, view_names?, user_instructions?)`. La tool devuelve un resumen de lo procesado — presentar al usuario directamente.
 
 Si hay errores, reintentar la vista fallida con `user_instructions` mejoradas (max 2 reintentos). Si persiste, documentar y continuar.
 

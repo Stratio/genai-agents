@@ -63,8 +63,6 @@ genai-agents/
     shared-skill-create-semantic-terms-{v}.zip
     shared-skill-manage-business-terms-{v}.zip
     shared-skill-create-data-collection-{v}.zip
-    genai-agents-sources-{v}.zip                 # Fuentes del repositorio
-    genai-agents-{v}.zip                        # ZIP global con todos los anteriores
 
   data-analytics/
     dist/                                       # Artefactos intermedios

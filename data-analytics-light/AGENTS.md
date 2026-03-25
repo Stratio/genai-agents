@@ -28,11 +28,11 @@ Antes de activar el workflow de analisis, evaluar si la pregunta se resuelve con
 
 | Tipo de pregunta | Tool MCP directa | Ejemplo |
 |-----------------|-----------------|---------|
-| Definicion o concepto de negocio | `stratio_search_domain_knowledge` | "Que es el churn rate?", "Como se calcula el ARPU?" |
-| Estructura del dominio | `stratio_list_domain_tables` | "Que tablas tiene el dominio X?" |
-| Detalle o reglas de una tabla | `stratio_get_tables_details` | "Que reglas de negocio tiene la tabla Y?" |
-| Columnas de una tabla | `stratio_get_table_columns_details` | "Que campos tiene la tabla Z?" |
-| Dato puntual sin analisis | `stratio_query_data` | "Cuantos clientes hay?", "Total ventas del mes" |
+| Definicion o concepto de negocio | `search_domain_knowledge` | "Que es el churn rate?", "Como se calcula el ARPU?" |
+| Estructura del dominio | `list_domain_tables` | "Que tablas tiene el dominio X?" |
+| Detalle o reglas de una tabla | `get_tables_details` | "Que reglas de negocio tiene la tabla Y?" |
+| Columnas de una tabla | `get_table_columns_details` | "Que campos tiene la tabla Z?" |
+| Dato puntual sin analisis | `query_data` | "Cuantos clientes hay?", "Total ventas del mes" |
 
 **Si encaja** → Resolver directamente: descubrir dominio si es necesario (listar dominios, explorar tablas, buscar knowledge), obtener el dato via MCP, responder en chat con contexto minimo (vs periodo anterior si disponible). FIN. Sin plan, sin hipotesis, sin artefactos.
 **Si NO encaja** → Continuar con Fase 1 (analisis).
@@ -48,9 +48,9 @@ Antes de activar el workflow de analisis, evaluar si la pregunta se resuelve con
 
 Para exploracion rapida de dominios sin analisis completo, ver la skill `/explore-data`.
 
-1. Si el dominio de datos no es evidente, preguntar al usuario (listar dominios disponibles via `stratio_list_business_domains`)
-2. Explorar tablas del dominio (`stratio_list_domain_tables`)
-3. Obtener detalles de columnas relevantes (`stratio_get_table_columns_details`) y buscar terminologia de negocio (`stratio_search_domain_knowledge`) — lanzar en paralelo, son independientes
+1. Si el dominio de datos no es evidente, preguntar al usuario (listar dominios disponibles via `list_business_domains`)
+2. Explorar tablas del dominio (`list_domain_tables`)
+3. Obtener detalles de columnas relevantes (`get_table_columns_details`) y buscar terminologia de negocio (`search_domain_knowledge`) — lanzar en paralelo, son independientes
 4. Si necesitas aclarar algo, preguntar al usuario
 
 ### Fase 1.1 — EDA y Calidad de Datos (en fase de planificacion, solo lectura)
@@ -104,7 +104,7 @@ Agrupar en 1 bloque de preguntas al usuario con opciones seleccionables (detalle
 
 ### Fase 4 — Ejecucion (post-aprobacion)
 
-1. Consultar datos via MCP (`stratio_query_data` con preguntas en lenguaje natural y `output_format="dict"`). Lanzar en paralelo todas las queries independientes del plan
+1. Consultar datos via MCP (`query_data` con preguntas en lenguaje natural y `output_format="dict"`). Lanzar en paralelo todas las queries independientes del plan
 2. **Validar datos recibidos** (ver seccion 4 — Validacion post-query)
 3. Escribir scripts Python con nombres descriptivos para transformaciones y calculos
 4. Testear funciones clave antes de ejecutar con datos reales (fixtures con DataFrames mock)

@@ -159,8 +159,9 @@ class TestConvert:
 
         from md_to_report import convert
 
-        html_path, pdf_path, docx_path = convert(md_file, output_dir, "corporate")
+        html_path, pdf_path, docx_path = convert(md_file, output_dir, "corporate", also_save_html=True)
 
+        assert html_path is not None
         assert html_path.exists()
         assert html_path.suffix == ".html"
         content = html_path.read_text()
@@ -180,8 +181,10 @@ class TestConvert:
 
         html_path, _, _ = convert(
             md_file, output_dir, "corporate",
-            author="Test Author", cover=True, domain="Finance"
+            author="Test Author", cover=True, domain="Finance",
+            also_save_html=True,
         )
+        assert html_path is not None
         content = html_path.read_text()
         assert "cover-page" in content
         assert "Test Author" in content

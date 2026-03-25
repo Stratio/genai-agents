@@ -13,9 +13,9 @@ Genera o regenera terminos semanticos de negocio en el glosario de Stratio Gover
 
 | Tool | Servidor | Proposito |
 |------|----------|-----------|
-| `stratio_list_technical_domains` | sql | Descubrir dominios tecnicos disponibles |
-| `stratio_list_technical_domain_concepts(domain)` | gov | Listar vistas con estado de terminos semanticos y mappings |
-| `stratio_create_semantic_terms(domain, view_names?, user_instructions?, regenerate?)` | gov | Crear terminos semanticos. Con `regenerate=true`: DESTRUCTIVO, borra y recrea |
+| `list_technical_domains` | sql | Descubrir dominios tecnicos disponibles |
+| `list_technical_domain_concepts(domain)` | gov | Listar vistas con estado de terminos semanticos y mappings |
+| `create_semantic_terms(domain, view_names?, user_instructions?, regenerate?)` | gov | Crear terminos semanticos. Con `regenerate=true`: DESTRUCTIVO, borra y recrea |
 
 **Reglas clave**: `domain_name` inmutable. Confirmacion obligatoria para `regenerate=true`. Ofrecer `user_instructions` antes de invocar. Pre-requisito: las vistas deben tener SQL mapping antes de generar terminos semanticos.
 
@@ -23,11 +23,11 @@ Genera o regenera terminos semanticos de negocio en el glosario de Stratio Gover
 
 ### 1. Determinar dominio
 
-Si `$ARGUMENTS` contiene nombre de dominio, validar contra `stratio_list_technical_domains`. Si no, listar y preguntar al usuario siguiendo la convencion de preguntas al usuario.
+Si `$ARGUMENTS` contiene nombre de dominio, validar contra `list_technical_domains`. Si no, listar y preguntar al usuario siguiendo la convencion de preguntas al usuario.
 
 ### 2. Evaluar estado
 
-Ejecutar `stratio_list_technical_domain_concepts(domain)` para obtener el listado de vistas con su estado de terminos semanticos y mappings.
+Ejecutar `list_technical_domain_concepts(domain)` para obtener el listado de vistas con su estado de terminos semanticos y mappings.
 
 Presentar resumen:
 ```
@@ -65,7 +65,7 @@ No sugerir opciones que la tool controla internamente (idioma, audiencia, format
 
 ### 6. Ejecucion
 
-Invocar `stratio_create_semantic_terms`. Para regenerar: pasar `regenerate=true` (DESTRUCTIVO). La tool devuelve un resumen de lo procesado — presentar al usuario directamente.
+Invocar `create_semantic_terms`. Para regenerar: pasar `regenerate=true` (DESTRUCTIVO). La tool devuelve un resumen de lo procesado — presentar al usuario directamente.
 
 Si hay errores, reintentar la vista fallida con `user_instructions` mejoradas (max 2 reintentos). Si persiste, documentar y continuar.
 

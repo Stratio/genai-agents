@@ -10,9 +10,9 @@ Guia para analizar una conversacion de analisis y proponer conocimiento de negoc
 
 ## 1. Determinar Dominio
 
-- Si `$ARGUMENTS` contiene un nombre de dominio, validarlo contra `stratio_list_business_domains` antes de usarlo. Usar el nombre exacto del listado, no la interpretacion del usuario
+- Si `$ARGUMENTS` contiene un nombre de dominio, validarlo contra `list_business_domains` antes de usarlo. Usar el nombre exacto del listado, no la interpretacion del usuario
 - Si no, inferir el dominio de la conversacion actual (buscar llamadas previas a MCPs con `domain_name`)
-- Si no es posible inferirlo, listar dominios disponibles via `stratio_list_business_domains` y preguntar al usuario siguiendo la convencion de preguntas al usuario (adaptativa al entorno: interactivas si disponibles, lista numerada en chat si no)
+- Si no es posible inferirlo, listar dominios disponibles via `list_business_domains` y preguntar al usuario siguiendo la convencion de preguntas al usuario (adaptativa al entorno: interactivas si disponibles, lista numerada en chat si no)
 
 ## 2. Recopilar Contexto de la Conversacion
 
@@ -56,8 +56,8 @@ Las siguientes categorias NUNCA se proponen como conocimiento de dominio:
 
 Antes de proponer, verificar que no se duplique conocimiento ya gobernado:
 
-1. Usar `stratio_get_tables_details(domain_name, table_names)` para revisar terminos de negocio ya definidos en las tablas relevantes
-2. Usar `stratio_search_domain_knowledge(question, domain_name)` para buscar cada termino/concepto candidato
+1. Usar `get_tables_details(domain_name, table_names)` para revisar terminos de negocio ya definidos en las tablas relevantes
+2. Usar `search_domain_knowledge(question, domain_name)` para buscar cada termino/concepto candidato
 
 Para cada hallazgo:
 - **Ya existe con misma definicion** (aunque redaccion diferente): Descartar (no proponer duplicado)
@@ -127,7 +127,7 @@ Si el usuario elige "Modificar", preguntar que cambios quiere hacer, aplicarlos 
 
 ## 7. Enviar via MCP
 
-Para las propuestas aprobadas, llamar a `stratio_propose_knowledge(business_context=..., domain_name=...)`.
+Para las propuestas aprobadas, llamar a `propose_knowledge(business_context=..., domain_name=...)`.
 
 El parametro `business_context` debe ser un texto markdown estructurado con el siguiente formato:
 

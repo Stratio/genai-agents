@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Convert a Markdown file to HTML, PDF, and optionally DOCX.
+"""Convert a Markdown file to PDF, and optionally HTML and DOCX.
 
 Usage:
     python tools/md_to_report.py <input.md> [--output-dir DIR] [--style STYLE]
            [--author AUTHOR] [--no-embed-images] [--cover] [--domain DOMAIN]
-           [--title TITLE] [--docx]
+           [--title TITLE] [--html] [--docx]
 
 Arguments:
     input.md            Path to the source markdown file.
@@ -16,11 +16,12 @@ Arguments:
     --cover             Generate a cover page with title, author, date, and domain.
     --domain            Domain name shown on the cover page.
     --title             Override title (default: extracted from first H1 in markdown).
-    --docx              Also generate a DOCX file alongside HTML and PDF.
+    --html              Also save the intermediate HTML file alongside PDF.
+    --docx              Also generate a DOCX file alongside PDF.
 
 Outputs:
-    <name>.html     Standalone HTML file with embedded CSS.
     <name>.pdf      PDF generated from the HTML via weasyprint.
+    <name>.html     Standalone HTML file (only when --html is passed).
     <name>.docx     DOCX file (only when --docx is passed).
 """
 
@@ -115,10 +116,11 @@ def convert(input_path: Path, output_dir: Path, style: str,
             author: str | None = None, embed_images: bool = True,
             cover: bool = False, domain: str | None = None,
             title: str | None = None,
-            generate_docx: bool = False) -> tuple[Path, Path, Path | None]:
-    """Convert a markdown file to HTML, PDF, and optionally DOCX.
+            generate_docx: bool = False,
+            also_save_html: bool = False) -> tuple[Path | None, Path, Path | None]:
+    """Convert a markdown file to PDF, and optionally HTML and DOCX.
 
-    Returns (html_path, pdf_path, docx_path_or_None).
+    Returns (html_path_or_None, pdf_path, docx_path_or_None).
     """
     md_content = input_path.read_text(encoding="utf-8")
     css = resolve_css(style)
@@ -134,8 +136,10 @@ def convert(input_path: Path, output_dir: Path, style: str,
     output_dir.mkdir(parents=True, exist_ok=True)
     stem = input_path.stem
 
-    html_path = output_dir / f"{stem}.html"
-    html_path.write_text(html_content, encoding="utf-8")
+    html_path = None
+    if also_save_html:
+        html_path = output_dir / f"{stem}.html"
+        html_path.write_text(html_content, encoding="utf-8")
 
     pdf_path = output_dir / f"{stem}.pdf"
     from weasyprint import HTML
@@ -198,7 +202,12 @@ def main():
     parser.add_argument(
         "--docx",
         action="store_true",
-        help="Also generate a DOCX file alongside HTML and PDF",
+        help="Also generate a DOCX file alongside PDF",
+    )
+    parser.add_argument(
+        "--html",
+        action="store_true",
+        help="Also save the intermediate HTML file alongside PDF",
     )
     args = parser.parse_args()
 
@@ -216,8 +225,10 @@ def main():
         domain=args.domain,
         title=args.title,
         generate_docx=args.docx,
+        also_save_html=args.html,
     )
-    print(f"HTML: {html_path}")
+    if html_path:
+        print(f"HTML: {html_path}")
     print(f"PDF:  {pdf_path}")
     if docx_path:
         print(f"DOCX: {docx_path}")

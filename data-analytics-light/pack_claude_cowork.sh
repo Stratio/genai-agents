@@ -169,25 +169,14 @@ if [ -n "$ARG_URL" ] || [ -n "$ARG_KEY" ]; then
   cat > "$PLUGIN_BUILD/.mcp.json" <<EOF
 {
   "mcpServers": {
-    "sql": {
+    "stratio_data": {
       "type": "http",
       "url": "$MCP_URL_VALUE",
       "headers": {
         "X-API-Key": "$MCP_KEY_VALUE",
         "Authorization": "Bearer $MCP_KEY_VALUE"
       },
-      "allowedTools": [
-        "stratio_list_business_domains",
-        "stratio_list_domain_tables",
-        "stratio_get_tables_details",
-        "stratio_get_table_columns_details",
-        "stratio_generate_sql",
-        "stratio_query_data",
-        "stratio_search_domain_knowledge",
-        "stratio_execute_sql",
-        "stratio_profile_data",
-        "stratio_propose_knowledge"
-      ]
+      "allowedTools": ["*"]
     }
   }
 }
@@ -196,25 +185,14 @@ else
   cat > "$PLUGIN_BUILD/.mcp.json" <<'EOF'
 {
   "mcpServers": {
-    "sql": {
+    "stratio_data": {
       "type": "http",
       "url": "${MCP_SQL_URL:-http://127.0.0.1:8080/mcp}",
       "headers": {
         "X-API-Key": "${MCP_SQL_API_KEY:-}",
         "Authorization": "Bearer ${MCP_SQL_API_KEY:-}"
       },
-      "allowedTools": [
-        "stratio_list_business_domains",
-        "stratio_list_domain_tables",
-        "stratio_get_tables_details",
-        "stratio_get_table_columns_details",
-        "stratio_generate_sql",
-        "stratio_query_data",
-        "stratio_search_domain_knowledge",
-        "stratio_execute_sql",
-        "stratio_profile_data",
-        "stratio_propose_knowledge"
-      ]
+      "allowedTools": ["*"]
     }
   }
 }
@@ -238,20 +216,10 @@ sed -i 's/{{TOOL_PREGUNTAS}}/ (`AskUserQuestion`)/g' "$COWORK_DIR/CLAUDE.md"
 # ============================================================
 rm -rf "$PLUGIN_BUILD"
 
-# ============================================================
-# Paso 4: Generar ZIP final (CLAUDE.md + plugin.zip)
-# ============================================================
-ZIP_NAME="${COWORK_NAME}-cowork.zip"
-echo "Generando $ZIP_NAME..."
-(cd "$COWORK_DIR" && zip -r "../_tmp_${ZIP_NAME}" . -q)
-mv "dist/claude_cowork/_tmp_${ZIP_NAME}" "$COWORK_DIR/${ZIP_NAME}"
-
 # --- Resumen ---
-ZIP_SIZE=$(du -sh "$COWORK_DIR/${ZIP_NAME}" | cut -f1)
 PLUGIN_SIZE=$(du -sh "$COWORK_DIR/${COWORK_NAME}.zip" | cut -f1)
 echo ""
 echo "=== Cowork empaquetado ==="
-echo "  CLAUDE.md:   $COWORK_DIR/CLAUDE.md (folder instructions, generado desde AGENTS.md)"
-echo "  Plugin ZIP:  $COWORK_DIR/${COWORK_NAME}.zip ($PLUGIN_SIZE) (skills + MCP, sin agente)"
-echo "  Cowork ZIP:  $COWORK_DIR/${ZIP_NAME} ($ZIP_SIZE) (CLAUDE.md + plugin ZIP)"
+echo "  CLAUDE.md:  $COWORK_DIR/CLAUDE.md (folder instructions, generado desde AGENTS.md)"
+echo "  Plugin ZIP: $COWORK_DIR/${COWORK_NAME}.zip ($PLUGIN_SIZE) (skills + MCP, sin agente)"
 echo ""

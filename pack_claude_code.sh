@@ -86,20 +86,11 @@ else
   "permissions": {
     "defaultMode": "bypassPermissions",
     "allow": [
-      "mcp__sql__stratio_list_business_domains",
-      "mcp__sql__stratio_list_domain_tables",
-      "mcp__sql__stratio_get_tables_details",
-      "mcp__sql__stratio_get_table_columns_details",
-      "mcp__sql__stratio_generate_sql",
-      "mcp__sql__stratio_query_data",
-      "mcp__sql__stratio_execute_sql",
-      "mcp__sql__stratio_profile_data",
-      "mcp__sql__stratio_search_domain_knowledge",
-      "mcp__sql__stratio_propose_knowledge"
+      "mcp__stratio_data__*"
     ]
   },
   "enableAllProjectMcpServers": true,
-  "enabledMcpjsonServers": ["sql"]
+  "enabledMcpjsonServers": ["stratio_data"]
 }
 EOF
   echo "    [3] .claude/settings.local.json generado (template)"
@@ -115,20 +106,14 @@ else
   cat > "$OUTPUT_DIR/.mcp.json" << 'EOF'
 {
   "mcpServers": {
-    "sql": {
+    "stratio_data": {
       "type": "http",
       "url": "${MCP_SQL_URL:-http://127.0.0.1:8080/mcp}",
       "headers": {
         "X-API-Key": "${MCP_SQL_API_KEY:-}",
         "Authorization": "Bearer ${MCP_SQL_API_KEY:-}"
       },
-      "allowedTools": [
-        "stratio_list_business_domains", "stratio_list_domain_tables",
-        "stratio_get_tables_details", "stratio_get_table_columns_details",
-        "stratio_generate_sql", "stratio_query_data",
-        "stratio_search_domain_knowledge", "stratio_execute_sql",
-        "stratio_profile_data", "stratio_propose_knowledge"
-      ]
+      "allowedTools": ["*"]
     }
   }
 }

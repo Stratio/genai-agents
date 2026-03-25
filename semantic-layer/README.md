@@ -4,8 +4,8 @@ Agente especializado en construccion y mantenimiento de capas semanticas en Stra
 
 ## Capacidades
 
-- Construccion de capas semanticas via MCPs de gobernanza (servidor `gov`)
-- Exploracion de dominios tecnicos y capas semanticas publicadas (servidor `sql`)
+- Construccion de capas semanticas via MCPs de gobernanza (servidor `stratio_gov`)
+- Exploracion de dominios tecnicos y capas semanticas publicadas (servidor `stratio_data`)
 - Pipeline completo de 5 fases: terminos tecnicos → ontologia → vistas de negocio → SQL mappings → terminos semanticos
 - Planificacion interactiva de ontologias (con lectura de ficheros locales .owl/.ttl, CSVs, documentos de negocio)
 - Diagnostico de estado de la capa semantica de un dominio
@@ -17,8 +17,8 @@ Este agente no ejecuta queries de datos, no genera ficheros en disco y no analiz
 ## Requisitos
 
 - Acceso a dos servidores MCP de Stratio:
-  - `gov` (gobernanza): creacion y gestion de artefactos semanticos
-  - `sql` (exploracion): consulta de dominios y diccionario de datos
+  - `stratio_gov` (gobernanza): creacion y gestion de artefactos semanticos
+  - `stratio_data` (exploración): consulta de dominios y diccionario de datos
 - Variables de entorno: `MCP_GOV_URL`, `MCP_GOV_API_KEY`, `MCP_SQL_URL`, `MCP_SQL_API_KEY`
 - Configuracion preconfigurada en `.mcp.json` (Claude Code / claude.ai) y en `opencode.json` (OpenCode), ambos preconfigurados para leer la URL y credenciales desde variables de entorno
 
@@ -61,13 +61,12 @@ El script de cowork acepta tambien `--gov-url <URL>`, `--gov-key <KEY>`, `--sql-
 
 ### Empaquetado como Claude Cowork
 
-Genera un paquete para configurar el agente en Claude Cowork sin reemplazar al orquestador. El script construye el plugin internamente (skills + MCP, sin agente) y lo combina con las instrucciones del agente. Produce tres ficheros:
+Genera un paquete para configurar el agente en Claude Cowork sin reemplazar al orquestador. El script construye el plugin internamente (skills + MCP, sin agente) y lo combina con las instrucciones del agente. Produce dos ficheros:
 
 | Fichero | Que es | Para que sirve |
 |---------|--------|----------------|
 | `CLAUDE.md` | Folder instructions (generado desde AGENTS.md) | Instrucciones del agente — Cowork las lee automaticamente del directorio de trabajo |
 | `<nombre>.zip` | Plugin ZIP (solo skills + MCP, sin agente) | Se instala como plugin en Cowork; aporta las skills y la conexion MCP |
-| `<nombre>-cowork.zip` | ZIP de distribucion con los dos ficheros anteriores | Para enviar/compartir el paquete completo; el usuario lo descomprime y usa cada pieza por separado |
 
 > **Nota:** Los plugins de Claude no incluyen instrucciones de agente (CLAUDE.md) — solo skills, MCP y hooks. Por eso el `CLAUDE.md` va aparte, como fichero del directorio de trabajo.
 
@@ -79,14 +78,13 @@ El resultado se encuentra en `dist/claude_cowork/semantic-layer/`.
 
 **Como usarlo en Cowork:**
 
-1. Descomprimir `<nombre>-cowork.zip` (o usar los ficheros sueltos del directorio `dist/`)
-2. Copiar `CLAUDE.md` al directorio de trabajo del proyecto en Cowork — Cowork lo lee automaticamente como folder instructions
+1. Copiar `CLAUDE.md` al directorio de trabajo del proyecto en Cowork — Cowork lo lee automaticamente como folder instructions
 3. Instalar `<nombre>.zip` como plugin en Cowork (aporta las skills `/build-semantic-layer`, `/stratio-semantic-layer`, `/generate-technical-terms`, `/create-ontology`, `/create-business-views`, `/create-sql-mappings`, `/create-semantic-terms`, `/manage-business-terms`, `/create-data-collection` y la conexion MCP)
 4. El orquestador de Cowork lee las instrucciones del `CLAUDE.md` y delega a las skills del plugin cuando corresponda
 
 ### Empaquetado como Claude AI Project (claude.ai)
 
-Genera los ficheros aplanados (skills, guias) + un ZIP:
+Genera los ficheros aplanados (skills, guias):
 
 ```bash
 bash pack_claude_ai_project.sh --name semantic-layer
@@ -95,7 +93,7 @@ bash pack_claude_ai_project.sh --name semantic-layer
 Para configurarlo en claude.ai:
 
 1. Crear un nuevo **Project** en [claude.ai](https://claude.ai)
-2. Abrir `dist/claude_ai_projects/semantic-layer/` y subir **todos los ficheros** (excepto `CLAUDE.md` y el ZIP) a la seccion de archivos del proyecto
+2. Abrir `dist/claude_ai_projects/semantic-layer/` y subir **todos los ficheros** (excepto `CLAUDE.md`) a la seccion de archivos del proyecto
 3. Abrir `CLAUDE.md` del paquete generado, copiar **todo su contenido** y pegarlo en el campo **Instructions** del proyecto
 4. Guardar el proyecto — el agente estara listo para usar
 
