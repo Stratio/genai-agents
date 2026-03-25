@@ -40,9 +40,9 @@ while IFS= read -r module; do
     bash "$REPO_ROOT/pack_stratio_cowork.sh" --agent "$module" --name "$module" || {
       echo "  WARN: pack_stratio_cowork.sh falló para $module — continuando"
     }
-    if [[ -f "$DIST_DIR/${module}-opencode-bundle.zip" ]]; then
-      mv "$DIST_DIR/${module}-opencode-bundle.zip" "$DIST_DIR/${module}-opencode-bundle-${VERSION}.zip"
-      echo "    -> dist/${module}-opencode-bundle-${VERSION}.zip"
+    if [[ -f "$DIST_DIR/${module}-stratio-cowork.zip" ]]; then
+      mv "$DIST_DIR/${module}-stratio-cowork.zip" "$DIST_DIR/${module}-stratio-cowork-${VERSION}.zip"
+      echo "    -> dist/${module}-stratio-cowork-${VERSION}.zip"
     fi
   fi
 
