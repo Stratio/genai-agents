@@ -240,6 +240,7 @@ fi
 # ---------------------------------------------------------------------------
 rsync -a \
   --exclude=README.md \
+  --exclude=mcps \
   --exclude=CLAUDE.md \
   --exclude=AGENTS.md \
   --exclude=.mcp.json \
@@ -324,6 +325,12 @@ for FORBIDDEN in .claude; do
     ERRORS=$((ERRORS + 1))
   fi
 done
+
+# No debe haber fichero mcps
+if [[ -f "$OUTPUT_DIR/mcps" ]]; then
+  echo "    ERROR: fichero mcps no debe estar presente en el output OpenCode" >&2
+  ERRORS=$((ERRORS + 1))
+fi
 
 # No debe haber .mcp.json
 if [[ -f "$OUTPUT_DIR/.mcp.json" ]]; then
