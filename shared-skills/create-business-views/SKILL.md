@@ -1,13 +1,13 @@
 ---
 name: create-business-views
-description: Crear, regenerar o borrar vistas de negocio y SQL mappings en Stratio
-  Governance a partir de una ontologia.
+description: Crear, regenerar, borrar o publicar vistas de negocio y SQL mappings en
+  Stratio Governance a partir de una ontologia.
 argument-hint: [dominio tecnico (opcional)]
 ---
 
 # Skill: Crear Vistas de Negocio
 
-Crea o regenera vistas de negocio y SQL mappings en Stratio Governance a partir de una ontologia existente. Fase 3 del pipeline de capa semantica.
+Crea, regenera o borra vistas de negocio y SQL mappings en Stratio Governance a partir de una ontologia existente. Ofrece publicar las vistas tras crearlas o regenerarlas. Fase 3 del pipeline de capa semantica.
 
 ## Tools MCP utilizadas
 
@@ -16,9 +16,10 @@ Crea o regenera vistas de negocio y SQL mappings en Stratio Governance a partir 
 | `list_technical_domains` | sql | Descubrir dominios tecnicos disponibles |
 | `list_ontologies()` | gov | Listar ontologias existentes |
 | `get_ontology_info(name)` | gov | Clases de la ontologia |
-| `list_technical_domain_concepts(domain)` | gov | Vistas existentes con estado de mappings y terminos semanticos |
+| `list_technical_domain_concepts(domain)` | gov | Vistas existentes con estado de gobernanza, mappings y terminos semanticos |
 | `create_business_views(domain, ontology, class_names?, regenerate?)` | gov | Crear vistas + mappings. Salta existentes. Con `regenerate=true`: DESTRUCTIVO, borra y recrea |
 | `delete_business_views(domain, view_names)` | gov | DESTRUCTIVO: borrar vistas especificas sin recrear (protegido por Published) |
+| `publish_business_views(domain, view_names?)` | gov | Publicar vistas (Draft → Pending Publish). Sin `view_names`, publica todas |
 
 **Reglas clave**: `domain_name` inmutable. Confirmacion obligatoria para `regenerate=true` y `delete`. `user_instructions` pendiente de implementar por el equipo de desarrollo — el agente ya lo contempla para cuando este disponible.
 
@@ -26,7 +27,7 @@ Crea o regenera vistas de negocio y SQL mappings en Stratio Governance a partir 
 
 ### 1. Determinar dominio y ontologia
 
-**Dominio**: Si `$ARGUMENTS` contiene nombre, validar contra `list_technical_domains`. Si no, listar y preguntar al usuario siguiendo la convencion de preguntas al usuario.
+**Dominio**: Si `$ARGUMENTS` contiene nombre, validar contra `list_technical_domains`. Si no coincide, reintentar con `list_technical_domains(refresh=true)` por si es una coleccion recien creada. Si ahora coincide, continuar. Si no coincide o no hay argumento, listar y preguntar al usuario siguiendo la convencion de preguntas al usuario.
 
 **Ontologia**: Ejecutar `list_ontologies()`. Si hay varias, preguntar al usuario cual usar. Si solo hay una relevante para el dominio, confirmar.
 
@@ -39,11 +40,11 @@ Ejecutar en paralelo:
 Presentar resumen:
 ```
 ## Estado — [domain_name] + [ontologia]
-| Clase | Vista | Mapping | Terminos semanticos |
-|-------|-------|---------|---------------------|
-| Clase1 | ✓ | ✓ | ✗ |
-| Clase2 | ✗ | — | — |
-| Clase3 | ✓ | ✗ | ✗ |
+| Clase | Vista | Estado | Mapping | Terminos semanticos |
+|-------|-------|--------|---------|---------------------|
+| Clase1 | ✓ | Draft | ✓ | ✗ |
+| Clase2 | ✗ | — | — | — |
+| Clase3 | ✓ | Pending Publish | ✗ | ✗ |
 ```
 
 ### 3. Seleccion de operacion
@@ -70,4 +71,12 @@ Basado en la respuesta de la tool:
 
 Ofrecer proactivamente: "Si alguna vista no te convence, puedo eliminarla (las vistas Published no se pueden borrar)." No bloqueante — el usuario decide.
 
-- Siguiente paso sugerido: "Puedes verificar o actualizar los mappings SQL con `/create-sql-mappings`, o generar terminos semanticos con `/create-semantic-terms`"
+### 6. Publicacion (opcional)
+
+Si se crearon o regeneraron vistas (no aplica a borrado), ofrecer publicacion:
+- "¿Quieres publicar las vistas creadas? Esto cambiara su estado a Pending Publish para revision en la UI de Governance."
+- Si el usuario acepta → ejecutar `publish_business_views(domain, view_names)` con las vistas creadas → presentar resultado: vistas publicadas + fallidas (transicion no permitida) + no encontradas
+- Si el usuario rechaza → continuar con la sugerencia de siguiente paso
+- No bloqueante: el usuario decide
+
+Siguiente paso sugerido: "Puedes verificar o actualizar los mappings SQL con `/create-sql-mappings`, o generar terminos semanticos con `/create-semantic-terms`. Si no has publicado ahora, puedes hacerlo mas tarde"

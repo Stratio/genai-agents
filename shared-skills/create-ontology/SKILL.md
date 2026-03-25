@@ -31,7 +31,7 @@ Crea, amplia o borra clases de una ontologia en Stratio Governance mediante plan
 
 ### 1. Determinar dominio
 
-Si `$ARGUMENTS` contiene un nombre de dominio, validar contra `list_technical_domains`. Si no coincide o no hay argumento, listar dominios y preguntar al usuario siguiendo la convencion de preguntas al usuario.
+Si `$ARGUMENTS` contiene un nombre de dominio, validar contra `list_technical_domains`. Si no coincide, reintentar con `list_technical_domains(refresh=true)` por si es una coleccion recien creada. Si ahora coincide, continuar. Si sigue sin coincidir o no hay argumento, listar dominios y preguntar al usuario siguiendo la convencion de preguntas al usuario.
 
 ### 2. Evaluar ontologias existentes
 
