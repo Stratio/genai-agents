@@ -8,6 +8,7 @@ pymannkendall>=1.4
 matplotlib>=3.9
 seaborn>=0.13
 plotly>=6.0
+kaleido>=0.2,<1
 
 # Machine Learning (clustering, feature importance, tests estadisticos)
 scikit-learn>=1.5

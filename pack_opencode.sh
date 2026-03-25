@@ -87,7 +87,7 @@ else
   "$schema": "https://opencode.ai/config.json",
   "instructions": ["AGENTS.md"],
   "mcp": {
-    "sql": {
+    "stratio_data": {
       "type": "remote",
       "url": "{env:MCP_SQL_URL}",
       "timeout": 90000,
@@ -102,8 +102,8 @@ else
     "lsp": "allow", "edit": "allow", "write": "allow",
     "todoread": "allow", "todowrite": "allow", "task": "allow",
     "skill": "allow", "webfetch": "allow",
-    "sql_*": "allow",
-    "*stratio_list_technical_domains": "deny",
+    "stratio_data_*": "allow",
+    "*list_technical_domains": "deny",
     "bash": { "*": "allow" }
   }
 }

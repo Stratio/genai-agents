@@ -137,7 +137,7 @@ Orden recomendado de secciones (de arriba a abajo):
 |-------------------|-----------|---------|
 | <1,000 filas | Embeber directamente con `set_data()` | Ventas mensuales por region (12 meses x 5 regiones = 60 filas) |
 | 1,000-10,000 filas | Pre-agregar en pandas antes de embeber. Embeber solo las agregaciones necesarias para KPIs, graficas y tablas | Transacciones diarias de un anio → agregar a semanal por segmento |
-| >10,000 filas | Agregar en MCP (`stratio_query_data`). Embeber solo el resumen. Nunca traer detalle transaccional al dashboard | Millones de transacciones → top 20 productos, tendencia mensual, KPIs globales |
+| >10,000 filas | Agregar en MCP (`query_data`). Embeber solo el resumen. Nunca traer detalle transaccional al dashboard | Millones de transacciones → top 20 productos, tendencia mensual, KPIs globales |
 
 **Regla**: El JSON embebido en `DASHBOARD_DATA` no deberia superar ~500 KB. Mas de eso ralentiza la carga inicial del HTML.
 

@@ -30,11 +30,11 @@ Antes de activar el workflow de analisis, evaluar si la pregunta se resuelve con
 
 | Tipo de pregunta | Tool MCP directa | Ejemplo |
 |-----------------|-----------------|---------|
-| Definicion o concepto de negocio | `stratio_search_domain_knowledge` | "Que es el churn rate?", "Como se calcula el ARPU?" |
-| Estructura del dominio | `stratio_list_domain_tables` | "Que tablas tiene el dominio X?" |
-| Detalle o reglas de una tabla | `stratio_get_tables_details` | "Que reglas de negocio tiene la tabla Y?" |
-| Columnas de una tabla | `stratio_get_table_columns_details` | "Que campos tiene la tabla Z?" |
-| Dato puntual sin analisis | `stratio_query_data` | "Cuantos clientes hay?", "Total ventas del mes" |
+| Definicion o concepto de negocio | `search_domain_knowledge` | "Que es el churn rate?", "Como se calcula el ARPU?" |
+| Estructura del dominio | `list_domain_tables` | "Que tablas tiene el dominio X?" |
+| Detalle o reglas de una tabla | `get_tables_details` | "Que reglas de negocio tiene la tabla Y?" |
+| Columnas de una tabla | `get_table_columns_details` | "Que campos tiene la tabla Z?" |
+| Dato puntual sin analisis | `query_data` | "Cuantos clientes hay?", "Total ventas del mes" |
 
 **Si encaja** → Resolver directamente: descubrir dominio si es necesario (listar dominios, explorar tablas, buscar knowledge), obtener el dato via MCP, responder en chat con contexto minimo (vs periodo anterior si disponible). FIN. Sin plan, sin hipotesis, sin artefactos.
 **Si NO encaja** → Continuar con Fase 1 (analisis).
@@ -51,9 +51,9 @@ Antes de activar el workflow de analisis, evaluar si la pregunta se resuelve con
 
 Para exploracion rapida de dominios sin analisis completo, ver la skill `/explore-data`.
 
-1. Si el dominio de datos no es evidente, preguntar al usuario (listar dominios disponibles via `stratio_list_business_domains`)
-2. Explorar tablas del dominio (`stratio_list_domain_tables`)
-3. Obtener detalles de columnas relevantes (`stratio_get_table_columns_details`) y buscar terminologia de negocio (`stratio_search_domain_knowledge`) — lanzar en paralelo, son independientes
+1. Si el dominio de datos no es evidente, preguntar al usuario (listar dominios disponibles via `list_business_domains`)
+2. Explorar tablas del dominio (`list_domain_tables`)
+3. Obtener detalles de columnas relevantes (`get_table_columns_details`) y buscar terminologia de negocio (`search_domain_knowledge`) — lanzar en paralelo, son independientes
 4. Si necesitas aclarar algo, preguntar al usuario
 
 ### Fase 1.1 — EDA y Calidad de Datos (en fase de planificacion, solo lectura)
@@ -96,6 +96,7 @@ Si no selecciona formato en Bloque 1 → Bloque 2 se omite. Resultado: de 6 a 1-
 | Testing de scripts (Fase 4.5-6) | NO (implicito, sin preguntar) | Segun preferencia del usuario (Bloque 1, default SI) | Segun preferencia del usuario (Bloque 1, default SI) |
 | Reasoning (Fase 4.11) | No generar fichero (notas en chat) | Solo .md (completo) | Solo .md (completo + sugerencias) |
 | Validacion de output (Fase 4.12) | Solo Bloque A en chat (sin fichero) | Solo .md (Bloques A + B + C) | Solo .md (Completo A + B + C + D) |
+| **Deliverables (Fase 4.10)** | **Segun formatos seleccionados en Bloque 1 — sin restriccion por profundidad** | **Segun formatos seleccionados en Bloque 1** | **Segun formatos seleccionados en Bloque 1** |
 
 ### Fase 3 — Planificacion (en fase de planificacion, solo lectura)
 
@@ -119,7 +120,7 @@ Si no selecciona formato en Bloque 1 → Bloque 2 se omite. Resultado: de 6 a 1-
 
 0. **Determinar carpeta del analisis**: Generar nombre `YYYY-MM-DD_HHMM_nombre_descriptivo` (minusculas, sin tildes, guiones bajos, max 30 chars en el nombre). Declarar en chat. Crear subdirectorios: `output/[ANALISIS_DIR]/scripts/`, `output/[ANALISIS_DIR]/data/`, `output/[ANALISIS_DIR]/assets/`. Si profundidad >= Estandar, crear tambien `output/[ANALISIS_DIR]/reasoning/` y `output/[ANALISIS_DIR]/validation/`. Persistir el plan aprobado en `output/[ANALISIS_DIR]/plan.md` con el contenido completo del plan formulado en la Fase 3
 1. Setup del entorno: ejecutar `setup_env.sh`. Si hay librerias adicionales, actualizar `requirements.txt` y reinstalar
-2. Consultar datos via MCP (`stratio_query_data` con preguntas en lenguaje natural y `output_format="dict"`). Lanzar en paralelo todas las queries independientes del plan
+2. Consultar datos via MCP (`query_data` con preguntas en lenguaje natural y `output_format="dict"`). Lanzar en paralelo todas las queries independientes del plan
 3. **Validar datos recibidos** (ver seccion 4 — Validacion post-query)
 4. Escribir scripts Python en `output/[ANALISIS_DIR]/scripts/` con nombres descriptivos
 5. **(Si testing = Sí)** Generar tests unitarios (`output/[ANALISIS_DIR]/scripts/test_*.py`) con mocks o subsets de datos
@@ -276,11 +277,11 @@ Para instrucciones detalladas de generacion por formato, ver la skill `/report`.
 
 | Formato | Como generarlo | Cuando usarlo |
 |---------|---------------|---------------|
-| **Documento (PDF + DOCX)** | `tools/pdf_generator.py` + `tools/docx_generator.py` | Informes profesionales. Genera report.pdf, report.html y report.docx |
+| **Documento (PDF + DOCX)** | `tools/pdf_generator.py` + `tools/docx_generator.py` | Informes profesionales. Genera report.pdf y report.docx |
 | **Web** | `tools/dashboard_builder.py` (`DashboardBuilder`) — HTML autonomo con filtros globales, KPI cards dinamicos, tablas ordenables, graficas Plotly interactivas, datos JSON embebidos y CSS del estilo elegido | Dashboards interactivos, informes con filtros, compartir por navegador |
 | **PowerPoint** | `tools/pptx_layout.py` (helpers de layout) + `tools/css_builder.py` (colores) | Presentaciones ejecutivas, reuniones con stakeholders |
 
-**Formato automatico:** Ademas de los formatos seleccionados, siempre se genera `output/[ANALISIS_DIR]/report.md` (Markdown con tablas y bloques mermaid) como documentacion interna del analisis. Cuando el usuario selecciona "Documento", se generan juntos report.pdf, report.html y report.docx.
+**Formato automatico:** Ademas de los formatos seleccionados, siempre se genera `output/[ANALISIS_DIR]/report.md` (Markdown con tablas y bloques mermaid) como documentacion interna del analisis.
 
 **Estilos visuales** — Arquitectura CSS en 3 capas (tokens -> theme -> target):
 
@@ -308,7 +309,7 @@ La generacion de reasoning varia segun la profundidad:
 | Estandar | Generar en `output/[ANALISIS_DIR]/reasoning/` | Solo .md |
 | Profundo | Generar en `output/[ANALISIS_DIR]/reasoning/` | Solo .md (completo + sugerencias) |
 
-El usuario puede hacer override indicandolo en su peticion (ej: "sin reasoning", "reasoning tambien en PDF"). Si pide PDF/HTML, usar `tools/md_to_report.py --style corporate`.
+El usuario puede hacer override indicandolo en su peticion (ej: "sin reasoning", "reasoning tambien en PDF"). Si pide PDF, usar `tools/md_to_report.py --style corporate`. Si pide HTML, anadir `--html`. Si pide DOCX, anadir `--docx`.
 
 Para contenido obligatorio y plantilla, ver skill `/analyze` [reasoning-guide.md](reasoning-guide.md).
 

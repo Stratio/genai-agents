@@ -17,7 +17,7 @@ Para referencia completa de tools y reglas, ver `skills-guides/stratio-semantic-
 
 ### 1. Determinar dominio
 
-Ejecutar `stratio_list_technical_domains` para listar dominios disponibles.
+Ejecutar `list_technical_domains` para listar dominios disponibles.
 
 - Si `$ARGUMENTS` contiene nombre de dominio y coincide con uno existente → usarlo y continuar con el paso 2.
 - Si no coincide o no hay argumento → presentar opciones al usuario siguiendo la convencion de preguntas al usuario:
@@ -28,25 +28,25 @@ Si el usuario elige un dominio existente → continuar con el paso 2.
 
 #### 1b. Crear coleccion de datos (si el usuario lo solicita)
 
-1. **Busqueda**: Preguntar terminos de busqueda. Ejecutar `stratio_search_data_dictionary(search_text, search_type?)`. Presentar resultados en tabla (tipo, nombre, metadata_path, data_store, descripcion). Si no hay resultados, ofrecer refinar el termino o cambiar `search_type`. Permitir iteraciones de busqueda acumulando selecciones.
+1. **Busqueda**: Preguntar terminos de busqueda. Ejecutar `search_data_dictionary(search_text, search_type?)`. Presentar resultados en tabla (tipo, nombre, metadata_path, data_store, descripcion). Si no hay resultados, ofrecer refinar el termino o cambiar `search_type`. Permitir iteraciones de busqueda acumulando selecciones.
 
 2. **Seleccion**: El usuario selecciona tablas y/o paths (seleccion multiple). Mostrar resumen acumulado por tipo (Tables/Paths). Ofrecer buscar mas o continuar.
 
-3. **Nombre y descripcion**: Proponer `collection_name` (sin espacios, usar underscores) y `description`. El usuario puede editar. Verificar que el nombre no exista en `stratio_list_technical_domains`.
+3. **Nombre y descripcion**: Proponer `collection_name` (sin espacios, usar underscores) y `description`. El usuario puede editar. Verificar que el nombre no exista en `list_technical_domains`.
 
-4. **Creacion**: Confirmar con el usuario. Separar seleccion por subtype: Table → `table_metadata_paths`, Path → `path_metadata_paths`. Invocar `stratio_create_data_collection(collection_name, description, table_metadata_paths?, path_metadata_paths?)`. Presentar resultado (tablas insertadas / fallidas). Si hay fallidas, ofrecer reintentar solo las fallidas (max 2 reintentos).
+4. **Creacion**: Confirmar con el usuario. Separar seleccion por subtype: Table → `table_metadata_paths`, Path → `path_metadata_paths`. Invocar `create_data_collection(collection_name, description, table_metadata_paths?, path_metadata_paths?)`. Presentar resultado (tablas insertadas / fallidas). Si hay fallidas, ofrecer reintentar solo las fallidas (max 2 reintentos).
 
 5. **Continuar pipeline**: Usar el nombre de la coleccion recien creada como `domain_name` para el resto del pipeline. Continuar con el paso 2 (diagnostico).
 
 ### 2. Diagnostico completo
 
 Ejecutar en paralelo:
-- `stratio_list_technical_domains` → verificar si el dominio tiene descripcion general
-- `stratio_list_domain_tables(domain)` → tablas con/sin descripciones (= terminos tecnicos)
-- `stratio_list_ontologies` → ontologias existentes
-- `stratio_list_technical_domain_concepts(domain)` → vistas, mappings, terminos semanticos
+- `list_technical_domains` → verificar si el dominio tiene descripcion general
+- `list_domain_tables(domain)` → tablas con/sin descripciones (= terminos tecnicos)
+- `list_ontologies` → ontologias existentes
+- `list_technical_domain_concepts(domain)` → vistas, mappings, terminos semanticos
 
-Para cada ontologia relevante: `stratio_get_ontology_info(name)`.
+Para cada ontologia relevante: `get_ontology_info(name)`.
 
 Presentar **dashboard de estado**:
 ```
@@ -83,29 +83,29 @@ Pedir aprobacion global del plan antes de ejecutar.
 Ejecutar cada fase en orden estricto, llamando a las tools directamente:
 
 **Fase 1 — Terminos tecnicos** (si necesario):
-- `stratio_create_technical_terms(domain, table_names?, user_instructions?)` con las instrucciones globales
+- `create_technical_terms(domain, table_names?, user_instructions?)` con las instrucciones globales
 - Presentar resumen de la tool al usuario
 
 **Fase 2 — Ontologia** (si necesario):
 - Planificacion interactiva: preguntar al usuario sobre clases, ficheros de referencia (ontologias .owl/.ttl, documentos de negocio, CSVs), nomenclaturas
 - Si el usuario proporciona rutas a ficheros locales → **leerlos** para extraer contexto y enriquecer el plan
-- Explorar dominio: `stratio_list_domain_tables` + `stratio_get_tables_details` + `stratio_get_table_columns_details`
+- Explorar dominio: `list_domain_tables` + `get_tables_details` + `get_table_columns_details`
 - Proponer plan de ontologia en Markdown → revisar con usuario → iterar (max 3)
-- `stratio_create_ontology(domain, name, ontology_plan)` o `stratio_update_ontology(domain, name, update_plan)`
-- Verificar: `stratio_get_ontology_info(name)` — presentar estructura y ofrecer: "Si quieres eliminar alguna clase antes de continuar, puedo hacerlo (clases con vistas Published no se pueden borrar)." Si el usuario pide borrar → `stratio_delete_ontology_classes(ontology_name, class_names)` → informar de borradas/saltadas → volver a verificar
+- `create_ontology(domain, name, ontology_plan)` o `update_ontology(domain, name, update_plan)`
+- Verificar: `get_ontology_info(name)` — presentar estructura y ofrecer: "Si quieres eliminar alguna clase antes de continuar, puedo hacerlo (clases con vistas Published no se pueden borrar)." Si el usuario pide borrar → `delete_ontology_classes(ontology_name, class_names)` → informar de borradas/saltadas → volver a verificar
 
 **Fase 3 — Vistas de negocio** (si necesario):
-- `stratio_create_business_views(domain, ontology, class_names?)` con la ontologia del paso anterior
+- `create_business_views(domain, ontology, class_names?)` con la ontologia del paso anterior
 - Presentar resumen de la tool al usuario
-- Ofrecer: "Si alguna vista no te convence, puedo eliminarla antes de continuar con mappings (vistas Published no se pueden borrar)." Si el usuario pide borrar → `stratio_delete_business_views(domain, view_names)` → informar de borradas/saltadas
+- Ofrecer: "Si alguna vista no te convence, puedo eliminarla antes de continuar con mappings (vistas Published no se pueden borrar)." Si el usuario pide borrar → `delete_business_views(domain, view_names)` → informar de borradas/saltadas
 
 **Fase 4 — SQL Mappings** (si necesario; cubre vistas nuevas de Fase 3 y existentes sin mapping):
-- `stratio_create_sql_mappings(domain, view_names?, user_instructions?)` con las instrucciones globales
+- `create_sql_mappings(domain, view_names?, user_instructions?)` con las instrucciones globales
 - Presentar resumen de la tool al usuario
 
 **Fase 5 — Terminos semanticos** (si necesario):
 - Verificar que las vistas tienen mapping (pre-requisito)
-- `stratio_create_semantic_terms(domain, view_names?, user_instructions?)` con las instrucciones globales
+- `create_semantic_terms(domain, view_names?, user_instructions?)` con las instrucciones globales
 - Presentar resumen de la tool al usuario
 
 **Tras cada fase**:

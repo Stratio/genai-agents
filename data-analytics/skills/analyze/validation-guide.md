@@ -14,7 +14,7 @@ Checklist de validacion del producto terminado antes de reportar al usuario. La 
 ```bash
 bash -c "source .venv/bin/activate && python tools/md_to_report.py output/[ANALISIS_DIR]/validation/validation.md --style corporate"
 ```
-Anadir `--docx` si solicito DOCX.
+Anadir `--html` si solicito HTML. Anadir `--docx` si solicito DOCX.
 
 ## Bloques de Validacion
 

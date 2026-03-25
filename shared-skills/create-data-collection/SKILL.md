@@ -12,11 +12,11 @@ Busca tablas y paths en el diccionario de datos tecnico y crea una nueva colecci
 
 | Tool | Servidor | Proposito |
 |------|----------|-----------|
-| `stratio_search_data_dictionary(search_text, search_type?)` | sql | Buscar tablas y paths en el diccionario. `search_type`: `'tables'`, `'paths'` o `'both'` (defecto). Resultados ordenados por relevancia. Cada resultado: `metadata_path`, `name`, `subtype` (Table/Path), `alias?`, `data_store?`, `description?` |
-| `stratio_create_data_collection(collection_name, description, table_metadata_paths?, path_metadata_paths?)` | gov | Crear coleccion + asociar tablas/paths + refrescar vista tecnica. `collection_name` sin espacios (usar underscores). Al menos una de las dos listas obligatoria. Los `metadata_path` provienen de resultados de `stratio_search_data_dictionary` |
-| `stratio_list_technical_domains` | sql | Verificar que el nombre de coleccion no exista ya |
+| `search_data_dictionary(search_text, search_type?)` | sql | Buscar tablas y paths en el diccionario. `search_type`: `'tables'`, `'paths'` o `'both'` (defecto). Resultados ordenados por relevancia. Cada resultado: `metadata_path`, `name`, `subtype` (Table/Path), `alias?`, `data_store?`, `description?` |
+| `create_data_collection(collection_name, description, table_metadata_paths?, path_metadata_paths?)` | gov | Crear coleccion + asociar tablas/paths + refrescar vista tecnica. `collection_name` sin espacios (usar underscores). Al menos una de las dos listas obligatoria. Los `metadata_path` provienen de resultados de `search_data_dictionary` |
+| `list_technical_domains` | sql | Verificar que el nombre de coleccion no exista ya |
 
-**Reglas clave**: `collection_name` sin espacios ni caracteres especiales (usar underscores) — misma convencion que ontologias. Al menos un `table_metadata_paths` o `path_metadata_paths` requerido. Los `metadata_path` se obtienen de los resultados de `stratio_search_data_dictionary`. Confirmacion explicita antes de crear. La busqueda es read-only e idempotente; la creacion no es idempotente.
+**Reglas clave**: `collection_name` sin espacios ni caracteres especiales (usar underscores) — misma convencion que ontologias. Al menos un `table_metadata_paths` o `path_metadata_paths` requerido. Los `metadata_path` se obtienen de los resultados de `search_data_dictionary`. Confirmacion explicita antes de crear. La busqueda es read-only e idempotente; la creacion no es idempotente.
 
 ## Workflow
 
@@ -26,7 +26,7 @@ Si `$ARGUMENTS` contiene texto, usarlo como semilla de busqueda inicial y pasar 
 
 ### 2. Busqueda iterativa en el diccionario
 
-Ejecutar `stratio_search_data_dictionary(search_text, search_type?)` con el termino proporcionado. `search_type` por defecto `'both'`.
+Ejecutar `search_data_dictionary(search_text, search_type?)` con el termino proporcionado. `search_type` por defecto `'both'`.
 
 Presentar resultados en tabla:
 
@@ -56,7 +56,7 @@ Ofrecer opciones: buscar mas elementos o continuar con la creacion.
 - Proponer `description` basada en las tablas/paths seleccionados
 - El usuario puede editar ambos valores
 
-Verificar que el nombre propuesto no coincida con un dominio existente ejecutando `stratio_list_technical_domains`. Si ya existe, informar y pedir un nombre alternativo.
+Verificar que el nombre propuesto no coincida con un dominio existente ejecutando `list_technical_domains`. Si ya existe, informar y pedir un nombre alternativo.
 
 ### 5. Confirmacion y ejecucion
 
@@ -75,7 +75,7 @@ Separar la seleccion por `subtype`:
 - Resultados con subtype `Table` → parametro `table_metadata_paths`
 - Resultados con subtype `Path` → parametro `path_metadata_paths`
 
-Invocar `stratio_create_data_collection(collection_name, description, table_metadata_paths?, path_metadata_paths?)`.
+Invocar `create_data_collection(collection_name, description, table_metadata_paths?, path_metadata_paths?)`.
 
 Presentar resultado: `tables_inserted`, `tables_failed`, `message`.
 

@@ -75,6 +75,6 @@ Activar cuando se detecta un problema, anomalia o desviacion significativa.
 | **Anomalias categoricas** | Desviacion de distribucion esperada | Chi-cuadrado vs distribucion historica | p < 0.01 |
 
 **Anomalia real vs error de datos:**
-- Verificar con `stratio_search_domain_knowledge` si hay eventos conocidos
+- Verificar con `search_domain_knowledge` si hay eventos conocidos
 - Si aparece en multiples metricas → probablemente real
 - Si solo en una columna/dimension → probable error → alertar, no reportar como insight
