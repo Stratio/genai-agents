@@ -28,3 +28,4 @@
 * Simplify Claude packaging: delete pack_claude_plugin.sh (logic absorbed into pack_claude_cowork.sh), rename pack_claude_project.sh → pack_claude_ai_project.sh with output dir claude_ai_projects/; remove plugin and plugin-agent artifacts from make package; update bin/package.sh, bin/clean.sh, bin/compile.sh and all documentation
 * Remove redundant sources and global zip artifacts from make package: sources zip duplicated the repo, global zip was a zip-of-zips of the other artifacts
 * [ROCK-NNNNN] Rename MCP servers to stratio_data/stratio_gov prefix across all agents; simplify tool allowlists to wildcards; add stratio_gov server to root .mcp.json; minor improvements to data-analytics tools
+* [ROCK-NNNNN] semantic-layer: decouple create-data-collection from build-semantic-layer pipeline; add routing guidance to AGENTS.md; improve keyword search guidance and name/description flow in create-data-collection skill
