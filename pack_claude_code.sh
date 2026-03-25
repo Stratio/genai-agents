@@ -248,6 +248,7 @@ fi
 # ---------------------------------------------------------------------------
 rsync -a \
   --exclude=README.md \
+  --exclude=mcps \
   --exclude=CLAUDE.md \
   --exclude=AGENTS.md \
   --exclude=.mcp.json \
@@ -319,6 +320,12 @@ if [[ "$REFS" -gt 0 ]]; then
   echo "    ERROR: $REFS fichero(s) aún contienen referencia a AGENTS.md:" >&2
   grep -rl 'AGENTS\.md' "$OUTPUT_DIR" --include='*.md' --include='*.json' \
        --include='*.sh' --include='*.py' --include='*.txt' 2>/dev/null >&2 || true
+  ERRORS=$((ERRORS + 1))
+fi
+
+# No debe haber fichero mcps
+if [[ -f "$OUTPUT_DIR/mcps" ]]; then
+  echo "    ERROR: fichero mcps no debe estar presente en el output Claude Code" >&2
   ERRORS=$((ERRORS + 1))
 fi
 

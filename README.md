@@ -8,9 +8,9 @@ El repositorio esta orientado principalmente a **OpenCode**, la herramienta open
 
 | Agente | Descripcion | Plataformas | Carpeta |
 |--------|-------------|-------------|---------|
-| **data-analytics** | Agente completo de BI/BA con analisis avanzado, clustering, informes multi-formato (PDF, DOCX, web, PowerPoint) y documentacion del razonamiento | Claude Code, OpenCode, OpenWork | `data-analytics/` |
+| **data-analytics** | Agente completo de BI/BA con analisis avanzado, clustering, informes multi-formato (PDF, DOCX, web, PowerPoint) y documentacion del razonamiento | Claude Code, OpenCode, Stratio Cowork | `data-analytics/` |
 | **data-analytics-light** | Agente ligero de BI/BA orientado a analisis en chat, sin generacion de informes formales. Incluye scripts de empaquetado para multiples plataformas | Claude Code, Claude Cowork, claude.ai, OpenCode | `data-analytics-light/` |
-| **semantic-layer** | Agente especializado en construccion y mantenimiento de capas semanticas en Stratio Governance: creacion de colecciones de datos (dominios tecnicos), terminos tecnicos, ontologias, vistas de negocio, SQL mappings, terminos semanticos y business terms | Claude Code, Claude Cowork, claude.ai, OpenCode | `semantic-layer/` |
+| **semantic-layer** | Agente especializado en construccion y mantenimiento de capas semanticas en Stratio Governance: creacion de colecciones de datos (dominios tecnicos), terminos tecnicos, ontologias, vistas de negocio, SQL mappings, terminos semanticos y business terms | Claude Code, Claude Cowork, claude.ai, OpenCode, Stratio Cowork | `semantic-layer/` |
 
 ## Empaquetado
 
@@ -20,6 +20,7 @@ Scripts en la raiz del monorepo para empaquetar cualquier agente en el formato d
 |--------|-------------------|--------|
 | `pack_claude_code.sh` | Claude Code CLI | `{agente}/dist/claude_code/{nombre}/` |
 | `pack_opencode.sh` | OpenCode | `{agente}/dist/opencode/{nombre}/` |
+| `pack_stratio_cowork.sh` | Stratio Cowork (OpenCode) | `dist/{nombre}-stratio-cowork.zip` |
 | `pack_shared_skills.sh` | Todas (skills sueltas) | `dist/shared-skills.zip` o `dist/{skill}.zip` |
 
 ```bash
@@ -28,9 +29,14 @@ bash pack_claude_code.sh --agent data-analytics
 
 # Empaquetar data-analytics para OpenCode con nombre personalizado
 bash pack_opencode.sh --agent data-analytics --name mi-agente
+
+# Empaquetar semantic-layer para Stratio Cowork
+bash pack_stratio_cowork.sh --agent semantic-layer
 ```
 
 El nombre debe ser kebab-case. Si se omite, se usa el basename del directorio del agente. Los directorios generados estan excluidos del repositorio (`.gitignore`).
+
+`pack_stratio_cowork.sh` genera un ZIP compuesto con dos sub-ZIPs pensado para el despliegue en Stratio Cowork: uno con el agente sin sus shared skills, y otro con las shared skills por separado (para distribuirlas de forma independiente al agente). Además incluye en la raíz del bundle el fichero `mcps` del agente si existe (ver [Configurar herramientas externas](#4-configurar-herramientas-externas-mcps)).
 
 `data-analytics-light` y `semantic-layer` incluyen ademas scripts de empaquetado para los diferentes formatos de Claude (AI Projects y Cowork). Ver [`data-analytics-light/README.md`](data-analytics-light/README.md) para instrucciones detalladas de como configurar cada formato en la plataforma destino.
 
@@ -43,6 +49,7 @@ genai-agents/
   dist/                                         # ZIPs finales versionados
     data-analytics-claude-code-{v}.zip
     data-analytics-opencode-{v}.zip
+    data-analytics-stratio-cowork.zip            # Bundle Stratio Cowork (agente + shared skills)
     data-analytics-light-claude-code-{v}.zip
     data-analytics-light-opencode-{v}.zip
     data-analytics-light-claude-cowork-{v}.zip
@@ -51,6 +58,7 @@ genai-agents/
     semantic-layer-opencode-{v}.zip
     semantic-layer-claude-cowork-{v}.zip
     semantic-layer-claude-ai-project-{v}.zip
+    semantic-layer-stratio-cowork.zip            # Bundle Stratio Cowork (agente + shared skills)
     shared-skills-{v}.zip                        # Todas las shared skills juntas
     shared-skill-propose-knowledge-{v}.zip       # Skill individual
     shared-skill-explore-data-{v}.zip            # Skill individual
@@ -213,6 +221,8 @@ Esta guía explica cómo añadir un agente al monorepo para usarlo en **OpenCode
 mi-agente/
 ├── AGENTS.md              # Instrucciones principales — rol, workflow, reglas
 ├── opencode.json          # Configuracion OpenCode (MCPs, permisos)
+├── .mcp.json              # Configuracion de MCPs para Claude Code / claude.ai
+├── mcps                   # (Opcional) Lista de MCPs requeridos para Stratio Cowork
 ├── skills/                # Skills propias del agente (invocables por el usuario)
 │   └── mi-skill/
 │       └── SKILL.md       # Definicion de la skill (frontmatter YAML + cuerpo)
@@ -324,6 +334,17 @@ Declara los servidores MCP disponibles para Claude Code:
 
 Las variables de entorno usan sintaxis bash `${VAR:-valor_por_defecto}`. `allowedTools` restringe qué herramientas del servidor MCP se exponen al agente. Los permisos de bash y sistema de ficheros los gestiona Claude Code por su cuenta (fuera de este fichero).
 
+#### 4c. `mcps` — Stratio Cowork
+
+Fichero de texto plano (una línea por MCP) que declara los servidores MCP que necesita el agente. Solo es relevante para el bundle de **Stratio Cowork** — `pack_stratio_cowork.sh` lo incluye en la raíz del ZIP compuesto como referencia para el administrador que configure la instalación.
+
+```
+Stratio_Data
+Stratio_Gov
+```
+
+No tiene efecto en los empaquetados para Claude Code ni para OpenCode (ambos scripts lo excluyen de su rsync). Si el agente no se va a distribuir via Stratio Cowork, no es necesario crearlo.
+
 ### 5. Empaquetar
 
 ```bash
@@ -332,6 +353,9 @@ bash pack_opencode.sh --agent mi-agente
 
 # Empaquetar para Claude Code
 bash pack_claude_code.sh --agent mi-agente
+
+# Empaquetar bundle Stratio Cowork (agente + shared skills separadas + mcps)
+bash pack_stratio_cowork.sh --agent mi-agente
 
 # Con nombre personalizado (kebab-case)
 bash pack_opencode.sh --agent mi-agente --name nombre-personalizado
