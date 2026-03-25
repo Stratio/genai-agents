@@ -84,10 +84,9 @@ if [[ -d "$DAL_DIR" ]]; then
     # Normalizar PACK_TYPE para el nombre del ZIP (ai_project -> ai-project)
     ZIP_TYPE=$(echo "$PACK_TYPE" | tr '_' '-')
 
-    # Los pack scripts generan un ZIP dentro del directorio
-    ZIP_FILE=$(find "$DAL_DIR/$OUTPUT_SUBDIR" -name '*.zip' -maxdepth 1 2>/dev/null | head -1)
-    if [[ -n "$ZIP_FILE" ]]; then
-      cp "$ZIP_FILE" "$DIST_DIR/data-analytics-light-claude-${ZIP_TYPE}-${VERSION}.zip"
+    OUTPUT_DIR="$DAL_DIR/$OUTPUT_SUBDIR"
+    if [[ -d "$OUTPUT_DIR" ]]; then
+      (cd "$OUTPUT_DIR" && zip -r "$DIST_DIR/data-analytics-light-claude-${ZIP_TYPE}-${VERSION}.zip" . -q)
       echo "    -> dist/data-analytics-light-claude-${ZIP_TYPE}-${VERSION}.zip"
     fi
   done
@@ -120,10 +119,9 @@ if [[ -d "$SL_DIR" ]]; then
     # Normalizar PACK_TYPE para el nombre del ZIP (ai_project -> ai-project)
     ZIP_TYPE=$(echo "$PACK_TYPE" | tr '_' '-')
 
-    # Los pack scripts generan un ZIP dentro del directorio
-    ZIP_FILE=$(find "$SL_DIR/$OUTPUT_SUBDIR" -name '*.zip' -maxdepth 1 2>/dev/null | head -1)
-    if [[ -n "$ZIP_FILE" ]]; then
-      cp "$ZIP_FILE" "$DIST_DIR/semantic-layer-claude-${ZIP_TYPE}-${VERSION}.zip"
+    OUTPUT_DIR="$SL_DIR/$OUTPUT_SUBDIR"
+    if [[ -d "$OUTPUT_DIR" ]]; then
+      (cd "$OUTPUT_DIR" && zip -r "$DIST_DIR/semantic-layer-claude-${ZIP_TYPE}-${VERSION}.zip" . -q)
       echo "    -> dist/semantic-layer-claude-${ZIP_TYPE}-${VERSION}.zip"
     fi
   done
