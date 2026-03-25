@@ -30,3 +30,4 @@
 * [ROCK-NNNNN] Rename MCP servers to stratio_data/stratio_gov prefix across all agents; simplify tool allowlists to wildcards; add stratio_gov server to root .mcp.json; minor improvements to data-analytics tools
 * [ROCK-NNNNN] semantic-layer: decouple create-data-collection from build-semantic-layer pipeline; add routing guidance to AGENTS.md; improve keyword search guidance and name/description flow in create-data-collection skill
 * [ROCK-NNNNN] Add pack_stratio_cowork.sh script: document bundle format (agent + shared skills + mcps), update agent platform tables and README examples; exclude mcps file from pack_claude_code.sh and pack_opencode.sh with validation checks
+* [ROCK-NNNNN] semantic-layer: add publish business views support — publish_business_views triage action, optional publication step in build-semantic-layer pipeline, refresh=true on domain discovery, increased MCP gov timeout to 600s, updated skill guides and create-business-views skill
