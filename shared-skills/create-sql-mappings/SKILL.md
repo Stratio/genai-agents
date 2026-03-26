@@ -71,7 +71,7 @@ Basado en la respuesta de la tool:
 ### 7. Publicacion (opcional)
 
 Tras crear o actualizar mappings, ofrecer publicacion de las vistas procesadas que esten en estado Draft (verificar con `list_technical_domain_concepts`; las vistas ya en Pending Publish o Published no aplican):
-- "Las vistas con mapping actualizado estan listas para publicar. ¿Quieres publicarlas? Esto cambiara su estado a Pending Publish para revision en la UI de Governance."
+- "Las vistas con mapping actualizado estan listas para publicar. ¿Quieres publicarlas? Esto cambiara su estado a Pending Publish, listas para ser publicadas al virtualizador de datos."
 - Si el usuario acepta → ejecutar `publish_business_views(domain, view_names)` con las vistas en Draft procesadas → presentar resultado: vistas publicadas + fallidas (transicion no permitida) + no encontradas
 - Si el usuario rechaza → continuar con la sugerencia de siguiente paso
 - No bloqueante: el usuario decide

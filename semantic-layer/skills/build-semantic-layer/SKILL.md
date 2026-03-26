@@ -129,6 +129,6 @@ Incluir:
 - Errores encontrados y como se resolvieron
 - Sugerencias de siguientes pasos:
   - "Puedes crear business terms con `/manage-business-terms` para enriquecer el diccionario"
-  - Si las vistas se publicaron durante el pipeline: "Las vistas estan en estado Pending Publish, pendientes de aprobacion en la UI de Governance"
+  - Si las vistas se publicaron durante el pipeline: "Las vistas estan en estado Pending Publish, pendientes de ser publicadas al virtualizador de datos"
   - Si las vistas NO se publicaron: "Las vistas siguen en estado Draft. Puedes publicarlas pidiendolo directamente o desde la UI de Governance"
-  - "Una vez aprobada, la capa semantica se publicara como dominio `semantic_[nombre]`"
+  - "Una vez publicada en el virtualizador, la capa semantica estara disponible como dominio `semantic_[nombre]`"

@@ -74,7 +74,7 @@ Ofrecer proactivamente: "Si alguna vista no te convence, puedo eliminarla (las v
 ### 6. Publicacion (opcional)
 
 Si se crearon o regeneraron vistas (no aplica a borrado), ofrecer publicacion:
-- "¿Quieres publicar las vistas creadas? Esto cambiara su estado a Pending Publish para revision en la UI de Governance."
+- "¿Quieres publicar las vistas creadas? Esto cambiara su estado a Pending Publish, listas para ser publicadas al virtualizador de datos."
 - Si el usuario acepta → ejecutar `publish_business_views(domain, view_names)` con las vistas creadas → presentar resultado: vistas publicadas + fallidas (transicion no permitida) + no encontradas
 - Si el usuario rechaza → continuar con la sugerencia de siguiente paso
 - No bloqueante: el usuario decide
