@@ -36,9 +36,10 @@ genai-agents/
     shared-skills
     shared-guides
     skills/
-      assess-quality/        # Skill local: evaluacion de cobertura
-      create-quality-rules/  # Skill local: creacion de reglas
-      quality-report/        # Skill local: generacion de informes
+      assess-quality/               # Skill local: evaluacion de cobertura
+      create-quality-planification/ # Skill local: creacion de planificaciones de calidad
+      create-quality-rules/         # Skill local: creacion de reglas
+      quality-report/               # Skill local: generacion de informes
 ```
 
 ## Instrucciones de desarrollo
