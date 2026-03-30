@@ -89,9 +89,18 @@ Cada regla tiene los siguientes campos:
   - `percentage` (por defecto): compara query vs query_reference como porcentaje
   - `count`: usa el conteo absoluto de registros de la query
 - `threshold_mode`: (opcional) como se definen los umbrales de evaluacion. Valores posibles:
-  - `range` (por defecto): rangos con operadores como `>`, `<=`
-  - `exact`: valor exacto con operadores `=` y `!=`
-- `threshold_ranges`: (opcional) definiciones personalizadas de umbrales. Si no se proporcionan, se usan los umbrales por defecto (<=50% KO / >50% OK). Ver seccion 3.4 para detalles
+  - `exact` (por defecto): valor exacto con operadores `=` y `!=`
+  - `range`: rangos con operadores como `>`, `<=`
+- `exact_threshold`: (opcional, solo para `threshold_mode=exact`) objeto con:
+  - `value`: valor de comparacion (ej: `"100"`, `"0"`)
+  - `equal_status`: estado cuando resultado = value (`OK`, `KO`, o `WARNING`)
+  - `not_equal_status`: estado cuando resultado != value (`OK`, `KO`, o `WARNING`)
+  - Default: `{value: "100", equal_status: "OK", not_equal_status: "KO"}`
+- `threshold_breakpoints`: (opcional, solo para `threshold_mode=range`) lista ordenada ascendente de puntos de corte. Cada entrada tiene:
+  - `value`: limite superior del intervalo (ej: `"50"`, `"80"`)
+  - `status`: estado para ese intervalo (`OK`, `KO`, o `WARNING`)
+  - La **ultima entrada** NO lleva `value` (rango abierto hacia arriba); solo `status`
+  - Minimo 2 entradas, al menos una `OK` y una `KO`. Ver seccion 3.4
 - `cron_expression`: (opcional) expresion Quartz cron para ejecucion automatica. Si no se indica, la regla no se planifica
 - `cron_timezone`: (opcional) timezone del cron; si hay cron y no se especifica, usar `Europe/Madrid`
 - `cron_start_datetime`: (opcional) ISO 8601 con la primera ejecucion programada; si no se indica, la planificacion empieza inmediatamente tras la creacion
@@ -183,7 +192,19 @@ table_names: [tabla_cabecera, tabla_detalle]
 
 ### 3.4 Configuracion de Medicion y Umbrales
 
-Los parametros `measurement_type`, `threshold_mode` y `threshold_ranges` son **opcionales**. Si el usuario no los especifica, se usan los valores por defecto y no es necesario preguntar. Sin embargo, el plan siempre debe informar de la configuracion de medicion que se aplicara a cada regla (ver seccion 4).
+Los parametros `measurement_type`, `threshold_mode` y (`exact_threshold` o `threshold_breakpoints`) son **opcionales**. Si el usuario no los especifica, se aplican los valores por defecto: `measurement_type=percentage`, `threshold_mode=exact`, `exact_threshold={value: "100", equal_status: "OK", not_equal_status: "KO"}`. No es necesario preguntar al usuario. Sin embargo, el plan siempre debe informar de la configuracion de medicion que se aplicara a cada regla (ver seccion 4).
+
+#### Flujo cuando el usuario pide configurar la medicion
+
+Si el usuario hace referencia a medir la calidad, configurar umbrales, o pide un tipo de medicion concreto:
+
+1. **Presentar las 4 opciones** de medicion disponibles (ver tabla de tipos mas abajo) con descripcion clara
+2. **Recoger la eleccion** del usuario: tipo de medicion (`percentage`/`count`) + modo de umbral (`exact`/`range`)
+3. **Si elige `exact`**: preguntar el valor exacto y los estados (ej: "¿=100% es OK y !=100% es KO?")
+4. **Si elige `range`**: preguntar cuantos niveles (2 o 3) y los valores de corte con sus estados
+5. **Confirmar la configuracion completa** antes de aplicarla a la regla
+
+No asumir la configuracion de medicion — siempre iterar con el usuario hasta que quede clara.
 
 #### Tipos de medicion disponibles
 
@@ -191,67 +212,75 @@ Los parametros `measurement_type`, `threshold_mode` y `threshold_ranges` son **o
 |------|-------------------|-----------------|-------------|
 | Valor exacto (%) | `percentage` | `exact` | Compara query/reference como porcentaje, evalua con valor exacto |
 | Valor exacto (conteo) | `count` | `exact` | Usa conteo absoluto de la query, evalua con valor exacto |
-| Rangos (%) | `percentage` | `range` | Compara query/reference como porcentaje, evalua con rangos (**por defecto**) |
+| Rangos (%) | `percentage` | `range` | Compara query/reference como porcentaje, evalua con rangos |
 | Rangos (conteo) | `count` | `range` | Usa conteo absoluto de la query, evalua con rangos |
 
-**Comportamiento por defecto** (sin parametros): `measurement_type=percentage`, `threshold_mode=range`, umbrales <=50% KO / >50% OK.
+**Comportamiento por defecto** (sin parametros): `measurement_type=percentage`, `threshold_mode=exact`, `exact_threshold={value: "100", equal_status: "OK", not_equal_status: "KO"}`.
 
-#### Directrices para elegir el tipo de medicion
+#### Directrices para sugerir el tipo de medicion
+
+Si el usuario pide recomendacion o no tiene claro que tipo de medicion usar, estas orientaciones pueden ayudar a guiar la conversacion:
 
 | Dimension / Caso | Tipo recomendado | Razon |
 |------------------|-----------------|-------|
-| Completeness, Uniqueness | `percentage` + `exact` (=100% OK) | Se espera paso total; cualquier fallo es KO |
-| Validity, Consistency (tolerancia) | `percentage` + `range` (3 niveles) | Permite un rango WARNING intermedio para anomalias parciales |
+| Completeness, Uniqueness, Validity, Consistency | `percentage` + `exact` (=100% OK) | Se espera paso total; cualquier fallo es KO (**este es el default**) |
 | Timeliness (frescura) | `count` + `exact` | El resultado se mide en numero absoluto de registros recientes |
+| Reglas con tolerancia explicita del usuario | `percentage` + `range` (2-3 niveles) | Solo si el usuario pide explicitamente un rango WARNING intermedio |
 | Reglas con umbral de conteo absoluto | `count` + `range` | Cuando los limites se expresan en cantidad de registros, no en porcentaje |
 
-Estas son orientaciones — la decision final depende de la semantica de cada regla y de lo que el usuario necesite. Si el usuario indica explicitamente un tipo de medicion, usar ese.
+Son orientaciones para sugerir al usuario — la decision final es siempre del usuario. Si el usuario indica explicitamente un tipo de medicion, usar ese. **Por defecto, siempre usar medicion exacta (=100% OK / !=100% KO) salvo que el usuario pida otra cosa.**
 
-#### Ejemplos de `threshold_ranges`
+#### Ejemplos completos de parametros de medicion
 
-**Exact — porcentaje (=100% OK / !=100% KO):**
+Cada ejemplo muestra los parametros tal como deben pasarse a `create_quality_rule`:
+
+**Ejemplo 1 — Exact percentage (=100% OK / !=100% KO) [DEFAULT]:**
 ```json
-[
-  {"operator": "=", "exact_value": "100", "status_range": "OK"},
-  {"operator": "!=", "exact_value": "100", "status_range": "KO"}
+measurement_type: "percentage"
+threshold_mode: "exact"
+exact_threshold: {"value": "100", "equal_status": "OK", "not_equal_status": "KO"}
+```
+
+**Ejemplo 2 — Exact count (=0 registros fallidos OK):**
+```json
+measurement_type: "count"
+threshold_mode: "exact"
+exact_threshold: {"value": "0", "equal_status": "OK", "not_equal_status": "KO"}
+```
+
+**Ejemplo 3 — Range percentage 3 niveles (<=50% KO, >50-80% WARNING, >80% OK):**
+```json
+measurement_type: "percentage"
+threshold_mode: "range"
+threshold_breakpoints: [
+  {"value": "50", "status": "KO"},
+  {"value": "80", "status": "WARNING"},
+  {"status": "OK"}
 ]
 ```
 
-**Exact — conteo (=0 registros fallidos OK):**
+**Ejemplo 4 — Range percentage 2 niveles (<=90% KO, >90% OK):**
 ```json
-[
-  {"operator": "=", "exact_value": "0", "status_range": "OK"},
-  {"operator": "!=", "exact_value": "0", "status_range": "KO"}
+measurement_type: "percentage"
+threshold_mode: "range"
+threshold_breakpoints: [
+  {"value": "90", "status": "KO"},
+  {"status": "OK"}
 ]
 ```
 
-**Range — porcentaje 3 niveles (<=50% KO, >50-80% WARNING, >80% OK):**
+**Ejemplo 5 — Range count (<=50 KO, >50-100 WARNING, >100 OK):**
 ```json
-[
-  {"top_range": "50", "top_range_operator": "<=", "status_range": "KO"},
-  {"bottom_range": "50", "bottom_range_operator": ">", "top_range": "80", "top_range_operator": "<=", "status_range": "WARNING"},
-  {"bottom_range": "80", "bottom_range_operator": ">", "status_range": "OK"}
+measurement_type: "count"
+threshold_mode: "range"
+threshold_breakpoints: [
+  {"value": "50", "status": "KO"},
+  {"value": "100", "status": "WARNING"},
+  {"status": "OK"}
 ]
 ```
 
-**Range — porcentaje 2 niveles (<=90% KO, >90% OK):**
-```json
-[
-  {"top_range": "90", "top_range_operator": "<=", "status_range": "KO"},
-  {"bottom_range": "90", "bottom_range_operator": ">", "status_range": "OK"}
-]
-```
-
-**Range — conteo (<=50 KO, >50-100 WARNING, >100 OK):**
-```json
-[
-  {"top_range": "50", "top_range_operator": "<=", "status_range": "KO"},
-  {"bottom_range": "50", "bottom_range_operator": ">", "top_range": "100", "top_range_operator": "<=", "status_range": "WARNING"},
-  {"bottom_range": "100", "bottom_range_operator": ">", "status_range": "OK"}
-]
-```
-
-**Requisitos**: al menos una entrada con `status_range: "OK"` y una con `status_range: "KO"`. `WARNING` es opcional.
+**Requisitos**: al menos una entrada con `status: "OK"` y una con `status: "KO"`. `WARNING` es opcional. En `threshold_breakpoints`, las entradas deben estar ordenadas de menor a mayor valor, y la ultima entrada no lleva `value` (rango abierto).
 
 ## 3.5 Validacion de SQL (OBLIGATORIO)
 
@@ -354,6 +383,10 @@ Ademas, ¿quieres programar la ejecucion automatica de las reglas?
 1. Si, con la misma planificacion para todas las reglas
 2. Si, con planificacion distinta por regla (o solo para algunas)
 3. No, crear las reglas sin planificacion (ejecucion manual)
+
+¿Quieres configurar la medicion de las reglas?
+1. Si, quiero configurar como se miden (te preguntare los detalles)
+2. No, usar la medicion por defecto (porcentaje, valor exacto: =100% OK / !=100% KO)
 ```
 
 ### Interpretacion de la respuesta del usuario
@@ -373,7 +406,9 @@ Si el usuario proporciona los detalles del cron en la misma respuesta de aprobac
 
 **Aprobacion + opcion 2** → Para cada regla (o bloque de reglas que el usuario quiera tratar igual), preguntar los mismos campos anteriores. Permitir que algunas reglas tengan scheduling y otras no.
 
-**Cambio de medicion** → Si el usuario pide cambiar la forma de medir una o varias reglas (ej: "quiero que la regla 1 use conteo en vez de porcentaje", "pon rangos de 3 niveles para todas"), ajustar los parametros `measurement_type`, `threshold_mode` y/o `threshold_ranges` de las reglas afectadas. Si el usuario describe los umbrales en lenguaje natural (ej: "KO por debajo del 80%, WARNING entre 80-95%, OK por encima del 95%"), traducirlos al formato `threshold_ranges` correspondiente. Actualizar el campo **Medicion** del plan y volver a presentar para aprobacion.
+**Configuracion de medicion (opcion 1)** → Si el usuario elige configurar la medicion, seguir el flujo de interaccion de la seccion 3.4: presentar las 4 opciones, recoger la eleccion, preguntar los detalles segun el modo elegido (exact o range), y confirmar. Aplicar la configuracion resultante a las reglas afectadas. Si el usuario elige opcion 2 o no menciona medicion, no pasar los parametros de medicion (usar defaults del tool).
+
+**Cambio de medicion** → Si el usuario pide cambiar la forma de medir una o varias reglas (ej: "quiero que la regla 1 use conteo en vez de porcentaje", "pon rangos de 3 niveles para todas"), ajustar los parametros `measurement_type`, `threshold_mode` y/o `exact_threshold`/`threshold_breakpoints` de las reglas afectadas. Si el usuario describe los umbrales en lenguaje natural (ej: "KO por debajo del 80%, WARNING entre 80-95%, OK por encima del 95%"), traducirlos al formato `threshold_breakpoints` correspondiente (ver ejemplos completos en seccion 3.4). Actualizar el campo **Medicion** del plan y volver a presentar para aprobacion.
 
 **Rechazo** → No crear. Si el usuario modifica alguna regla, actualizar el plan y volver a presentar para aprobacion.
 
@@ -421,7 +456,8 @@ Solo tras aprobacion explicita, crear las reglas una a una:
 Por cada regla aprobada (secuencial, NO en paralelo):
   1. Llamar create_quality_rule con los parametros disenados, incluyendo los opcionales
      de scheduling si se configuraron (cron_expression, cron_timezone, cron_start_datetime)
-     y los de medicion si difieren de los defaults (measurement_type, threshold_mode, threshold_ranges)
+     y los de medicion si el usuario los configuro (measurement_type, threshold_mode, y exact_threshold
+     o threshold_breakpoints segun el modo — pasar juntos tal como se muestran en los ejemplos de la seccion 3.4)
   2. Reportar el resultado inmediatamente en el chat
   3. Si falla: indicar el error y continuar con la siguiente
 ```

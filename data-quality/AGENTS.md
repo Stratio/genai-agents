@@ -43,6 +43,8 @@ Antes de activar cualquier skill, clasificar el intent del usuario:
 | "Genera/actualiza la metadata de las reglas de [dominio]" | `quality_rules_metadata` | ninguna |
 | "Regenera/fuerza la metadata de todas las reglas de [dominio]" | `quality_rules_metadata(force_update=True)` | ninguna |
 | "Genera la metadata de la regla [ID]" | `quality_rules_metadata(quality_rule_id=ID)` | ninguna |
+| "Quiero configurar como se mide la calidad de las reglas" | — | Dentro de `create-quality-rules` (seccion 3.4) |
+| "Usa valor exacto / rangos / porcentaje / conteo para medir" | — | Dentro de `create-quality-rules` (seccion 3.4) |
 
 **Criterio de triage**: Si la pregunta se responde con una sola llamada MCP directa sin necesidad de evaluar cobertura, identificar gaps ni crear reglas → responder directamente. Si implica evaluacion, propuesta o creacion → cargar la skill correspondiente.
 
@@ -110,6 +112,8 @@ Este flujo NO requiere `assess-quality` previo. Ver seccion "Flujo B" en la skil
 Si el usuario rechaza o modifica el plan: ajustar las reglas propuestas y volver a presentar.
 
 Si el usuario aprueba parcialmente: crear solo las reglas aprobadas.
+
+Si el usuario pide configurar la medicion de las reglas: seguir el flujo de iteracion de la seccion 3.4 de la skill `create-quality-rules` para recoger `measurement_type`, `threshold_mode` y `exact_threshold` o `threshold_breakpoints`. Si el usuario no menciona medicion, aplicar siempre los defaults: `measurement_type=percentage`, `threshold_mode=exact`, umbrales `=100% OK / !=100% KO`.
 
 ---
 
@@ -219,7 +223,7 @@ Ademas de las herramientas listadas en `skills-guides/stratio-data-tools.md`, es
 - **Validacion de SQL (OBLIGATORIO)**: Antes de proponer o crear una regla, se debe verificar que tanto la `query` como la `query_reference` son validas. Para ello, ejecutar cada SQL usando `execute_sql`. Es necesario resolver los placeholders `${tabla}` por el nombre real de la tabla antes de esta verificacion.
 - **Uso OBLIGATORIO de `get_quality_rule_dimensions`**: Debe ejecutarse siempre al inicio de cualquier evaluacion para conocer las dimensiones soportadas por el dominio y sus definiciones. No asumir dimensiones por defecto.
 - **EDA (Analisis Exploratorio)**: Usar siempre `profile_data`. Requiere generar primero la SQL con `generate_sql(data_question="todos los campos de la tabla X", domain_name="Y")` y pasar el resultado al parametro `query`.
-- **`create_quality_rule`**: requiere `collection_name`, `rule_name`, `primary_table`, `table_names` (lista), `description`, `query`, `query_reference`, y opcionalmente `dimension`, `folder_id`, `cron_expression` (expresion Quartz cron para ejecucion automatica), `cron_timezone` (timezone del cron, default `Europe/Madrid`), `cron_start_datetime` (ISO 8601, fecha/hora de la primera ejecucion programada), `measurement_type` (como se mide el resultado: `percentage` por defecto o `count`), `threshold_mode` (como se definen umbrales: `range` por defecto o `exact`) y `threshold_ranges` (lista de umbrales personalizados; si no se indica, defaults <=50% KO / >50% OK)
+- **`create_quality_rule`**: requiere `collection_name`, `rule_name`, `primary_table`, `table_names` (lista), `description`, `query`, `query_reference`, y opcionalmente `dimension`, `folder_id`, `cron_expression` (expresion Quartz cron para ejecucion automatica), `cron_timezone` (timezone del cron, default `Europe/Madrid`), `cron_start_datetime` (ISO 8601, fecha/hora de la primera ejecucion programada), `measurement_type` (default `percentage`), `threshold_mode` (default `exact`), `exact_threshold` (para modo exact: `{value, equal_status, not_equal_status}`; default `{value: "100", equal_status: "OK", not_equal_status: "KO"}`), `threshold_breakpoints` (para modo range: lista de `{value, status}` donde el ultimo elemento no tiene `value`). Estos parametros se pasan siempre con sus valores por defecto salvo que el usuario pida otra configuracion de medicion (ver seccion 3.4 de la skill `create-quality-rules` para el flujo de iteracion con el usuario y ejemplos completos)
 - **`quality_rules_metadata`**: genera metadata AI (descripcion y clasificacion de dimension) para reglas de calidad. Tres modos de uso:
   - **Automatico — antes de evaluar** (`assess-quality`): `quality_rules_metadata(domain_name=X)` sin `force_update` — solo procesa reglas sin metadata o modificadas desde la ultima generacion
   - **Automatico — despues de crear reglas** (`create-quality-rules`): `quality_rules_metadata(domain_name=X)` sin `force_update` — las reglas recien creadas no tendran metadata y se procesaran automaticamente
