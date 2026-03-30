@@ -116,7 +116,7 @@ for skill_name in "${SHARED_SKILLS[@]}"; do
 done
 
 # Si skills-guides/ quedó vacío tras eliminar las shared skills, limpiarlo
-SKILLS_GUIDES_DIR="$STAGING_NO_SHARED/.opencode/skills-guides"
+SKILLS_GUIDES_DIR="$STAGING_NO_SHARED/skills-guides"
 if [[ -d "$SKILLS_GUIDES_DIR" ]]; then
   # Comprobar si las skills locales usan algún guide de skills-guides/
   # Los guides de shared-skills están embebidos dentro de cada carpeta de skill,
