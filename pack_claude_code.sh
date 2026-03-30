@@ -213,7 +213,7 @@ fi
 
 # Copiar shared-skill-guides al output (deduplicando)
 if [[ ${#SHARED_GUIDES_NEEDED[@]} -gt 0 ]]; then
-  mkdir -p "$OUTPUT_DIR/.claude/skills-guides"
+  mkdir -p "$OUTPUT_DIR/skills-guides"
   declare -A _GUIDES_SEEN=()
   N_GUIDES=0
   for guide in "${SHARED_GUIDES_NEEDED[@]}"; do
@@ -221,16 +221,16 @@ if [[ ${#SHARED_GUIDES_NEEDED[@]} -gt 0 ]]; then
     _GUIDES_SEEN[$guide]=1
     guide_src="$MONOREPO_ROOT/shared-skill-guides/$guide"
     if [[ -d "$guide_src" ]]; then
-      cp -r "$guide_src" "$OUTPUT_DIR/.claude/skills-guides/$guide"
+      cp -r "$guide_src" "$OUTPUT_DIR/skills-guides/$guide"
     elif [[ -f "$guide_src" ]]; then
-      cp "$guide_src" "$OUTPUT_DIR/.claude/skills-guides/$guide"
+      cp "$guide_src" "$OUTPUT_DIR/skills-guides/$guide"
     else
       echo "    WARN: shared guide '$guide' no encontrado en $guide_src — omitido" >&2
       continue
     fi
     N_GUIDES=$((N_GUIDES + 1))
   done
-  echo "    [5.1] $N_GUIDES shared guide(s) copiados a .claude/skills-guides/"
+  echo "    [5.1] $N_GUIDES shared guide(s) copiados a skills-guides/"
 fi
 
 # ---------------------------------------------------------------------------
@@ -321,6 +321,16 @@ if [[ "$REFS" -gt 0 ]]; then
   grep -rl 'AGENTS\.md' "$OUTPUT_DIR" --include='*.md' --include='*.json' \
        --include='*.sh' --include='*.py' --include='*.txt' 2>/dev/null >&2 || true
   ERRORS=$((ERRORS + 1))
+fi
+
+# Verificar que skills-guides referenciados desde CLAUDE.md existen
+if [[ -f "$OUTPUT_DIR/CLAUDE.md" ]]; then
+  while IFS= read -r ref; do
+    if [[ ! -f "$OUTPUT_DIR/$ref" ]]; then
+      echo "    ERROR: referencia rota en CLAUDE.md: $ref" >&2
+      ERRORS=$((ERRORS + 1))
+    fi
+  done < <(grep -oP 'skills-guides/[a-zA-Z0-9_.-]+\.md' "$OUTPUT_DIR/CLAUDE.md" | sort -u)
 fi
 
 # No debe haber fichero mcps

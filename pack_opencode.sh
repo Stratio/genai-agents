@@ -205,7 +205,7 @@ if [[ -f "$AGENT_ABS/shared-guides" ]]; then
 fi
 
 if [[ ${#SHARED_GUIDES_NEEDED[@]} -gt 0 ]]; then
-  mkdir -p "$OUTPUT_DIR/.opencode/skills-guides"
+  mkdir -p "$OUTPUT_DIR/skills-guides"
   declare -A _GUIDES_SEEN=()
   N_GUIDES=0
   for guide in "${SHARED_GUIDES_NEEDED[@]}"; do
@@ -213,16 +213,16 @@ if [[ ${#SHARED_GUIDES_NEEDED[@]} -gt 0 ]]; then
     _GUIDES_SEEN[$guide]=1
     guide_src="$MONOREPO_ROOT/shared-skill-guides/$guide"
     if [[ -d "$guide_src" ]]; then
-      cp -r "$guide_src" "$OUTPUT_DIR/.opencode/skills-guides/$guide"
+      cp -r "$guide_src" "$OUTPUT_DIR/skills-guides/$guide"
     elif [[ -f "$guide_src" ]]; then
-      cp "$guide_src" "$OUTPUT_DIR/.opencode/skills-guides/$guide"
+      cp "$guide_src" "$OUTPUT_DIR/skills-guides/$guide"
     else
       echo "    WARN: shared guide '$guide' no encontrado en $guide_src — omitido" >&2
       continue
     fi
     N_GUIDES=$((N_GUIDES + 1))
   done
-  echo "    [5.1] $N_GUIDES shared guide(s) copiados a .opencode/skills-guides/"
+  echo "    [5.1] $N_GUIDES shared guide(s) copiados a skills-guides/"
 fi
 
 # ---------------------------------------------------------------------------
@@ -325,6 +325,16 @@ for FORBIDDEN in .claude; do
     ERRORS=$((ERRORS + 1))
   fi
 done
+
+# Verificar que skills-guides referenciados desde AGENTS.md existen
+if [[ -f "$OUTPUT_DIR/AGENTS.md" ]]; then
+  while IFS= read -r ref; do
+    if [[ ! -f "$OUTPUT_DIR/$ref" ]]; then
+      echo "    ERROR: referencia rota en AGENTS.md: $ref" >&2
+      ERRORS=$((ERRORS + 1))
+    fi
+  done < <(grep -oP 'skills-guides/[a-zA-Z0-9_.-]+\.md' "$OUTPUT_DIR/AGENTS.md" | sort -u)
+fi
 
 # No debe haber fichero mcps
 if [[ -f "$OUTPUT_DIR/mcps" ]]; then
