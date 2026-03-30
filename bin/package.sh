@@ -37,7 +37,7 @@ while IFS= read -r module; do
 
   if [[ "$module" != "data-analytics-light" ]]; then
     echo "  [$module] Empaquetando Stratio cowork (agente + mcps + shared skills por separado)..."
-    bash "$REPO_ROOT/pack_stratio_cowork.sh" --agent "$module" --name "$module" || {
+    bash "$REPO_ROOT/pack_stratio_cowork.sh" --agent "$module" --name "$module" --version "$VERSION" || {
       echo "  WARN: pack_stratio_cowork.sh falló para $module — continuando"
     }
     if [[ -f "$DIST_DIR/${module}-stratio-cowork.zip" ]]; then
