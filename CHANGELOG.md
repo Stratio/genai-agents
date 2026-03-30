@@ -32,3 +32,4 @@
 * [ROCK-NNNNN] Add pack_stratio_cowork.sh script: document bundle format (agent + shared skills + mcps), update agent platform tables and README examples; exclude mcps file from pack_claude_code.sh and pack_opencode.sh with validation checks
 * [ROCK-NNNNN] semantic-layer: add publish business views support — publish_business_views triage action, optional publication step in build-semantic-layer pipeline, refresh=true on domain discovery, increased MCP gov timeout to 600s, updated skill guides and create-business-views skill
 * [ROCK-NNNNN] semantic-layer: fix opencode.json permission denials (replace *query_data with *profile_data and *propose_knowledge); clarify Pending Publish state description in build-semantic-layer, create-business-views and create-sql-mappings skills
+* [ROCK-NNNNN] pack scripts: consolidate skills-guides/ to root level; fix broken references from CLAUDE.md/AGENTS.md and local skills; add Fase 8 integrity check for skills-guides references
