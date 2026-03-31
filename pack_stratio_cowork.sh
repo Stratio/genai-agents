@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
-# pack_stratio_cowork.sh — Genera un ZIP compuesto con dos sub-ZIPs para OpenCode:
-#   1. {name}-opencode-agent.zip    → agente sin las shared skills declaradas
-#   2. {name}-shared-skills.zip       → shared skills del agente (autocontenidas)
+# pack_stratio_cowork.sh — Genera un ZIP compuesto formato agents/v1 para Stratio Cowork:
+#   metadata.yaml                   → manifiesto del bundle (agents/v1)
+#   {name}-opencode-agent.zip       → agente sin las shared skills declaradas
+#   {name}-shared-skills.zip        → shared skills del agente (autocontenidas, opcional)
 #   Resultado: dist/{name}-stratio-cowork.zip
 #
-# Uso: bash pack_stratio_cowork.sh --agent <path> [--name <nombre-kebab>]
+# Uso: bash pack_stratio_cowork.sh --agent <path> [--name <nombre-kebab>] [--version <semver>]
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -15,20 +16,22 @@ MONOREPO_ROOT="$SCRIPT_DIR"
 # ---------------------------------------------------------------------------
 AGENT_PATH=""
 AGENT_NAME=""
+AGENT_VERSION=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --agent) AGENT_PATH="$2"; shift 2 ;;
-    --name)  AGENT_NAME="$2"; shift 2 ;;
+    --agent)   AGENT_PATH="$2";   shift 2 ;;
+    --name)    AGENT_NAME="$2";   shift 2 ;;
+    --version) AGENT_VERSION="$2"; shift 2 ;;
     *) echo "ERROR: argumento desconocido: $1" >&2
-       echo "Uso: bash pack_stratio_cowork.sh --agent <path> [--name <nombre-kebab>]" >&2
+       echo "Uso: bash pack_stratio_cowork.sh --agent <path> [--name <nombre-kebab>] [--version <semver>]" >&2
        exit 1 ;;
   esac
 done
 
 if [[ -z "$AGENT_PATH" ]]; then
   echo "ERROR: --agent es obligatorio" >&2
-  echo "Uso: bash pack_stratio_cowork.sh --agent <path> [--name <nombre-kebab>]" >&2
+  echo "Uso: bash pack_stratio_cowork.sh --agent <path> [--name <nombre-kebab>] [--version <semver>]" >&2
   exit 1
 fi
 
@@ -54,7 +57,7 @@ if [[ ! "$AGENT_NAME" =~ $KEBAB_RE ]]; then
   exit 1
 fi
 
-echo "==> Generando bundle OpenCode para '$AGENT_NAME'"
+echo "==> Generando bundle Stratio Cowork (agents/v1) para '$AGENT_NAME'"
 echo "    Fuente : $AGENT_ABS"
 
 # ---------------------------------------------------------------------------
@@ -196,14 +199,32 @@ ZIP_SIZE=$(du -sh "$BUNDLE_STAGING/$ZIP_SHARED" | cut -f1)
 echo "    [5] $ZIP_SHARED generado ($N_SKILLS_PACKED skill(s), $N_GUIDES_PACKED guide(s)) ($ZIP_SIZE)"
 
 # ---------------------------------------------------------------------------
-# Fase 5.5 — Incluir fichero mcps (si existe en el agente)
+# Fase 5.5 — Generar metadata.yaml (manifiesto agents/v1)
 # ---------------------------------------------------------------------------
-if [[ -f "$AGENT_ABS/mcps" ]]; then
-  cp "$AGENT_ABS/mcps" "$BUNDLE_STAGING/mcps"
-  echo "    [5.5] Fichero mcps incluido"
-else
-  echo "    [5.5] Sin fichero mcps — omitido"
-fi
+echo "    [5.5] Generando metadata.yaml..."
+
+METADATA_FILE="$BUNDLE_STAGING/metadata.yaml"
+
+{
+  echo 'format_version: "agents/v1"'
+  echo "name: \"${AGENT_NAME}\""
+  echo "agent_zip: \"${ZIP_NO_SHARED}\""
+  if [[ ${#SHARED_SKILLS[@]} -gt 0 ]]; then
+    echo "skills_zip: \"${ZIP_SHARED}\""
+  fi
+  if [[ -n "$AGENT_VERSION" ]]; then
+    echo "external_version: \"${AGENT_VERSION}\""
+  fi
+  if [[ -f "$AGENT_ABS/mcps" ]]; then
+    echo "mcps:"
+    while IFS= read -r mcp_name || [[ -n "$mcp_name" ]]; do
+      [[ -z "$mcp_name" || "$mcp_name" == \#* ]] && continue
+      echo "  - name: \"${mcp_name}\""
+    done < "$AGENT_ABS/mcps"
+  fi
+} > "$METADATA_FILE"
+
+echo "    [5.5] metadata.yaml generado"
 
 # ---------------------------------------------------------------------------
 # Fase 6 — ZIP contenedor
@@ -221,14 +242,31 @@ echo "    [6] Bundle generado: dist/${AGENT_NAME}-stratio-cowork.zip ($BUNDLE_SI
 echo "    [7] Verificando integridad..."
 ERRORS=0
 
-# Ambos sub-ZIPs deben estar dentro del bundle
+# Los tres ficheros obligatorios deben estar en el bundle
 BUNDLE_CONTENTS=$(unzip -Z1 "$BUNDLE_ZIP" 2>/dev/null) || true
+if ! echo "$BUNDLE_CONTENTS" | grep -q "^metadata\.yaml$"; then
+  echo "    ERROR: metadata.yaml no encontrado en el bundle" >&2
+  ERRORS=$((ERRORS + 1))
+fi
 if ! echo "$BUNDLE_CONTENTS" | grep -q "$ZIP_NO_SHARED"; then
   echo "    ERROR: $ZIP_NO_SHARED no encontrado en el bundle" >&2
   ERRORS=$((ERRORS + 1))
 fi
-if ! echo "$BUNDLE_CONTENTS" | grep -q "$ZIP_SHARED"; then
-  echo "    ERROR: $ZIP_SHARED no encontrado en el bundle" >&2
+if [[ ${#SHARED_SKILLS[@]} -gt 0 ]]; then
+  if ! echo "$BUNDLE_CONTENTS" | grep -q "$ZIP_SHARED"; then
+    echo "    ERROR: $ZIP_SHARED no encontrado en el bundle" >&2
+    ERRORS=$((ERRORS + 1))
+  fi
+fi
+
+# metadata.yaml debe declarar format_version agents/v1
+METADATA_CONTENT=$(unzip -p "$BUNDLE_ZIP" metadata.yaml 2>/dev/null) || true
+if ! echo "$METADATA_CONTENT" | grep -q 'format_version:.*agents/v1'; then
+  echo "    ERROR: metadata.yaml no contiene format_version: \"agents/v1\"" >&2
+  ERRORS=$((ERRORS + 1))
+fi
+if ! echo "$METADATA_CONTENT" | grep -q "agent_zip:.*${ZIP_NO_SHARED}"; then
+  echo "    ERROR: metadata.yaml no referencia correctamente agent_zip ($ZIP_NO_SHARED)" >&2
   ERRORS=$((ERRORS + 1))
 fi
 
@@ -263,14 +301,6 @@ if [[ "$SKILLS_REFS" -gt 0 ]]; then
   ERRORS=$((ERRORS + 1))
 fi
 
-# Si el agente declara mcps, debe estar en el bundle
-if [[ -f "$AGENT_ABS/mcps" ]]; then
-  if ! echo "$BUNDLE_CONTENTS" | grep -q "^mcps$"; then
-    echo "    ERROR: fichero mcps no encontrado en el bundle" >&2
-    ERRORS=$((ERRORS + 1))
-  fi
-fi
-
 if [[ "$ERRORS" -gt 0 ]]; then
   echo "==> FALLO: $ERRORS error(es) de verificación" >&2
   exit 1
@@ -278,6 +308,6 @@ fi
 
 echo "==> OK — dist/${AGENT_NAME}-stratio-cowork.zip"
 echo "    Contiene:"
+echo "      - metadata.yaml  (manifiesto agents/v1)"
 echo "      - $ZIP_NO_SHARED  (agente sin shared skills)"
-echo "      - $ZIP_SHARED  (${#SHARED_SKILLS[@]} shared skill(s))"
-[[ -f "$AGENT_ABS/mcps" ]] && echo "      - mcps  (listado de MCPs)"
+[[ ${#SHARED_SKILLS[@]} -gt 0 ]] && echo "      - $ZIP_SHARED  (${#SHARED_SKILLS[@]} shared skill(s))"
