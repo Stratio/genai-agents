@@ -107,118 +107,131 @@ Generar directamente el informe en markdown dentro de la respuesta del chat. Seg
 
 No ejecutar Python ni crear archivos.
 
-### Formato: Markdown en disco
+### Formatos de archivo: PDF, DOCX y Markdown en disco
 
-1. Construir el contenido del informe en markdown siguiendo la estructura de la seccion 3
-2. Determinar la ruta de salida:
-   - Si el usuario indico un nombre: usar ese nombre (anadir .md si no lo tiene)
-   - Si no: `output/quality-report-[dominio]-[YYYY-MM-DD].md`
-3. Obtener la ruta absoluta del directorio output:
-   ```bash
-   mkdir -p output/ && readlink -f output/
-   ```
-   Usar el resultado (p.ej. `/home/user/session/output`) como prefijo absoluto para el Write tool.
-4. Escribir el archivo en `<ruta-absoluta>/quality-report-[dominio]-[YYYY-MM-DD].md` (ruta absoluta requerida por el Write tool)
+Los tres formatos de archivo (PDF, DOCX, MD) usan el mismo generador Python y el mismo fichero `report-input.json`. El proceso es identico salvo el flag `--format` y la extension del fichero de salida.
 
-### Formato: PDF
+#### Paso 1 — Verificar entorno
 
-1. Verificar que el entorno virtual existe y tiene las dependencias instaladas:
-   ```bash
-   bash setup_env.sh
-   ```
-2. Preparar el payload JSON con todos los datos del informe y guardarlo en disco:
-   - Obtener la ruta absoluta del directorio output:
-     ```bash
-     mkdir -p output/ && readlink -f output/
-     ```
-     Usar el resultado como prefijo para el Write tool (p.ej. `/home/user/session/output`).
-   - Escribir el contenido JSON en `<ruta-absoluta>/report-input.json` siguiendo **exactamente** este schema (los campos que falten quedan como `null` o lista vacía `[]`):
+```bash
+bash setup_env.sh
+```
 
-   ```json
-   {
-     "title": "Informe de Cobertura de Calidad del Dato — <tabla> — <dominio>",
-     "domain": "<domain_name>",
-     "scope": "<tabla(s) o 'Dominio completo'>",
-     "generated_at": "<YYYY-MM-DD>",
-     "summary": {
-       "tables_analyzed": <N>,
-       "rules_total": <N>,
-       "rules_ok": <N>,
-       "rules_ko": <N>,
-       "rules_warning": <N>,
-       "rules_not_executed": <N>,
-       "coverage_estimate": "<XX%>",
-       "gaps_critical": <N>,
-       "gaps_moderate": <N>,
-       "gaps_low": <N>,
-       "rules_created_this_session": <N o null>
-     },
-     "tables": [
-       {
-         "name": "<tabla>",
-         "coverage_estimate": "<XX%>",
-         "completeness": "<OK|Gap|Parcial|N/A>",
-         "uniqueness": "<OK|Gap|Parcial|N/A>",
-         "validity": "<OK|Gap|Parcial|N/A>",
-         "consistency": "<OK|Gap|Parcial|N/A>",
-         "rules": [
-           {
-             "name": "<nombre-regla>",
-             "dimension": "<dimension>",
-             "status": "<OK|KO|WARNING>",
-             "pass_pct": <0-100 o null>,
-             "description": "<descripcion>"
-           }
-         ],
-         "gaps": [
-           {
-             "column": "<columna>",
-             "dimension": "<dimension ausente>",
-             "priority": "<CRITICO|ALTO|MEDIO|BAJO>",
-             "description": "<descripcion del gap>"
-           }
-         ]
-       }
-     ],
-     "rules_created": [
-       {
-         "name": "<nombre-regla>",
-         "dimension": "<completeness|uniqueness|validity|consistency|...>",
-         "table": "<tabla>",
-         "description": "<descripcion en lenguaje natural>",
-         "query": "<SQL numerador>",
-         "query_reference": "<SQL denominador>",
-         "measurement": "<descripcion legible, ej: Porcentaje, exacto — =100% OK / !=100% KO>",
-         "validation_result": "<valor calculado, ej: 99.5% o 44200 o SIN_DATOS>",
-         "calculated_status": "<OK|KO|WARNING|SIN_DATOS>"
-       }
-     ],
-     "recommendations": ["<recomendacion 1>", "..."]
-   }
-   ```
+#### Paso 2 — Preparar report-input.json
 
-   **Notas de mapeo desde los datos de assess-quality:**
-   - `summary.tables_analyzed`: número de tablas en el scope
-   - `summary.rules_total`: total de reglas existentes en la coleccion
-   - `summary.coverage_estimate`: porcentaje estimado (dimensiones cubiertas / total posibles)
-   - `tables[].completeness/uniqueness/validity/consistency`: estado de cobertura de cada dimension para esa tabla (`OK` si hay regla activa, `Gap` si no hay ninguna, `Parcial` si hay alguna pero no completa)
-   - `tables[].gaps[].priority`: `CRITICO` para PK/FK sin regla, `ALTO` para columnas clave, `MEDIO` para resto
-3. Determinar la ruta de salida:
-   - Si el usuario indico un nombre: usar ese
-   - Si no: `output/quality-report-[dominio]-[YYYY-MM-DD].pdf`
-4. Ejecutar el generador usando el Python del venv directamente (sin activar):
-   ```bash
-   .venv/bin/python tools/quality_report_generator.py \
-     --format pdf \
-     --output "output/quality-report-[dominio]-[fecha].pdf" \
-     --input-file output/report-input.json
-   ```
-5. Verificar que el archivo se ha generado correctamente
-6. Informar al usuario de la ruta del archivo
+Obtener la ruta absoluta del directorio output:
+```bash
+mkdir -p output/ && readlink -f output/
+```
 
-### Formato: DOCX
+Escribir `<ruta-absoluta>/report-input.json` con el schema exacto que sigue. **Los nombres de campo son literales — el generador los lee con `data.get("campo")` y devuelve `-` si no existen.**
 
-Mismo proceso que PDF pero con `--format docx` y extension `.docx`. El archivo temporal `output/report-input.json` puede reutilizarse si ya fue escrito en el paso PDF; si no, crearlo siguiendo el mismo proceso del paso 2 de PDF.
+**Errores comunes a evitar (producen informe en blanco):**
+- NO `report_title` → `title`
+- NO `report_date` / `date` → `generated_at`
+- NO `executive_summary` → `summary`
+- NO `total_rules` / `rules_count` → `summary.rules_total`
+- NO `rules_pending` / `rules_not_run` → `summary.rules_not_executed`
+- NO `quality_rules` → `tables[].rules`
+- NO `coverage_by_dimension` (objeto anidado) → campos planos `tables[].completeness`, `tables[].uniqueness`, etc.
+- NO prioridades en español (`Alta/Media/Baja`) → `CRITICO|ALTO|MEDIO|BAJO`
+- NO `recommendations` como array de objetos → array de **strings** planos
+- NO `calculated_status` en `rules_created` → `status`
+
+```json
+{
+  "title": "Informe de Cobertura de Calidad del Dato — <tabla> — <dominio>",
+  "domain": "<domain_name>",
+  "scope": "<tabla(s) o 'Dominio completo'>",
+  "generated_at": "<YYYY-MM-DD>",
+  "summary": {
+    "tables_analyzed": <N>,
+    "rules_total": <N>,
+    "rules_ok": <N>,
+    "rules_ko": <N>,
+    "rules_warning": <N>,
+    "rules_not_executed": <N>,
+    "coverage_estimate": "<XX%>",
+    "gaps_critical": <N>,
+    "gaps_moderate": <N>,
+    "gaps_low": <N>,
+    "rules_created_this_session": <N o null>
+  },
+  "tables": [
+    {
+      "name": "<tabla>",
+      "coverage_estimate": "<XX%>",
+      "completeness": "<OK|Gap|Parcial|N/A>",
+      "uniqueness": "<OK|Gap|Parcial|N/A>",
+      "validity": "<OK|Gap|Parcial|N/A>",
+      "consistency": "<OK|Gap|Parcial|N/A>",
+      "rules": [
+        {
+          "name": "<nombre-regla>",
+          "dimension": "<dimension>",
+          "status": "<OK|KO|WARNING>",
+          "pass_pct": <0-100 o null>,
+          "description": "<descripcion>"
+        }
+      ],
+      "gaps": [
+        {
+          "column": "<columna o '—' si aplica a la tabla>",
+          "dimension": "<dimension ausente>",
+          "priority": "<CRITICO|ALTO|MEDIO|BAJO>",
+          "description": "<descripcion del gap>"
+        }
+      ]
+    }
+  ],
+  "rules_created": [
+    {
+      "name": "<nombre-regla>",
+      "table": "<tabla>",
+      "dimension": "<completeness|uniqueness|validity|consistency|...>",
+      "status": "<created|OK|KO|WARNING|SIN_DATOS>"
+    }
+  ],
+  "recommendations": ["<recomendacion 1 como string plano>", "<recomendacion 2>"]
+}
+```
+
+**Notas de mapeo desde los datos de assess-quality:**
+- `summary.rules_total` ← total de reglas existentes en la coleccion (no solo las ejecutadas)
+- `summary.rules_not_executed` ← reglas sin resultado aun (pendientes)
+- `summary.gaps_critical` ← gaps con priority `CRITICO`; `gaps_moderate` ← `ALTO`; `gaps_low` ← `MEDIO` + `BAJO`
+- `tables[].completeness/uniqueness/validity/consistency` ← `OK` si hay regla activa, `Gap` si ninguna, `Parcial` si incompleta, `N/A` si no aplica
+- `tables[].rules[].status` ← para reglas sin ejecutar usar `WARNING` (nunca "Pendiente" ni "Sin ejecutar")
+- `tables[].gaps[].priority` ← `CRITICO` para PK/FK sin regla, `ALTO` para columnas clave, `MEDIO` para resto, `BAJO` para dimensiones opcionales
+- `rules_created[].status` ← usar `"created"` para reglas recien creadas en esta sesion sin validacion; `OK|KO|WARNING|SIN_DATOS` si se ejecuto validacion SQL
+
+#### Paso 3 — Determinar ruta de salida
+
+- Si el usuario indico un nombre: usar ese (con la extension correcta)
+- Si no:
+  - PDF: `output/quality-report-[dominio]-[YYYY-MM-DD].pdf`
+  - DOCX: `output/quality-report-[dominio]-[YYYY-MM-DD].docx`
+  - MD: `output/quality-report-[dominio]-[YYYY-MM-DD].md`
+
+#### Paso 4 — Validar el JSON (OBLIGATORIO antes de ejecutar el generador)
+
+```bash
+.venv/bin/python tools/validate_report_input.py output/report-input.json
+```
+
+- Si termina con `[OK]`: continuar al paso 5.
+- Si termina con `[VALIDATION FAILED]`: leer cada error, corregir el `report-input.json` y volver a ejecutar la validacion hasta que pase sin errores. **No ejecutar el generador con un JSON invalido** — producira un informe en blanco sin avisar.
+
+#### Paso 5 — Ejecutar el generador
+
+```bash
+.venv/bin/python tools/quality_report_generator.py \
+  --format <pdf|docx|md> \
+  --output "output/quality-report-[dominio]-[fecha].<ext>" \
+  --input-file output/report-input.json
+```
+
+Si el usuario pide PDF y DOCX en la misma sesion, el `report-input.json` puede reutilizarse — ejecutar el generador dos veces con distinto `--format` y `--output`.
 
 ## 5. Verificacion Post-Generacion
 
