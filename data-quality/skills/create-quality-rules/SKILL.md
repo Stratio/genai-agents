@@ -294,6 +294,14 @@ Antes de presentar el plan al usuario, se debe verificar la validez tecnica de l
    - Revisar la sintaxis SQL.
    - Ajustar el diseño de la regla.
    - Re-validar hasta que ambas queries sean exitosas.
+5. Con ambas queries exitosas, calcular el resultado y el estado de la regla:
+   - Obtener `query_val` (valor numerico de `query`) y `query_ref_val` (valor numerico de `query_reference`).
+   - Si `measurement_type = "percentage"`: `result = (query_val / query_ref_val) * 100` redondeado a 2 decimales. Si `query_ref_val == 0`, anotar `SIN_DATOS` (no dividir).
+   - Si `measurement_type = "count"`: `result = query_val`.
+   - Evaluar el estado segun `threshold_mode`:
+     - `"exact"`: si `result == exact_threshold.value` → `equal_status`; si no → `not_equal_status`.
+     - `"range"`: recorrer `threshold_breakpoints` en orden ascendente; para el primer punto cuyo `value >= result`, usar ese `status`; si `result` supera todos los puntos con valor, usar el `status` del ultimo punto (rango abierto, sin `value`).
+   - El estado calculado (`OK`, `KO`, `WARNING` o `SIN_DATOS`) se incluye en el campo **Resultado de validacion** del plan (ver seccion 4).
 
 Solo las reglas cuyas queries hayan sido validadas correctamente pueden formar parte del plan presentado al usuario.
 
@@ -333,9 +341,14 @@ Igual que en la seccion 3.5:
 1. Resolver los placeholders `${tabla}` por el nombre real de la tabla.
 2. Ejecutar `query` y `query_reference` con `execute_sql(query=[sql], limit=1)`.
 3. Si alguna query falla, revisar y corregir hasta que ambas sean exitosas.
-4. **Informar del resultado numerico** al usuario (ej: "la query devuelve 45.000 registros que pasan de 45.230 totales → 99,5% de paso esperado").
+4. Calcular el resultado y el estado de la regla aplicando la logica del paso 5 de la seccion 3.5 (measurement_type, threshold_mode y umbrales configurados).
+5. **Informar del resultado al usuario** incluyendo el estado calculado. Ejemplos:
+   - Percentage exact: "la query devuelve 45.000 de 45.230 totales → 99,5% → KO (umbral: =100% OK)"
+   - Count exact: "la query devuelve 0 registros → OK (umbral: =0 OK)"
+   - Range: "la query devuelve 72% → WARNING (rango: <=50% KO, >50-80% WARNING, >80% OK)"
+   - Sin datos: "query_reference devuelve 0 registros → SIN_DATOS"
 
-Tras informar del resultado numerico, continuar directamente con la seccion 4 (Presentar Plan y Esperar Aprobacion). En el flujo B, el plan contendra tipicamente una sola regla. Incluir el resultado de la validacion SQL en la presentacion.
+Tras informar del resultado, continuar directamente con la seccion 4 (Presentar Plan y Esperar Aprobacion). En el flujo B, el plan contendra tipicamente una sola regla. Incluir el resultado de la validacion SQL con el estado calculado en la presentacion.
 
 **Nota**: Tras la creacion de la regla (seccion 5), se generara automaticamente metadata AI via `quality_rules_metadata`.
 
@@ -345,7 +358,7 @@ Tras informar del resultado numerico, continuar directamente con la seccion 4 (P
 
 Antes de ejecutar ninguna llamada a `create_quality_rule`, presentar el plan completo al usuario.
 
-**Nota para Flujo B (regla concreta)**: El plan contendra tipicamente una sola regla. Incluir ademas el resultado de la validacion SQL (numero de registros que pasan / total, % esperado de paso).
+**Nota para Flujo B (regla concreta)**: El plan contendra tipicamente una sola regla. Incluir ademas el resultado de la validacion SQL con el estado calculado (OK/KO/WARNING/SIN_DATOS).
 
 ### Formato del plan
 
@@ -367,11 +380,16 @@ Antes de ejecutar ninguna llamada a `create_quality_rule`, presentar el plan com
 - **SQL (total)**: `SELECT COUNT(*) FROM ${account}`
 - **Medicion**: Porcentaje, valor exacto — =100% OK, !=100% KO
 - **Justificacion**: La columna id es la clave primaria de la tabla. Un nulo en este campo indica un registro corrupto que rompe la integridad referencial.
-- **Situacion actual** (del EDA previo): 0 nulos de 45.230 registros → se espera 100% de paso inicial
+- **Resultado de validacion**: 45.230 de 45.230 registros pasan → 100,0% → OK
 
 ### Regla 2: dq-account-uniqueness-id
 [...]
 ```
+
+**Nota sobre el campo de resultado**:
+- **Flujo B** (regla concreta): usar siempre `**Resultado de validacion**` con el valor real obtenido de las queries. Formato: `[query_val] de [query_ref_val] registros pasan → [result]% → [ESTADO]` (percentage) o `[query_val] registros → [ESTADO]` (count).
+- **Flujo A** (con EDA previo): si el EDA ya aportaba datos de situacion actual, combinar ambos en un campo unico. Formato: `**Situacion actual** (EDA previo): 0 nulos de 45.230 registros; **validacion SQL**: 45.230 de 45.230 pasan → 100,0% → OK`.
+- Si `query_reference` devuelve 0: `**Resultado de validacion**: SIN_DATOS — query_reference devuelve 0 registros`.
 
 ---
 
@@ -503,7 +521,8 @@ Al terminar la creacion, presentar resumen:
 ### Proximos pasos recomendados
 
 - Ejecutar las reglas recien creadas para obtener un baseline de calidad
-- Revisar las reglas en estado KO si las hubiera
+- [Si alguna regla tenia estado calculado KO en la validacion SQL]: **PRIORIDAD — estas reglas ya muestran KO con el dato actual**: [lista de nombres]. El estado KO indica que los datos actuales no cumplen el umbral configurado; revisar si el umbral es correcto o si hay un problema de calidad real antes de ponerlas en produccion.
+- [Si alguna regla tenia estado calculado WARNING en la validacion SQL]: revisar estas reglas, el dato actual esta en zona de aviso: [lista de nombres].
 - [Si quedan gaps]: considerar cubrir tambien [lista de gaps restantes]
 ```
 

@@ -89,7 +89,9 @@ Si se ejecuto `create-quality-rules` antes, incluir:
 - Lista de reglas creadas con su SQL
 - Cobertura antes y despues (solo si se ejecuto `assess-quality` previamente; para reglas del Flujo B sin assess previo, omitir la comparacion de cobertura)
 
-**Para reglas del Flujo B (regla concreta)**: indicar que fueron solicitadas directamente por el usuario, incluir la logica de negocio descrita y el resultado de la validacion SQL (registros que pasan / total, % esperado).
+**Para reglas del Flujo B (regla concreta)**: indicar que fueron solicitadas directamente por el usuario, incluir la logica de negocio descrita, el resultado de la validacion SQL (registros que pasan / total, % o conteo) y el estado calculado (OK / KO / WARNING / SIN_DATOS) basado en la configuracion de medicion aplicada (measurement_type + threshold_mode + umbrales).
+
+**Para reglas del Flujo A (gaps)**: incluir el resultado de la validacion SQL con el estado calculado. Si la validacion mostro KO o WARNING, destacarlo visualmente (negrita) como dato a revisar.
 
 ### Seccion 6 — Recomendaciones y Proximos Pasos
 
@@ -178,7 +180,19 @@ No ejecutar Python ni crear archivos.
          ]
        }
      ],
-     "rules_created": [],
+     "rules_created": [
+       {
+         "name": "<nombre-regla>",
+         "dimension": "<completeness|uniqueness|validity|consistency|...>",
+         "table": "<tabla>",
+         "description": "<descripcion en lenguaje natural>",
+         "query": "<SQL numerador>",
+         "query_reference": "<SQL denominador>",
+         "measurement": "<descripcion legible, ej: Porcentaje, exacto — =100% OK / !=100% KO>",
+         "validation_result": "<valor calculado, ej: 99.5% o 44200 o SIN_DATOS>",
+         "calculated_status": "<OK|KO|WARNING|SIN_DATOS>"
+       }
+     ],
      "recommendations": ["<recomendacion 1>", "..."]
    }
    ```
