@@ -36,7 +36,7 @@ Antes de activar el workflow de analisis, evaluar si la pregunta se resuelve con
 | Columnas de una tabla | `get_table_columns_details` | "Que campos tiene la tabla Z?" |
 | Dato puntual sin analisis | `query_data` | "Cuantos clientes hay?", "Total ventas del mes" |
 
-**Si encaja** → Resolver directamente: descubrir dominio si es necesario (listar dominios, explorar tablas, buscar knowledge), obtener el dato via MCP, responder en chat con contexto minimo (vs periodo anterior si disponible). FIN. Sin plan, sin hipotesis, sin artefactos.
+**Si encaja** → Resolver directamente: descubrir dominio si es necesario (buscar o listar dominios, explorar tablas, buscar knowledge), obtener el dato via MCP, responder en chat con contexto minimo (vs periodo anterior si disponible). FIN. Sin plan, sin hipotesis, sin artefactos.
 **Si NO encaja** → Continuar con Fase 1 (analisis).
 
 **Activacion de skills**: Si la pregunta NO es triage, cargar la skill correspondiente ANTES de continuar:
@@ -45,13 +45,13 @@ Antes de activar el workflow de analisis, evaluar si la pregunta se resuelve con
 - Generacion de informe a partir de analisis existente → Cargar skill `report`
 - NUNCA seguir el workflow de las Fases 1-4 sin tener la skill cargada en contexto. La skill contiene el detalle operativo necesario.
 
-**Criterio de triage**: La pregunta se responde con datos puntuales (1-2 metricas, sin dimensiones de corte) sin necesidad de cruzar datos, formular hipotesis, ni generar visualizaciones. Las llamadas MCP de descubrimiento (listar dominios, explorar tablas, buscar knowledge) son infraestructura y no cuentan como analisis. Si hay duda, tratar como analisis.
+**Criterio de triage**: La pregunta se responde con datos puntuales (1-2 metricas, sin dimensiones de corte) sin necesidad de cruzar datos, formular hipotesis, ni generar visualizaciones. Las llamadas MCP de descubrimiento (buscar/listar dominios, explorar tablas, buscar knowledge) son infraestructura y no cuentan como analisis. Si hay duda, tratar como analisis.
 
 ### Fase 1 — Descubrimiento (en fase de planificacion, solo lectura)
 
 Para exploracion rapida de dominios sin analisis completo, ver la skill `/explore-data`.
 
-1. Si el dominio de datos no es evidente, preguntar al usuario (listar dominios disponibles via `list_business_domains`)
+1. Si el dominio de datos no es evidente, preguntar al usuario. Si da pistas sobre el dominio, buscar con `search_domains(pista)`. Si no, listar con `list_domains()`
 2. Explorar tablas del dominio (`list_domain_tables`)
 3. Obtener detalles de columnas relevantes (`get_table_columns_details`) y buscar terminologia de negocio (`search_domain_knowledge`) — lanzar en paralelo, son independientes
 4. Si necesitas aclarar algo, preguntar al usuario

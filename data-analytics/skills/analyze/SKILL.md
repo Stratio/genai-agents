@@ -27,7 +27,7 @@ Si la peticion requiere analisis (cruce de datos, hipotesis, visualizaciones, mu
 
 ## 2. Descubrimiento de Dominio
 
-Leer y seguir `skills-guides/stratio-data-tools.md` sec 4 para los pasos de descubrimiento del dominio (listar dominios, seleccionar, explorar tablas, columnas y terminologia).
+Leer y seguir `skills-guides/stratio-data-tools.md` sec 4 para los pasos de descubrimiento del dominio (buscar o listar dominios, seleccionar, explorar tablas, columnas y terminologia).
 
 ## 3. EDA y Calidad de Datos
 

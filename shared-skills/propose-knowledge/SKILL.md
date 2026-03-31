@@ -10,9 +10,9 @@ Guia para analizar una conversacion de analisis y proponer conocimiento de negoc
 
 ## 1. Determinar Dominio
 
-- Si `$ARGUMENTS` contiene un nombre de dominio, validarlo contra `list_business_domains` antes de usarlo. Usar el nombre exacto del listado, no la interpretacion del usuario
+- Si `$ARGUMENTS` contiene un nombre de dominio, validarlo con `search_domains($ARGUMENTS)` antes de usarlo. Usar el nombre exacto del resultado, no la interpretacion del usuario
 - Si no, inferir el dominio de la conversacion actual (buscar llamadas previas a MCPs con `domain_name`)
-- Si no es posible inferirlo, listar dominios disponibles via `list_business_domains` y preguntar al usuario siguiendo la convencion de preguntas al usuario (adaptativa al entorno: interactivas si disponibles, lista numerada en chat si no)
+- Si no es posible inferirlo, listar dominios disponibles via `list_domains()` y preguntar al usuario siguiendo la convencion de preguntas al usuario (adaptativa al entorno: interactivas si disponibles, lista numerada en chat si no)
 
 ## 2. Recopilar Contexto de la Conversacion
 

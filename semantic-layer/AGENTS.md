@@ -49,14 +49,14 @@ Antes de activar cualquier skill, evaluar que necesita el usuario:
 | Buscar tablas en el diccionario | `/create-data-collection` | "¿Que tablas hay sobre clientes?", "Busca tablas de ventas" |
 | Descripcion de dominio | Triage directo: `create_collection_description` | "Genera descripcion del dominio X" |
 | Consulta de estado | Triage directo (1-2 tools) | "¿Que ontologias hay?", "¿Que vistas tiene el dominio X?" |
-| Explorar capa publicada | Triage directo: `list_business_domains` + tools sql | "¿Que tiene la capa semantica de X?" |
+| Explorar capa publicada | Triage directo: `search_domains(texto, domain_type='business')` o `list_domains(domain_type='business')` + tools sql | "¿Que tiene la capa semantica de X?" |
 | Referencia de tools | `/stratio-semantic-layer` | "¿Como funciona create_ontology?" |
 
 **Routing para pipeline completo**: Cuando el usuario pide construir una capa semantica y no queda claro si tiene un dominio existente, preguntar antes de cargar ninguna skill: ¿quiere usar un dominio tecnico existente o crear una nueva coleccion de datos? Si necesita crear una coleccion nueva → cargar `/create-data-collection`. Cuando la coleccion este creada, sugerir continuar con `/build-semantic-layer [nombre_del_nuevo_dominio]`.
 
 **Activacion de skills**: Cargar la skill correspondiente ANTES de continuar con el workflow. La skill contiene el detalle operativo necesario.
 
-**Triage directo**: Para consultas de estado simples (1-2 tools), resolver directamente sin cargar skill. Descubrir dominio si es necesario (`list_technical_domains`), ejecutar la tool y responder en chat. Para `create_collection_description`, confirmar dominio + ofrecer `user_instructions` + ejecutar. Para `publish_business_views`, verificar estado con `list_technical_domain_concepts`, confirmar con el usuario listando las vistas a publicar, ejecutar y presentar resultado (publicadas + fallidas + no encontradas).
+**Triage directo**: Para consultas de estado simples (1-2 tools), resolver directamente sin cargar skill. Descubrir dominio si es necesario (`search_domains(texto, domain_type='technical')` o `list_domains(domain_type='technical')`), ejecutar la tool y responder en chat. Para `create_collection_description`, confirmar dominio + ofrecer `user_instructions` + ejecutar. Para `publish_business_views`, verificar estado con `list_technical_domain_concepts`, confirmar con el usuario listando las vistas a publicar, ejecutar y presentar resultado (publicadas + fallidas + no encontradas).
 
 ---
 
@@ -70,7 +70,8 @@ Todas las reglas de uso de MCPs de gobernanza semantica (herramientas disponible
 
 Cuando una capa semantica generada se aprueba en la UI de Stratio Governance, se publica como un nuevo dominio de negocio con prefijo `semantic_` (ej: `semantic_mi_dominio`). El agente puede explorar capas ya publicadas:
 
-- `list_business_domains` → listar dominios semanticos publicados (buscar prefijo `semantic_`)
+- `search_domains(texto, domain_type='business')` → **preferir**: buscar dominios semanticos publicados por nombre o descripcion. Mas eficiente que listar todos
+- `list_domains(domain_type='business')` → listar todos los dominios semanticos publicados (prefijo `semantic_`). Usar como fallback si search no da resultados
 - `list_domain_tables(domain)` → tablas del dominio semantico publicado
 - `search_domain_knowledge(question, domain)` → buscar conocimiento en dominio tecnico o semantico
 - `get_tables_details(domain, tables)` → detalle de tablas publicadas

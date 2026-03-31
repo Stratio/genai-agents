@@ -13,8 +13,10 @@ Crea, regenera o borra vistas de negocio y SQL mappings en Stratio Governance a 
 
 | Tool | Servidor | Proposito |
 |------|----------|-----------|
-| `list_technical_domains` | sql | Descubrir dominios tecnicos disponibles |
-| `list_ontologies()` | gov | Listar ontologias existentes |
+| `search_domains(search_text, domain_type='technical')` | sql | **Preferir**. Buscar dominios tecnicos por texto libre. Resultados por relevancia |
+| `list_domains(domain_type='technical', refresh?)` | sql | Listar todos los dominios tecnicos. `refresh=true` para bypass de cache |
+| `search_ontologies(search_text)` | gov | Buscar ontologias por texto libre. Resultados por relevancia |
+| `list_ontologies()` | gov | Listar todas las ontologias existentes |
 | `get_ontology_info(name)` | gov | Clases de la ontologia |
 | `list_technical_domain_concepts(domain)` | gov | Vistas existentes con estado de gobernanza, mappings y terminos semanticos |
 | `create_business_views(domain, ontology, class_names?, regenerate?)` | gov | Crear vistas + mappings. Salta existentes. Con `regenerate=true`: DESTRUCTIVO, borra y recrea |
@@ -27,9 +29,9 @@ Crea, regenera o borra vistas de negocio y SQL mappings en Stratio Governance a 
 
 ### 1. Determinar dominio y ontologia
 
-**Dominio**: Si `$ARGUMENTS` contiene nombre, validar contra `list_technical_domains`. Si no coincide, reintentar con `list_technical_domains(refresh=true)` por si es una coleccion recien creada. Si ahora coincide, continuar. Si no coincide o no hay argumento, listar y preguntar al usuario siguiendo la convencion de preguntas al usuario.
+**Dominio**: Si `$ARGUMENTS` contiene nombre, buscar con `search_domains($ARGUMENTS, domain_type='technical')`. Si no coincide, reintentar con `search_domains($ARGUMENTS, domain_type='technical', refresh=true)` por si es una coleccion recien creada. Si ahora coincide, continuar. Si no coincide o no hay argumento, listar con `list_domains(domain_type='technical')` y preguntar al usuario siguiendo la convencion de preguntas al usuario.
 
-**Ontologia**: Ejecutar `list_ontologies()`. Si hay varias, preguntar al usuario cual usar. Si solo hay una relevante para el dominio, confirmar.
+**Ontologia**: Si el usuario o el contexto mencionan una ontologia concreta, buscar con `search_ontologies(pista)`. Si no, ejecutar `list_ontologies()` para ver todas. Si hay varias, preguntar al usuario cual usar. Si solo hay una relevante para el dominio, confirmar.
 
 ### 2. Evaluar estado
 

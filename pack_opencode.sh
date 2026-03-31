@@ -103,7 +103,6 @@ else
     "todoread": "allow", "todowrite": "allow", "task": "allow",
     "skill": "allow", "webfetch": "allow",
     "stratio_data_*": "allow",
-    "*list_technical_domains": "deny",
     "bash": { "*": "allow" }
   }
 }

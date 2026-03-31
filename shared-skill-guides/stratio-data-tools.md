@@ -8,7 +8,8 @@
 
 | Paso | Herramienta MCP | Proposito |
 |------|----------------|-----------|
-| 1 | `list_business_domains(refresh?)` | Descubrir dominios disponibles. `refresh` (boolean, default false): bypass de cache — usar si un dominio recien publicado no aparece |
+| 1a | `search_domains(search_text, domain_type?, refresh?)` | **Preferir sobre `list_domains`**. Buscar dominios por texto libre (nombre o descripcion). Resultados ordenados por relevancia. Usar cuando se conoce parte del nombre o tema del dominio. `domain_type`: `'business'` (dominios semanticos publicados, con nombres de negocio), `'technical'` (dominios de datos crudos, con identificadores de base de datos) o `'both'` (defecto — todos). `refresh`: bypass de cache |
+| 1b | `list_domains(domain_type?, refresh?)` | Listar todos los dominios disponibles. Usar solo cuando se necesita ver todos los dominios sin filtro o cuando `search_domains` no devuelve resultados. Mismos parametros `domain_type` y `refresh` que `search_domains` |
 | 2 | `list_domain_tables` | Conocer tablas del dominio |
 | 3 | `get_tables_details` | Entender reglas de negocio y contexto |
 | 4 | `get_table_columns_details` | Conocer columnas, tipos y significado |
@@ -21,8 +22,7 @@
 
 ## 3. Reglas Estrictas
 
-- **INMUTABILIDAD de `domain_name`**: El parametro `domain_name` en TODAS las llamadas MCP debe ser **exactamente** el valor devuelto por `list_business_domains`. NUNCA traducirlo, interpretarlo, parafrasearlo ni inferirlo. Si el dominio se llama `semantic_AnaliticaBanca`, usar `"semantic_AnaliticaBanca"` — no `"Banca Particulares"`, no `"Analítica Banca"`, no `"banca"`. Si hay duda sobre el nombre exacto, volver a llamar a `list_business_domains` para confirmarlo
-- NUNCA uses `list_technical_domains`. Solo trabaja con dominios semanticos/de negocio via `list_business_domains`. Los dominios tecnicos no estan gobernados y carecen de contexto de negocio necesario para el analisis
+- **INMUTABILIDAD de `domain_name`**: El parametro `domain_name` en TODAS las llamadas MCP debe ser **exactamente** el valor devuelto por `list_domains` o `search_domains`. NUNCA traducirlo, interpretarlo, parafrasearlo ni inferirlo. Si el dominio se llama `semantic_AnaliticaBanca`, usar `"semantic_AnaliticaBanca"` — no `"Banca Particulares"`, no `"Analítica Banca"`, no `"banca"`. Si hay duda sobre el nombre exacto, volver a llamar a `search_domains` o `list_domains` para confirmarlo
 - NUNCA escribas queries SQL directamente. Siempre usa `query_data` o `generate_sql`
 - Para agregaciones simples (totales, promedios, conteos): `query_data` directamente
 - Para analisis avanzados: intentar siempre resolver con `query_data` (el MCP soporta joins, agregaciones, window functions, subconsultas). Usar Python/pandas solo cuando el calculo no sea expresable en SQL (tests estadisticos, segmentacion, transformaciones iterativas, logica procedural). En ese caso, obtener los datos con `output_format="dict"` y procesarlos en pandas
@@ -41,15 +41,18 @@
 
 Pasos para explorar un dominio gobernado y entender sus datos antes de un analisis.
 
-### 4.1 Listar Dominios
+### 4.1 Descubrir Dominios
 
-Ejecutar `list_business_domains` para mostrar todos los dominios disponibles con sus nombres de negocio.
+**Preferir buscar sobre listar** — `search_domains` devuelve resultados relevantes sin cargar la lista completa (que puede ser muy extensa).
 
-Si el usuario proporciona un dominio:
-- Si coincide con un dominio conocido, ir directamente al paso 4.2
-- Si no, preguntar al usuario cual dominio explorar mostrando la lista
+Si el usuario proporciona un dominio o da pistas sobre el tema:
+- Ejecutar `search_domains(nombre_o_pista)` para buscar coincidencias
+- Si coincide con un resultado → usarlo directamente e ir al paso 4.2
+- Si no hay coincidencias → ejecutar `list_domains()` como fallback y preguntar al usuario
 
-Si no hay dominio claro, preguntar al usuario cual le interesa (presentar dominios como opciones seleccionables).
+Si no hay dominio claro, preguntar al usuario cual le interesa. Si el usuario no da pistas, ejecutar `list_domains()` para mostrar todos los dominios disponibles (presentar como opciones seleccionables).
+
+Si un dominio recien publicado o creado no aparece, reintentar con `refresh=true` (bypass de cache).
 
 ### 4.2 Explorar Tablas
 

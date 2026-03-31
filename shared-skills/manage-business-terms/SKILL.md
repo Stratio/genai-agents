@@ -13,8 +13,8 @@ Crea Business Terms en el diccionario de Stratio Governance con relaciones a act
 
 | Tool | Servidor | Proposito |
 |------|----------|-----------|
-| `list_technical_domains(refresh?)` | sql | Descubrir dominios tecnicos disponibles. `refresh=true` para bypass de cache |
-| `list_business_domains(refresh?)` | sql | Descubrir dominios semanticos publicados. `refresh=true` para bypass de cache |
+| `search_domains(search_text, domain_type?, refresh?)` | sql | **Preferir**. Buscar dominios por texto libre (acepta tecnicos y semanticos). Resultados por relevancia |
+| `list_domains(domain_type?, refresh?)` | sql | Listar dominios disponibles (acepta tecnicos y semanticos). `refresh=true` para bypass de cache |
 | `list_domain_tables(domain)` | sql | Descubrir tablas de un dominio para relaciones |
 | `get_table_columns_details(domain, table)` | sql | Descubrir columnas para relaciones a nivel columna |
 | `list_business_asset_types()` | gov | Tipos de activos disponibles para business terms |
@@ -26,7 +26,7 @@ Crea Business Terms en el diccionario de Stratio Governance con relaciones a act
 
 ### 1. Determinar dominio
 
-Si `$ARGUMENTS` contiene nombre de dominio, validar contra `list_technical_domains` o `list_business_domains` (acepta ambos tipos). Si no coincide, reintentar con `refresh=true` por si es un dominio recien creado o publicado. Si ahora coincide, continuar. Si no coincide o no hay argumento, listar dominios disponibles y preguntar al usuario siguiendo la convencion de preguntas al usuario.
+Si `$ARGUMENTS` contiene nombre de dominio, buscar con `search_domains($ARGUMENTS)` (acepta tanto dominios tecnicos como semanticos). Si no coincide, reintentar con `search_domains($ARGUMENTS, refresh=true)` por si es un dominio recien creado o publicado. Si ahora coincide, continuar. Si no coincide o no hay argumento, listar dominios con `list_domains()` y preguntar al usuario siguiendo la convencion de preguntas al usuario.
 
 ### 2. Planificacion guiada
 
