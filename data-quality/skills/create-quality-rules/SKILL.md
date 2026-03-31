@@ -192,7 +192,7 @@ table_names: [tabla_cabecera, tabla_detalle]
 
 ### 3.4 Configuracion de Medicion y Umbrales
 
-Los parametros `measurement_type`, `threshold_mode` y (`exact_threshold` o `threshold_breakpoints`) son **opcionales**. Si el usuario no los especifica, se aplican los valores por defecto: `measurement_type=percentage`, `threshold_mode=exact`, `exact_threshold={value: "100", equal_status: "OK", not_equal_status: "KO"}`. No es necesario preguntar al usuario. Sin embargo, el plan siempre debe informar de la configuracion de medicion que se aplicara a cada regla (ver seccion 4).
+Los parametros `measurement_type`, `threshold_mode` y (`exact_threshold` o `threshold_breakpoints`) son **opcionales**. Si el usuario elige no configurar la medicion, se aplican los valores por defecto: `measurement_type=percentage`, `threshold_mode=exact`, `exact_threshold={value: "100", equal_status: "OK", not_equal_status: "KO"}`. El plan siempre debe informar de la configuracion de medicion que se aplicara a cada regla (ver seccion 4), y la pregunta de medicion es obligatoria en el paso de aprobacion — no asumir el default sin preguntar.
 
 #### Flujo cuando el usuario pide configurar la medicion
 
@@ -320,7 +320,9 @@ Este flujo aplica cuando el usuario describe directamente una regla que quiere c
      A. get_table_columns_details(domain_name, tabla)  [por cada tabla involucrada]
      B. get_tables_details(domain_name, [tablas])
      C. get_quality_rule_dimensions(collection_name=domain_name)
+     D. quality_rules_metadata(domain_name=domain_name)  <-- solo si no se ejecuto antes
    ```
+   **Nota sobre `quality_rules_metadata`**: actualiza la metadata AI de las reglas existentes (descripcion, dimension). Se ejecuta sin `force_update` — solo procesa reglas sin metadata o modificadas, lo que cubre reglas creadas fuera de este agente. Si falla, continuar sin bloquear.
 3. **Verificar existencia**: confirmar que las tablas y columnas mencionadas por el usuario existen en el dominio. Si alguna no existe, informar y preguntar.
 
 ### B.2 Disenar la Regla
@@ -409,7 +411,22 @@ Ademas, ¿quieres programar la ejecucion automatica de las reglas?
 
 ### Interpretacion de la respuesta del usuario
 
-**Aprobacion + opcion 3 (o aprobacion sin mencionar scheduling)** → Crear las reglas sin parametros de scheduling. Si el usuario simplemente dice "si", "adelante", "procede" u otra señal de aprobacion sin elegir opcion de scheduling, interpretar como opcion 3 (sin planificacion).
+**Aprobacion sin elegir opcion de scheduling ni medicion** → Si el usuario simplemente dice "si", "adelante", "procede" u otra señal de aprobacion sin elegir opcion de scheduling ni responder la pregunta de medicion, NO crear las reglas todavia. Preguntar explicitamente ambas cosas antes de continuar:
+
+```
+Antes de proceder, necesito saber:
+
+1. **Planificacion**: ¿quieres programar la ejecucion automatica?
+   1. Si, con la misma planificacion para todas las reglas
+   2. Si, con planificacion distinta por regla (o solo para algunas)
+   3. No, ejecucion manual
+
+2. **Medicion**: ¿quieres configurar como se miden las reglas?
+   1. Si, quiero configurar como se miden (te preguntare los detalles)
+   2. No, usar la medicion por defecto (porcentaje, valor exacto: =100% OK / !=100% KO)
+```
+
+**Aprobacion + opcion 3 de scheduling + opcion 2 de medicion (ambas indicadas explicitamente)** → Crear las reglas sin parametros de scheduling ni medicion personalizada.
 
 **Aprobacion + opcion 1** → Antes de crear las reglas, recopilar los parametros de scheduling una vez para todas:
 

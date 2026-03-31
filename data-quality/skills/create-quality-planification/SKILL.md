@@ -120,7 +120,7 @@ Default: `Europe/Madrid`. **NO preguntar** salvo que el usuario mencione explici
 
 Preguntar: "¿Cuando quieres que empiece a ejecutarse? (dejar en blanco para empezar inmediatamente)".
 
-Si el usuario indica una fecha/hora en lenguaje natural, convertir a formato ISO 8601 (ej: "el proximo lunes a las 9" → `2026-03-30T09:00:00`). Si no indica nada, la planificacion empieza inmediatamente tras la creacion.
+Si el usuario indica una fecha/hora en lenguaje natural, convertir a formato ISO 8601 (ej: "el proximo lunes a las 9" → `<YYYY-MM-DD>T09:00:00`, donde `<YYYY-MM-DD>` es la fecha del proximo lunes calculada desde hoy). Si no indica nada, la planificacion empieza inmediatamente tras la creacion.
 
 ### 3.6 Tamano de ejecucion (`execution_size`) — opcional
 

@@ -41,7 +41,7 @@ Antes de activar cualquier skill, clasificar el intent del usuario:
 | "Planifica/programa la ejecucion de las reglas de [dominio]" | — | `create-quality-planification` |
 | "Crea una planificacion de calidad para [dominio]" | — | `create-quality-planification` |
 | "Genera/actualiza la metadata de las reglas de [dominio]" | `quality_rules_metadata` | ninguna |
-| "Regenera/fuerza la metadata de todas las reglas de [dominio]" | `quality_rules_metadata(force_update=True)` | ninguna |
+| "Regenera/fuerza la metadata de todas las reglas de [dominio]" | `quality_rules_metadata(domain_name=X, quality_rules_metadata_force_update=True)` | ninguna |
 | "Genera la metadata de la regla [ID]" | `quality_rules_metadata(quality_rule_id=ID)` | ninguna |
 | "Quiero configurar como se mide la calidad de las reglas" | — | Dentro de `create-quality-rules` (seccion 3.4) |
 | "Usa valor exacto / rangos / porcentaje / conteo para medir" | — | Dentro de `create-quality-rules` (seccion 3.4) |
@@ -168,33 +168,7 @@ Una regla de calidad se define con:
 - **`dimension`**: completeness / uniqueness / validity / consistency / ...
 - **Placeholders**: usar `${nombre_tabla}` en los SQLs, NUNCA IDs directos
 
-**Patrones SQL por dimension:**
-
-```sql
--- Completeness: columna no nula
-query:     SELECT COUNT(*) FROM ${tabla} WHERE columna IS NOT NULL
-reference: SELECT COUNT(*) FROM ${tabla}
-
--- Uniqueness: sin duplicados
-query:     SELECT COUNT(*) FROM (SELECT DISTINCT columna FROM ${tabla})
-reference: SELECT COUNT(*) FROM ${tabla}
-
--- Validity (rango numerico)
-query:     SELECT COUNT(*) FROM ${tabla} WHERE importe >= 0
-reference: SELECT COUNT(*) FROM ${tabla}
-
--- Validity (enumerado)
-query:     SELECT COUNT(*) FROM ${tabla} WHERE estado IN ('ACTIVO','INACTIVO','PENDIENTE')
-reference: SELECT COUNT(*) FROM ${tabla}
-
--- Validity (fecha en rango logico)
-query:     SELECT COUNT(*) FROM ${tabla} WHERE fecha_alta >= '1900-01-01' AND fecha_alta <= CURRENT_DATE
-reference: SELECT COUNT(*) FROM ${tabla}
-
--- Consistency (fecha inicio <= fecha fin)
-query:     SELECT COUNT(*) FROM ${tabla} WHERE fecha_inicio <= fecha_fin OR fecha_fin IS NULL
-reference: SELECT COUNT(*) FROM ${tabla}
-```
+**Patrones SQL**: Ver skill `create-quality-rules` seccion 3.2 para el catalogo completo de patrones por dimension.
 
 **Convencion de nombres**: `[prefijo]-[tabla]-[dimension]-[columna]`
 Ejemplos: `dq-account-completeness-id`, `dq-card-uniqueness-card-id`, `dq-transaction-validity-amount`

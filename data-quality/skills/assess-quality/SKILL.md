@@ -38,6 +38,7 @@ Luego, con la lista de tablas obtenida en A, lanzar en paralelo para TODAS las t
 Por cada tabla (en paralelo):
   get_tables_quality_details(domain_name, [tabla])
   get_table_columns_details(domain_name, tabla)
+  get_tables_details(domain_name, [tabla])
   generate_sql("obtener todos los campos de la tabla [tabla] sin filtros", domain_name)
 ```
 Finalmente, usar los SQLs generados para lanzar `profile_data(query=[sql])` en paralelo.
