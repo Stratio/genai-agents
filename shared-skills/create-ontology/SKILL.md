@@ -14,12 +14,14 @@ Crea, amplia o borra clases de una ontologia en Stratio Governance mediante plan
 
 | Tool | Servidor | Proposito |
 |------|----------|-----------|
-| `list_technical_domains` | sql | Descubrir dominios tecnicos disponibles |
+| `search_domains(search_text, domain_type='technical')` | sql | **Preferir**. Buscar dominios tecnicos por texto libre. Resultados por relevancia |
+| `list_domains(domain_type='technical', refresh?)` | sql | Listar todos los dominios tecnicos. `refresh=true` para bypass de cache |
 | `list_domain_tables(domain)` | sql | Conocer tablas del dominio |
 | `get_tables_details(domain, tables)` | sql | Detalle de tablas: reglas de negocio, contexto |
 | `get_table_columns_details(domain, table)` | sql | Columnas de una tabla (para planificar data properties) |
 | `search_domain_knowledge(question, domain)` | sql | Buscar conocimiento existente |
-| `list_ontologies()` | gov | Listar ontologias existentes |
+| `search_ontologies(search_text)` | gov | Buscar ontologias por texto libre. Resultados por relevancia |
+| `list_ontologies()` | gov | Listar todas las ontologias existentes |
 | `get_ontology_info(name)` | gov | Estructura de clases, data properties y relaciones |
 | `create_ontology(domain, name, ontology_plan)` | gov | Crear ontologia nueva con plan en Markdown |
 | `update_ontology(domain, name, update_plan)` | gov | Anadir clases nuevas a ontologia existente |
@@ -31,12 +33,12 @@ Crea, amplia o borra clases de una ontologia en Stratio Governance mediante plan
 
 ### 1. Determinar dominio
 
-Si `$ARGUMENTS` contiene un nombre de dominio, validar contra `list_technical_domains`. Si no coincide, reintentar con `list_technical_domains(refresh=true)` por si es una coleccion recien creada. Si ahora coincide, continuar. Si sigue sin coincidir o no hay argumento, listar dominios y preguntar al usuario siguiendo la convencion de preguntas al usuario.
+Si `$ARGUMENTS` contiene un nombre de dominio, buscar con `search_domains($ARGUMENTS, domain_type='technical')`. Si no coincide, reintentar con `search_domains($ARGUMENTS, domain_type='technical', refresh=true)` por si es una coleccion recien creada. Si ahora coincide, continuar. Si sigue sin coincidir o no hay argumento, listar dominios con `list_domains(domain_type='technical')` y preguntar al usuario siguiendo la convencion de preguntas al usuario.
 
 ### 2. Evaluar ontologias existentes
 
 Ejecutar en paralelo:
-- `list_ontologies()` → listar ontologias
+- `search_ontologies(dominio_o_contexto)` o `list_ontologies()` → ontologias existentes. Preferir `search_ontologies` si el usuario menciona una ontologia concreta; usar `list_ontologies()` si se necesita el listado completo
 - `list_domain_tables(domain)` → tablas disponibles para la ontologia
 
 Si hay ontologias, mostrar al usuario:

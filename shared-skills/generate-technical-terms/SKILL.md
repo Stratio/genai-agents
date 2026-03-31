@@ -13,24 +13,25 @@ Genera descripciones tecnicas de tablas y columnas de un dominio en Stratio Gove
 
 | Tool | Servidor | Proposito |
 |------|----------|-----------|
-| `list_technical_domains` | sql | Descubrir dominios tecnicos disponibles (incluye descripcion si existe) |
+| `search_domains(search_text, domain_type='technical')` | sql | **Preferir**. Buscar dominios tecnicos por texto libre. Resultados por relevancia |
+| `list_domains(domain_type='technical', refresh?)` | sql | Listar todos los dominios tecnicos (incluye descripcion si existe). `refresh=true` para bypass de cache |
 | `list_domain_tables(domain)` | sql | Listar tablas con sus descripciones (indica si ya tienen terminos tecnicos) |
 | `create_technical_terms(domain, table_names?, user_instructions?, regenerate?)` | gov | Crear terminos tecnicos. Salta existentes. Con `regenerate=true`: DESTRUCTIVO, borra y recrea |
 
-**Reglas clave**: `domain_name` inmutable (valor exacto de `list_technical_domains`). Confirmacion obligatoria para `regenerate=true`. Ofrecer `user_instructions` antes de invocar.
+**Reglas clave**: `domain_name` inmutable (valor exacto de `list_domains` o `search_domains`). Confirmacion obligatoria para `regenerate=true`. Ofrecer `user_instructions` antes de invocar.
 
 ## Workflow
 
 ### 1. Determinar dominio
 
-Si `$ARGUMENTS` contiene un nombre de dominio, validar contra `list_technical_domains`. Si coincide, continuar. Si no coincide, reintentar con `list_technical_domains(refresh=true)` por si es una coleccion recien creada. Si ahora coincide, continuar. Si sigue sin coincidir o no hay argumento, listar dominios disponibles y preguntar al usuario siguiendo la convencion de preguntas al usuario.
+Si `$ARGUMENTS` contiene un nombre de dominio, buscar con `search_domains($ARGUMENTS, domain_type='technical')`. Si coincide con un resultado, continuar. Si no coincide, reintentar con `search_domains($ARGUMENTS, domain_type='technical', refresh=true)` por si es una coleccion recien creada. Si ahora coincide, continuar. Si sigue sin coincidir o no hay argumento, listar dominios con `list_domains(domain_type='technical')` y preguntar al usuario siguiendo la convencion de preguntas al usuario.
 
 ### 2. Evaluar estado
 
 Ejecutar `list_domain_tables(domain)` para evaluar el estado actual:
 - Tablas con descripcion → ya tienen terminos tecnicos generados
 - Tablas sin descripcion → pendientes de generar
-- Si el dominio tiene descripcion (visible en `list_technical_domains`) → la descripcion general ya existe
+- Si el dominio tiene descripcion (visible en `list_domains(domain_type='technical')`) → la descripcion general ya existe
 
 Presentar resumen al usuario:
 ```

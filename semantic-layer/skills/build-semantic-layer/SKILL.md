@@ -18,20 +18,20 @@ Para referencia completa de tools y reglas, ver `skills-guides/stratio-semantic-
 
 ### 1. Determinar dominio
 
-Ejecutar `list_technical_domains` para listar dominios disponibles.
+Si `$ARGUMENTS` contiene nombre de dominio, buscar con `search_domains($ARGUMENTS, domain_type='technical')`.
 
-- Si `$ARGUMENTS` contiene nombre de dominio y coincide con uno existente → usarlo y continuar con el paso 2.
-- Si `$ARGUMENTS` contiene nombre de dominio pero NO coincide con ningun dominio existente → reintentar inmediatamente con `list_technical_domains(refresh=true)` para forzar bypass de cache (la coleccion puede ser recien creada). Si ahora aparece → usarlo y continuar con el paso 2. Si sigue sin aparecer → la coleccion puede estar aun propagandose internamente. Informar al usuario: "El dominio no aparece aun. Puede tardar 1-2 minutos en propagarse. Reintentando en 60 segundos...". Esperar 60 segundos y volver a ejecutar `list_technical_domains(refresh=true)`. Si ahora aparece → continuar. Si no → informar al usuario y pedirle que reintente mas tarde.
-- Si no hay argumento → presentar la lista de dominios existentes al usuario para que seleccione uno, siguiendo la convencion de preguntas al usuario.
+- Si coincide con un resultado → usarlo y continuar con el paso 2.
+- Si NO coincide → reintentar inmediatamente con `search_domains($ARGUMENTS, domain_type='technical', refresh=true)` para forzar bypass de cache (la coleccion puede ser recien creada). Si ahora aparece → usarlo y continuar con el paso 2. Si sigue sin aparecer → la coleccion puede estar aun propagandose internamente. Informar al usuario: "El dominio no aparece aun. Puede tardar 1-2 minutos en propagarse. Reintentando en 60 segundos...". Esperar 60 segundos y volver a ejecutar `search_domains($ARGUMENTS, domain_type='technical', refresh=true)`. Si ahora aparece → continuar. Si no → informar al usuario y pedirle que reintente mas tarde.
+- Si no hay argumento → ejecutar `list_domains(domain_type='technical')` y presentar la lista de dominios existentes al usuario para que seleccione uno, siguiendo la convencion de preguntas al usuario.
 
 Si el usuario elige un dominio → continuar con el paso 2.
 
 ### 2. Diagnostico completo
 
 Ejecutar en paralelo:
-- `list_technical_domains` → verificar si el dominio tiene descripcion general
+- `list_domains(domain_type='technical')` → verificar si el dominio tiene descripcion general
 - `list_domain_tables(domain)` → tablas con/sin descripciones (= terminos tecnicos)
-- `list_ontologies` → ontologias existentes
+- `list_ontologies` → ontologias existentes (o `search_ontologies(texto)` si se busca una concreta)
 - `list_technical_domain_concepts(domain)` → vistas, mappings, terminos semanticos
 
 Para cada ontologia relevante: `get_ontology_info(name)`.

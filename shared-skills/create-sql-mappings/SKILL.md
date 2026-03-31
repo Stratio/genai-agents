@@ -13,7 +13,8 @@ Crea o actualiza SQL mappings para vistas de negocio existentes en Stratio Gover
 
 | Tool | Servidor | Proposito |
 |------|----------|-----------|
-| `list_technical_domains` | sql | Descubrir dominios tecnicos disponibles |
+| `search_domains(search_text, domain_type='technical')` | sql | **Preferir**. Buscar dominios tecnicos por texto libre. Resultados por relevancia |
+| `list_domains(domain_type='technical', refresh?)` | sql | Listar todos los dominios tecnicos. `refresh=true` para bypass de cache |
 | `list_technical_domain_concepts(domain)` | gov | Listar vistas con estado de gobernanza y mapping |
 | `create_sql_mappings(domain, view_names?, user_instructions?)` | gov | Crear o actualizar mappings SQL de vistas existentes |
 | `publish_business_views(domain, view_names?)` | gov | Publicar vistas (Draft → Pending Publish). Sin `view_names`, publica todas |
@@ -24,7 +25,7 @@ Crea o actualiza SQL mappings para vistas de negocio existentes en Stratio Gover
 
 ### 1. Determinar dominio
 
-Si `$ARGUMENTS` contiene nombre de dominio, validar contra `list_technical_domains`. Si no coincide, reintentar con `list_technical_domains(refresh=true)` por si es una coleccion recien creada. Si ahora coincide, continuar. Si no coincide o no hay argumento, listar y preguntar al usuario siguiendo la convencion de preguntas al usuario.
+Si `$ARGUMENTS` contiene nombre de dominio, buscar con `search_domains($ARGUMENTS, domain_type='technical')`. Si no coincide, reintentar con `search_domains($ARGUMENTS, domain_type='technical', refresh=true)` por si es una coleccion recien creada. Si ahora coincide, continuar. Si no coincide o no hay argumento, listar con `list_domains(domain_type='technical')` y preguntar al usuario siguiendo la convencion de preguntas al usuario.
 
 ### 2. Evaluar estado
 
