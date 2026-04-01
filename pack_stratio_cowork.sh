@@ -194,9 +194,13 @@ find "$SKILLS_STAGING" \
   -type f \( -name '*.md' -o -name '*.txt' \) \
   -exec sed -i 's|shared-skill-guides/||g' {} \;
 
-(cd "$SKILLS_STAGING" && zip -r "$BUNDLE_STAGING/$ZIP_SHARED" . -q)
-ZIP_SIZE=$(du -sh "$BUNDLE_STAGING/$ZIP_SHARED" | cut -f1)
-echo "    [5] $ZIP_SHARED generado ($N_SKILLS_PACKED skill(s), $N_GUIDES_PACKED guide(s)) ($ZIP_SIZE)"
+if [[ $N_SKILLS_PACKED -gt 0 ]]; then
+  (cd "$SKILLS_STAGING" && zip -r "$BUNDLE_STAGING/$ZIP_SHARED" . -q)
+  ZIP_SIZE=$(du -sh "$BUNDLE_STAGING/$ZIP_SHARED" | cut -f1)
+  echo "    [5] $ZIP_SHARED generado ($N_SKILLS_PACKED skill(s), $N_GUIDES_PACKED guide(s)) ($ZIP_SIZE)"
+else
+  echo "    [5] Sin shared skills — $ZIP_SHARED omitido"
+fi
 
 # ---------------------------------------------------------------------------
 # Fase 5.5 — Generar metadata.yaml (manifiesto agents/v1)
@@ -295,10 +299,12 @@ for skill_name in "${SHARED_SKILLS[@]}"; do
 done
 
 # Sin referencias residuales a skill-guides en el ZIP de skills
-SKILLS_REFS=$(unzip -p "$BUNDLE_STAGING/$ZIP_SHARED" "*/SKILL.md" 2>/dev/null | grep -c 'skills-guides/' || true)
-if [[ "$SKILLS_REFS" -gt 0 ]]; then
-  echo "    ERROR: referencias residuales a skills-guides/ en $ZIP_SHARED" >&2
-  ERRORS=$((ERRORS + 1))
+if [[ ${#SHARED_SKILLS[@]} -gt 0 ]]; then
+  SKILLS_REFS=$(unzip -p "$BUNDLE_STAGING/$ZIP_SHARED" "*/SKILL.md" 2>/dev/null | grep -c 'skills-guides/' || true)
+  if [[ "$SKILLS_REFS" -gt 0 ]]; then
+    echo "    ERROR: referencias residuales a skills-guides/ en $ZIP_SHARED" >&2
+    ERRORS=$((ERRORS + 1))
+  fi
 fi
 
 if [[ "$ERRORS" -gt 0 ]]; then
