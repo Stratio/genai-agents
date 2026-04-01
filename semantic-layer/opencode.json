@@ -43,6 +43,7 @@
     "*create_quality_rule": "deny",
     "*quality_rules_metadata": "deny",
     "*get_quality_rule_dimensions": "deny",
+    "*create_quality_rule_planification": "deny",
     "bash": {
       "ls *": "allow",
       "cat *": "allow",

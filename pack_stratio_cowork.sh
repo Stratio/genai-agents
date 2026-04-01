@@ -72,13 +72,13 @@ if [[ -f "$AGENT_ABS/shared-skills" ]]; then
     if [[ -d "$MONOREPO_ROOT/shared-skills/$skill_name" ]]; then
       SHARED_SKILLS+=("$skill_name")
     else
-      echo "    WARN: shared skill '$skill_name' no encontrada en shared-skills/ — omitida" >&2
+      echo "    WARN: shared skill '$skill_name' no encontrada en shared-skills/ — omitida"
     fi
   done < "$AGENT_ABS/shared-skills"
 fi
 
 if [[ ${#SHARED_SKILLS[@]} -eq 0 ]]; then
-  echo "    WARN: no hay shared skills declaradas para este agente" >&2
+  echo "    WARN: no hay shared skills declaradas para este agente"
 fi
 
 echo "    [1] ${#SHARED_SKILLS[@]} shared skill(s) detectadas: ${SHARED_SKILLS[*]:-ninguna}"
@@ -114,7 +114,7 @@ for skill_name in "${SHARED_SKILLS[@]}"; do
     N_REMOVED=$((N_REMOVED + 1))
     echo "    [3] Skill '$skill_name' eliminada del staging"
   else
-    echo "    [3] WARN: '$skill_name' no encontrada en el staging (posiblemente overrideada por local)" >&2
+    echo "    [3] WARN: '$skill_name' no encontrada en el staging (posiblemente overrideada por local)"
   fi
 done
 
@@ -175,7 +175,7 @@ for skill_name in "${SHARED_SKILLS[@]}"; do
         cp "$guide_src" "$skill_dst/$guide"
         N_GUIDES_PACKED=$((N_GUIDES_PACKED + 1))
       else
-        echo "    WARN: guide '$guide' no encontrado — omitido" >&2
+        echo "    WARN: guide '$guide' no encontrado — omitido"
       fi
     done < "$skill_src/skill-guides"
   fi
@@ -316,4 +316,6 @@ echo "==> OK — dist/${AGENT_NAME}-stratio-cowork.zip"
 echo "    Contiene:"
 echo "      - metadata.yaml  (manifiesto agents/v1)"
 echo "      - $ZIP_NO_SHARED  (agente sin shared skills)"
-[[ ${#SHARED_SKILLS[@]} -gt 0 ]] && echo "      - $ZIP_SHARED  (${#SHARED_SKILLS[@]} shared skill(s))"
+if [[ ${#SHARED_SKILLS[@]} -gt 0 ]]; then
+  echo "      - $ZIP_SHARED  (${#SHARED_SKILLS[@]} shared skill(s))"
+fi
