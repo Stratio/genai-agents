@@ -1,7 +1,7 @@
 ---
 name: create-quality-planification
 description: Crear una planificacion (schedule) para ejecutar automaticamente todas las reglas de calidad de una o varias carpetas/colecciones. Opera a nivel de carpeta (dominio/coleccion), no de regla individual. Requiere confirmacion humana obligatoria antes de ejecutar.
-argument-hint: [dominio/coleccion] [frecuencia (opcional)]
+argument-hint: "[dominio/coleccion] [frecuencia (opcional)]"
 ---
 
 # Skill: Creacion de Planificacion de Reglas de Calidad
