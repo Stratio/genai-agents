@@ -1,6 +1,6 @@
 ---
 name: create-quality-rules
-description: Disenar y crear reglas de calidad. Flujo A (gaps): cubrir gaps identificados por assess-quality. Flujo B (regla concreta): crear una regla especifica descrita por el usuario sin assess-quality previo. Ambos flujos requieren confirmacion humana obligatoria antes de ejecutar.
+description: Disenar y crear reglas de calidad. Flujo A (gaps): cubrir gaps identificados en una evaluacion de cobertura previa. Flujo B (regla concreta): crear una regla especifica descrita por el usuario sin evaluacion previa. Ambos flujos requieren confirmacion humana obligatoria antes de ejecutar.
 argument-hint: [dominio] [tabla (opcional)]
 ---
 
@@ -12,14 +12,13 @@ Workflow para disenar, proponer y crear reglas de calidad con aprobacion humana.
 
 Esta skill tiene dos flujos de entrada con prerequisitos distintos:
 
-**Flujo A — Gaps (requiere assess-quality):**
-El usuario quiere cubrir gaps de cobertura (ej: "crea reglas para el dominio X", "completa la cobertura de la tabla Y"). Antes de ejecutar este flujo, debe existir una evaluacion de cobertura previa (skill `assess-quality`). Si no se ha ejecutado en la conversacion actual:
+**Flujo A — Gaps (requiere evaluacion de cobertura previa):**
+El usuario quiere cubrir gaps de cobertura (ej: "crea reglas para el dominio X", "completa la cobertura de la tabla Y"). Este flujo requiere que ya se haya evaluado la cobertura de calidad del scope indicado: inventario de reglas existentes (de `get_tables_quality_details`), gaps identificados y resultados del EDA con `profile_data`. Si estos datos no estan disponibles en el contexto de la conversacion:
 1. Indicar al usuario que primero es necesario evaluar la cobertura
-2. Ejecutar la skill `assess-quality` con el mismo scope
-3. Continuar con este flujo una vez completada la evaluacion
+2. Detenerse para que se realice la evaluacion antes de continuar
 
-**Flujo B — Regla concreta (NO requiere assess-quality):**
-El usuario describe una regla especifica que quiere crear (ej: "crea una regla que verifique que todo cliente en tabla A existe en tabla B", "quiero una regla de validity que compruebe que el importe es positivo en transactions"). En este caso, NO es necesario ejecutar `assess-quality` previamente — ir directamente a la seccion "Flujo B: Regla Concreta" mas adelante.
+**Flujo B — Regla concreta (NO requiere evaluacion previa):**
+El usuario describe una regla especifica que quiere crear (ej: "crea una regla que verifique que todo cliente en tabla A existe en tabla B", "quiero una regla de validity que compruebe que el importe es positivo en transactions"). En este caso, NO es necesaria una evaluacion de cobertura previa — ir directamente a la seccion "Flujo B: Regla Concreta" mas adelante.
 
 ## PAUSA DE APROBACION CRITICA
 
@@ -35,14 +34,14 @@ Esta pausa es el paso mas importante de toda la skill. Si hay dudas sobre si el 
 
 ## 1. Determinar Tablas con Gaps
 
-A partir del resultado de `assess-quality`, recuperar el inventario de reglas existentes obtenido via `get_tables_quality_details`. Este inventario es la fuente de verdad: **solo diseñar reglas para dimensiones/columnas que NO estén ya cubiertas por una regla existente**.
+A partir del resultado de la evaluacion de cobertura, recuperar el inventario de reglas existentes obtenido via `get_tables_quality_details`. Este inventario es la fuente de verdad: **solo diseñar reglas para dimensiones/columnas que NO estén ya cubiertas por una regla existente**.
 
 Identificar:
 - Que tablas tienen gaps de cobertura (dimensiones esperadas no cubiertas por ninguna regla existente)
 - Que dimensiones faltan en cada tabla (considerando tanto las estandar como las especificas del dominio)
 - Cuales son los gaps prioritarios basandose en el EDA previo de `profile_data`
 
-**Sobre dimensiones**: las definiciones del dominio (obtenidas en `assess-quality` via `get_quality_rule_dimensions`) prevalecen siempre sobre las estándar. Ver sección 2 de `skills-guides/exploration.md`.
+**Sobre dimensiones**: las definiciones del dominio (obtenidas en la evaluacion de cobertura via `get_quality_rule_dimensions`) prevalecen siempre sobre las estándar. Ver sección 2 de `skills-guides/exploration.md`.
 
 Si el usuario ha especificado un subset ("solo la tabla account"), respetar esa restriccion.
 
@@ -50,10 +49,10 @@ Si hay reglas existentes en estado KO o WARNING: mencionarlas como accion priori
 
 ## 2. Diseño de Reglas (a partir del análisis completo de assess-quality)
 
-`assess-quality` ya ha producido dos fuentes de información que se usan aquí directamente — no repetir ninguna llamada MCP salvo que el scope haya cambiado:
+La evaluacion de cobertura ya ha producido dos fuentes de información que se usan aquí directamente — no repetir ninguna llamada MCP salvo que el scope haya cambiado:
 
 **Fuente 1 — Análisis semántico** (de `get_tables_details` + `get_table_columns_details`):
-El análisis semántico de `assess-quality` determinó *por qué* cada columna necesita cada dimensión: rol de la columna (clave, métrica, estado, FK…), obligatoriedad según negocio, restricciones documentadas en la gobernanza. Ese razonamiento es la justificación de cada regla. Recuperarlo y usarlo como base para la descripción y el diseño del SQL.
+El análisis semántico de la evaluacion de cobertura determinó *por qué* cada columna necesita cada dimensión: rol de la columna (clave, métrica, estado, FK…), obligatoriedad según negocio, restricciones documentadas en la gobernanza. Ese razonamiento es la justificación de cada regla. Recuperarlo y usarlo como base para la descripción y el diseño del SQL.
 
 **Nota para dominios tecnicos**: Si el dominio es tecnico, las descripciones de negocio pueden ser limitadas o inexistentes. En ese caso, dar mayor peso al EDA y razonar por nombres/tipos de columnas (convenciones como `*_id`, `*_date`, `*_amount`). Validar con el usuario las asunciones sobre semantica antes de disenar reglas de `validity` (rangos, enumerados).
 
@@ -547,8 +546,8 @@ Si hubo errores en la creacion, indicar claramente que reglas fallaron y sugerir
 
 ## 7. Pregunta de Continuacion
 
-Al finalizar, preguntar si quiere:
-- Generar un informe con el resultado (activar skill `quality-report`)
-- Crear otra regla concreta (volver al Flujo B)
-- Evaluar otras tablas del dominio
-- Finalizar
+Al finalizar, preguntar al usuario con opciones como quiere continuar, siguiendo la convencion de preguntas al usuario:
+- **Generar un informe formal con los resultados**
+- **Crear otra regla concreta**
+- **Evaluar la cobertura de otras tablas del dominio**
+- **Finalizar**

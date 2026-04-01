@@ -4,9 +4,9 @@ quality_report_generator.py
 Genera informes de cobertura de calidad del dato en PDF, DOCX o Markdown.
 
 Uso:
-    python tools/quality_report_generator.py --format pdf --output output/report.pdf --input-json '{"title": ...}'
-    python tools/quality_report_generator.py --format docx --output output/report.docx --input-file data.json
-    python tools/quality_report_generator.py --format md --output output/report.md --input-json '{"title": ...}'
+    python scripts/quality_report_generator.py --format pdf --output output/report.pdf --input-json '{"title": ...}'
+    python scripts/quality_report_generator.py --format docx --output output/report.docx --input-file data.json
+    python scripts/quality_report_generator.py --format md --output output/report.md --input-json '{"title": ...}'
 
 Formato del JSON de entrada:
     {

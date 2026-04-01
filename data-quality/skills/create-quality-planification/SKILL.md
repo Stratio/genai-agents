@@ -22,7 +22,7 @@ Si hay dudas sobre si el usuario ha aprobado, preguntar de nuevo. No interpretar
 
 A partir de la peticion del usuario, determinar que colecciones (dominios) incluir en la planificacion.
 
-- Si el usuario especifica nombres de dominio: validarlos usando `list_business_domains` (semantico) o `list_technical_domains` (tecnico), segun el tipo de dominio. Si no especifica el tipo, preguntar antes de listar.
+- Si el usuario especifica nombres de dominio: validarlos usando `search_domains` o `list_domains` con el `domain_type` correspondiente (semantico o tecnico). Si no especifica el tipo, preguntar al usuario con opciones siguiendo la convencion de preguntas al usuario.
 - **Regla CRITICA**: los nombres de coleccion usados en la llamada a `create_quality_rule_planification` deben ser **exactamente** los valores devueltos por las herramientas de listado. NUNCA traducirlos, interpretarlos ni parafrasearlos.
 - Si el usuario no especifica dominios concretos: listar los disponibles y preguntar cuales incluir.
 - La planificacion soporta **multiples colecciones** en una sola llamada (`collection_names` es una lista).
@@ -219,8 +219,8 @@ Tras la creacion exitosa, presentar confirmacion:
 
 ## 7. Pregunta de Continuacion
 
-Al finalizar, preguntar al usuario como quiere continuar:
-- Crear otra planificacion para otras colecciones
-- Crear reglas de calidad para colecciones que estaban vacias (activar `assess-quality` o `create-quality-rules`)
-- Evaluar la cobertura de calidad actual (activar `assess-quality`)
-- Finalizar
+Al finalizar, preguntar al usuario con opciones como quiere continuar, siguiendo la convencion de preguntas al usuario:
+- **Crear otra planificacion para otras colecciones**
+- **Crear reglas de calidad para colecciones que estaban vacias**
+- **Evaluar la cobertura de calidad actual**
+- **Finalizar**

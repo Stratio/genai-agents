@@ -30,6 +30,8 @@ mkdir -p "$PROJECT_DIR"
 # --- 1. Fichero raiz ---
 echo "Copiando ficheros raiz..."
 cp AGENTS.md "$PROJECT_DIR/CLAUDE.md"
+cp requirements.txt "$PROJECT_DIR/requirements.txt"
+cp setup_env.sh "$PROJECT_DIR/setup_env.sh"
 
 # --- 2. skills-guides/ → prefijo skills-guides_ ---
 echo "Copiando skills-guides..."
@@ -157,7 +159,7 @@ echo ""
 echo "=== Verificacion ==="
 
 # Contar ficheros
-FILE_COUNT=$(ls -1 "$PROJECT_DIR"/*.md 2>/dev/null | wc -l)
+FILE_COUNT=$(ls -1 "$PROJECT_DIR"/*.md "$PROJECT_DIR"/*.txt "$PROJECT_DIR"/*.sh 2>/dev/null | wc -l)
 echo "  Ficheros generados: $FILE_COUNT"
 
 # Buscar referencias rotas (rutas skills-guides/ que no fueron sustituidas)
@@ -169,14 +171,6 @@ if [ -n "$BROKEN" ]; then
 else
   echo "  OK: No se encontraron referencias rotas"
 fi
-
-# --- 6. ZIP ---
-echo ""
-ZIP_NAME="${PROJECT_NAME}.zip"
-(cd "$PROJECT_DIR" && zip -r "../_tmp_${ZIP_NAME}" . -q)
-mv "dist/claude_ai_projects/_tmp_${ZIP_NAME}" "$PROJECT_DIR/${ZIP_NAME}"
-ZIP_SIZE=$(du -sh "$PROJECT_DIR/${ZIP_NAME}" | cut -f1)
-echo "  ZIP: $PROJECT_DIR/${ZIP_NAME} ($ZIP_SIZE)"
 
 echo ""
 echo "=== Proyecto empaquetado en $PROJECT_DIR ==="

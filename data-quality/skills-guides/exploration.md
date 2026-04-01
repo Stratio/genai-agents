@@ -6,7 +6,7 @@ Pasos para explorar y validar dominios antes de ejecutar cualquier evaluacion de
 
 Para el workflow estandar de descubrimiento (listar dominios, regla critica de domain_name, explorar tablas, detalle de tablas y columnas), seguir las secciones 4.1 a 4.4 de `skills-guides/stratio-data-tools.md`.
 
-**Excepcion local — Dominios tecnicos**: Este agente tambien soporta dominios tecnicos ademas de los semanticos. Si el usuario solicita trabajar con un dominio tecnico, usar `list_technical_domains` en lugar de `list_business_domains`. En dominios tecnicos, los pasos 4.3 (detalle de tablas via `get_tables_details`) y 4.5 (terminologia via `search_domain_knowledge`) pueden devolver informacion limitada o vacia — esto es esperable y no debe bloquear el workflow. Compensar con mayor peso del EDA (seccion 3) y validacion directa con el usuario.
+**Dominios tecnicos**: Este agente tambien soporta dominios tecnicos ademas de los semanticos. Si el usuario solicita trabajar con un dominio tecnico, usar `search_domains(search_text, domain_type="technical")` o `list_domains(domain_type="technical")`. En dominios tecnicos, los pasos 4.3 (detalle de tablas via `get_tables_details`) y 4.5 (terminologia via `search_domain_knowledge`) pueden devolver informacion limitada o vacia — esto es esperable y no debe bloquear el workflow. Compensar con mayor peso del EDA (seccion 3) y validacion directa con el usuario.
 
 **Lanzar en paralelo** cuando sean tablas independientes.
 

@@ -141,23 +141,22 @@ done
 
 if [ ${#_GUIDES_MAP[@]} -gt 0 ]; then
   echo "Copiando skills-guides a skills..."
-  # Copiar guide dentro de la skill que lo declara (stratio-data)
-  for skill_dir in "$PLUGIN_BUILD/skills/stratio-data"; do
-    if [ -d "$skill_dir" ]; then
-      for guide_name in "${!_GUIDES_MAP[@]}"; do
-        src_type="${_GUIDES_MAP[$guide_name]}"
-        if [ "$src_type" = "shared" ]; then
-          guide_src="$MONOREPO_ROOT/shared-skill-guides/$guide_name"
-        else
-          guide_src="skills-guides/$guide_name"
-        fi
-        if [ -d "$guide_src" ]; then
-          cp -r "$guide_src" "$skill_dir/$guide_name"
-        elif [ -f "$guide_src" ]; then
-          cp "$guide_src" "$skill_dir/$guide_name"
-        fi
-      done
-    fi
+  # Copiar guide dentro de cada skill del plugin
+  for skill_dir in "$PLUGIN_BUILD/skills"/*/; do
+    [ -d "$skill_dir" ] || continue
+    for guide_name in "${!_GUIDES_MAP[@]}"; do
+      src_type="${_GUIDES_MAP[$guide_name]}"
+      if [ "$src_type" = "shared" ]; then
+        guide_src="$MONOREPO_ROOT/shared-skill-guides/$guide_name"
+      else
+        guide_src="skills-guides/$guide_name"
+      fi
+      if [ -d "$guide_src" ]; then
+        cp -r "$guide_src" "$skill_dir/$guide_name"
+      elif [ -f "$guide_src" ]; then
+        cp "$guide_src" "$skill_dir/$guide_name"
+      fi
+    done
   done
   sed -i 's|`skills-guides/stratio-data-tools\.md`|`stratio-data-tools.md`|g' "$PLUGIN_BUILD/skills/"*/SKILL.md 2>/dev/null || true
   sed -i 's|`skills-guides/exploration\.md`|`exploration.md`|g' "$PLUGIN_BUILD/skills/"*/SKILL.md 2>/dev/null || true
@@ -183,11 +182,7 @@ if [ -n "$ARG_GOV_URL" ] || [ -n "$ARG_GOV_KEY" ] || [ -n "$ARG_SQL_URL" ] || [ 
         "X-API-Key": "$GOV_KEY_VALUE",
         "Authorization": "Bearer $GOV_KEY_VALUE"
       },
-      "allowedTools": [
-        "get_quality_rule_dimensions",
-        "create_quality_rule",
-        "quality_rules_metadata"
-      ]
+      "allowedTools": ["*"]
     },
     "stratio_data": {
       "type": "http",
@@ -196,20 +191,7 @@ if [ -n "$ARG_GOV_URL" ] || [ -n "$ARG_GOV_KEY" ] || [ -n "$ARG_SQL_URL" ] || [ 
         "X-API-Key": "$SQL_KEY_VALUE",
         "Authorization": "Bearer $SQL_KEY_VALUE"
       },
-      "allowedTools": [
-        "list_business_domains",
-        "list_technical_domains",
-        "list_domain_tables",
-        "get_tables_details",
-        "get_table_columns_details",
-        "get_tables_quality_details",
-        "search_domain_knowledge",
-        "generate_sql",
-        "execute_sql",
-        "profile_data",
-        "query_data",
-        "propose_knowledge"
-      ]
+      "allowedTools": ["*"]
     }
   }
 }
@@ -225,11 +207,7 @@ else
         "X-API-Key": "${MCP_GOV_API_KEY:-}",
         "Authorization": "Bearer ${MCP_GOV_API_KEY:-}"
       },
-      "allowedTools": [
-        "get_quality_rule_dimensions",
-        "create_quality_rule",
-        "quality_rules_metadata"
-      ]
+      "allowedTools": ["*"]
     },
     "stratio_data": {
       "type": "http",
@@ -238,20 +216,7 @@ else
         "X-API-Key": "${MCP_SQL_API_KEY:-}",
         "Authorization": "Bearer ${MCP_SQL_API_KEY:-}"
       },
-      "allowedTools": [
-        "list_business_domains",
-        "list_technical_domains",
-        "list_domain_tables",
-        "get_tables_details",
-        "get_table_columns_details",
-        "get_tables_quality_details",
-        "search_domain_knowledge",
-        "generate_sql",
-        "execute_sql",
-        "profile_data",
-        "query_data",
-        "propose_knowledge"
-      ]
+      "allowedTools": ["*"]
     }
   }
 }
@@ -267,8 +232,8 @@ echo "Generando plugin ZIP..."
 # Paso 2: Generar CLAUDE.md desde AGENTS.md
 # ============================================================
 echo "Generando CLAUDE.md desde AGENTS.md..."
-sed 's|`skills-guides/stratio-data-tools\.md`|`skills/stratio-data/stratio-data-tools.md`|g' AGENTS.md > "$COWORK_DIR/CLAUDE.md"
-sed -i 's|`skills-guides/exploration\.md`|`skills/stratio-data/exploration.md`|g' "$COWORK_DIR/CLAUDE.md"
+sed 's|`skills-guides/stratio-data-tools\.md`|`skills/assess-quality/stratio-data-tools.md`|g' AGENTS.md > "$COWORK_DIR/CLAUDE.md"
+sed -i 's|`skills-guides/exploration\.md`|`skills/assess-quality/exploration.md`|g' "$COWORK_DIR/CLAUDE.md"
 sed -i 's/{{TOOL_PREGUNTAS}}/ (`AskUserQuestion`)/g' "$COWORK_DIR/CLAUDE.md"
 
 # ============================================================
@@ -276,20 +241,10 @@ sed -i 's/{{TOOL_PREGUNTAS}}/ (`AskUserQuestion`)/g' "$COWORK_DIR/CLAUDE.md"
 # ============================================================
 rm -rf "$PLUGIN_BUILD"
 
-# ============================================================
-# Paso 4: Generar ZIP final (CLAUDE.md + plugin.zip)
-# ============================================================
-ZIP_NAME="${COWORK_NAME}-cowork.zip"
-echo "Generando $ZIP_NAME..."
-(cd "$COWORK_DIR" && zip -r "../_tmp_${ZIP_NAME}" . -q)
-mv "dist/claude_cowork/_tmp_${ZIP_NAME}" "$COWORK_DIR/${ZIP_NAME}"
-
 # --- Resumen ---
-ZIP_SIZE=$(du -sh "$COWORK_DIR/${ZIP_NAME}" | cut -f1)
 PLUGIN_SIZE=$(du -sh "$COWORK_DIR/${COWORK_NAME}.zip" | cut -f1)
 echo ""
 echo "=== Cowork empaquetado ==="
 echo "  CLAUDE.md:   $COWORK_DIR/CLAUDE.md (folder instructions, generado desde AGENTS.md)"
 echo "  Plugin ZIP:  $COWORK_DIR/${COWORK_NAME}.zip ($PLUGIN_SIZE) (skills + MCP, sin agente)"
-echo "  Cowork ZIP:  $COWORK_DIR/${ZIP_NAME} ($ZIP_SIZE) (CLAUDE.md + plugin ZIP)"
 echo ""

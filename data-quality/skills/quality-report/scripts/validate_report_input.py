@@ -5,8 +5,8 @@ Valida que report-input.json tenga el schema exacto que espera quality_report_ge
 Si hay errores, los muestra con el nombre correcto del campo y termina con exit code 1.
 
 Uso:
-    python tools/validate_report_input.py [ruta-al-json]
-    python tools/validate_report_input.py output/report-input.json
+    python scripts/validate_report_input.py [ruta-al-json]
+    python scripts/validate_report_input.py output/report-input.json
 """
 import json
 import sys

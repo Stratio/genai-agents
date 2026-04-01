@@ -33,7 +33,6 @@ genai-agents/
     skills/
       build-semantic-layer/  # Skill local: pipeline completo
   data-quality/            # Agente de calidad del dato (evaluacion, reglas, informes)
-    shared-skills
     shared-guides
     skills/
       assess-quality/               # Skill local: evaluacion de cobertura

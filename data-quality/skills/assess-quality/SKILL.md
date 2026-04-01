@@ -12,7 +12,7 @@ Workflow completo para evaluar el estado de la calidad del dato en un dominio, t
 
 Antes de ejecutar ninguna llamada MCP, determinar exactamente que se va a evaluar:
 
-**Si el dominio no está claro o hay que validar el `domain_name`**: seguir `skills-guides/stratio-data-tools.md` sec 4.1-4.2 para el workflow estándar de discovery. Si el dominio es tecnico, usar `list_technical_domains` en lugar de `list_business_domains` (ver `skills-guides/exploration.md` sec 1 para la excepcion local de dominios tecnicos). Tener en cuenta que el analisis semantico sera mas limitado en dominios tecnicos: las descripciones de negocio, contexto de tablas y terminologia pueden estar ausentes o ser parciales.
+**Si el dominio no está claro o hay que validar el `domain_name`**: seguir `skills-guides/stratio-data-tools.md` sec 4.1-4.2 para el workflow estándar de discovery. Si el dominio es tecnico, usar `search_domains(search_text, domain_type="technical")` o `list_domains(domain_type="technical")` (ver `skills-guides/exploration.md` sec 1 para detalles de dominios tecnicos). Tener en cuenta que el analisis semantico sera mas limitado en dominios tecnicos: las descripciones de negocio, contexto de tablas y terminologia pueden estar ausentes o ser parciales.
 
 **Determinar scope:**
 - **Dominio completo**: evaluar todas sus tablas
@@ -131,7 +131,7 @@ Consistency  → cruzar columnas relacionadas para detectar incoherencias
 
 **Dominios tecnicos — ajuste del analisis de gaps:**
 
-Cuando el dominio es tecnico (`list_technical_domains`), las descripciones de negocio, contexto de tablas y terminologia pueden estar ausentes o muy limitadas. En este caso:
+Cuando el dominio es tecnico (descubierto via `list_domains(domain_type="technical")`), las descripciones de negocio, contexto de tablas y terminologia pueden estar ausentes o muy limitadas. En este caso:
 - **EDA pasa a ser la fuente principal** de razonamiento: los patrones estadisticos (nulos, duplicados, rangos, distribuciones) son la base para identificar gaps.
 - **Razonar por nombres y tipos de columnas**: usar convenciones habituales (`*_id` → clave/FK, `*_date`/`*_dt` → fecha, `*_amount`/`*_amt` → importe, `*_code`/`*_status` → enumerado) para inferir la semantica probable.
 - **Recomendaciones con menor confianza semantica**: al no disponer de descripciones de negocio, las reglas propuestas deben marcarse como basadas en inferencia tecnica. Validar las asunciones con el usuario antes de comprometerse con reglas de `validity` (rangos, enumerados) que requieren conocimiento de negocio.
@@ -209,15 +209,15 @@ Para cada gap indicar: tabla, columna, dimension ausente, impacto potencial.
 
 Resumir que acciones se recomiendan:
 - Si hay reglas KO/WARNING: resolver primero antes de crear nuevas
-- Si hay gaps criticos: proponer crear reglas con la skill `create-quality-rules`
+- Si hay gaps criticos: proponer crear reglas para cubrirlos
 - Si la cobertura es buena (>80%): felicitar y mencionar mejoras opcionales
 
 ## 5. Pregunta de Continuacion
 
-Al finalizar, preguntar al usuario como quiere continuar (opciones seleccionables):
-- **Crear reglas para cubrir los gaps**: activar skill `create-quality-rules`
-- **Generar un informe**: activar skill `quality-report`
-- **Profundizar en una tabla concreta**: volver a ejecutar esta skill con scope reducido
-- **No hacer nada mas**: finalizar
+Al finalizar, preguntar al usuario con opciones como quiere continuar, siguiendo la convencion de preguntas al usuario:
+- **Crear reglas para cubrir los gaps identificados**
+- **Generar un informe formal de cobertura**
+- **Profundizar en una tabla concreta**
+- **No hacer nada mas**
 
 No proponer continuacion automaticamente sin preguntar.

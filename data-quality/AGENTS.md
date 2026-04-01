@@ -56,9 +56,9 @@ Antes de activar cualquier skill, clasificar el intent del usuario:
 - "Programa la ejecucion de las reglas de X" / "Crea una planificacion para X" → planificacion a nivel de carpeta (coleccion/dominio), ejecuta TODAS las reglas de las carpetas seleccionadas → `create-quality-planification`
 - "Crea reglas con ejecucion diaria" / scheduling durante creacion de reglas → scheduling por regla individual, se configura dentro del flujo de creacion de reglas → gestionado dentro de `create-quality-rules` (seccion 4)
 
-**Tipo de dominio**: Si el usuario no especifica si el dominio es semantico o tecnico, preguntar antes de listar dominios:
-- **Semantico** (recomendado): usar `list_business_domains`. Proporciona descripciones de negocio, terminologia y contexto completo para un analisis semantico rico.
-- **Tecnico**: usar `list_technical_domains`. Limitaciones: sin descripciones de negocio, sin terminologia, el analisis semantico sera mas limitado (mayor peso del EDA y de las convenciones de nombres de columnas). Es una **excepcion local** respecto a `skills-guides/stratio-data-tools.md`, que solo documenta `list_business_domains`.
+**Tipo de dominio**: Si el usuario no especifica si el dominio es semantico o tecnico, preguntar al usuario con opciones antes de listar dominios:
+- **Semantico** (recomendado): usar `search_domains(search_text, domain_type="business")` o `list_domains(domain_type="business")`. Proporciona descripciones de negocio, terminologia y contexto completo para un analisis semantico rico. Preferir `search_domains` cuando el usuario da algun termino de busqueda; usar `list_domains` para ver todos.
+- **Tecnico**: usar `search_domains(search_text, domain_type="technical")` o `list_domains(domain_type="technical")`. Limitaciones: sin descripciones de negocio, sin terminologia, el analisis semantico sera mas limitado (mayor peso del EDA y de las convenciones de nombres de columnas).
 
 **Activacion de skills**: Cargar la skill ANTES de continuar con el workflow. La skill contiene el detalle operativo completo.
 
@@ -66,13 +66,13 @@ Antes de activar cualquier skill, clasificar el intent del usuario:
 
 Antes de cualquier evaluacion, determinar el scope:
 
-1. Si el dominio/coleccion no es evidente: listar dominios via `list_business_domains` (semantico) o `list_technical_domains` (tecnico) segun el tipo elegido, y preguntar al usuario
+1. Si el dominio/coleccion no es evidente: buscar o listar dominios via `search_domains` o `list_domains` con el `domain_type` correspondiente (semantico o tecnico), y preguntar al usuario con opciones
 2. Si el scope es un dominio completo: confirmar con `list_domain_tables`
 3. Si el scope es una tabla especifica: confirmar que existe en el dominio
 4. Si el scope es una columna especifica: confirmar que la tabla existe en el dominio y que la columna existe en la tabla (via `get_table_columns_details`)
-5. Si hay ambiguedad (el usuario dice "semantic_financial"): validar contra `list_business_domains` antes de usar como `domain_name`
+5. Si hay ambiguedad (el usuario dice "semantic_financial"): validar contra `search_domains` o `list_domains` antes de usar como `domain_name`
 
-**Regla CRITICA de domain_name**: El `domain_name` usado en TODAS las llamadas MCP debe ser **exactamente** el valor devuelto por `list_business_domains` o `list_technical_domains`. NUNCA traducirlo, interpretarlo, parafrasearlo ni inferirlo. Si hay duda, volver a llamar a la herramienta de listado correspondiente.
+**Regla CRITICA de domain_name**: El `domain_name` usado en TODAS las llamadas MCP debe ser **exactamente** el valor devuelto por `search_domains` o `list_domains`. NUNCA traducirlo, interpretarlo, parafrasearlo ni inferirlo. Si hay duda, volver a llamar a la herramienta de listado correspondiente.
 
 ---
 
@@ -216,7 +216,7 @@ Ademas de las herramientas listadas en `skills-guides/stratio-data-tools.md`, es
 Python se usa EXCLUSIVAMENTE para generar informes en archivo (PDF, DOCX, Markdown en disco). No para analisis de datos.
 
 - Verificar/crear el venv antes de ejecutar: `bash setup_env.sh` (idempotente — seguro ejecutar siempre)
-- Usar el interprete del venv directamente, sin activar: `.venv/bin/python tools/quality_report_generator.py`
+- Usar el interprete del venv directamente, sin activar: `.venv/bin/python skills/quality-report/scripts/quality_report_generator.py`
 - Guardar el payload JSON en `output/report-input.json` antes de llamar al script; usar `--input-file` en lugar de `--input-json`
 - Solo ejecutar Python si el usuario ha pedido explicitamente un informe en archivo
 - Ver skill `quality-report` para el detalle completo
@@ -228,9 +228,9 @@ Python se usa EXCLUSIVAMENTE para generar informes en archivo (PDF, DOCX, Markdo
 | Formato | Cuando | Como |
 |---------|--------|------|
 | **Chat** (default) | Siempre, para cualquier respuesta | Markdown estructurado en la conversacion |
-| **PDF** | El usuario lo pide explicitamente | Skill `quality-report` + `tools/quality_report_generator.py` |
-| **DOCX** | El usuario lo pide explicitamente | Skill `quality-report` + `tools/quality_report_generator.py` |
-| **Markdown** | El usuario lo pide explicitamente | Skill `quality-report` + `tools/quality_report_generator.py` |
+| **PDF** | El usuario lo pide explicitamente | Skill `quality-report` + `scripts/quality_report_generator.py` |
+| **DOCX** | El usuario lo pide explicitamente | Skill `quality-report` + `scripts/quality_report_generator.py` |
+| **Markdown** | El usuario lo pide explicitamente | Skill `quality-report` + `scripts/quality_report_generator.py` |
 
 Si el usuario no especifica formato, responder en chat. Si pide "un informe" sin formato especifico, preguntar cual prefiere.
 

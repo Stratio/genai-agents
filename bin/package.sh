@@ -165,34 +165,13 @@ if [[ -d "$DQ_DIR" ]]; then
     # Normalizar PACK_TYPE para el nombre del ZIP (ai_project -> ai-project)
     ZIP_TYPE=$(echo "$PACK_TYPE" | tr '_' '-')
 
-    # Los pack scripts generan un ZIP dentro del directorio
-    ZIP_FILE=$(find "$DQ_DIR/$OUTPUT_SUBDIR" -name '*.zip' -maxdepth 1 2>/dev/null | head -1)
-    if [[ -n "$ZIP_FILE" ]]; then
-      cp "$ZIP_FILE" "$DIST_DIR/data-quality-claude-${ZIP_TYPE}-${VERSION}.zip"
+    OUTPUT_DIR="$DQ_DIR/$OUTPUT_SUBDIR"
+    if [[ -d "$OUTPUT_DIR" ]]; then
+      (cd "$OUTPUT_DIR" && zip -r "$DIST_DIR/data-quality-claude-${ZIP_TYPE}-${VERSION}.zip" . -q)
       echo "    -> dist/data-quality-claude-${ZIP_TYPE}-${VERSION}.zip"
     fi
   done
 fi
-
-# --- Zip de fuentes ---
-echo "  Generando zip de fuentes..."
-SOURCES_ZIP="genai-agents-sources-${VERSION}.zip"
-(cd "$REPO_ROOT" && zip -r "$DIST_DIR/$SOURCES_ZIP" . \
-  -x "dist/*" \
-  -x ".git/*" \
-  -x "*/.venv/*" \
-  -x "*/__pycache__/*" \
-  -x "*.pyc" \
-  -x "*/node_modules/*" \
-  -x "*/.idea/*" \
-  -x "*/output/*" \
-  -q)
-echo "    -> dist/$SOURCES_ZIP"
-
-# --- Zip global ---
-echo "  Generando zip global..."
-(cd "$DIST_DIR" && zip -r "genai-agents-${VERSION}.zip" *.zip -q 2>/dev/null) || true
-echo "    -> dist/genai-agents-${VERSION}.zip"
 
 # --- Resumen ---
 echo ""

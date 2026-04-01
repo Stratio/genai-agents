@@ -8,6 +8,7 @@ Agente experto en Gobernanza y Calidad del Dato. Evalua la cobertura de calidad 
 - Identificacion de gaps: dimensiones de calidad no cubiertas o tablas sin cobertura
 - Propuesta razonada de reglas de calidad basada en contexto semantico y datos reales
 - Creacion de reglas de calidad con aprobacion humana obligatoria
+- Planificacion de ejecucion automatica de reglas de calidad
 - Generacion de informes de cobertura (chat, PDF, DOCX, Markdown)
 
 ## Requisitos
@@ -34,6 +35,7 @@ La configuracion de MCPs esta en `.mcp.json` (Claude Code / claude.ai) y en `ope
 |-------|---------|-------------|
 | Evaluacion de calidad | `/assess-quality` | Evaluar cobertura de calidad por dominio o tabla: dimensiones cubiertas, gaps y prioridades |
 | Creacion de reglas | `/create-quality-rules` | Disenar y crear reglas de calidad para cubrir gaps, con aprobacion humana obligatoria |
+| Planificacion de calidad | `/create-quality-planification` | Crear planificaciones de ejecucion automatica de reglas de calidad por dominio/coleccion |
 | Informe de calidad | `/quality-report` | Generar informe formal de cobertura en chat, PDF, DOCX o Markdown |
 
 ## Scripts de empaquetado

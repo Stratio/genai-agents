@@ -12,9 +12,9 @@ Workflow para generar un informe estructurado con el estado de cobertura de cali
 
 Esta skill necesita datos de calidad para generar el informe. Verificar si ya existen en la conversacion actual:
 
-**Si se ejecuto `assess-quality` o `create-quality-rules` previamente**: usar esos datos directamente. Esto incluye tanto reglas creadas desde el flujo de gaps (Flujo A) como reglas concretas creadas directamente por el usuario (Flujo B de `create-quality-rules`).
+**Si ya existen datos de evaluacion de cobertura o de creacion de reglas en la conversacion**: usar esos datos directamente. Esto incluye tanto reglas creadas desde el flujo de gaps (Flujo A) como reglas concretas creadas directamente por el usuario (Flujo B).
 
-**Si NO hay datos previos**: ejecutar primero la skill `assess-quality` con el scope indicado por el usuario, luego continuar con esta skill.
+**Si NO hay datos de cobertura en el contexto** (inventario de reglas, gaps, EDA): es necesario realizar primero una evaluacion completa del scope solicitado antes de generar el informe. Indicar al usuario y detenerse.
 
 ### Datos a recopilar para el informe
 
@@ -29,7 +29,7 @@ Paralelo:
 
 ## 2. Seleccion de Formato
 
-Si el usuario no ha especificado formato, preguntar con opciones:
+Si el usuario no ha especificado formato, preguntar al usuario con opciones siguiendo la convencion de preguntas al usuario:
 
 ```
 ¿En que formato quieres el informe?
@@ -85,9 +85,9 @@ Lista priorizada de gaps:
 
 ### Seccion 5 — Reglas Creadas en esta Sesion (si aplica)
 
-Si se ejecuto `create-quality-rules` antes, incluir:
+Si se crearon reglas de calidad en esta sesion, incluir:
 - Lista de reglas creadas con su SQL
-- Cobertura antes y despues (solo si se ejecuto `assess-quality` previamente; para reglas del Flujo B sin assess previo, omitir la comparacion de cobertura)
+- Cobertura antes y despues (solo si se realizo una evaluacion de cobertura previamente; para reglas del Flujo B sin evaluacion previa, omitir la comparacion de cobertura)
 
 **Para reglas del Flujo B (regla concreta)**: indicar que fueron solicitadas directamente por el usuario, incluir la logica de negocio descrita, el resultado de la validacion SQL (registros que pasan / total, % o conteo) y el estado calculado (OK / KO / WARNING / SIN_DATOS) basado en la configuracion de medicion aplicada (measurement_type + threshold_mode + umbrales).
 
@@ -216,7 +216,7 @@ Escribir `<ruta-absoluta>/report-input.json` con el schema exacto que sigue. **L
 #### Paso 4 — Validar el JSON (OBLIGATORIO antes de ejecutar el generador)
 
 ```bash
-.venv/bin/python tools/validate_report_input.py output/report-input.json
+.venv/bin/python scripts/validate_report_input.py output/report-input.json
 ```
 
 - Si termina con `[OK]`: continuar al paso 5.
@@ -225,7 +225,7 @@ Escribir `<ruta-absoluta>/report-input.json` con el schema exacto que sigue. **L
 #### Paso 5 — Ejecutar el generador
 
 ```bash
-.venv/bin/python tools/quality_report_generator.py \
+.venv/bin/python scripts/quality_report_generator.py \
   --format <pdf|docx|md> \
   --output "output/quality-report-[dominio]-[fecha].<ext>" \
   --input-file output/report-input.json
