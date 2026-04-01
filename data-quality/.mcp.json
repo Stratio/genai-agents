@@ -1,0 +1,29 @@
+{
+  "mcpServers": {
+    "stratio_data": {
+      "type": "http",
+      "url": "${MCP_SQL_URL:-http://127.0.0.1:8080/mcp}",
+      "headers": {
+        "X-API-Key": "${MCP_SQL_API_KEY:-}",
+        "Authorization": "Bearer ${MCP_SQL_API_KEY:-}"
+      },
+      "allowedTools": [
+        "*"
+      ]
+    },
+    "stratio_gov": {
+      "type": "http",
+      "url": "${MCP_GOV_URL:-http://127.0.0.1:8080/mcp}",
+      "headers": {
+        "X-API-Key": "${MCP_GOV_API_KEY:-}",
+        "Authorization": "Bearer ${MCP_GOV_API_KEY:-}"
+      },
+      "allowedTools": [
+        "get_quality_rule_dimensions",
+        "create_quality_rule",
+        "create_quality_rule_planification",
+        "quality_rules_metadata"
+      ]
+    }
+  }
+}

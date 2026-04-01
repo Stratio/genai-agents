@@ -11,6 +11,7 @@ El repositorio esta orientado principalmente a **OpenCode**, la herramienta open
 | **data-analytics** | Agente completo de BI/BA con analisis avanzado, clustering, informes multi-formato (PDF, DOCX, web, PowerPoint) y documentacion del razonamiento | Claude Code, OpenCode, Stratio Cowork | `data-analytics/` |
 | **data-analytics-light** | Agente ligero de BI/BA orientado a analisis en chat, sin generacion de informes formales. Incluye scripts de empaquetado para multiples plataformas | Claude Code, Claude Cowork, claude.ai, OpenCode | `data-analytics-light/` |
 | **semantic-layer** | Agente especializado en construccion y mantenimiento de capas semanticas en Stratio Governance: creacion de colecciones de datos (dominios tecnicos), terminos tecnicos, ontologias, vistas de negocio, SQL mappings, publicacion de vistas, terminos semanticos y business terms | Claude Code, Claude Cowork, claude.ai, OpenCode, Stratio Cowork | `semantic-layer/` |
+| **data-quality** | Agente de calidad del dato: evaluacion de cobertura, identificacion de gaps, creacion de reglas de calidad con human-in-the-loop y generacion de informes de cobertura | Claude Code, Claude Cowork, claude.ai, OpenCode, Stratio Cowork | `data-quality/` |
 
 ## Empaquetado
 
@@ -59,6 +60,11 @@ genai-agents/
     semantic-layer-claude-cowork-{v}.zip
     semantic-layer-claude-ai-project-{v}.zip
     semantic-layer-stratio-cowork.zip            # Bundle Stratio Cowork (agente + shared skills)
+    data-quality-claude-code-{v}.zip
+    data-quality-opencode-{v}.zip
+    data-quality-claude-cowork-{v}.zip
+    data-quality-claude-ai-project-{v}.zip
+    data-quality-stratio-cowork-{v}.zip
     shared-skills-{v}.zip                        # Todas las shared skills juntas
     shared-skill-propose-knowledge-{v}.zip       # Skill individual
     shared-skill-explore-data-{v}.zip            # Skill individual
@@ -90,6 +96,13 @@ genai-agents/
       opencode/semantic-layer/
       claude_cowork/semantic-layer/
       claude_ai_projects/semantic-layer/
+
+  data-quality/
+    dist/                                       # Artefactos intermedios
+      claude_code/data-quality/
+      opencode/data-quality/
+      claude_cowork/data-quality/
+      claude_ai_projects/data-quality/
 ```
 
 `make clean` elimina todos los `dist/` (raiz + agentes).

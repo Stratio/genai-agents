@@ -138,6 +138,40 @@ if [[ -d "$SL_DIR" ]]; then
   done
 fi
 
+# --- Pack adicionales de data-quality ---
+DQ_DIR="$REPO_ROOT/data-quality"
+if [[ -d "$DQ_DIR" ]]; then
+  for pack_script in "$DQ_DIR"/pack_claude_*.sh; do
+    [[ ! -f "$pack_script" ]] && continue
+    SCRIPT_NAME=$(basename "$pack_script")
+
+    # Extraer tipo del nombre: pack_claude_ai_project.sh -> ai_project
+    PACK_TYPE="${SCRIPT_NAME#pack_claude_}"
+    PACK_TYPE="${PACK_TYPE%.sh}"
+
+    echo "  [data-quality] Ejecutando $SCRIPT_NAME..."
+    (cd "$DQ_DIR" && bash "$SCRIPT_NAME" --name data-quality) || {
+      echo "  WARN: $SCRIPT_NAME fallo — continuando"
+      continue
+    }
+
+    # Buscar el directorio de output generado
+    case "$PACK_TYPE" in
+      ai_project) OUTPUT_SUBDIR="dist/claude_ai_projects/data-quality" ;;
+      cowork)     OUTPUT_SUBDIR="dist/claude_cowork/data-quality" ;;
+      *) echo "  WARN: Tipo desconocido: $PACK_TYPE"; continue ;;
+    esac
+
+    # Normalizar PACK_TYPE para el nombre del ZIP (ai_project -> ai-project)
+    ZIP_TYPE=$(echo "$PACK_TYPE" | tr '_' '-')
+
+    OUTPUT_DIR="$DQ_DIR/$OUTPUT_SUBDIR"
+    if [[ -d "$OUTPUT_DIR" ]]; then
+      (cd "$OUTPUT_DIR" && zip -r "$DIST_DIR/data-quality-claude-${ZIP_TYPE}-${VERSION}.zip" . -q)
+      echo "    -> dist/data-quality-claude-${ZIP_TYPE}-${VERSION}.zip"
+    fi
+  done
+fi
 
 # --- Resumen ---
 echo ""
