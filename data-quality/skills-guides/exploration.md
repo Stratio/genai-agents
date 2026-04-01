@@ -43,4 +43,4 @@ Para las reglas base de uso de `profile_data` (generar SQL con `generate_sql`, n
 | **Fechas**         | `min`, `max`: detecta fechas en el futuro o valores "dummy" (1900/9999).            |
 | **...**            | ...                                                                                 |
 
-**Lanzar en paralelo** para todas las tablas de interes durante la fase de evaluacion inicial (`assess-quality`).
+**Lanzar en paralelo** para todas las tablas de interes durante la fase de evaluacion inicial.

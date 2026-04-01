@@ -53,7 +53,7 @@ Antes de crear la planificacion, verificar que las carpetas seleccionadas contie
 
 **Evaluacion de resultados:**
 
-- **Coleccion sin reglas**: avisar al usuario explicitamente. Sugerir crear reglas primero (skills `assess-quality` + `create-quality-rules`) antes de planificar. Preguntar si quiere continuar de todas formas o crear reglas primero.
+- **Coleccion sin reglas**: avisar al usuario explicitamente. Sugerir evaluar la cobertura y crear reglas antes de planificar. Preguntar al usuario con opciones, siguiendo la convencion de preguntas al usuario, si quiere continuar de todas formas o crear reglas primero.
 - **Coleccion con reglas en estado KO**: mencionarlo como informacion relevante — la planificacion ejecutara tambien las reglas KO, lo que puede generar alertas recurrentes.
 - **Coleccion con reglas**: resumir cuantas reglas hay, en cuantas tablas, y su estado general.
 

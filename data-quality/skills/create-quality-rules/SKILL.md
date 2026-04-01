@@ -47,7 +47,7 @@ Si el usuario ha especificado un subset ("solo la tabla account"), respetar esa 
 
 Si hay reglas existentes en estado KO o WARNING: mencionarlas como accion prioritaria antes de crear nuevas. Preguntar si quiere resolver primero esas o continuar con los gaps.
 
-## 2. Diseño de Reglas (a partir del análisis completo de assess-quality)
+## 2. Diseño de Reglas (a partir del análisis completo de la evaluacion de cobertura)
 
 La evaluacion de cobertura ya ha producido dos fuentes de información que se usan aquí directamente — no repetir ninguna llamada MCP salvo que el scope haya cambiado:
 
@@ -308,7 +308,7 @@ Solo las reglas cuyas queries hayan sido validadas correctamente pueden formar p
 
 ## Flujo B: Regla Concreta
 
-Este flujo aplica cuando el usuario describe directamente una regla que quiere crear, sin necesidad de `assess-quality` previo. El objetivo es disenar, validar y crear esa regla concreta con aprobacion humana.
+Este flujo aplica cuando el usuario describe directamente una regla que quiere crear, sin necesidad de una evaluacion de cobertura previa. El objetivo es disenar, validar y crear esa regla concreta con aprobacion humana.
 
 ### B.1 Scope y Metadata
 
@@ -394,6 +394,7 @@ Antes de ejecutar ninguna llamada a `create_quality_rule`, presentar el plan com
 
 ---
 
+```
 ¿Procedo con la creacion de estas N reglas?
 
 La medicion de cada regla se indica en el campo **Medicion** del plan. Si quieres cambiar la forma de medir alguna regla, indicalo antes de aprobar.
