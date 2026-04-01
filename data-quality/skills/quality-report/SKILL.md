@@ -1,6 +1,6 @@
 ---
 name: quality-report
-description: Generar un informe formal de cobertura de calidad del dato en el formato que elija el usuario (chat, PDF, DOCX o Markdown en disco). Usar cuando el usuario quiera un documento o presentacion con el estado actual de la calidad, despues de ejecutar assess-quality o create-quality-rules.
+description: Generar un informe formal de cobertura de calidad del dato en el formato que elija el usuario (chat, PDF, DOCX o Markdown en disco). Usar cuando el usuario quiera un documento o presentacion con el estado actual de la calidad, despues de evaluar la cobertura o crear reglas de calidad.
 argument-hint: [formato: chat|pdf|docx|md] [nombre-fichero (opcional)]
 ---
 
@@ -196,7 +196,7 @@ Escribir `<ruta-absoluta>/report-input.json` con el schema exacto que sigue. **L
 }
 ```
 
-**Notas de mapeo desde los datos de assess-quality:**
+**Notas de mapeo desde los datos de evaluacion de cobertura:**
 - `summary.rules_total` ← total de reglas existentes en la coleccion (no solo las ejecutadas)
 - `summary.rules_not_executed` ← reglas sin resultado aun (pendientes)
 - `summary.gaps_critical` ← gaps con priority `CRITICO`; `gaps_moderate` ← `ALTO`; `gaps_low` ← `MEDIO` + `BAJO`
