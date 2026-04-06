@@ -1,416 +1,416 @@
 ---
 name: analyze
-description: Analisis completo de datos BI/BA — descubrimiento de dominio, EDA y calidad de datos, planificacion de metricas y KPIs con framework analitico, queries de datos via MCP, analisis Python con pandas, visualizaciones, generacion de informes multi-formato y documentacion del razonamiento. Usar cuando el usuario necesite analizar datos de negocio, calcular KPIs, obtener insights o responder preguntas analiticas sobre dominios gobernados.
-argument-hint: [pregunta o tema de analisis]
+description: Full BI/BA data analysis — domain discovery, EDA and data quality, metric and KPI planning with analytical framework, data queries via MCP, Python analysis with pandas, visualizations, multi-format report generation, and reasoning documentation. Use when the user needs to analyze business data, calculate KPIs, obtain insights, or answer analytical questions about governed domains.
+argument-hint: [analysis question or topic]
 ---
 
-# Skill: Analisis BI/BA Completo
+# Skill: Full BI/BA Analysis
 
-Esta guia define el workflow completo para realizar un analisis de Business Intelligence / Business Analytics.
+This guide defines the complete workflow for performing a Business Intelligence / Business Analytics analysis.
 
-## 1. Parsear la Peticion
+## 1. Parse the Request
 
-- Extraer la pregunta de negocio principal del argumento: $ARGUMENTS
-- Identificar sub-preguntas implicitas
-- Detectar si menciona un dominio, tablas o metricas especificas
-- Detectar si menciona un formato de salida preferido
+- Extract the main business question from the argument: $ARGUMENTS
+- Identify implicit sub-questions
+- Detect if a domain, tables, or specific metrics are mentioned
+- Detect if a preferred output format is mentioned
 
-### 1.1 Triage rapido
+### 1.1 Quick triage
 
-Si la peticion se resuelve con una sola llamada MCP (ver Fase 0 del workflow (AGENTS.md)), responder directamente:
-- Definiciones/conceptos → `search_domain_knowledge` → chat
-- Estructura/columnas → `list_domain_tables` / `get_table_columns_details` → chat
-- Dato puntual → `query_data` → chat
-- En estos casos, NO continuar con el resto del workflow
+If the request can be resolved with a single MCP call (see Phase 0 of the workflow (AGENTS.md)), respond directly:
+- Definitions/concepts → `search_domain_knowledge` → chat
+- Structure/columns → `list_domain_tables` / `get_table_columns_details` → chat
+- Point data → `query_data` → chat
+- In these cases, do NOT continue with the rest of the workflow
 
-Si la peticion requiere analisis (cruce de datos, hipotesis, visualizaciones, multiples metricas), continuar con seccion 2.
+If the request requires analysis (data crossing, hypotheses, visualizations, multiple metrics), continue with section 2.
 
-## 2. Descubrimiento de Dominio
+## 2. Domain Discovery
 
-Leer y seguir `skills-guides/stratio-data-tools.md` sec 4 para los pasos de descubrimiento del dominio (buscar o listar dominios, seleccionar, explorar tablas, columnas y terminologia).
+Read and follow `skills-guides/stratio-data-tools.md` sec 4 for the domain discovery steps (search or list domains, select, explore tables, columns, and terminology).
 
-## 3. EDA y Calidad de Datos
+## 3. EDA and Data Quality
 
-Antes de preguntar al usuario sobre formatos y planificar metricas, entender la realidad de los datos:
+Before asking the user about formats and planning metrics, understand the reality of the data:
 
-1. **Profiling**: Ejecutar `profile_data` sobre las tablas clave identificadas en el paso 2. Seguir la mecanica y umbrales adaptativos de `skills-guides/stratio-data-tools.md` sec 5
-2. **Evaluar calidad**:
-   - **Completitud**: % de nulos por columna. Marcar columnas con >50% nulos como limitacion
-   - **Rango temporal**: Verificar que los datos cubren el periodo que el usuario necesita
-   - **Outliers**: Identificar valores extremos (IQR) que podrian sesgar promedios o totales
-   - **Distribuciones**: Sesgo en numericas, desbalanceo en categoricas
-   - **Correlaciones**: Relaciones fuertes entre variables (|r| > 0.7) — pueden indicar multicolinealidad o redundancia
-   - **Cardinalidad**: Categoricas con >100 valores unicos son dificiles de visualizar o agrupar
-3. **Checklist de suficiencia** — Aplicar ANTES de preguntar formatos:
+1. **Profiling**: Run `profile_data` on the key tables identified in step 2. Follow the mechanics and adaptive thresholds from `skills-guides/stratio-data-tools.md` sec 5
+2. **Evaluate quality**:
+   - **Completeness**: % of nulls per column. Flag columns with >50% nulls as a limitation
+   - **Time range**: Verify that the data covers the period the user needs
+   - **Outliers**: Identify extreme values (IQR) that could bias averages or totals
+   - **Distributions**: Skew in numerics, imbalance in categoricals
+   - **Correlations**: Strong relationships between variables (|r| > 0.7) — may indicate multicollinearity or redundancy
+   - **Cardinality**: Categoricals with >100 unique values are difficult to visualize or group
+3. **Sufficiency checklist** — Apply BEFORE asking about formats:
 
-   | Criterio | Umbral minimo | Si falla |
-   |----------|---------------|----------|
-   | Registros | >0 | STOP — reformular query |
-   | Completitud temporal | ≥80% del periodo pedido | Ofrecer analisis del periodo disponible |
-   | Nulos en vars clave | <30% | Alertar limitacion severa, considerar imputacion |
-   | Tamano para inferencia | n ≥ 30 | Reportar como exploratorio, sin tests estadisticos |
-   | Tamano para clustering | n ≥ 10 × features | Recomendar analisis descriptivo sin segmentacion |
-   | Variabilidad | std > 0 en numericas clave | Excluir variable constante |
-   | Granularidad | Nivel pedido disponible | Ofrecer agregacion al disponible |
+   | Criterion | Minimum threshold | If it fails |
+   |-----------|-------------------|-------------|
+   | Records | >0 | STOP — reformulate query |
+   | Temporal completeness | >=80% of requested period | Offer analysis of available period |
+   | Nulls in key vars | <30% | Alert severe limitation, consider imputation |
+   | Size for inference | n >= 30 | Report as exploratory, no statistical tests |
+   | Size for clustering | n >= 10 x features | Recommend descriptive analysis without segmentation |
+   | Variability | std > 0 in key numerics | Exclude constant variable |
+   | Granularity | Requested level available | Offer aggregation to available level |
 
-4. **Data Quality Score**: ALTO (80-100%), MEDIO (60-79%), BAJO (<60%). Si BAJO, recomendar mejorar datos o reformular
-5. **Informar al usuario**: Generar mini-resumen de calidad + Data Quality Score antes de preguntarle sobre formato y estilo. Ejemplo:
-   - "**Calidad: ALTO (85%)**. Los datos cubren de enero 2023 a diciembre 2025. La columna `descuento` tiene un 35% de nulos. Se detectaron 12 outliers en `importe_total` (>3 IQR). La distribucion de `categoria_producto` esta concentrada: 3 de 15 categorias representan el 80% de registros."
-6. **Ajustar expectativas**: Si hay limitaciones serias, advertir al usuario de que ciertas metricas o visualizaciones podrian no ser fiables
+4. **Data Quality Score**: HIGH (80-100%), MEDIUM (60-79%), LOW (<60%). If LOW, recommend improving data or reformulating
+5. **Inform the user**: Generate a quality mini-summary + Data Quality Score before asking about format and style. Example:
+   - "**Quality: HIGH (85%)**. Data covers January 2023 to December 2025. The `descuento` column has 35% nulls. 12 outliers detected in `importe_total` (>3 IQR). The `categoria_producto` distribution is concentrated: 3 of 15 categories represent 80% of records."
+6. **Adjust expectations**: If there are serious limitations, warn the user that certain metrics or visualizations may not be reliable
 
-## 4. Clasificacion y Preguntas al Usuario
+## 4. Classification and User Questions
 
-> **Nota**: Todas las preguntas con opciones de esta seccion siguen la convencion de preguntas (sec "Interaccion con el Usuario" de AGENTS.md).
+> **Note**: All questions with options in this section follow the question convention (sec "User Interaction" of AGENTS.md).
 
-### 4.0 Triage vs Analisis
+### 4.0 Triage vs Analysis
 
-Las preguntas simples (datos puntuales, sin dimensiones de corte) se resuelven en Triage (Fase 0 del workflow) sin invocar esta skill. Todo lo demas es un analisis y sigue el flujo de bloques de preguntas descrito a continuacion.
+Simple questions (point data, no slicing dimensions) are resolved in Triage (Phase 0 of the workflow) without invoking this skill. Everything else is an analysis and follows the question block flow described below.
 
-**Defaults generales:**
-- Estilo visual: **Corporativo** (si el usuario no elige otro en Bloque 2)
+**General defaults:**
+- Visual style: **Corporate** (if the user does not choose another in Block 2)
 
-### 4.1 Bloque 1 — Profundidad, Audiencia y Formato
+### 4.1 Block 1 — Depth, Audience, and Format
 
-Una sola interaccion:
+A single interaction:
 
-| # | Pregunta | Opciones (literales) | Seleccion | Condicion |
-|---|----------|---------------------|-----------|-----------|
-| 1 | ¿Que profundidad de analisis prefieres? | **Rapido** · **Estandar** (Recomendado) · **Profundo** | Unica | Siempre |
-| 2 | ¿Para que audiencia es el analisis? | **C-level/Direccion** · **Manager/Responsable** · **Equipo tecnico/Data** · **Mixta/General** | Unica | Siempre |
-| 3 | ¿En que formatos quieres los deliverables? | **Documento** (PDF + DOCX) · **Web** (HTML interactivo con Plotly) · **PowerPoint** (.pptx) | Multiple | Siempre |
-| 4 | ¿Quieres que se generen y ejecuten tests unitarios sobre el código Python? | **Sí** (Recomendado): mejora precisión y calidad, pero consume más tiempo, coste y contexto · **No**: ejecución directa sin tests | Única | Solo Estandar/Profundo |
+| # | Question | Options (literal) | Selection | Condition |
+|---|----------|-------------------|-----------|-----------|
+| 1 | What analysis depth do you prefer? | **Quick** · **Standard** (Recommended) · **Deep** | Single | Always |
+| 2 | What audience is the analysis for? | **C-level/Executive** · **Manager/Lead** · **Technical/Data team** · **Mixed/General** | Single | Always |
+| 3 | In what formats do you want the deliverables? | **Document** (PDF + DOCX) · **Web** (Interactive HTML with Plotly) · **PowerPoint** (.pptx) | Multiple | Always |
+| 4 | Do you want unit tests to be generated and run on the Python code? | **Yes** (Recommended): improves precision and quality, but consumes more time, cost, and context · **No**: direct execution without tests | Single | Standard/Deep only |
 
-- Los tests validan transformaciones y cálculos antes de ejecutar con datos reales. Mejoran la precisión pero consumen más tokens, tiempo y coste. **En profundidad Rápido, testing se desactiva automáticamente sin preguntar al usuario.**
-- La pregunta de formato SIEMPRE permite seleccion multiple
-- Las opciones de formato son EXACTAMENTE 3: Documento (PDF + DOCX), Web, PowerPoint. No inventar, no omitir, no sustituir
-- Si no selecciona formato → no hay deliverables, el analisis se entrega solo en chat + report.md automatico
-- **Si selecciona uno o mas formatos → los deliverables SE GENERAN SIEMPRE, independientemente de la profundidad elegida. Rapido/Estandar/Profundo afecta al analisis, no a los entregables.**
-- Requisitos adicionales via opcion "Other" (filtros temporales, segmentos, metricas obligatorias)
+- Tests validate transformations and calculations before running with real data. They improve precision but consume more tokens, time, and cost. **In Quick depth, testing is automatically disabled without asking the user.**
+- The format question ALWAYS allows multiple selection
+- The format options are EXACTLY 3: Document (PDF + DOCX), Web, PowerPoint. Do not invent, omit, or substitute
+- If no format is selected → no deliverables, the analysis is delivered only in chat + automatic report.md
+- **If one or more formats are selected → deliverables ARE ALWAYS GENERATED, regardless of the chosen depth. Quick/Standard/Deep affects the analysis, not the deliverables.**
+- Additional requirements via "Other" option (time filters, segments, mandatory metrics)
 
-### 4.2 Bloque 2 — Estructura y Estilo (solo si selecciono formato en Bloque 1)
+### 4.2 Block 2 — Structure and Style (only if format was selected in Block 1)
 
-Una sola interaccion con 2 preguntas. Las opciones son literales — no inventar, no omitir, no sustituir:
+A single interaction with 2 questions. Options are literal — do not invent, omit, or substitute:
 
-| # | Pregunta | Opciones (literales) | Seleccion |
-|---|----------|---------------------|-----------|
-| 1 | ¿Que estructura prefieres para el reporte? | **Scaffold base** (Recomendado): resumen ejecutivo → metodologia → datos → analisis → conclusiones · **Al vuelo**: estructura libre segun contexto | Unica |
-| 2 | ¿Que estilo visual prefieres? | **Corporativo** (`corporate.css`, Recomendado): limpio, profesional · **Formal/academico** (`academic.css`): serif, margenes amplios, estilo paper · **Moderno/creativo** (`modern.css`): colores, gradientes, visualmente atractivo | Unica |
+| # | Question | Options (literal) | Selection |
+|---|----------|-------------------|-----------|
+| 1 | What structure do you prefer for the report? | **Base scaffold** (Recommended): executive summary → methodology → data → analysis → conclusions · **On the fly**: free structure based on context | Single |
+| 2 | What visual style do you prefer? | **Corporate** (`corporate.css`, Recommended): clean, professional · **Formal/academic** (`academic.css`): serif, wide margins, paper style · **Modern/creative** (`modern.css`): colors, gradients, visually appealing | Single |
 
-Si no selecciono formato en Bloque 1 → Bloque 2 se omite completamente. Resultado: de 6 a 1-2 interacciones.
+If no format was selected in Block 1 → Block 2 is skipped entirely. Result: from 6 down to 1-2 interactions.
 
-## 5. Planificacion
+## 5. Planning
 
-Elaborar un plan detallado siguiendo el framework analitico (sec "Framework Analitico" de AGENTS.md):
+Develop a detailed plan following the analytical framework (sec "Analytical Framework" of AGENTS.md):
 
-### 5.0 Contexto historico
-Leer en paralelo (si existen):
-- `output/ANALYSIS_MEMORY.md` — triage rapido: buscar entradas del mismo dominio. Si hay una entrada relevante, leer su fichero `analysis_memory.md` referenciado en el campo **Detalle** para obtener KPIs, insights y baselines de referencia
-- `output/MEMORY.md` — sec "Patrones de Datos Conocidos" del dominio para anticipar problemas de datos conocidos
+### 5.0 Historical context
+Read in parallel (if they exist):
+- `output/ANALYSIS_MEMORY.md` — quick triage: search for entries from the same domain. If there is a relevant entry, read its `analysis_memory.md` file referenced in the **Detail** field to obtain KPIs, insights, and reference baselines
+- `output/MEMORY.md` — sec "Known Data Patterns" for the domain to anticipate known data problems
 
-### 5.1 Librerias adicionales
-Evaluar si `requirements.txt` necesita ampliarse
+### 5.1 Additional libraries
+Evaluate whether `requirements.txt` needs to be extended
 
-### 5.2 Enfoque analitico: descriptivo, segmentacion o feature importance
+### 5.2 Analytical approach: descriptive, segmentation, or feature importance
 
-Determinar si la pregunta requiere solo analisis descriptivo o tambien segmentacion/clustering o feature importance:
+Determine whether the question requires only descriptive analysis or also segmentation/clustering or feature importance:
 
-| Escenario | Recomendacion |
-|-----------|---------------|
-| Describir que paso y por que | Analisis descriptivo (pandas, agrupaciones, comparativas) |
-| Descubrir grupos/segmentos no predefinidos | Clustering (RFM, KMeans, DBSCAN). Ver [clustering-guide.md](clustering-guide.md) |
-| Identificar factores influyentes (>5 variables) | Feature importance exploratoria. Ver [clustering-guide.md](clustering-guide.md) sec 7 |
-| Proyeccion temporal | Proyeccion lineal + IC95%. Ver [advanced-analytics.md](advanced-analytics.md) |
+| Scenario | Recommendation |
+|----------|----------------|
+| Describe what happened and why | Descriptive analysis (pandas, groupings, comparisons) |
+| Discover non-predefined groups/segments | Clustering (RFM, KMeans, DBSCAN). See [clustering-guide.md](clustering-guide.md) |
+| Identify influential factors (>5 variables) | Exploratory feature importance. See [clustering-guide.md](clustering-guide.md) sec 7 |
+| Temporal projection | Linear projection + CI95%. See [advanced-analytics.md](advanced-analytics.md) |
 
-**Deteccion automatica**: Si la pregunta menciona "segmentar", "agrupar", "perfiles" → clustering. Si menciona "que factores influyen", "que explica" → feature importance. Si pide proyeccion temporal → proyeccion lineal (no ML). Inferir el tipo de la pregunta y los datos, no preguntar al usuario.
+**Automatic detection**: If the question mentions "segment", "group", "profiles" → clustering. If it mentions "what factors influence", "what explains" → feature importance. If it asks for temporal projection → linear projection (not ML). Infer the type from the question and data, do not ask the user.
 
-### 5.3 Hipotesis
-Formular hipotesis ANTES de consultar datos. Usar la plantilla de sec "Pensamiento analitico" de AGENTS.md. Para cada sub-pregunta identificada en el paso 1:
-- Que esperamos encontrar y por que
-- Que resultado seria sorprendente
-- Documentar las hipotesis en el plan para validarlas luego con datos
+### 5.3 Hypotheses
+Formulate hypotheses BEFORE querying data. Use the template from sec "Analytical thinking" of AGENTS.md. For each sub-question identified in step 1:
+- What we expect to find and why
+- What result would be surprising
+- Document the hypotheses in the plan to validate them later with data
 
-**Ejemplo completo:**
+**Full example:**
 ```
-### H1: Ventas Q4 ≥30% superiores al promedio Q1-Q3 por estacionalidad retail
-- Enunciado: El ratio ventas_Q4 / promedio(ventas_Q1-Q3) es ≥ 1.30
-- Fundamento: Pico estacional observado en nov-dic durante EDA
-- Como validar: query "ventas totales por trimestre del ultimo ano"
-- Criterio: ratio ≥ 1.30
-→ Resultado: CONFIRMADA (ratio = 1.45)
-→ Evidencia: Q4 = €2.1M vs promedio Q1-Q3 = €1.45M
-→ So What: Q4 = 36% ventas anuales. Ajustar inventario desde oct, reforzar logistica nov
-→ Confianza: Alta (3 anos de datos, patron consistente)
+### H1: Q4 sales >=30% higher than Q1-Q3 average due to retail seasonality
+- Statement: The ratio sales_Q4 / average(sales_Q1-Q3) is >= 1.30
+- Rationale: Seasonal peak observed in Nov-Dec during EDA
+- How to validate: query "total sales by quarter for the last year"
+- Criterion: ratio >= 1.30
+→ Result: CONFIRMED (ratio = 1.45)
+→ Evidence: Q4 = EUR2.1M vs Q1-Q3 average = EUR1.45M
+→ So What: Q4 = 36% of annual sales. Adjust inventory from Oct, reinforce logistics Nov
+→ Confidence: High (3 years of data, consistent pattern)
 ```
 
-### 5.4 Metricas y KPIs
+### 5.4 Metrics and KPIs
 
-Para cada KPI, documentar:
+For each KPI, document:
 
-| Campo | Descripcion |
+| Field | Description |
 |-------|-------------|
-| Nombre | Identificador claro |
-| Formula | Calculo exacto |
-| Granularidad | Temporal: diario/semanal/mensual/trimestral |
-| Dimensiones | Ejes de corte (region, producto, segmento) |
-| Benchmark | Objetivo, media del sector, o periodo anterior |
-| Fuente | Tabla(s) y columna(s) del dominio |
-| Test estadistico | Si requiere IC o comparacion entre grupos (ver [advanced-analytics.md](advanced-analytics.md)) |
+| Name | Clear identifier |
+| Formula | Exact calculation |
+| Granularity | Temporal: daily/weekly/monthly/quarterly |
+| Dimensions | Slicing axes (region, product, segment) |
+| Benchmark | Target, industry average, or previous period |
+| Source | Domain table(s) and column(s) |
+| Statistical test | If it requires CI or group comparison (see [advanced-analytics.md](advanced-analytics.md)) |
 
-**Benchmark Discovery** — Escala segun profundidad (ver matriz de activacion en AGENTS.md sec 2):
-- **Rapido**: No buscar activamente. Usar comparacion temporal natural si la query ya incluye dimension tiempo
-- **Estandar**: Best-effort silencioso:
-  1. `search_domain_knowledge("target/objetivo de [nombre_KPI]", domain)`
-  2. Query MCP adicional para mismo KPI en periodo T-1
-  3. Si no hay referencia externa: media/mediana como referencia interna
-  Sin benchmark → reportar el dato normalmente, documentar en reasoning
-- **Profundo**: Pasos 1-3 + tendencia si >6 puntos temporales + preguntar al usuario
+**Benchmark Discovery** — Scale according to depth (see activation matrix in AGENTS.md sec 2):
+- **Quick**: Do not actively search. Use natural temporal comparison if the query already includes a time dimension
+- **Standard**: Silent best-effort:
+  1. `search_domain_knowledge("target/objetivo de [KPI_name]", domain)`
+  2. Additional MCP query for the same KPI in period T-1
+  3. If no external reference: mean/median as internal reference
+  Without benchmark → report the data normally, document in reasoning
+- **Deep**: Steps 1-3 + trend if >6 temporal points + ask the user
 
-Documentar el benchmark en el campo "Benchmark" del KPI. Los datos sin benchmark se reportan con normalidad — la ausencia solo se marca como limitacion en profundidad Profundo.
+Document the benchmark in the KPI's "Benchmark" field. Data without benchmarks are reported normally — the absence is only marked as a limitation in Deep depth.
 
-### 5.5 Preguntas de datos
-Lista de preguntas en lenguaje natural para `query_data`. NUNCA escribir SQL.
+### 5.5 Data questions
+List of natural language questions for `query_data`. NEVER write SQL.
 
-Para buenas practicas de formulacion y estrategia de queries (orden de planificacion, ejecucion en paralelo), ver `skills-guides/stratio-data-tools.md` sec 9.
+For formulation best practices and query strategy (planning order, parallel execution), see `skills-guides/stratio-data-tools.md` sec 9.
 
-### 5.6 Visualizaciones
+### 5.6 Visualizations
 
-Leer y seguir `skills-guides/visualization.md` para seleccion de graficas y principios de visualizacion.
+Read and follow `skills-guides/visualization.md` for chart selection and visualization principles.
 
-Para cada visualizacion del plan, definir:
-- **Pregunta analitica** que responde
-- **Tipo de grafica**: Seleccionar segun tabla en `skills-guides/visualization.md` sec 1
-- **Variables**: Que va en cada eje, agrupaciones, filtros
-- **Titulo**: Formulado como insight, no como descripcion
-- **Datos fuente**: Query MCP que alimenta la visualizacion
+For each visualization in the plan, define:
+- **Analytical question** it answers
+- **Chart type**: Select according to the table in `skills-guides/visualization.md` sec 1
+- **Variables**: What goes on each axis, groupings, filters
+- **Title**: Formulated as an insight, not a description
+- **Source data**: MCP query that feeds the visualization
 
-### 5.7 Tecnicas analiticas avanzadas
+### 5.7 Advanced analytical techniques
 
-Activar segun la profundidad seleccionada (ver matriz de activacion en AGENTS.md sec 2):
-- **Estandar**: Consultar [advanced-analytics.md](advanced-analytics.md) cuando sea relevante
-- **Profundo**: Consultar [advanced-analytics.md](advanced-analytics.md) sistematicamente
+Activate according to the selected depth (see activation matrix in AGENTS.md sec 2):
+- **Standard**: Consult [advanced-analytics.md](advanced-analytics.md) when relevant
+- **Deep**: Consult [advanced-analytics.md](advanced-analytics.md) systematically
 
-Cubre: rigor estadistico (tests, IC, effect sizes), analisis prospectivo (escenarios, Monte Carlo), root cause analysis, deteccion de anomalias.
+Covers: statistical rigor (tests, CI, effect sizes), prospective analysis (scenarios, Monte Carlo), root cause analysis, anomaly detection.
 
-### 5.8 Patrones analiticos adicionales
+### 5.8 Additional analytical patterns
 
-Implementacion detallada de patrones cuyo trigger esta en sec "Patrones analiticos operacionalizados" de AGENTS.md (Lorenz/Gini, mix, indexacion, desviacion vs referencia, gap).
+Detailed implementation of patterns whose trigger is in sec "Operationalized analytical patterns" of AGENTS.md (Lorenz/Gini, mix, indexation, deviation vs reference, gap).
 
-Cuando un patron se active: consultar [analytical-patterns.md](analytical-patterns.md) para query MCP, Python e interpretacion.
+When a pattern is activated: consult [analytical-patterns.md](analytical-patterns.md) for MCP query, Python, and interpretation.
 
-### 5.9 Segmentacion y clustering
+### 5.9 Segmentation and clustering
 
-Para guia completa de segmentacion (RFM, clustering, validacion, profiling), ver [clustering-guide.md](clustering-guide.md).
+For the complete segmentation guide (RFM, clustering, validation, profiling), see [clustering-guide.md](clustering-guide.md).
 
-Usar cuando el usuario pida segmentacion, agrupacion de clientes/productos, o descubrimiento de perfiles. La guia cubre:
-- Tabla de decision (cuando usar rule-based, RFM, KMeans o DBSCAN)
-- RFM con quintiles y etiquetas de negocio
-- Clustering basico con elbow + silhouette
-- Validacion de clusters y profiling obligatorio
+Use when the user requests segmentation, customer/product grouping, or profile discovery. The guide covers:
+- Decision table (when to use rule-based, RFM, KMeans, or DBSCAN)
+- RFM with quintiles and business labels
+- Basic clustering with elbow + silhouette
+- Cluster validation and mandatory profiling
 
-Para feature importance como complemento a la segmentacion o al analisis descriptivo, ver [clustering-guide.md](clustering-guide.md) sec 7.
+For feature importance as a complement to segmentation or descriptive analysis, see [clustering-guide.md](clustering-guide.md) sec 7.
 
-### 5.10 Estructura del deliverable
-Secciones, contenido de cada una, formato. Aplicar principios de data storytelling (seccion 7.1)
+### 5.10 Deliverable structure
+Sections, content of each, format. Apply data storytelling principles (section 7.1)
 
-### 5.11 Presentar plan
-Presentar plan completo al usuario y solicitar aprobacion antes de ejecutar.
+### 5.11 Present plan
+Present the complete plan to the user and request approval before executing.
 
-Al final de la presentacion del plan, incluir una nota breve:
-> Si dispones de documentacion adicional, benchmarks de referencia, informes previos o datos complementarios que puedan enriquecer el analisis, puedes compartirlos ahora.
+At the end of the plan presentation, include a brief note:
+> If you have additional documentation, reference benchmarks, previous reports, or complementary data that could enrich the analysis, you can share them now.
 
-No convertir esta nota en pregunta bloqueante. Es una invitacion, no un paso obligatorio. Si el usuario no aporta nada, continuar sin esperar respuesta adicional mas alla de la aprobacion del plan.
+Do not make this note a blocking question. It is an invitation, not a mandatory step. If the user does not contribute anything, continue without waiting for additional response beyond plan approval.
 
-## 6. Ejecucion
+## 6. Execution
 
-### 6.0 Determinar carpeta del analisis
-Generar nombre `YYYY-MM-DD_HHMM_nombre_descriptivo` (minusculas, sin tildes, guiones bajos, max 30 chars en el nombre). Declarar en chat. Crear subdirectorios: `output/[ANALISIS_DIR]/scripts/`, `output/[ANALISIS_DIR]/data/`, `output/[ANALISIS_DIR]/assets/`. Si profundidad >= Estandar, crear tambien `output/[ANALISIS_DIR]/reasoning/` y `output/[ANALISIS_DIR]/validation/`.
+### 6.0 Determine analysis folder
+Generate name `YYYY-MM-DD_HHMM_descriptive_name` (lowercase, no accents, underscores, max 30 chars in the name). Announce in chat. Create subdirectories: `output/[ANALYSIS_DIR]/scripts/`, `output/[ANALYSIS_DIR]/data/`, `output/[ANALYSIS_DIR]/assets/`. If depth >= Standard, also create `output/[ANALYSIS_DIR]/reasoning/` and `output/[ANALYSIS_DIR]/validation/`.
 
-Persistir el plan aprobado en `output/[ANALISIS_DIR]/plan.md`.
-Escribir el plan tal como fue formulado en la Fase 3 (seccion 5) y aprobado por el usuario:
-hipotesis, metricas/KPIs, queries de datos, visualizaciones, estructura del deliverable,
-complejidad, profundidad, formatos y estilo.
+Persist the approved plan in `output/[ANALYSIS_DIR]/plan.md`.
+Write the plan as formulated in Phase 3 (section 5) and approved by the user:
+hypotheses, metrics/KPIs, data queries, visualizations, deliverable structure,
+complexity, depth, formats, and style.
 
-### 6.1 Setup del entorno
+### 6.1 Environment setup
 ```bash
 bash setup_env.sh
 ```
-Si hay librerias adicionales, actualizar `requirements.txt` y re-ejecutar setup.
+If there are additional libraries, update `requirements.txt` and re-run setup.
 
-### 6.2 Obtencion de datos
-- Usar `query_data(data_question=..., domain_name=..., output_format="dict")` para cada pregunta de datos. **Lanzar en paralelo** todas las queries independientes definidas en el plan (paso 5.5). Solo serializar si una query necesita el resultado de otra para formularse
-- Seguir todas las reglas de `skills-guides/stratio-data-tools.md` (MCP-first, output_format, no SQL manual, ejecucion en paralelo)
-- Guardar datos intermedios en `output/[ANALISIS_DIR]/data/` como CSV si son necesarios para scripts posteriores
+### 6.2 Data retrieval
+- Use `query_data(data_question=..., domain_name=..., output_format="dict")` for each data question. **Launch in parallel** all independent queries defined in the plan (step 5.5). Only serialize if one query needs another's result to be formulated
+- Follow all rules from `skills-guides/stratio-data-tools.md` (MCP-first, output_format, no manual SQL, parallel execution)
+- Save intermediate data in `output/[ANALYSIS_DIR]/data/` as CSV if needed for subsequent scripts
 
-### 6.3 Validacion post-query (obligatorio)
-Aplicar las 7 validaciones de `skills-guides/stratio-data-tools.md` sec 7 a cada resultado recibido. Cuando se lanzan queries en paralelo, validar cada resultado conforme llega. Si alguna falla: reformular la pregunta al MCP, informar al usuario, ajustar el plan.
+### 6.3 Post-query validation (mandatory)
+Apply the 7 validations from `skills-guides/stratio-data-tools.md` sec 7 to each received result. When queries are launched in parallel, validate each result as it arrives. If any fails: reformulate the question to the MCP, inform the user, adjust the plan.
 
-### 6.4 Desarrollo de scripts
-- Escribir scripts en `output/[ANALISIS_DIR]/scripts/` con nombres descriptivos que incluyan contexto del analisis
-- Cada script debe:
-  - Leer datos de `output/[ANALISIS_DIR]/data/` (CSVs guardados previamente) o recibir datos como parametro
-  - Realizar transformaciones y calculos
-  - Generar visualizaciones en `output/[ANALISIS_DIR]/assets/`
-  - Producir outputs en `output/[ANALISIS_DIR]/`
-- **Datasets grandes (>100k filas)**: Usar muestreo estratificado para desarrollo rapido, datos completos para la version final
+### 6.4 Script development
+- Write scripts in `output/[ANALYSIS_DIR]/scripts/` with descriptive names that include analysis context
+- Each script must:
+  - Read data from `output/[ANALYSIS_DIR]/data/` (previously saved CSVs) or receive data as a parameter
+  - Perform transformations and calculations
+  - Generate visualizations in `output/[ANALYSIS_DIR]/assets/`
+  - Produce outputs in `output/[ANALYSIS_DIR]/`
+- **Large datasets (>100k rows)**: Use stratified sampling for rapid development, full data for the final version
 
 ### 6.5 Testing
 
-> **Solo si la profundidad es Estándar/Profundo Y el usuario eligió "Sí" en la pregunta de testing del Bloque 1.** En profundidad Rápido o si el usuario eligió "No", omitir esta sección y ejecutar directamente el script con datos reales.
+> **Only if the depth is Standard/Deep AND the user chose "Yes" in the testing question of Block 1.** In Quick depth or if the user chose "No", skip this section and execute the script directly with real data.
 
-- Generar `output/[ANALISIS_DIR]/scripts/test_*.py` con tests unitarios ANTES de ejecutar con datos reales
-- Usar DataFrames mock con estructura similar a los datos reales
-- Validar transformaciones, calculos y formatos de salida
-- Ejecutar: `bash -c "source .venv/bin/activate && pytest output/[ANALISIS_DIR]/scripts/test_*.py -v"`
-- Solo proceder si los tests pasan
+- Generate `output/[ANALYSIS_DIR]/scripts/test_*.py` with unit tests BEFORE running with real data
+- Use mock DataFrames with structure similar to real data
+- Validate transformations, calculations, and output formats
+- Run: `bash -c "source .venv/bin/activate && pytest output/[ANALYSIS_DIR]/scripts/test_*.py -v"`
+- Only proceed if tests pass
 
-### 6.6 Ejecucion con datos reales
+### 6.6 Execution with real data
 ```bash
-bash -c "source .venv/bin/activate && python output/[ANALISIS_DIR]/scripts/mi_script.py"
+bash -c "source .venv/bin/activate && python output/[ANALYSIS_DIR]/scripts/my_script.py"
 ```
 
-### 6.7 Loop de iteracion
+### 6.7 Iteration loop
 
-Tras revisar resultados iniciales, evaluar si requieren iteracion:
+After reviewing initial results, evaluate whether iteration is needed:
 
-1. **Trigger**: Hallazgo contradice hipotesis, patron inesperado, o pregunta critica no prevista
-2. **Accion**: Documentar hallazgo → formular nueva(s) pregunta(s) → queries MCP adicionales (6.2-6.3) → actualizar scripts
-3. **Limite**: Max 2 iteraciones. Mas → documentar como analisis de seguimiento
-4. **Registro**: Cada iteracion en reasoning: hipotesis → hallazgo → nueva hipotesis → resultado
+1. **Trigger**: Finding contradicts hypothesis, unexpected pattern, or unforeseen critical question
+2. **Action**: Document finding → formulate new question(s) → additional MCP queries (6.2-6.3) → update scripts
+3. **Limit**: Max 2 iterations. More → document as follow-up analysis
+4. **Record**: Each iteration in reasoning: hypothesis → finding → new hypothesis → result
 
 ### 6.8 Complexity Upgrade
 
-Si durante la ejecucion se detecta un hallazgo que excede el alcance del nivel de complejidad actual:
+If during execution a finding is detected that exceeds the scope of the current complexity level:
 
 **Triggers:**
-- Anomalia: resultado difiere >30% del benchmark o de lo razonable para el dominio
-- Inconsistencia: dos queries dan totales que no cuadran (diferencia >5%)
-- Patron critico: concentracion Gini >0.8, caida/crecimiento >50% interperiodo, outlier en KPI principal
+- Anomaly: result differs >30% from benchmark or from what is reasonable for the domain
+- Inconsistency: two queries give totals that don't match (difference >5%)
+- Critical pattern: Gini concentration >0.8, drop/growth >50% between periods, outlier in main KPI
 
-**Accion:**
-1. Pausar la ejecucion normal
-2. Informar al usuario siguiendo la convencion de preguntas (sec "Interaccion con el Usuario" de AGENTS.md): "He detectado [descripcion del hallazgo]. Esto requiere investigacion adicional. ¿Quieres que profundice?" con opciones:
-   - "Si, profundizar" → Escalar complejidad, activar fases adicionales (EDA completo, hipotesis sobre el hallazgo, visualizaciones de drill-down)
-   - "No, solo documentar" → Registrar hallazgo en el chat y en reasoning como "area de investigacion futura"
-3. El upgrade NO reinicia el analisis — extiende el analisis actual con fases adicionales
+**Action:**
+1. Pause normal execution
+2. Inform the user following the question convention (sec "User Interaction" of AGENTS.md): "I detected [description of finding]. This requires additional investigation. Would you like me to dig deeper?" with options:
+   - "Yes, dig deeper" → Escalate complexity, activate additional phases (full EDA, hypotheses about the finding, drill-down visualizations)
+   - "No, just document it" → Record finding in chat and in reasoning as "area for future investigation"
+3. The upgrade does NOT restart the analysis — it extends the current analysis with additional phases
 
-**Diferencia con el loop de iteracion (6.7):** El loop refina hipotesis dentro del mismo nivel de complejidad. El upgrade cambia el nivel (ej: Triage → Analisis) y activa capacidades adicionales (EDA, hipotesis formales, visualizaciones).
+**Difference from the iteration loop (6.7):** The loop refines hypotheses within the same complexity level. The upgrade changes the level (e.g.: Triage → Analysis) and activates additional capabilities (EDA, formal hypotheses, visualizations).
 
-### 6.9 Generacion de deliverables
+### 6.9 Deliverable generation
 
-> **OBLIGATORIO si el usuario seleccionó formatos en el Bloque 1.** La profundidad del análisis (Rápido/Estándar/Profundo) NO afecta a este paso — si el usuario eligió formatos, todos se generan.
+> **MANDATORY if the user selected formats in Block 1.** The analysis depth (Quick/Standard/Deep) does NOT affect this step — if the user chose formats, all are generated.
 
-1. Cargar la skill `report`
-2. Generar TODOS los formatos seleccionados (no omitir ninguno)
-3. Verificar existencia de cada fichero con `ls -lh` antes de reportar al usuario (ver Fase 4, paso 10 de AGENTS.md)
+1. Load the skill `report`
+2. Generate ALL selected formats (do not omit any)
+3. Verify existence of each file with `ls -lh` before reporting to the user (see Phase 4, step 10 of AGENTS.md)
 
 ### 6.10 Reasoning
 
-Generar reasoning segun la profundidad (ver defaults en sec "Reasoning" de AGENTS.md):
+Generate reasoning according to depth (see defaults in sec "Reasoning" of AGENTS.md):
 
-- **Rapido**: No generar fichero. Las notas clave se incluyen en el reporte del chat (sec 7.1).
-- **Estandar/Profundo**: Seguir la guia completa en [reasoning-guide.md](reasoning-guide.md). Generar solo `.md`.
+- **Quick**: Do not generate file. Key notes are included in the chat report (sec 7.1).
+- **Standard/Deep**: Follow the complete guide in [reasoning-guide.md](reasoning-guide.md). Generate `.md` only.
 
-Si el usuario solicito override de formatos, aplicar su preferencia.
+If the user requested a format override, apply their preference.
 
-### 6.11 Validacion de output final
+### 6.11 Final output validation
 
-Ejecutar validacion segun la profundidad (ver defaults en sec "Reasoning" de AGENTS.md):
+Run validation according to depth (see defaults in sec "Reasoning" of AGENTS.md):
 
-- **Rapido**: Solo Bloque A (integridad de archivos). Reportar resultado en chat. No generar fichero.
-- **Estandar**: Bloques A + B + C. Generar `validation/validation.md`. Reportar resumen en chat.
-- **Profundo**: Bloques A + B + C + D. Generar `validation/validation.md`. Reportar resumen en chat.
+- **Quick**: Block A only (file integrity). Report result in chat. Do not generate file.
+- **Standard**: Blocks A + B + C. Generate `validation/validation.md`. Report summary in chat.
+- **Deep**: Blocks A + B + C + D. Generate `validation/validation.md`. Report summary in chat.
 
-Para detalle de cada bloque, umbrales y criterios PASS/WARNING/FAIL, ver [validation-guide.md](validation-guide.md).
+For detail on each block, thresholds, and PASS/WARNING/FAIL criteria, see [validation-guide.md](validation-guide.md).
 
-Si el usuario solicito override de formatos, aplicar su preferencia.
+If the user requested a format override, apply their preference.
 
-## 7. Reporte Final
+## 7. Final Report
 
-### 7.1 Estructura del reporte en chat
+### 7.1 Chat report structure
 
-Al presentar hallazgos en la conversacion, seguir esta estructura:
+When presenting findings in conversation, follow this structure:
 
-1. **Hook**: El hallazgo mas impactante primero
-2. Resumen ejecutivo (3-5 bullets con "so what")
-3. Insights con datos concretos y contexto comparativo (vs anterior, vs objetivo)
-4. Recomendaciones accionables priorizadas (alto impacto + alta confianza primero)
-5. Limitaciones y caveats
-6. Rutas de archivos generados
-7. Sugerencias de analisis de seguimiento
+1. **Hook**: The most impactful finding first
+2. Executive summary (3-5 bullets with "so what")
+3. Insights with concrete data and comparative context (vs previous, vs target)
+4. Prioritized actionable recommendations (high impact + high confidence first)
+5. Limitations and caveats
+6. Generated file paths
+7. Follow-up analysis suggestions
 
-**Checklist "So What?" obligatorio** — Para CADA hallazgo antes de incluirlo:
+**Mandatory "So What?" checklist** — For EACH finding before including it:
 
-| Pregunta | Malo (dato) | Bueno (insight accionable) |
-|----------|-------------|--------------------------|
-| **Magnitud?** | "Las ventas bajaron" | "Bajaron 12%, ≈€45K/mes" |
-| **Vs. que?** | "Norte va bien" | "Norte +23% vs media nacional, +8% vs target" |
-| **Que hacer?** | "Mejorar retencion" | "Programa fidelizacion en Premium (45% vs 72% benchmark) → ROI €120K/ano" |
-| **Confianza?** | "Clientes prefieren A" | Adaptar a profundidad: Rapido="67% (n=450, Alta)"; Estandar="67% (n=450, IC95%: 62-72%)"; Profundo="67% (n=450, IC95%: 62-72%, p<0.001)" |
+| Question | Bad (data) | Good (actionable insight) |
+|----------|-----------|--------------------------|
+| **Magnitude?** | "Sales dropped" | "Dropped 12%, ~EUR45K/month" |
+| **Vs. what?** | "North is doing well" | "North +23% vs national average, +8% vs target" |
+| **What to do?** | "Improve retention" | "Loyalty program for Premium (45% vs 72% benchmark) → ROI EUR120K/year" |
+| **Confidence?** | "Customers prefer A" | Adapt to depth: Quick="67% (n=450, High)"; Standard="67% (n=450, CI95%: 62-72%)"; Deep="67% (n=450, CI95%: 62-72%, p<0.001)" |
 
-Si un hallazgo no pasa las 4 preguntas → es informacion, no insight. No va al resumen ejecutivo.
+If a finding does not pass the 4 questions → it is information, not insight. It does not go in the executive summary.
 
-**Clasificacion de insights** — Determina ubicacion en el reporte:
-- **CRITICO**: Alto impacto + alta confianza → Resumen ejecutivo, recomendacion firme
-- **IMPORTANTE**: Alto impacto + baja confianza → Seccion principal, investigar mas
-- **INFORMATIVO**: Bajo impacto → Apendice, sin recomendacion
+**Insight classification** — Determines placement in the report:
+- **CRITICAL**: High impact + high confidence → Executive summary, firm recommendation
+- **IMPORTANT**: High impact + low confidence → Main section, investigate further
+- **INFORMATIONAL**: Low impact → Appendix, no recommendation
 
-Para principios de data storytelling y mapping hallazgos → narrativa, leer `skills-guides/visualization.md` secciones 3 y 4.
+For data storytelling principles and mapping findings → narrative, read `skills-guides/visualization.md` sections 3 and 4.
 
-## 8. Memoria de Analisis (Confirmacion requerida)
+## 8. Analysis Memory (Confirmation required)
 
-Tras presentar el reporte final, preguntar al usuario (siguiendo la convencion de preguntas (sec "Interaccion con el Usuario" de AGENTS.md)):
+After presenting the final report, ask the user (following the question convention (sec "User Interaction" of AGENTS.md)):
 
-"¿Deseas guardar este analisis en la memoria persistente? Se actualizaran el registro de analisis (`ANALYSIS_MEMORY.md`) y la memoria de conocimiento (`MEMORY.md`)."
-- **Si** → Continuar con los pasos 8.1, 8.2 y 8.3
-- **No** → Saltar todos los pasos de escritura de memoria. Finalizar sin actualizar ningun fichero de memoria
+"Would you like to save this analysis to persistent memory? The analysis registry (`ANALYSIS_MEMORY.md`) and the knowledge memory (`MEMORY.md`) will be updated."
+- **Yes** → Continue with steps 8.1, 8.2, and 8.3
+- **No** → Skip all memory writing steps. Finish without updating any memory files
 
-Los pasos siguientes se ejecutan **solo si el usuario responde "Sí"**:
+The following steps are executed **only if the user responds "Yes"**:
 
-### 8.1 Crear fichero de detalle del analisis
+### 8.1 Create analysis detail file
 
-Crear `output/[ANALISIS_DIR]/analysis_memory.md` con el contenido completo:
+Create `output/[ANALYSIS_DIR]/analysis_memory.md` with the full content:
 
 ```markdown
-# Memoria del Analisis: Titulo Descriptivo
+# Analysis Memory: Descriptive Title
 
-- **Dominio**: nombre_exacto_dominio
-- **Pregunta**: "Pregunta original del usuario"
-- **Carpeta**: `output/YYYY-MM-DD_HHMM_nombre/`
-- **Reporte**: `output/YYYY-MM-DD_HHMM_nombre/report.md`
-- **KPIs**: KPI1: valor (periodo), KPI2: valor (periodo)
-- **Insights**: Hallazgo 1 (confianza), Hallazgo 2 (confianza)
-- **Data Quality Score**: ALTO/MEDIO/BAJO (N%)
+- **Domain**: exact_domain_name
+- **Question**: "User's original question"
+- **Folder**: `output/YYYY-MM-DD_HHMM_name/`
+- **Report**: `output/YYYY-MM-DD_HHMM_name/report.md`
+- **KPIs**: KPI1: value (period), KPI2: value (period)
+- **Insights**: Finding 1 (confidence), Finding 2 (confidence)
+- **Data Quality Score**: HIGH/MEDIUM/LOW (N%)
 ```
 
-### 8.2 Añadir entrada compacta al indice
+### 8.2 Add compact entry to the index
 
-Añadir entrada al final de `output/ANALYSIS_MEMORY.md` con solo los campos de triage:
+Add an entry at the end of `output/ANALYSIS_MEMORY.md` with only the triage fields:
 
 ```markdown
 ---
 
-## YYYY-MM-DD HH:MM — Titulo Descriptivo
+## YYYY-MM-DD HH:MM — Descriptive Title
 
-- **Dominio**: nombre_exacto_dominio
-- **Resumen**: Pregunta + hallazgo principal en 1 frase (max ~120 chars)
-- **Detalle**: `output/YYYY-MM-DD_HHMM_nombre/analysis_memory.md`
+- **Domain**: exact_domain_name
+- **Summary**: Question + main finding in 1 sentence (max ~120 chars)
+- **Detail**: `output/YYYY-MM-DD_HHMM_name/analysis_memory.md`
 
 ---
 ```
 
-Si `output/ANALYSIS_MEMORY.md` no existe, crearlo con el header `# Memoria de Analisis`. Las entradas se anaden al final (cronologicas).
+If `output/ANALYSIS_MEMORY.md` does not exist, create it with the header `# Analysis Memory`. Entries are added at the end (chronological).
 
-### 8.3 Memoria de Conocimiento
+### 8.3 Knowledge Memory
 
-Tras escribir en ANALYSIS_MEMORY.md, invocar la skill `/update-memory` para actualizar `output/MEMORY.md` con preferencias, patrones de datos y heuristicas descubiertas en este analisis.
+After writing to ANALYSIS_MEMORY.md, invoke the skill `/update-memory` to update `output/MEMORY.md` with preferences, data patterns, and heuristics discovered in this analysis.
 
-## 9. Propuesta de Conocimiento (Opcional)
+## 9. Knowledge Proposal (Optional)
 
-Tras presentar el reporte final, preguntar al usuario siguiendo la convencion de preguntas (sec "Interaccion con el Usuario" de AGENTS.md):
-- **Si**: Analizar conversacion y proponer conocimiento al dominio
-- **No**: Finalizar sin proponer
+After presenting the final report, ask the user following the question convention (sec "User Interaction" of AGENTS.md):
+- **Yes**: Analyze conversation and propose knowledge to the domain
+- **No**: Finish without proposing
 
-Si acepta, cargar la skill `propose-knowledge` con el dominio usado en este analisis.
-Si rechaza, finalizar normalmente.
+If they accept, load the skill `propose-knowledge` with the domain used in this analysis.
+If they decline, finish normally.
 
-Este paso es SIEMPRE opcional. Nunca proponer automaticamente.
+This step is ALWAYS optional. Never propose automatically.

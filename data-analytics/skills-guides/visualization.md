@@ -1,165 +1,165 @@
-# Guia Compartida: Visualizacion y Data Storytelling
+# Shared Guide: Visualization and Data Storytelling
 
-Principios compartidos por `/analyze` y `/report`.
+Principles shared by `/analyze` and `/report`.
 
-## 1. Seleccion de Tipo de Grafica
+## 1. Chart Type Selection
 
-Elegir segun la pregunta analitica:
+Choose based on the analytical question:
 
-| Pregunta analitica | Tipo recomendado | Evitar |
+| Analytical question | Recommended type | Avoid |
 |---|---|---|
-| Composicion (partes de un todo) | Stacked bar, treemap, pie (<=5 categorias) | Pie con >5 categorias |
-| Comparacion entre categorias | Bar chart (horizontal si nombres largos) | Line chart |
-| Tendencia temporal | Line chart, area chart | Bar chart (salvo periodos discretos) |
-| Distribucion | Histograma, box plot, violin | Pie chart |
-| Correlacion | Scatter plot, heatmap | Bar chart |
-| Ranking | Bar chart horizontal ordenado | Tabla sin ordenar |
-| Geografico | Mapa coropletico | Tablas con codigos de region |
-| KPIs destacados | Cards con valor + cambio % + sparkline | Solo numeros en texto |
+| Composition (parts of a whole) | Stacked bar, treemap, pie (<=5 categories) | Pie with >5 categories |
+| Comparison between categories | Bar chart (horizontal if names are long) | Line chart |
+| Temporal trend | Line chart, area chart | Bar chart (unless discrete periods) |
+| Distribution | Histogram, box plot, violin | Pie chart |
+| Correlation | Scatter plot, heatmap | Bar chart |
+| Ranking | Horizontal bar chart sorted | Unsorted table |
+| Geographic | Choropleth map | Tables with region codes |
+| Highlighted KPIs | Cards with value + % change + sparkline | Numbers in text only |
 
-## 2. Principios de Visualizacion
+## 2. Visualization Principles
 
-- Max 5-7 elementos por grafica (agrupar en "Otros" si hay mas)
-- Siempre titulo descriptivo + subtitulo con periodo/filtro
-- Eje Y comenzar en 0 para barras (evitar manipulacion visual)
-- Colores coherentes con el tema elegido (via `get_palette()`, nunca hardcodear)
-- **Transparencia**: Para colores con alpha (bandas de confianza, fill_between, areas superpuestas), usar `to_rgba(color, alpha)` de `tools/chart_layout.py`. Acepta hex (`"#1a365d"`) o tupla RGB y devuelve `"rgba(R,G,B,A)"` compatible con Plotly y matplotlib. **NUNCA** concatenar alpha a hex (`"#1a365d80"`) — Plotly lo rechaza
-- Anotaciones para puntos notables (picos, caidas, anomalias)
-- **Accesibilidad**: Usar paletas colorblind-friendly, no depender solo del color (usar formas/patrones), texto alternativo en imagenes
-- **Backend sin display**: Usar `matplotlib.use('Agg')` al inicio del script y `bbox_inches='tight'` en `savefig()`. Si la imagen no renderiza, fallback a SVG
-- **Layout anti-solapamiento**: Titulo como insight arriba, contexto como subtitulo, leyenda posicionada debajo del grafico o a la derecha exterior. Usar `tools/chart_layout.py` (`apply_chart_layout` / `apply_plotly_layout`) para layout estandar. **NUNCA** `fig.tight_layout()` despues de `fig.suptitle()` — usar `fig.subplots_adjust()`
-- **Figsize para PDF/HTML**: Usar `figsize=(7, 4.5)` como maximo para graficas individuales (el area imprimible del A4 con los margenes por defecto es ~160mm ≈ 6.3"). Para subplots de 2 columnas usar `figsize=(12, 4.5)`. Exceder estas dimensiones provoca desbordamiento en WeasyPrint porque `md_to_report.py` convierte `![alt](img.png)` en `<p><img>` (no `<figure>`), sin CSS de contencion de ancho.
-- **Escalas dispares**: Antes de graficar multiples series en el mismo eje, verificar si las magnitudes difieren por mas de 3x. Si es asi, usar subplots con escalas Y independientes en lugar de eje compartido. Para barras con multiples series, usar barras agrupadas (dodge), nunca superponer con alpha. **Checklist obligatorio antes de graficar series juntas:**
-  1. Calcular `max(serie_A) / max(serie_B)`. Si ratio > 3 → subplots separados con escalas Y independientes
-  2. Calcular rango de variacion de cada serie (`max - min`). Si difieren por mas de 10x → las barras agrupadas son engañosas (una serie parece plana). Separar en subplots o usar indices (base 100)
-  3. Media movil: solo anadirla si aporta informacion visual. Si la media movil es casi identica a la serie original (ventana pequena, serie suave), NO anadirla — genera lineas superpuestas que confunden sin aportar insight
-  4. Barras agrupadas comparativas: si los valores de una categoria oscilan 5pp y la otra 50pp, las barras de la primera se ven planas. Usar subplots separados o normalizar ambas a indice
+- Max 5-7 elements per chart (group into "Others" if there are more)
+- Always descriptive title + subtitle with period/filter
+- Y-axis start at 0 for bars (avoid visual manipulation)
+- Colors consistent with the chosen theme (via `get_palette()`, never hardcode)
+- **Transparency**: For colors with alpha (confidence bands, fill_between, overlapping areas), use `to_rgba(color, alpha)` from `tools/chart_layout.py`. Accepts hex (`"#1a365d"`) or RGB tuple and returns `"rgba(R,G,B,A)"` compatible with Plotly and matplotlib. **NEVER** concatenate alpha to hex (`"#1a365d80"`) — Plotly rejects it
+- Annotations for notable points (peaks, drops, anomalies)
+- **Accessibility**: Use colorblind-friendly palettes, do not rely on color alone (use shapes/patterns), alt text on images
+- **Headless backend**: Use `matplotlib.use('Agg')` at the start of the script and `bbox_inches='tight'` in `savefig()`. If the image does not render, fallback to SVG
+- **Anti-overlap layout**: Title as insight on top, context as subtitle, legend positioned below the chart or to the right exterior. Use `tools/chart_layout.py` (`apply_chart_layout` / `apply_plotly_layout`) for standard layout. **NEVER** `fig.tight_layout()` after `fig.suptitle()` — use `fig.subplots_adjust()`
+- **Figsize for PDF/HTML**: Use `figsize=(7, 4.5)` as maximum for individual charts (the printable area of A4 with default margins is ~160mm ~ 6.3"). For 2-column subplots use `figsize=(12, 4.5)`. Exceeding these dimensions causes overflow in WeasyPrint because `md_to_report.py` converts `![alt](img.png)` to `<p><img>` (not `<figure>`), without width containment CSS.
+- **Disparate scales**: Before plotting multiple series on the same axis, check if magnitudes differ by more than 3x. If so, use subplots with independent Y scales instead of a shared axis. For bars with multiple series, use grouped bars (dodge), never overlap with alpha. **Mandatory checklist before plotting series together:**
+  1. Calculate `max(series_A) / max(series_B)`. If ratio > 3 → separate subplots with independent Y scales
+  2. Calculate variation range of each series (`max - min`). If they differ by more than 10x → grouped bars are misleading (one series looks flat). Separate into subplots or use indices (base 100)
+  3. Moving average: only add it if it provides visual information. If the moving average is nearly identical to the original series (small window, smooth series), do NOT add it — it generates overlapping lines that confuse without adding insight
+  4. Comparative grouped bars: if values of one category fluctuate 5pp and the other 50pp, the first one's bars look flat. Use separate subplots or normalize both to index
 
 ## 3. Data Storytelling
 
-Estructura narrativa para presentar hallazgos (no solo secuencial):
+Narrative structure for presenting findings (not just sequential):
 
-1. **Hook**: El dato mas impactante o sorprendente primero — capturar atencion
-2. **Contexto**: Por que importa, cual era la situacion previa o el objetivo
-3. **Hallazgos**: De lo general a lo especifico, cada uno con su "so what"
-4. **Tension**: Que no encaja, que es sorprendente, que requiere atencion urgente
-5. **Resolucion**: Recomendaciones concretas con impacto estimado
+1. **Hook**: The most impactful or surprising data point first — capture attention
+2. **Context**: Why it matters, what the previous situation or target was
+3. **Findings**: From general to specific, each with its "so what"
+4. **Tension**: What does not fit, what is surprising, what requires urgent attention
+5. **Resolution**: Concrete recommendations with estimated impact
 
-**Principios:**
-- Cada seccion del reporte debe contar una historia, no solo mostrar datos
-- Titulos de graficos como insights ("La region Norte concentra el 45%"), no descripciones ("Ventas por region")
-- **Verificacion titulo-grafica obligatoria**: Antes de finalizar una grafica, verificar que el patron visual que se ve en el grafico corresponde con el insight del titulo. Errores comunes:
-  - Titulo dice "trayectorias divergentes" pero las lineas se cruzan multiples veces → el patron real es volatilidad cruzada, no divergencia
-  - Titulo dice "estabilidad" pero el eje Y amplifica variaciones pequenas → ajustar escala o reformular insight
-  - Titulo destaca un patron de una serie pero la grafica muestra otra serie que domina visualmente → repensar la composicion
-- Numeros siempre con contexto comparativo (vs periodo anterior, vs objetivo, vs media)
-- No presentar datos sin interpretacion — cada tabla o grafica necesita un parrafo explicativo
-- Adaptar nivel de detalle y vocabulario a la audiencia
-- **Anomalias conocidas**: Si un dato es anomalia confirmada (ej: primer mes con acumulacion de apertura), excluirlo de las graficas comparativas o marcarlo claramente con anotacion + opacidad reducida. No dejarlo como un punto normal que distorsiona la escala visual y confunde al lector
+**Principles:**
+- Each report section should tell a story, not just show data
+- Chart titles as insights ("The North region concentrates 45%"), not descriptions ("Sales by region")
+- **Mandatory title-chart verification**: Before finalizing a chart, verify that the visual pattern seen in the chart matches the title's insight. Common errors:
+  - Title says "diverging trajectories" but the lines cross multiple times → the actual pattern is crossing volatility, not divergence
+  - Title says "stability" but the Y-axis amplifies small variations → adjust scale or reformulate insight
+  - Title highlights a pattern from one series but the chart shows another series that visually dominates → rethink the composition
+- Numbers always with comparative context (vs previous period, vs target, vs average)
+- Do not present data without interpretation — every table or chart needs an explanatory paragraph
+- Adapt level of detail and vocabulary to the audience
+- **Known anomalies**: If a data point is a confirmed anomaly (e.g.: first month with opening accumulation), exclude it from comparative charts or mark it clearly with annotation + reduced opacity. Do not leave it as a normal point that distorts the visual scale and confuses the reader
 
-## 4. Mapping Hallazgos Analiticos → Narrativa
+## 4. Mapping Analytical Findings → Narrative
 
-Mapear cada hallazgo a su rol narrativo:
+Map each finding to its narrative role:
 
-| Tipo de hallazgo | Rol en la narrativa | Ubicacion en reporte |
-|-----------------|---------------------|---------------------|
-| Insight CRITICO (alto impacto + alta confianza) | **Hook** | Apertura — primer dato mencionado |
-| Hipotesis CONFIRMADA (esperada) | **Context / Findings** | Cuerpo — baseline |
-| Hipotesis REFUTADA / anomalia | **Tension** | Hallazgos inesperados |
-| Recomendacion de alto impacto + alta confianza | **Resolution** | Cierre — call to action |
-| Limitacion de datos o analisis | **Caveat** | Metodologia o pie del hallazgo |
-| Hallazgo INFORMATIVO (bajo impacto) | **Supporting detail** | Apendice |
+| Finding type | Narrative role | Report placement |
+|-------------|---------------|-----------------|
+| CRITICAL insight (high impact + high confidence) | **Hook** | Opening — first data point mentioned |
+| CONFIRMED hypothesis (expected) | **Context / Findings** | Body — baseline |
+| REFUTED hypothesis / anomaly | **Tension** | Unexpected findings |
+| High impact + high confidence recommendation | **Resolution** | Closing — call to action |
+| Data or analysis limitation | **Caveat** | Methodology or finding footnote |
+| INFORMATIONAL finding (low impact) | **Supporting detail** | Appendix |
 
-**Minimo narrativo**: Hook + al menos 1 Tension + Resolution. Si todo confirma expectativas, buscar el matiz menos obvio para la Tension.
+**Narrative minimum**: Hook + at least 1 Tension + Resolution. If everything confirms expectations, look for the least obvious nuance for the Tension.
 
-## 5. Dashboard Interactivo
+## 5. Interactive Dashboard
 
-Principios para componer dashboards web con `tools/dashboard_builder.py` (`DashboardBuilder`).
+Principles for composing web dashboards with `tools/dashboard_builder.py` (`DashboardBuilder`).
 
-### 5.1 Cuando usar dashboard vs graficas sueltas
+### 5.1 When to use dashboard vs standalone charts
 
-| Situacion | Formato recomendado |
+| Situation | Recommended format |
 |-----------|-------------------|
-| El usuario necesita explorar datos por diferentes dimensiones (region, periodo, segmento) | **Dashboard con filtros** |
-| Audiencia ejecutiva: resumen de KPIs + 2-3 graficas clave | **Dashboard simple** (KPIs + graficas, sin filtros o con 1 filtro) |
-| Informe formal con narrativa extensa y metodologia | **PDF/DOCX** (no dashboard) |
-| Hallazgos puntuales sin interactividad necesaria | **Graficas sueltas** en chat o report |
+| The user needs to explore data across different dimensions (region, period, segment) | **Dashboard with filters** |
+| Executive audience: KPI summary + 2-3 key charts | **Simple dashboard** (KPIs + charts, no filters or 1 filter) |
+| Formal report with extensive narrative and methodology | **PDF/DOCX** (not dashboard) |
+| Point findings without needed interactivity | **Standalone charts** in chat or report |
 
-### 5.2 Layout del dashboard
+### 5.2 Dashboard layout
 
-Orden recomendado de secciones (de arriba a abajo):
+Recommended section order (top to bottom):
 
-1. **Portada** (opcional) — titulo, subtitulo, autor, dominio, fecha
-2. **Filtros globales** — solo los relevantes para el analisis (ver 5.3)
-3. **KPI cards** — 3-6 metricas clave con cambio % vs periodo anterior
-4. **Graficas principales** — los hallazgos mas importantes primero (Hook)
-5. **Graficas de detalle** — desglose y contexto (Findings)
-6. **Tablas ordenables** — datos de soporte para drill-down manual
-7. **Conclusiones** (seccion HTML) — resumen y recomendaciones
+1. **Cover** (optional) — title, subtitle, author, domain, date
+2. **Global filters** — only those relevant to the analysis (see 5.3)
+3. **KPI cards** — 3-6 key metrics with % change vs previous period
+4. **Main charts** — the most important findings first (Hook)
+5. **Detail charts** — breakdown and context (Findings)
+6. **Sortable tables** — support data for manual drill-down
+7. **Conclusions** (HTML section) — summary and recommendations
 
-**Principios de layout:**
-- Max 6 KPI cards — mas de 6 diluye la atencion. Priorizar por impacto de negocio
-- Alternar graficas y texto — no apilar 5 graficas seguidas sin interpretacion
-- Cada seccion con `nav_label` corto (max 2-3 palabras) para la sticky nav
-- **Grid multi-columna**: Usar `width="half"` en `add_html_section()` para colocar contenido HTML comparativo lado a lado (2 columnas). Secciones consecutivas half-width se agrupan automaticamente. En movil colapsan a 1 columna. **Las graficas Plotly son siempre full-width** — los titulos insight-style y la toolbar de Plotly necesitan ancho completo para mostrarse correctamente
+**Layout principles:**
+- Max 6 KPI cards — more than 6 dilutes attention. Prioritize by business impact
+- Alternate charts and text — do not stack 5 charts in a row without interpretation
+- Each section with a short `nav_label` (max 2-3 words) for the sticky nav
+- **Multi-column grid**: Use `width="half"` in `add_html_section()` to place comparative HTML content side by side (2 columns). Consecutive half-width sections are grouped automatically. On mobile they collapse to 1 column. **Plotly charts are always full-width** — insight-style titles and the Plotly toolbar need full width to display correctly
 
-### 5.3 Filtros: cuando y cuales
+### 5.3 Filters: when and which
 
-| Tipo de datos | Filtro recomendado | Ejemplo |
-|--------------|-------------------|---------|
-| Dimension categorica con <=15 valores | **Dropdown** (`filter_type="select"`) | Region, Segmento, Canal |
-| Dimension temporal | **Date range** (`filter_type="date"`) | Periodo de analisis |
-| Dimension categorica con >15 valores | No usar filtro — agregar en "Otros" o usar tabla ordenable | SKUs, codigos postales |
-| Metrica continua | No usar filtro — usar grafica interactiva (zoom/hover de Plotly) | Importe, cantidad |
+| Data type | Recommended filter | Example |
+|----------|-------------------|---------|
+| Categorical dimension with <=15 values | **Dropdown** (`filter_type="select"`) | Region, Segment, Channel |
+| Temporal dimension | **Date range** (`filter_type="date"`) | Analysis period |
+| Categorical dimension with >15 values | Do not use filter — aggregate into "Others" or use sortable table | SKUs, postal codes |
+| Continuous metric | Do not use filter — use interactive chart (Plotly zoom/hover) | Amount, quantity |
 
-**Reglas:**
-- Max 3-4 filtros — mas de 4 abruma al usuario y complica el custom JS
-- Cada filtro debe afectar al menos 2 secciones del dashboard (si solo afecta a 1, ponerlo como control local de esa seccion)
-- Siempre incluir "Todos" como opcion por defecto en dropdowns
-- Si hay filtro de fecha, poblar `start`/`end` con el rango real de los datos
+**Rules:**
+- Max 3-4 filters — more than 4 overwhelms the user and complicates custom JS
+- Each filter must affect at least 2 dashboard sections (if it only affects 1, make it a local control for that section)
+- Always include "All" as the default option in dropdowns
+- If there is a date filter, populate `start`/`end` with the actual data range
 
-### 5.4 Tablas ordenables vs graficas
+### 5.4 Sortable tables vs charts
 
-| Usar tabla ordenable cuando... | Usar grafica cuando... |
-|-------------------------------|----------------------|
-| El usuario necesita buscar valores especificos (ej: "cuanto vendio el producto X") | La pregunta es sobre patrones (tendencia, concentracion, distribucion) |
-| Hay >7 dimensiones que comparar | Hay <=7 categorias que comparar visualmente |
-| Los datos tienen precision importante (decimales, fechas exactas) | Los ordenes de magnitud importan mas que los valores exactos |
-| Es una tabla de referencia/detalle de soporte | Es un hallazgo clave del analisis |
+| Use sortable table when... | Use chart when... |
+|---------------------------|------------------|
+| The user needs to look up specific values (e.g.: "how much did product X sell") | The question is about patterns (trend, concentration, distribution) |
+| There are >7 dimensions to compare | There are <=7 categories to compare visually |
+| Data has important precision (decimals, exact dates) | Orders of magnitude matter more than exact values |
+| It is a reference/support detail table | It is a key analysis finding |
 
-**Tip**: Usar `sort_value` custom para columnas con formato (ej: mostrar "1,234 EUR" pero ordenar por `1234`). Esto permite que la tabla sea legible y funcional al mismo tiempo.
+**Tip**: Use custom `sort_value` for formatted columns (e.g.: display "1,234 EUR" but sort by `1234`). This allows the table to be both readable and functional.
 
-### 5.5 Rendimiento del dashboard
+### 5.5 Dashboard performance
 
-#### Tamano de datos embebidos
+#### Embedded data size
 
-| Tamano del dataset | Estrategia | Ejemplo |
-|-------------------|-----------|---------|
-| <1,000 filas | Embeber directamente con `set_data()` | Ventas mensuales por region (12 meses x 5 regiones = 60 filas) |
-| 1,000-10,000 filas | Pre-agregar en pandas antes de embeber. Embeber solo las agregaciones necesarias para KPIs, graficas y tablas | Transacciones diarias de un anio → agregar a semanal por segmento |
-| >10,000 filas | Agregar en MCP (`query_data`). Embeber solo el resumen. Nunca traer detalle transaccional al dashboard | Millones de transacciones → top 20 productos, tendencia mensual, KPIs globales |
+| Dataset size | Strategy | Example |
+|-------------|----------|---------|
+| <1,000 rows | Embed directly with `set_data()` | Monthly sales by region (12 months x 5 regions = 60 rows) |
+| 1,000-10,000 rows | Pre-aggregate in pandas before embedding. Embed only the aggregations needed for KPIs, charts, and tables | Daily transactions for a year → aggregate to weekly by segment |
+| >10,000 rows | Aggregate in MCP (`query_data`). Embed only the summary. Never bring transactional detail to the dashboard | Millions of transactions → top 20 products, monthly trend, global KPIs |
 
-**Regla**: El JSON embebido en `DASHBOARD_DATA` no deberia superar ~500 KB. Mas de eso ralentiza la carga inicial del HTML.
+**Rule**: The JSON embedded in `DASHBOARD_DATA` should not exceed ~500 KB. More than that slows initial HTML loading.
 
-#### Limites por componente
+#### Limits per component
 
-| Componente | Limite recomendado | Si se excede |
-|-----------|-------------------|-------------|
-| Line chart | <500 puntos por serie | Downsample: agregar a granularidad mayor (diario → semanal) |
-| Bar chart | <50 categorias | Agrupar en "Otros" o usar top-N + "Resto" |
-| Tabla ordenable | <200 filas | Mostrar top-N con nota "mostrando los N principales". Para detalle completo, exportar CSV |
-| KPI cards | 3-6 | Priorizar por impacto de negocio (ya cubierto en 5.2) |
-| Filtros | 3-4 | Ya cubierto en 5.3 |
+| Component | Recommended limit | If exceeded |
+|-----------|------------------|-------------|
+| Line chart | <500 points per series | Downsample: aggregate to coarser granularity (daily → weekly) |
+| Bar chart | <50 categories | Group into "Others" or use top-N + "Rest" |
+| Sortable table | <200 rows | Show top-N with note "showing the top N". For full detail, export CSV |
+| KPI cards | 3-6 | Prioritize by business impact (already covered in 5.2) |
+| Filters | 3-4 | Already covered in 5.3 |
 
-#### Pre-agregacion en pandas
+#### Pre-aggregation in pandas
 
-Antes de llamar a `set_data()`, agregar los datos al nivel necesario para cada componente del dashboard:
+Before calling `set_data()`, aggregate data to the level needed for each dashboard component:
 
 ```python
-# NO: embeber 50,000 transacciones
+# NO: embed 50,000 transactions
 db.set_data({"transactions": df.to_dict(orient="records")})  # ~5 MB
 
-# SI: pre-agregar para cada componente
+# YES: pre-aggregate for each component
 data = {
     "monthly": df.groupby("month").agg({"revenue": "sum", "orders": "count"}).reset_index().to_dict(orient="records"),
     "by_region": df.groupby("region").agg({"revenue": "sum"}).reset_index().to_dict(orient="records"),

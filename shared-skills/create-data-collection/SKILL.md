@@ -1,95 +1,95 @@
 ---
 name: create-data-collection
-description: Buscar tablas y paths en el diccionario de datos tecnico y crear una nueva coleccion de datos (dominio tecnico) en Stratio Governance.
-argument-hint: [nombre de coleccion o terminos de busqueda (opcional)]
+description: Search for tables and paths in the technical data dictionary and create a new data collection (technical domain) in Stratio Governance.
+argument-hint: [collection name or search terms (optional)]
 ---
 
-# Skill: Crear Coleccion de Datos
+# Skill: Create Data Collection
 
-Busca tablas y paths en el diccionario de datos tecnico y crea una nueva coleccion de datos (dominio tecnico) en Stratio Governance. Fase 0 del pipeline de capa semantica — permite crear dominios nuevos antes de construir su capa semantica.
+Searches for tables and paths in the technical data dictionary and creates a new data collection (technical domain) in Stratio Governance. Phase 0 of the semantic layer pipeline — allows creating new domains before building their semantic layer.
 
-## Tools MCP utilizadas
+## MCP Tools Used
 
-| Tool | Servidor | Proposito |
-|------|----------|-----------|
-| `search_data_dictionary(search_text, search_type?)` | sql | Buscar tablas y paths en el diccionario. `search_type`: `'tables'`, `'paths'` o `'both'` (defecto). Resultados ordenados por relevancia. Cada resultado: `metadata_path`, `name`, `subtype` (Table/Path), `alias?`, `data_store?`, `description?` |
-| `create_data_collection(collection_name, description, table_metadata_paths?, path_metadata_paths?)` | gov | Crear coleccion + asociar tablas/paths + refrescar vista tecnica. `collection_name` sin espacios (usar underscores). Al menos una de las dos listas obligatoria. Los `metadata_path` provienen de resultados de `search_data_dictionary` |
-| `list_domains(domain_type='technical', refresh?)` | sql | Verificar que el nombre no exista ya. Tras crear la coleccion, llamar con `refresh=true` para precalentar la cache |
+| Tool | Server | Purpose |
+|------|--------|---------|
+| `search_data_dictionary(search_text, search_type?)` | sql | Search for tables and paths in the dictionary. `search_type`: `'tables'`, `'paths'` or `'both'` (default). Results ordered by relevance. Each result: `metadata_path`, `name`, `subtype` (Table/Path), `alias?`, `data_store?`, `description?` |
+| `create_data_collection(collection_name, description, table_metadata_paths?, path_metadata_paths?)` | gov | Create collection + associate tables/paths + refresh technical view. `collection_name` without spaces (use underscores). At least one of the two lists required. The `metadata_path` values come from `search_data_dictionary` results |
+| `list_domains(domain_type='technical', refresh?)` | sql | Verify that the name does not already exist. After creating the collection, call with `refresh=true` to warm the cache |
 
-**Reglas clave**: `collection_name` sin espacios ni caracteres especiales (usar underscores) — misma convencion que ontologias. Al menos un `table_metadata_paths` o `path_metadata_paths` requerido. Los `metadata_path` se obtienen de los resultados de `search_data_dictionary`. Confirmacion explicita antes de crear. La busqueda es read-only e idempotente; la creacion no es idempotente.
+**Key rules**: `collection_name` without spaces or special characters (use underscores) — same convention as ontologies. At least one `table_metadata_paths` or `path_metadata_paths` required. The `metadata_path` values are obtained from `search_data_dictionary` results. Explicit confirmation before creating. Search is read-only and idempotent; creation is not idempotent.
 
 ## Workflow
 
-### 1. Determinar intencion
+### 1. Determine intent
 
-Si `$ARGUMENTS` contiene texto, usarlo como semilla de busqueda inicial y pasar directamente al paso 2. Si no hay argumento, preguntar al usuario que tipo de datos busca o que coleccion quiere crear, siguiendo la convencion de preguntas al usuario.
+If `$ARGUMENTS` contains text, use it as the initial search seed and proceed directly to step 2. If there is no argument, ask the user what type of data they are looking for or what collection they want to create, following the user question convention.
 
-### 2. Busqueda iterativa en el diccionario
+### 2. Iterative dictionary search
 
-Ejecutar `search_data_dictionary(search_text, search_type?)` con el termino proporcionado. `search_type` por defecto `'both'`.
+Execute `search_data_dictionary(search_text, search_type?)` with the provided term. `search_type` defaults to `'both'`.
 
-**Busqueda por palabras clave**: La herramienta funciona mejor con terminos cortos o palabras clave individuales que con frases largas o multiples palabras. Si el usuario describe lo que busca en lenguaje natural, extraer los terminos mas relevantes y buscarlos por separado (ej: "tablas de clientes con sus contratos" → buscar primero "clientes", luego "contratos"). Evitar enviar frases completas como search_text.
+**Keyword search**: The tool works best with short terms or individual keywords rather than long phrases or multiple words. If the user describes what they are looking for in natural language, extract the most relevant terms and search them separately (e.g.: "customer tables with their contracts" → search first "customers", then "contracts"). Avoid sending complete phrases as search_text.
 
-Presentar resultados en tabla:
+Present results in a table:
 
 ```
-| # | Tipo | Nombre | metadata_path | data_store | Descripcion |
-|---|------|--------|---------------|------------|-------------|
-| 1 | Table | clientes | /path/to/clientes | PostgreSQL | Tabla de clientes |
+| # | Type | Name | metadata_path | data_store | Description |
+|---|------|------|---------------|------------|-------------|
+| 1 | Table | customers | /path/to/customers | PostgreSQL | Customers table |
 ```
 
-- **Sin resultados**: Ofrecer opciones: refinar termino de busqueda, cambiar `search_type` (`'tables'`, `'paths'` o `'both'`), o cancelar
-- **Bucle de refinamiento**: El usuario puede buscar tantas veces como necesite. Acumular selecciones entre iteraciones
+- **No results**: Offer options: refine search term, change `search_type` (`'tables'`, `'paths'` or `'both'`), or cancel
+- **Refinement loop**: The user can search as many times as needed. Accumulate selections between iterations
 
-### 3. Seleccion de tablas/paths
+### 3. Table/path selection
 
-El usuario selecciona elementos de la tabla por numero (seleccion multiple: numeros separados por coma). Mezcla de Table y Path permitida.
+The user selects elements from the table by number (multiple selection: numbers separated by comma). Mix of Table and Path allowed.
 
-Mostrar resumen acumulado tras cada seleccion:
+Show accumulated summary after each selection:
 ```
-Seleccion actual: Tables: N, Paths: M
-```
-
-Ofrecer opciones: buscar mas elementos o continuar con la creacion.
-
-### 4. Solicitar nombre y descripcion
-
-- **Nombre**: Preguntar al usuario que nombre quiere para la coleccion (`collection_name` sin espacios, usar underscores — misma convencion que ontologias). Si el usuario no tiene preferencia, puede sugerirse un nombre derivado unicamente de los terminos de busqueda reales usados (ej: busco "clientes" → sugiere `clientes`). No inferir temas o propositos de negocio no mencionados por el usuario.
-- **Descripcion**: Preguntar al usuario que descripcion quiere para la coleccion. No inventar descripcion. Si el usuario no tiene preferencia, presentar los nombres y descripciones disponibles de las tablas/paths seleccionados como contexto para que el decida, pero no fabricar contexto de negocio ni tematicas.
-
-**Regla**: No inventar contexto de negocio, tematicas ni propositos que no hayan sido aportados por el usuario o derivados de los metadatos reales de las tablas seleccionadas (nombres, descripciones devueltas por `search_data_dictionary`).
-
-Verificar que el nombre propuesto no coincida con un dominio existente ejecutando `search_domains(nombre, domain_type='technical')` o `list_domains(domain_type='technical')`. Si ya existe, informar y pedir un nombre alternativo.
-
-### 5. Confirmacion y ejecucion
-
-Presentar resumen final completo antes de crear:
-```
-## Crear Coleccion de Datos
-- Nombre: mi_coleccion
-- Descripcion: ...
-- Tables (N): [lista de metadata_paths]
-- Paths (M): [lista de metadata_paths]
+Current selection: Tables: N, Paths: M
 ```
 
-Solicitar confirmacion explicita del usuario (operacion de escritura).
+Offer options: search for more elements or proceed with creation.
 
-Separar la seleccion por `subtype`:
-- Resultados con subtype `Table` → parametro `table_metadata_paths`
-- Resultados con subtype `Path` → parametro `path_metadata_paths`
+### 4. Request name and description
 
-Invocar `create_data_collection(collection_name, description, table_metadata_paths?, path_metadata_paths?)`.
+- **Name**: Ask the user what name they want for the collection (`collection_name` without spaces, use underscores — same convention as ontologies). If the user has no preference, a name derived solely from the actual search terms used can be suggested (e.g.: searched "customers" → suggest `customers`). Do not infer themes or business purposes not mentioned by the user.
+- **Description**: Ask the user what description they want for the collection. Do not invent a description. If the user has no preference, present the available names and descriptions of the selected tables/paths as context for them to decide, but do not fabricate business context or themes.
 
-Presentar resultado: `tables_inserted`, `tables_failed`, `message`.
+**Rule**: Do not invent business context, themes or purposes that have not been provided by the user or derived from the actual metadata of the selected tables (names, descriptions returned by `search_data_dictionary`).
 
-Si hay fallidas: informar cuales y ofrecer reintentar solo las fallidas (maximo 2 reintentos).
+Verify that the proposed name does not match an existing domain by executing `search_domains(name, domain_type='technical')` or `list_domains(domain_type='technical')`. If it already exists, inform and request an alternative name.
 
-### 6. Precalentar cache
+### 5. Confirmation and execution
 
-Tras una creacion exitosa, ejecutar `list_domains(domain_type='technical', refresh=true)` para forzar el refresco de la cache. No es necesario esperar ni reintentar — el objetivo es que cuando el usuario invoque `/build-semantic-layer` a continuacion, el dominio ya este visible sin esperas. Si la llamada falla, ignorar el error (no es critico).
+Present the complete final summary before creating:
+```
+## Create Data Collection
+- Name: my_collection
+- Description: ...
+- Tables (N): [list of metadata_paths]
+- Paths (M): [list of metadata_paths]
+```
 
-### 7. Resumen y siguiente paso
+Request explicit user confirmation (write operation).
 
-Presentar resumen de la coleccion creada con el resultado final.
+Separate the selection by `subtype`:
+- Results with subtype `Table` → parameter `table_metadata_paths`
+- Results with subtype `Path` → parameter `path_metadata_paths`
 
-Sugerir siguiente paso: "Puedes construir su capa semantica con `/build-semantic-layer [nombre]`"
+Invoke `create_data_collection(collection_name, description, table_metadata_paths?, path_metadata_paths?)`.
+
+Present result: `tables_inserted`, `tables_failed`, `message`.
+
+If there are failures: report which ones and offer to retry only the failed ones (maximum 2 retries).
+
+### 6. Warm cache
+
+After a successful creation, execute `list_domains(domain_type='technical', refresh=true)` to force a cache refresh. No need to wait or retry — the goal is that when the user invokes `/build-semantic-layer` next, the domain is already visible without delays. If the call fails, ignore the error (not critical).
+
+### 7. Summary and next step
+
+Present a summary of the created collection with the final result.
+
+Suggest next step: "You can build its semantic layer with `/build-semantic-layer [name]`"

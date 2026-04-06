@@ -1,49 +1,49 @@
 #!/usr/bin/env python3
 """
 validate_report_input.py
-Valida que report-input.json tenga el schema exacto que espera quality_report_generator.py.
-Si hay errores, los muestra con el nombre correcto del campo y termina con exit code 1.
+Validates that report-input.json matches the exact schema expected by quality_report_generator.py.
+If there are errors, displays them with the correct field name and exits with code 1.
 
-Uso:
-    python scripts/validate_report_input.py [ruta-al-json]
+Usage:
+    python scripts/validate_report_input.py [path-to-json]
     python scripts/validate_report_input.py output/report-input.json
 """
 import json
 import sys
 
-# Nombres incorrectos que el agente usa frecuentemente → nombre correcto
+# Incorrect names frequently used by the agent -> correct name
 WRONG_ROOT_ALIASES = {
     "report_title": "title",
     "report_date": "generated_at",
     "date": "generated_at",
     "executive_summary": "summary",
     "global_summary": "summary",
-    "output_format": "(eliminar — no es un campo del schema)",
-    "domain_description": "(eliminar — no es un campo del schema)",
-    "tables_analyzed": "summary.tables_analyzed  (debe estar dentro de 'summary', no en la raiz)",
+    "output_format": "(remove — not a schema field)",
+    "domain_description": "(remove — not a schema field)",
+    "tables_analyzed": "summary.tables_analyzed  (must be inside 'summary', not at root)",
     "total_rules": "summary.rules_total",
     "rules_count": "summary.rules_total",
     "rules_pending": "summary.rules_not_executed",
     "rules_not_run": "summary.rules_not_executed",
-    "coverage_percentage": "summary.coverage_estimate  (string, ej: '62%')",
-    "critical_findings": "(eliminar — no es un campo del schema)",
+    "coverage_percentage": "summary.coverage_estimate  (string, e.g.: '62%')",
+    "critical_findings": "(remove — not a schema field)",
 }
 
 WRONG_TABLE_ALIASES = {
     "quality_rules": "rules",
-    "coverage_matrix": "(eliminar — usar campos planos: completeness, uniqueness, validity, consistency)",
-    "coverage_by_dimension": "(eliminar — usar campos planos: completeness, uniqueness, validity, consistency)",
-    "eda_highlights": "(eliminar — no es un campo del schema)",
-    "profiling": "(eliminar — no es un campo del schema)",
-    "description": "(eliminar — no es un campo del schema en tables[])",
-    "row_count": "(eliminar — no es un campo del schema en tables[])",
-    "column_count": "(eliminar — no es un campo del schema en tables[])",
-    "columns": "(eliminar — no es un campo del schema en tables[])",
+    "coverage_matrix": "(remove — use flat fields: completeness, uniqueness, validity, consistency)",
+    "coverage_by_dimension": "(remove — use flat fields: completeness, uniqueness, validity, consistency)",
+    "eda_highlights": "(remove — not a schema field)",
+    "profiling": "(remove — not a schema field)",
+    "description": "(remove — not a schema field in tables[])",
+    "row_count": "(remove — not a schema field in tables[])",
+    "column_count": "(remove — not a schema field in tables[])",
+    "columns": "(remove — not a schema field in tables[])",
 }
 
 WRONG_RULE_ALIASES = {
-    "result": "pass_pct  (número 0-100 o null, no string como '4500/4500')",
-    "notes": "(eliminar — no es un campo del schema en rules[])",
+    "result": "pass_pct  (number 0-100 or null, not a string like '4500/4500')",
+    "notes": "(remove — not a schema field in rules[])",
 }
 
 REQUIRED_ROOT = ["title", "domain", "scope", "generated_at", "summary", "tables"]
@@ -68,75 +68,75 @@ def validate(path: str) -> None:
         with open(path, encoding="utf-8") as f:
             data = json.load(f)
     except FileNotFoundError:
-        print(f"[ERROR] Fichero no encontrado: {path}")
+        print(f"[ERROR] File not found: {path}")
         sys.exit(1)
     except json.JSONDecodeError as e:
-        print(f"[ERROR] JSON inválido en {path}: {e}")
+        print(f"[ERROR] Invalid JSON in {path}: {e}")
         sys.exit(1)
 
-    # --- Raiz ---
+    # --- Root ---
     for wrong, correct in WRONG_ROOT_ALIASES.items():
         if wrong in data:
-            errors.append(f"Raiz: campo incorrecto '{wrong}' → renombrar a '{correct}'")
+            errors.append(f"Root: incorrect field '{wrong}' -> rename to '{correct}'")
 
     for field in REQUIRED_ROOT:
         if field not in data:
-            errors.append(f"Raiz: campo requerido '{field}' no existe")
+            errors.append(f"Root: required field '{field}' is missing")
 
     # --- summary ---
     summary = data.get("summary")
     if summary is None:
-        pass  # ya reportado arriba
+        pass  # already reported above
     elif not isinstance(summary, dict):
         errors.append(
-            f"'summary' debe ser un objeto con subcampos, no un string. "
-            f"Valor actual: {repr(str(summary)[:80])}"
+            f"'summary' must be an object with subfields, not a string. "
+            f"Current value: {repr(str(summary)[:80])}"
         )
     else:
         for field in REQUIRED_SUMMARY:
             if field not in summary:
-                errors.append(f"summary: campo requerido '{field}' no existe")
-        # coverage_estimate debe ser string
+                errors.append(f"summary: required field '{field}' is missing")
+        # coverage_estimate must be a string
         ce = summary.get("coverage_estimate")
         if ce is not None and not isinstance(ce, str):
             errors.append(
-                f"summary.coverage_estimate debe ser string (ej: '62%'), no número. "
-                f"Valor actual: {ce}"
+                f"summary.coverage_estimate must be a string (e.g.: '62%'), not a number. "
+                f"Current value: {ce}"
             )
 
     # --- recommendations ---
     recs = data.get("recommendations")
     if recs is not None:
         if not isinstance(recs, list):
-            errors.append("'recommendations' debe ser una lista")
+            errors.append("'recommendations' must be a list")
         elif recs and not isinstance(recs[0], str):
             errors.append(
-                "'recommendations' debe ser array de strings planos, no de objetos. "
-                "Ejemplo correcto: [\"Alta — account: Revisar reglas duplicadas.\", \"Media — ...\"]"
+                "'recommendations' must be an array of plain strings, not objects. "
+                "Correct example: [\"High — account: Review duplicate rules.\", \"Medium — ...\"]"
             )
 
     # --- tables ---
     tables = data.get("tables", [])
     if not isinstance(tables, list) or len(tables) == 0:
-        errors.append("'tables' debe ser una lista con al menos una tabla")
+        errors.append("'tables' must be a list with at least one table")
 
     for i, t in enumerate(tables):
         tname = t.get("name", f"tables[{i}]")
 
         for wrong, correct in WRONG_TABLE_ALIASES.items():
             if wrong in t:
-                errors.append(f"tabla '{tname}': campo incorrecto '{wrong}' → {correct}")
+                errors.append(f"table '{tname}': incorrect field '{wrong}' -> {correct}")
 
         for field in REQUIRED_TABLE:
             if field not in t:
-                errors.append(f"tabla '{tname}': campo requerido '{field}' no existe")
+                errors.append(f"table '{tname}': required field '{field}' is missing")
 
         for dim in ["completeness", "uniqueness", "validity", "consistency"]:
             val = t.get(dim)
             if val is not None and val not in VALID_COVERAGE:
                 errors.append(
-                    f"tabla '{tname}': valor inválido en '{dim}': '{val}' "
-                    f"→ usar uno de: {sorted(VALID_COVERAGE)}"
+                    f"table '{tname}': invalid value in '{dim}': '{val}' "
+                    f"-> use one of: {sorted(VALID_COVERAGE)}"
                 )
 
         # rules
@@ -145,24 +145,24 @@ def validate(path: str) -> None:
             for wrong, correct in WRONG_RULE_ALIASES.items():
                 if wrong in r:
                     errors.append(
-                        f"tabla '{tname}', regla '{rname}': campo incorrecto '{wrong}' → {correct}"
+                        f"table '{tname}', rule '{rname}': incorrect field '{wrong}' -> {correct}"
                     )
             for field in REQUIRED_RULE:
                 if field not in r:
                     errors.append(
-                        f"tabla '{tname}', regla '{rname}': campo requerido '{field}' no existe"
+                        f"table '{tname}', rule '{rname}': required field '{field}' is missing"
                     )
             status = r.get("status")
             if status is not None and status not in VALID_RULE_STATUS:
                 errors.append(
-                    f"tabla '{tname}', regla '{rname}': status inválido '{status}' "
-                    f"→ usar OK, KO o WARNING  (para reglas sin ejecutar usar WARNING, nunca 'Pendiente' ni 'Sin ejecución reciente')"
+                    f"table '{tname}', rule '{rname}': invalid status '{status}' "
+                    f"-> use OK, KO or WARNING  (for unexecuted rules use WARNING, never 'Pendiente' or 'Sin ejecucion reciente')"
                 )
             pass_pct = r.get("pass_pct")
             if pass_pct is not None and not isinstance(pass_pct, (int, float)):
                 errors.append(
-                    f"tabla '{tname}', regla '{rname}': pass_pct debe ser número (0-100) o null, "
-                    f"no string. Valor actual: '{pass_pct}'"
+                    f"table '{tname}', rule '{rname}': pass_pct must be a number (0-100) or null, "
+                    f"not a string. Current value: '{pass_pct}'"
                 )
 
         # gaps
@@ -170,14 +170,14 @@ def validate(path: str) -> None:
             pri = g.get("priority")
             if pri is not None and pri not in VALID_PRIORITY:
                 errors.append(
-                    f"tabla '{tname}', gap {j} (col '{g.get('column', '?')}'): "
-                    f"priority inválida '{pri}' "
-                    f"→ usar CRITICO, ALTO, MEDIO o BAJO  (nunca 'Alta', 'Media', 'Baja')"
+                    f"table '{tname}', gap {j} (col '{g.get('column', '?')}'): "
+                    f"invalid priority '{pri}' "
+                    f"-> use CRITICO, ALTO, MEDIO or BAJO  (never 'Alta', 'Media', 'Baja')"
                 )
             for field in REQUIRED_GAP:
                 if field not in g:
                     errors.append(
-                        f"tabla '{tname}', gap {j}: campo requerido '{field}' no existe"
+                        f"table '{tname}', gap {j}: required field '{field}' is missing"
                     )
 
     # --- rules_created ---
@@ -185,32 +185,32 @@ def validate(path: str) -> None:
         rname = r.get("name", f"rules_created[{j}]")
         if "calculated_status" in r:
             errors.append(
-                f"rules_created '{rname}': campo incorrecto 'calculated_status' "
-                f"→ renombrar a 'status'"
+                f"rules_created '{rname}': incorrect field 'calculated_status' "
+                f"-> rename to 'status'"
             )
         if "status" not in r:
-            errors.append(f"rules_created '{rname}': campo requerido 'status' no existe")
+            errors.append(f"rules_created '{rname}': required field 'status' is missing")
 
-    # --- Resultado ---
+    # --- Result ---
     if errors:
         total_rules = sum(len(t.get("rules", [])) for t in tables)
         total_gaps = sum(len(t.get("gaps", [])) for t in tables)
         print(
-            f"\n[VALIDATION FAILED] {len(errors)} error(es) en {path} "
-            f"({len(tables)} tabla(s), {total_rules} regla(s), {total_gaps} gap(s)):\n"
+            f"\n[VALIDATION FAILED] {len(errors)} error(s) in {path} "
+            f"({len(tables)} table(s), {total_rules} rule(s), {total_gaps} gap(s)):\n"
         )
         for e in errors:
             print(f"  ✗ {e}")
         print(
-            "\nCorrige todos los errores anteriores en report-input.json antes de ejecutar el generador.\n"
+            "\nFix all errors above in report-input.json before running the generator.\n"
         )
         sys.exit(1)
     else:
         total_rules = sum(len(t.get("rules", [])) for t in tables)
         total_gaps = sum(len(t.get("gaps", [])) for t in tables)
         print(
-            f"[OK] {path} es válido — "
-            f"{len(tables)} tabla(s), {total_rules} regla(s), {total_gaps} gap(s)"
+            f"[OK] {path} is valid — "
+            f"{len(tables)} table(s), {total_rules} rule(s), {total_gaps} gap(s)"
         )
         sys.exit(0)
 

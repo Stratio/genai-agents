@@ -1,12 +1,12 @@
 # genai-agents — Monorepo
 
-Monorepo con agentes de IA generativa para analisis de datos de negocio.
+Monorepo with generative AI agents for business data analysis.
 
-## Estructura
+## Structure
 
 ```
 genai-agents/
-  shared-skills/           # Skills compartidas entre agentes (autocontenidas o casi)
+  shared-skills/           # Shared skills across agents (self-contained or nearly so)
     propose-knowledge/
     explore-data/
     stratio-data/
@@ -18,97 +18,155 @@ genai-agents/
     create-semantic-terms/
     manage-business-terms/
     create-data-collection/
-  shared-skill-guides/     # Guides compartidos (no son skills; copiados a skills-guides/ en el output)
+  shared-skill-guides/     # Shared guides (not skills; copied to skills-guides/ in the output)
     stratio-data-tools.md
     stratio-semantic-layer-tools.md
-  data-analytics/          # Agente completo (analisis + informes multi-formato)
-    shared-skills          # Lista de shared skills que incluye este agente
-    shared-guides          # Lista de shared-skill-guides que AGENTS.md referencia directamente
-  data-analytics-light/    # Agente ligero (analisis en chat)
+  es/                      # Spanish translations (overlay directory, mirrors main tree)
+    shared-skills/
+    shared-skill-guides/
+    data-analytics/
+    data-analytics-light/
+    semantic-layer/
+    data-quality/
+  data-analytics/          # Full agent (analysis + multi-format reports)
+    shared-skills          # List of shared skills included by this agent
+    shared-guides          # List of shared-skill-guides that AGENTS.md references directly
+  data-analytics-light/    # Lightweight agent (chat-based analysis)
     shared-skills
     shared-guides
-  semantic-layer/          # Agente de construccion de capa semantica
+  semantic-layer/          # Semantic layer construction agent
     shared-skills
     shared-guides
     skills/
-      build-semantic-layer/  # Skill local: pipeline completo
-  data-quality/            # Agente de calidad del dato (evaluacion, reglas, informes)
+      build-semantic-layer/  # Local skill: full pipeline
+  data-quality/            # Data quality agent (assessment, rules, reports)
     shared-guides
     skills/
-      assess-quality/               # Skill local: evaluacion de cobertura
-      create-quality-planification/ # Skill local: creacion de planificaciones de calidad
-      create-quality-rules/         # Skill local: creacion de reglas
-      quality-report/               # Skill local: generacion de informes
+      assess-quality/               # Local skill: coverage assessment
+      create-quality-planification/ # Local skill: quality planification creation
+      create-quality-rules/         # Local skill: rule creation
+      quality-report/               # Local skill: report generation
 ```
 
-## Instrucciones de desarrollo
+## Development instructions
 
-- Cada agente tiene su propio `AGENTS.md` con instrucciones especificas. Trabajar siempre desde la carpeta del agente correspondiente
-- Skills propias de cada agente en `skills/`; skills compartidas en `shared-skills/` (raiz del monorepo)
-- Guides compartidos en `shared-skill-guides/` (raiz del monorepo); guides locales en `skills-guides/` del agente
-- Cada agente declara que shared skills necesita en `shared-skills` (una linea por skill) y que guides directos en `shared-guides`
-- Cada shared skill puede declarar que guides de `shared-skill-guides/` necesita en un fichero `skill-guides` dentro de su carpeta
-- Si un agente tiene en `skills/` una skill con el mismo nombre que una shared skill → la version local tiene prioridad
-- Scripts de empaquetado genericos en la raiz del monorepo: `pack_claude_code.sh` y `pack_opencode.sh` (cualquier agente)
-- Scripts de empaquetado especificos de plataforma en `data-analytics-light/`, `semantic-layer/` y `data-quality/` (`pack_claude_ai_project.sh`, `pack_claude_cowork.sh`)
-- El `.gitignore` raiz cubre todos los agentes
+- Each agent has its own `AGENTS.md` with specific instructions. Always work from the corresponding agent folder
+- Agent-specific skills live in `skills/`; shared skills live in `shared-skills/` (monorepo root)
+- Shared guides live in `shared-skill-guides/` (monorepo root); local guides in the agent's `skills-guides/`
+- Each agent declares which shared skills it needs in `shared-skills` (one line per skill) and which direct guides in `shared-guides`
+- Each shared skill can declare which guides from `shared-skill-guides/` it needs in a `skill-guides` file inside its folder
+- If an agent has a skill in `skills/` with the same name as a shared skill, the local version takes priority
+- Generic packaging scripts at the monorepo root: `pack_claude_code.sh` and `pack_opencode.sh` (any agent)
+- Platform-specific packaging scripts in `data-analytics-light/`, `semantic-layer/` and `data-quality/` (`pack_claude_ai_project.sh`, `pack_claude_cowork.sh`)
+- The root `.gitignore` covers all agents
 
-## Resumen de agentes
+## Agent summary
 
 ### data-analytics
-Agente completo de BI/BA: consulta de datos gobernados via MCP, analisis con Python (pandas, scipy, scikit-learn), visualizaciones (matplotlib, seaborn, plotly), generacion de informes (PDF, DOCX, web, PowerPoint), documentacion del razonamiento, validacion, gestion de la memoria entre sesiones.
+Full BI/BA agent: queries governed data via MCP, analysis with Python (pandas, scipy, scikit-learn), visualizations (matplotlib, seaborn, plotly), report generation (PDF, DOCX, web, PowerPoint), reasoning documentation, validation, cross-session memory management.
 
 ### data-analytics-light
-Agente ligero de BI/BA: mismo motor analitico pero orientado a conversacion. Sin generacion de informes formales — el output principal es el chat. Incluye scripts de empaquetado para Claude AI Projects y Claude Cowork.
+Lightweight BI/BA agent: same analytical engine but chat-oriented. No formal report generation — the primary output is the chat. Includes packaging scripts for Claude AI Projects and Claude Cowork.
 
 ### semantic-layer
-Agente especializado en construccion y mantenimiento de capas semanticas en Stratio Governance. Orquesta la creacion de colecciones de datos (dominios tecnicos), terminos tecnicos, ontologias, vistas de negocio, SQL mappings, publicacion de vistas, terminos semanticos y business terms via MCPs de gobernanza. No ejecuta queries de datos ni genera ficheros — su output es interaccion con tools MCP + resumenes en chat. Puede leer ficheros locales del usuario para enriquecer la planificacion.
+Agent specialized in building and maintaining semantic layers in Stratio Governance. Orchestrates the creation of data collections (technical domains), technical terms, ontologies, business views, SQL mappings, view publishing, semantic terms and business terms via governance MCPs. Does not execute data queries or generate files — its output is MCP tool interaction + chat summaries. Can read local user files to enrich planning.
 
 ### data-quality
-Agente especializado en gobernanza y calidad del dato. Evalua la cobertura de calidad por dominio, coleccion, tabla o columna, identifica gaps (dimensiones no cubiertas), propone y crea reglas de calidad con aprobacion humana obligatoria, y genera informes de cobertura en multiples formatos (PDF, DOCX, Markdown). Opera sobre datos gobernados via MCPs de SQL y gobernanza.
+Agent specialized in data governance and quality. Evaluates quality coverage by domain, collection, table or column, identifies gaps (uncovered dimensions), proposes and creates quality rules with mandatory human approval, and generates coverage reports in multiple formats (PDF, DOCX, Markdown). Operates on governed data via SQL and governance MCPs.
 
-## Scripts de empaquetado (raiz)
+## Packaging scripts (root)
 
-Scripts genericos que funcionan con cualquier agente del monorepo:
+Generic scripts that work with any agent in the monorepo:
 
-| Script | Plataforma destino | Output |
-|--------|-------------------|--------|
-| `pack_claude_code.sh` | Claude Code CLI | `{agente}/claude_code/{nombre}/` |
-| `pack_opencode.sh` | OpenCode | `{agente}/opencode/{nombre}/` |
-| `pack_shared_skills.sh` | Todas (skills sueltas) | `dist/shared-skills.zip` o `dist/{skill}.zip` |
+| Script | Target platform | Output |
+|--------|----------------|--------|
+| `pack_claude_code.sh` | Claude Code CLI | `{agent}/claude_code/{name}/` |
+| `pack_opencode.sh` | OpenCode | `{agent}/opencode/{name}/` |
+| `pack_shared_skills.sh` | All (standalone skills) | `dist/shared-skills.zip` or `dist/{skill}.zip` |
 
-Uso: `bash pack_claude_code.sh --agent <ruta-agente> [--name <nombre-kebab>]`
+Usage: `bash pack_claude_code.sh --agent <agent-path> [--name <kebab-case-name>] [--lang <code>]`
 
-## Skills compartidas
+All pack scripts accept `--lang <code>` to generate output in a specific language. Without `--lang` (or with `--lang en`), English is used. With `--lang es`, the script resolves Spanish content from the `es/` overlay and generates the output in `dist/es/...` for traceability.
 
-### Crear una shared skill
+## Shared skills
 
-1. Crear `shared-skills/<nombre>/SKILL.md` con el contenido de la skill
-2. Si la skill necesita guides externos, crear los ficheros en `shared-skill-guides/` y listarlos en `shared-skills/<nombre>/skill-guides` (texto plano, una linea por fichero)
-3. Declarar la skill en los agentes que la usen añadiendo su nombre al fichero `<agente>/shared-skills`
-4. Si el AGENTS.md del agente referencia el guide directamente, añadirlo tambien a `<agente>/shared-guides`
+### Creating a shared skill
 
-**Reglas de contenido del SKILL.md:**
-- No referenciar `AGENTS.md` ni `CLAUDE.md` directamente — usar formulaciones genericas como "segun las instrucciones del agente" o "siguiendo la convencion de preguntas al usuario". Los pack scripts sustituyen estos nombres segun la plataforma destino, pero una referencia directa puede quedar mal en alguna plataforma
-- No depender de herramientas Python, estilos, templates ni rutas especificas de un agente concreto — si la skill necesita eso, debe ser local
-- Las referencias a `output/MEMORY.md` son aceptables si estan condicionadas a la existencia del fichero (`si existe`) — agentes sin memoria simplemente la ignoran
-- Las referencias a guides en el SKILL.md deben usar la ruta `skills-guides/<fichero>` (sin prefijo de plataforma) — los pack scripts genéricos copian cada guide **dentro** de la carpeta de la skill y reescriben las referencias para que sean locales (autocontenida). Los guides declarados en `shared-guides` del agente se copian además a `skills-guides/` para que `AGENTS.md` los referencie
+1. Create `shared-skills/<name>/SKILL.md` with the skill content (in English)
+2. Create the Spanish translation at `es/shared-skills/<name>/SKILL.md`
+3. If the skill needs external guides, create the files in `shared-skill-guides/` (with their counterparts in `es/shared-skill-guides/`) and list them in `shared-skills/<name>/skill-guides` (plain text, one line per file)
+4. Declare the skill in the agents that use it by adding its name to the `<agent>/shared-skills` file
+5. If the agent's AGENTS.md references the guide directly, also add it to `<agent>/shared-guides`
 
-### Usar una shared skill en un agente
+**SKILL.md content rules:**
+- Do not reference `AGENTS.md` or `CLAUDE.md` directly — use generic phrasing such as "according to the agent's instructions" or "following the user question convention". The pack scripts substitute these names depending on the target platform, but a direct reference may not work correctly on some platforms
+- Do not depend on Python tools, styles, templates or paths specific to a particular agent — if the skill needs those, it should be local
+- References to `output/MEMORY.md` are acceptable if conditioned on the file's existence (`if it exists`) — agents without memory simply ignore it
+- Guide references in the SKILL.md must use the path `skills-guides/<file>` (without platform prefix) — the generic pack scripts copy each guide **inside** the skill folder and rewrite the references to make them local (self-contained). Guides declared in the agent's `shared-guides` are also copied to `skills-guides/` so that `AGENTS.md` can reference them
 
-Añadir el nombre de la skill al fichero `<agente>/shared-skills` (una linea por skill). Si el AGENTS.md referencia directamente algun guide de `shared-skill-guides/`, añadirlo a `<agente>/shared-guides`. Todos los pack scripts leen estos manifiestos automaticamente.
+### Using a shared skill in an agent
 
-Si el agente ya tiene en `skills/` una skill con el mismo nombre, la version local tiene prioridad y la shared se omite.
+Add the skill name to the `<agent>/shared-skills` file (one line per skill). If AGENTS.md directly references any guide from `shared-skill-guides/`, add it to `<agent>/shared-guides`. All pack scripts read these manifests automatically.
 
-## Añadir un nuevo agente
+If the agent already has a skill in `skills/` with the same name, the local version takes priority and the shared one is skipped.
 
-La guía completa de creación está en `README.md` (sección "Crear un agente nuevo"). Checklist de integración en el monorepo:
+## Internationalization (i18n)
 
-1. Crear carpeta `mi-agente/` con estructura mínima:
-   - `AGENTS.md` — rol, workflow, reglas del agente
-   - `opencode.json` — MCPs y permisos para OpenCode (si usa OpenCode)
-   - `skills/` — opcional; si el agente tiene skills propias, formato canónico `skills/<nombre>/SKILL.md`
-   - `shared-skills` — opcional; lista de shared skills del monorepo a incluir (una linea por skill)
-   - `shared-guides` — opcional; lista de shared-skill-guides que AGENTS.md referencia directamente
-2. Añadir `mi-agente` al fichero `release-modules` (una línea por agente) para que `make package` lo incluya
-3. Actualizar la tabla de agentes en `README.md`
+The monorepo supports multiple languages. **English is the primary language** — files in the main tree contain English content. Translations live in a language overlay directory at the root (e.g., `es/` for Spanish) that mirrors the source tree structure:
+
+```
+genai-agents/
+  shared-skills/explore-data/SKILL.md          # English (primary)
+  es/shared-skills/explore-data/SKILL.md        # Spanish (overlay)
+  data-analytics/AGENTS.md                      # English
+  es/data-analytics/AGENTS.md                   # Spanish
+```
+
+Supported languages are listed in the `languages` file at the monorepo root.
+
+**What gets translated:** `AGENTS.md`, `SKILL.md`, sub-guides (`*.md` inside `skills/`), `skills-guides/*.md`, `shared-skill-guides/*.md`, `USER_README.md`, `README.md`, `cowork-metadata.yaml`, `output-templates/*.md`.
+
+**What stays language-neutral (not translated):** Python code, HTML templates, CSS, shell scripts, JSON configs (`.mcp.json`, `opencode.json`), manifests (`shared-skills`, `shared-guides`, `skill-guides`), `Makefile`, `Jenkinsfile`, `VERSION`.
+
+**Skill and folder names are technical identifiers** — they stay in English regardless of language (`explore-data`, not `explorar-datos`).
+
+### Packaging by language
+
+Each pack script accepts `--lang <code>` to package in a specific language. When `--lang es` is passed, the script internally resolves the Spanish content from `es/` and generates output in `dist/es/{format}/{name}/` (intermediate files available for inspection). `bin/package.sh` orchestrates this for all agents and languages, producing final versioned ZIPs in `dist/`:
+
+- English (primary): `data-analytics-claude-code-0.1.0.zip` (no suffix)
+- Spanish: `data-analytics-claude-code-es-0.1.0.zip`
+
+Individual pack script usage:
+
+```bash
+# English (default)
+bash pack_claude_code.sh --agent data-analytics
+# → data-analytics/dist/claude_code/data-analytics/
+
+# Spanish
+bash pack_claude_code.sh --agent data-analytics --lang es
+# → data-analytics/dist/es/claude_code/data-analytics/
+```
+
+### Translation workflow
+
+When adding or modifying translatable content:
+
+1. Edit the primary file (e.g., `SKILL.md`) with English content
+2. Create or update the counterpart in `es/` (e.g., `es/.../SKILL.md`) with the Spanish translation
+3. Run `bin/check-translations.sh` to verify no translations are missing
+
+## Adding a new agent
+
+The complete creation guide is in `README.md` (section "Creating a new agent"). Monorepo integration checklist:
+
+1. Create a `my-agent/` folder with the minimum structure:
+   - `AGENTS.md` — role, workflow, agent rules
+   - `opencode.json` — MCPs and permissions for OpenCode (if it uses OpenCode)
+   - `skills/` — optional; if the agent has its own skills, canonical format `skills/<name>/SKILL.md`
+   - `shared-skills` — optional; list of shared skills from the monorepo to include (one line per skill)
+   - `shared-guides` — optional; list of shared-skill-guides that AGENTS.md references directly
+2. Add `my-agent` to the `release-modules` file (one line per agent) so that `make package` includes it
+3. Update the agents table in `README.md`
+4. Create counterparts in `es/<agent>/` for all translatable files (see [Internationalization](#internationalization-i18n))

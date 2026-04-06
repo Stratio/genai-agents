@@ -1,84 +1,84 @@
 ---
 name: manage-business-terms
-description: Crear Business Terms en el diccionario de Stratio Governance con relaciones
-  a activos de datos. Planificacion guiada — nombre, descripcion, tipo y relaciones.
-argument-hint: [dominio (opcional)]
+description: Create Business Terms in the Stratio Governance dictionary with relationships
+  to data assets. Guided planning — name, description, type and relationships.
+argument-hint: [domain (optional)]
 ---
 
-# Skill: Gestionar Business Terms
+# Skill: Manage Business Terms
 
-Crea Business Terms en el diccionario de Stratio Governance con relaciones a activos de datos. Incluye planificacion guiada para definir nombre, descripcion, tipo y activos relacionados.
+Creates Business Terms in the Stratio Governance dictionary with relationships to data assets. Includes guided planning to define name, description, type and related assets.
 
-## Tools MCP utilizadas
+## MCP Tools Used
 
-| Tool | Servidor | Proposito |
-|------|----------|-----------|
-| `search_domains(search_text, domain_type?, refresh?)` | sql | **Preferir**. Buscar dominios por texto libre (acepta tecnicos y semanticos). Resultados por relevancia |
-| `list_domains(domain_type?, refresh?)` | sql | Listar dominios disponibles (acepta tecnicos y semanticos). `refresh=true` para bypass de cache |
-| `list_domain_tables(domain)` | sql | Descubrir tablas de un dominio para relaciones |
-| `get_table_columns_details(domain, table)` | sql | Descubrir columnas para relaciones a nivel columna |
-| `list_business_asset_types()` | gov | Tipos de activos disponibles para business terms |
-| `create_business_term(domain, name, description, type, related_assets)` | gov | Crear business term en el diccionario |
+| Tool | Server | Purpose |
+|------|--------|---------|
+| `search_domains(search_text, domain_type?, refresh?)` | sql | **Prefer**. Search domains by free text (accepts technical and semantic). Results by relevance |
+| `list_domains(domain_type?, refresh?)` | sql | List available domains (accepts technical and semantic). `refresh=true` for cache bypass |
+| `list_domain_tables(domain)` | sql | Discover domain tables for relationships |
+| `get_table_columns_details(domain, table)` | sql | Discover columns for column-level relationships |
+| `list_business_asset_types()` | gov | Available asset types for business terms |
+| `create_business_term(domain, name, description, type, related_assets)` | gov | Create business term in the dictionary |
 
-**Reglas clave**: `domain_name` inmutable. Business terms aceptan tanto dominios tecnicos como semanticos (`semantic_*`). Los activos relacionados siguen una jerarquia de granularidad.
+**Key rules**: `domain_name` immutable. Business terms accept both technical and semantic domains (`semantic_*`). Related assets follow a granularity hierarchy.
 
 ## Workflow
 
-### 1. Determinar dominio
+### 1. Determine domain
 
-Si `$ARGUMENTS` contiene nombre de dominio, buscar con `search_domains($ARGUMENTS)` (acepta tanto dominios tecnicos como semanticos). Si no coincide, reintentar con `search_domains($ARGUMENTS, refresh=true)` por si es un dominio recien creado o publicado. Si ahora coincide, continuar. Si no coincide o no hay argumento, listar dominios con `list_domains()` y preguntar al usuario siguiendo la convencion de preguntas al usuario.
+If `$ARGUMENTS` contains a domain name, search with `search_domains($ARGUMENTS)` (accepts both technical and semantic domains). If it does not match, retry with `search_domains($ARGUMENTS, refresh=true)` in case it is a recently created or published domain. If it now matches, continue. If it does not match or there is no argument, list domains with `list_domains()` and ask the user following the user question convention.
 
-### 2. Planificacion guiada
+### 2. Guided planning
 
-Para cada business term, planificar estos campos:
+For each business term, plan these fields:
 
-**Nombre del termino**: Proponer basado en el contexto o pedir al usuario.
+**Term name**: Propose based on context or ask the user.
 
-**Descripcion**: Texto en Markdown con la definicion completa del termino. Proponer una descripcion basada en el contexto del dominio, o pedir al usuario que la proporcione.
+**Description**: Markdown text with the complete definition of the term. Propose a description based on the domain context, or ask the user to provide it.
 
-**Tipo de activo**: Ejecutar `list_business_asset_types()` y presentar tipos disponibles al usuario para seleccion.
+**Asset type**: Execute `list_business_asset_types()` and present available types to the user for selection.
 
-**Activos relacionados** — Explicar la jerarquia al usuario:
-- Formato: `collection.table.column`, `collection.table`, o `collection`
-- **Regla de granularidad**:
-  - Si el termino aplica a **columnas especificas** → relacionar con las columnas (no anadir tabla ni coleccion redundantemente)
-  - Si aplica a **tablas especificas** → relacionar con las tablas (no anadir coleccion)
-  - Si aplica a **mas de 2 tablas** del mismo dominio → relacionar con la coleccion directamente
-- El usuario decide la granularidad final — presentar la recomendacion pero respetar su criterio
+**Related assets** — Explain the hierarchy to the user:
+- Format: `collection.table.column`, `collection.table`, or `collection`
+- **Granularity rule**:
+  - If the term applies to **specific columns** → relate to the columns (do not add table or collection redundantly)
+  - If it applies to **specific tables** → relate to the tables (do not add collection)
+  - If it applies to **more than 2 tables** in the same domain → relate to the collection directly
+- The user decides the final granularity — present the recommendation but respect their criteria
 
-Para descubrir activos disponibles:
-- `list_domain_tables(domain)` → tablas del dominio
-- `get_table_columns_details(domain, table)` → columnas de tablas especificas
+To discover available assets:
+- `list_domain_tables(domain)` → domain tables
+- `get_table_columns_details(domain, table)` → columns of specific tables
 
-**Agrupacion**: El usuario puede querer agrupar varios conceptos en un solo business term o crear terminos separados. Preguntar si aplica — esta es una decision del usuario.
+**Grouping**: The user may want to group several concepts into a single business term or create separate terms. Ask if applicable — this is the user's decision.
 
-### 3. Aprobacion
+### 3. Approval
 
-Mostrar el termino completo antes de crear:
+Show the complete term before creating:
 ```
-## Business Term: [nombre]
-- **Tipo**: [tipo seleccionado]
-- **Descripcion**: [descripcion en Markdown]
-- **Activos relacionados**:
+## Business Term: [name]
+- **Type**: [selected type]
+- **Description**: [Markdown description]
+- **Related assets**:
   - collection.table.column1
   - collection.table.column2
 ```
 
-Permitir al usuario editar cualquier campo antes de confirmar.
+Allow the user to edit any field before confirming.
 
-### 4. Ejecucion
+### 4. Execution
 
-Invocar `create_business_term(domain, name, description, type, related_assets)` con los datos aprobados.
+Invoke `create_business_term(domain, name, description, type, related_assets)` with the approved data.
 
-Si hay error, analizar la causa y ofrecer reintentar con ajustes (max 2 reintentos por termino).
+If there is an error, analyze the cause and offer to retry with adjustments (max 2 retries per term).
 
-### 5. Modo batch
+### 5. Batch mode
 
-Si el usuario quiere crear multiples business terms:
-1. Planificar todos los terminos en una lista
-2. Presentar lista completa para aprobacion
-3. Crear secuencialmente
-4. Presentar resumen final:
-   - Terminos creados con exito
-   - Errores si los hubo
-   - Nota: "Los business terms se crean en estado Draft. Seran revisados en la UI de Governance"
+If the user wants to create multiple business terms:
+1. Plan all terms in a list
+2. Present complete list for approval
+3. Create sequentially
+4. Present final summary:
+   - Terms created successfully
+   - Errors if any
+   - Note: "Business terms are created in Draft state. They will be reviewed in the Governance UI"

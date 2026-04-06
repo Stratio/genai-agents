@@ -1,71 +1,71 @@
 ---
 name: update-memory
-description: Actualizar la memoria persistente del agente con preferencias del usuario, patrones de datos y heuristicas descubiertas. Se invoca automaticamente al final de cada analisis o manualmente cuando el usuario quiera registrar preferencias.
-argument-hint: [preferencia o patron a recordar (opcional)]
+description: Update the agent's persistent memory with user preferences, data patterns, and discovered heuristics. Invoked automatically at the end of each analysis or manually when the user wants to record preferences.
+argument-hint: [preference or pattern to remember (optional)]
 ---
 
-# Skill: Actualizacion de Memoria Persistente
+# Skill: Persistent Memory Update
 
-Gestiona la escritura en `output/MEMORY.md` — el fichero de conocimiento curado del agente (preferencias, patrones de datos, heuristicas).
+Manages writing to `output/MEMORY.md` — the agent's curated knowledge file (preferences, data patterns, heuristics).
 
-## 1. Leer Estado Actual
+## 1. Read Current State
 
-Leer `output/MEMORY.md`. Si no existe, crearlo con este template:
+Read `output/MEMORY.md`. If it does not exist, create it with this template:
 
 ```markdown
-# Memoria del Agente BI/BA
+# BI/BA Agent Memory
 
-## Preferencias del Usuario
+## User Preferences
 
-(Sin preferencias registradas)
+(No preferences recorded)
 
-## Patrones de Datos Conocidos
+## Known Data Patterns
 
-(Sin patrones registrados)
+(No patterns recorded)
 
-## Heuristicas Aprendidas
+## Learned Heuristics
 
-(Sin heuristicas registradas)
+(No heuristics recorded)
 ```
 
-## 2. Determinar Origen y Detectar Actualizaciones
+## 2. Determine Source and Detect Updates
 
-### 2.1 Si viene de /analyze (post-analisis)
+### 2.1 If coming from /analyze (post-analysis)
 
-Analizar la sesion completa para detectar:
+Analyze the complete session to detect:
 
-**Preferencias del usuario** — Comparar las elecciones de este analisis con la sec "Preferencias del Usuario":
-- Campos a rastrear: profundidad, formato(s), estilo, audiencia, dominio principal
-- Si un campo no tenia valor previo → registrar el de esta sesion
-- Si un campo ya tenia valor y coincide → no cambiar
-- Si un campo ya tenia valor y difiere → actualizar solo si el usuario ha elegido el nuevo valor en 2+ analisis consecutivos (comparar con ANALYSIS_MEMORY.md para verificar)
+**User preferences** — Compare this analysis's choices with the "User Preferences" sec:
+- Fields to track: depth, format(s), style, audience, main domain
+- If a field had no previous value → record the one from this session
+- If a field already had a value and it matches → do not change
+- If a field already had a value and it differs → update only if the user has chosen the new value in 2+ consecutive analyses (compare with ANALYSIS_MEMORY.md to verify)
 
-**Patrones de datos** — Comparar hallazgos de calidad (EDA, validacion post-query, profiling) con sec "Patrones de Datos Conocidos":
-- Agrupar por dominio (subseccion `### nombre_dominio`)
-- Si el patron ya existe para ese dominio → incrementar contador `[observado N+1, YYYY-MM]`
-- Si es nuevo → registrar con `[observado 1, YYYY-MM]`
-- Tipos de patrones a capturar: nulos en columnas (>30%), filtros necesarios, rangos temporales incompletos, outliers sistematicos, registros a excluir
+**Data patterns** — Compare quality findings (EDA, post-query validation, profiling) with the "Known Data Patterns" sec:
+- Group by domain (subsection `### domain_name`)
+- If the pattern already exists for that domain → increment counter `[observed N+1, YYYY-MM]`
+- If it is new → record with `[observed 1, YYYY-MM]`
+- Types of patterns to capture: nulls in columns (>30%), necessary filters, incomplete time ranges, systematic outliers, records to exclude
 
-**Heuristicas aprendidas** — Hallazgos analiticos que trascienden un analisis individual:
-- Solo registrar si confianza ALTA y aplica a multiples analisis o periodos
-- Formato: `- [Hallazgo] [YYYY-MM, confianza]`
-- Ejemplo: "Q4 muestra pico estacional >30% vs Q1-Q3 en ventas retail [2026-02, alta]"
+**Learned heuristics** — Analytical findings that transcend an individual analysis:
+- Only record if confidence is HIGH and applies to multiple analyses or periods
+- Format: `- [Finding] [YYYY-MM, confidence]`
+- Example: "Q4 shows seasonal peak >30% vs Q1-Q3 in retail sales [2026-02, high]"
 
-### 2.2 Si viene del usuario directamente ($ARGUMENTS)
+### 2.2 If coming directly from the user ($ARGUMENTS)
 
-Parsear la peticion del usuario y escribir en la seccion correspondiente:
-- Si menciona preferencia (formato, estilo, dominio, etc.) → sec Preferencias
-- Si menciona patron de datos → sec Patrones (pedir dominio si no es obvio)
-- Si es un hallazgo general → sec Heuristicas
+Parse the user's request and write in the corresponding section:
+- If they mention a preference (format, style, domain, etc.) → Preferences sec
+- If they mention a data pattern → Patterns sec (ask for domain if not obvious)
+- If it is a general finding → Heuristics sec
 
-## 3. Escribir Actualizaciones
+## 3. Write Updates
 
-- Editar `output/MEMORY.md` en la seccion correspondiente
-- No duplicar entradas — actualizar contadores o valores existentes
-- Mantener las secciones ordenadas: Preferencias primero, Patrones por dominio, Heuristicas cronologicas
-- Si una seccion tenia el placeholder "(Sin ... registradas)", eliminarlo al anadir la primera entrada
+- Edit `output/MEMORY.md` in the corresponding section
+- Do not duplicate entries — update counters or existing values
+- Keep sections ordered: Preferences first, Patterns by domain, Heuristics chronological
+- If a section had the placeholder "(No ... recorded)", remove it when adding the first entry
 
-## 4. Confirmar
+## 4. Confirm
 
-Informar brevemente en chat (1-2 lineas) que se actualizo y que cambios se hicieron. Ejemplo:
-> Memoria actualizada: preferencia de formato PDF+Web registrada, patron de nulos en `descuento` incrementado a [observado 3].
+Briefly report in chat (1-2 lines) what was updated and what changes were made. Example:
+> Memory updated: PDF+Web format preference recorded, null pattern in `descuento` incremented to [observed 3].

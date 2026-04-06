@@ -1,63 +1,63 @@
 # Data Analytics Agent
 
-Agente de Business Intelligence y Business Analytics que convierte preguntas de negocio en analisis accionables con datos reales.
+A senior BI/BA analyst agent that turns business questions into actionable analyses with real data from governed domains.
 
-## Que es este agente
+## What is this agent
 
-Data Analytics es un asistente de BI/BA completo que conecta con los datos gobernados de tu organizacion para realizar analisis avanzados. Puede descubrir dominios de datos, ejecutar consultas, realizar analisis estadisticos, generar visualizaciones profesionales y entregar los resultados en multiples formatos: informes PDF, documentos Word, presentaciones PowerPoint o dashboards web interactivos.
+Data Analytics is a complete BI/BA assistant that connects to your organization's governed data to perform advanced analyses. It can discover data domains, execute queries, perform statistical analyses, generate professional visualizations, and deliver results in multiple formats: PDF reports, Word documents, PowerPoint presentations, or interactive web dashboards.
 
-El agente mantiene memoria entre sesiones, recordando tus preferencias de analisis, patrones de datos conocidos y heuristicas aprendidas.
+The agent maintains memory between sessions, remembering your analysis preferences, known data patterns, and learned heuristics.
 
-## Capacidades
+## Capabilities
 
-- Explorar dominios de datos gobernados y descubrir tablas, columnas y reglas de negocio
-- Responder preguntas de negocio con datos reales (KPIs, metricas, tendencias)
-- Realizar analisis estadisticos avanzados (correlaciones, distribuciones, tests de hipotesis)
-- Segmentacion y clustering automatico de datos (RFM, KMeans, DBSCAN)
-- Generar visualizaciones profesionales (graficas, charts, dashboards)
-- Crear informes en multiples formatos: PDF, DOCX, PowerPoint, web interactiva
-- Recordar preferencias y analisis previos entre sesiones (memoria persistente)
-- Proponer terminos de negocio al diccionario de gobernanza
+- Explore governed data domains and discover tables, columns, and business rules
+- Answer business questions with real data (KPIs, metrics, trends)
+- Perform advanced statistical analyses (correlations, distributions, hypothesis tests)
+- Automatic data segmentation and clustering (RFM, KMeans, DBSCAN)
+- Generate professional visualizations (charts, graphs, dashboards)
+- Create reports in multiple formats: PDF, DOCX, PowerPoint, interactive web
+- Remember preferences and previous analyses between sessions (persistent memory)
+- Propose business terms to the governance dictionary
 
-## Que puedes preguntarle
+## What you can ask
 
-### Consultas rapidas
-- "Cuantos clientes tenemos?"
-- "Cual fue el total de ventas del ultimo trimestre?"
-- "Que tablas hay en el dominio de facturacion?"
+### Quick queries
+- "How many customers do we have?"
+- "What was the total sales for last quarter?"
+- "What tables are in the billing domain?"
 
-### Analisis avanzado
-- "Analiza la evolucion de ventas por region en los ultimos 12 meses"
-- "Que factores influyen mas en la rotacion de clientes?"
-- "Compara el rendimiento de las tiendas del norte vs sur"
-- "Segmenta los clientes por comportamiento de compra"
-- "Hay anomalias en los datos de facturacion del ultimo mes?"
+### Advanced analysis
+- "Analyze sales evolution by region over the last 12 months"
+- "What factors most influence customer churn?"
+- "Compare north vs south store performance"
+- "Segment customers by purchasing behavior"
+- "Are there anomalies in last month's billing data?"
 
-### Informes
-- "Genera un informe PDF con el analisis de rentabilidad"
-- "Crea un dashboard web interactivo con los KPIs de ventas"
-- "Prepara una presentacion PowerPoint con los resultados del trimestre"
-- "Genera un informe Word con el analisis de cohortes"
+### Reports
+- "Generate a PDF report with the profitability analysis"
+- "Create an interactive web dashboard with sales KPIs"
+- "Prepare a PowerPoint presentation with the quarterly results"
+- "Generate a Word report with the cohort analysis"
 
-### Exploracion
-- "Que dominios de datos hay disponibles?"
-- "Describe las tablas del dominio de clientes"
-- "Que significa el campo 'churn_score' en la tabla de clientes?"
+### Exploration
+- "What data domains are available?"
+- "Describe the tables in the customer domain"
+- "What does the 'churn_score' field mean in the customer table?"
 
-## Skills disponibles
+## Available skills
 
-| Comando | Descripcion |
+| Command | Description |
 |---------|-------------|
-| `/analyze` | Analisis completo: descubrimiento de dominio, planificacion, queries, analisis estadistico, visualizaciones e informes |
-| `/report` | Generacion de informes profesionales en PDF, DOCX, web interactiva o PowerPoint |
-| `/explore-data` | Exploracion rapida de dominios, tablas, columnas y terminologia de negocio |
-| `/update-memory` | Actualizar la memoria persistente con preferencias y patrones aprendidos |
-| `/propose-knowledge` | Proponer terminos de negocio descubiertos al diccionario de gobernanza |
+| `/analyze` | Full analysis: domain discovery, planning, queries, statistical analysis, visualizations, and reports |
+| `/report` | Professional report generation in PDF, DOCX, interactive web, or PowerPoint |
+| `/explore-data` | Quick exploration of domains, tables, columns, and business terminology |
+| `/update-memory` | Update persistent memory with preferences and learned patterns |
+| `/propose-knowledge` | Propose discovered business terms to the governance dictionary |
 
-## Conexiones necesarias
+## Required connections
 
-- **MCP de datos**: consultas SQL, exploracion de dominios, profiling de tablas y columnas
+- **Data MCP**: SQL queries, domain exploration, table and column profiling
 
-## Primeros pasos
+## Getting started
 
-Inicia el agente y pregunta: "Que dominios de datos hay disponibles?"
+Start the agent and ask: "What data domains are available?"

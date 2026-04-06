@@ -1,84 +1,84 @@
 ---
 name: create-business-views
-description: Crear, regenerar, borrar o publicar vistas de negocio y SQL mappings en
-  Stratio Governance a partir de una ontologia.
-argument-hint: [dominio tecnico (opcional)]
+description: Create, regenerate, delete or publish business views and SQL mappings in
+  Stratio Governance from an ontology.
+argument-hint: [technical domain (optional)]
 ---
 
-# Skill: Crear Vistas de Negocio
+# Skill: Create Business Views
 
-Crea, regenera o borra vistas de negocio y SQL mappings en Stratio Governance a partir de una ontologia existente. Ofrece publicar las vistas tras crearlas o regenerarlas. Fase 3 del pipeline de capa semantica.
+Creates, regenerates or deletes business views and SQL mappings in Stratio Governance from an existing ontology. Offers to publish views after creating or regenerating them. Phase 3 of the semantic layer pipeline.
 
-## Tools MCP utilizadas
+## MCP Tools Used
 
-| Tool | Servidor | Proposito |
-|------|----------|-----------|
-| `search_domains(search_text, domain_type='technical')` | sql | **Preferir**. Buscar dominios tecnicos por texto libre. Resultados por relevancia |
-| `list_domains(domain_type='technical', refresh?)` | sql | Listar todos los dominios tecnicos. `refresh=true` para bypass de cache |
-| `search_ontologies(search_text)` | gov | Buscar ontologias por texto libre. Resultados por relevancia |
-| `list_ontologies()` | gov | Listar todas las ontologias existentes |
-| `get_ontology_info(name)` | gov | Clases de la ontologia |
-| `list_technical_domain_concepts(domain)` | gov | Vistas existentes con estado de gobernanza, mappings y terminos semanticos |
-| `create_business_views(domain, ontology, class_names?, regenerate?)` | gov | Crear vistas + mappings. Salta existentes. Con `regenerate=true`: DESTRUCTIVO, borra y recrea |
-| `delete_business_views(domain, view_names)` | gov | DESTRUCTIVO: borrar vistas especificas sin recrear (protegido por Published) |
-| `publish_business_views(domain, view_names?)` | gov | Publicar vistas (Draft → Pending Publish). Sin `view_names`, publica todas |
+| Tool | Server | Purpose |
+|------|--------|---------|
+| `search_domains(search_text, domain_type='technical')` | sql | **Prefer**. Search technical domains by free text. Results by relevance |
+| `list_domains(domain_type='technical', refresh?)` | sql | List all technical domains. `refresh=true` for cache bypass |
+| `search_ontologies(search_text)` | gov | Search ontologies by free text. Results by relevance |
+| `list_ontologies()` | gov | List all existing ontologies |
+| `get_ontology_info(name)` | gov | Ontology classes |
+| `list_technical_domain_concepts(domain)` | gov | Existing views with governance state, mappings and semantic terms |
+| `create_business_views(domain, ontology, class_names?, regenerate?)` | gov | Create views + mappings. Skips existing. With `regenerate=true`: DESTRUCTIVE, deletes and recreates |
+| `delete_business_views(domain, view_names)` | gov | DESTRUCTIVE: delete specific views without recreating (protected by Published) |
+| `publish_business_views(domain, view_names?)` | gov | Publish views (Draft → Pending Publish). Without `view_names`, publishes all |
 
-**Reglas clave**: `domain_name` inmutable. Confirmacion obligatoria para `regenerate=true` y `delete`. `user_instructions` pendiente de implementar por el equipo de desarrollo — el agente ya lo contempla para cuando este disponible.
+**Key rules**: `domain_name` immutable. Mandatory confirmation for `regenerate=true` and `delete`. `user_instructions` pending implementation by the development team — the agent already accounts for it for when it becomes available.
 
 ## Workflow
 
-### 1. Determinar dominio y ontologia
+### 1. Determine domain and ontology
 
-**Dominio**: Si `$ARGUMENTS` contiene nombre, buscar con `search_domains($ARGUMENTS, domain_type='technical')`. Si no coincide, reintentar con `search_domains($ARGUMENTS, domain_type='technical', refresh=true)` por si es una coleccion recien creada. Si ahora coincide, continuar. Si no coincide o no hay argumento, listar con `list_domains(domain_type='technical')` y preguntar al usuario siguiendo la convencion de preguntas al usuario.
+**Domain**: If `$ARGUMENTS` contains a name, search with `search_domains($ARGUMENTS, domain_type='technical')`. If it does not match, retry with `search_domains($ARGUMENTS, domain_type='technical', refresh=true)` in case it is a recently created collection. If it now matches, continue. If it does not match or there is no argument, list with `list_domains(domain_type='technical')` and ask the user following the user question convention.
 
-**Ontologia**: Si el usuario o el contexto mencionan una ontologia concreta, buscar con `search_ontologies(pista)`. Si no, ejecutar `list_ontologies()` para ver todas. Si hay varias, preguntar al usuario cual usar. Si solo hay una relevante para el dominio, confirmar.
+**Ontology**: If the user or the context mentions a specific ontology, search with `search_ontologies(hint)`. If not, execute `list_ontologies()` to see all. If there are several, ask the user which one to use. If only one is relevant for the domain, confirm.
 
-### 2. Evaluar estado
+### 2. Evaluate state
 
-Ejecutar en paralelo:
-- `get_ontology_info(ontology)` → clases disponibles en la ontologia
-- `list_technical_domain_concepts(domain)` → vistas ya creadas con su estado
+Execute in parallel:
+- `get_ontology_info(ontology)` → classes available in the ontology
+- `list_technical_domain_concepts(domain)` → already created views with their state
 
-Presentar resumen:
+Present summary:
 ```
-## Estado — [domain_name] + [ontologia]
-| Clase | Vista | Estado | Mapping | Terminos semanticos |
-|-------|-------|--------|---------|---------------------|
-| Clase1 | ✓ | Draft | ✓ | ✗ |
-| Clase2 | ✗ | — | — | — |
-| Clase3 | ✓ | Pending Publish | ✗ | ✗ |
+## State — [domain_name] + [ontology]
+| Class | View | State | Mapping | Semantic terms |
+|-------|------|-------|---------|----------------|
+| Class1 | ✓ | Draft | ✓ | ✗ |
+| Class2 | ✗ | — | — | — |
+| Class3 | ✓ | Pending Publish | ✗ | ✗ |
 ```
 
-### 3. Seleccion de operacion
+### 3. Operation selection
 
-Preguntar al usuario con opciones:
-1. **Crear vistas para clases sin vista** — idempotente: `create_business_views` salta las existentes
-2. **Crear para clases especificas** — seleccion multiple de las clases sin vista
-3. **Regenerar todas** — DESTRUCTIVO: borra y recrea vistas + mappings. Requiere confirmacion explicita con advertencia de que los terminos semanticos asociados tambien se pierden
-4. **Regenerar clases especificas** — DESTRUCTIVO para las seleccionadas. Requiere confirmacion
-5. **Borrar vistas especificas** — DESTRUCTIVO: elimina vistas seleccionadas sin recrearlas (diferente de regenerar). Seleccion multiple. Vistas con estado Published se saltan automaticamente. Requiere confirmacion
+Ask the user with options:
+1. **Create views for classes without a view** — idempotent: `create_business_views` skips existing ones
+2. **Create for specific classes** — multiple selection from classes without a view
+3. **Regenerate all** — DESTRUCTIVE: deletes and recreates views + mappings. Requires explicit confirmation with a warning that associated semantic terms are also lost
+4. **Regenerate specific classes** — DESTRUCTIVE for the selected ones. Requires confirmation
+5. **Delete specific views** — DESTRUCTIVE: removes selected views without recreating them (different from regenerate). Multiple selection. Views with Published state are automatically skipped. Requires confirmation
 
-### 4. Ejecucion
+### 4. Execution
 
-Invocar `create_business_views` (con `regenerate=true` para opciones 3-4) o `delete_business_views` (opcion 5). Para `delete`: confirmar con el usuario listando las vistas a borrar. La tool devuelve `deleted` (borradas) y `skipped_published` (saltadas por Published) — presentar ambas listas al usuario.
+Invoke `create_business_views` (with `regenerate=true` for options 3-4) or `delete_business_views` (option 5). For `delete`: confirm with the user listing the views to delete. The tool returns `deleted` (deleted) and `skipped_published` (skipped due to Published) — present both lists to the user.
 
-Si hay errores, reintentar la entidad fallida (max 2 reintentos). Si persiste, documentar y continuar.
+If there are errors, retry the failed entity (max 2 retries). If it persists, document and continue.
 
-### 5. Resumen
+### 5. Summary
 
-Basado en la respuesta de la tool:
-- Vistas creadas/regeneradas/borradas
-- Mappings generados
-- Errores si los hubo
+Based on the tool's response:
+- Views created/regenerated/deleted
+- Mappings generated
+- Errors if any
 
-Ofrecer proactivamente: "Si alguna vista no te convence, puedo eliminarla (las vistas Published no se pueden borrar)." No bloqueante — el usuario decide.
+Proactively offer: "If any view does not look right, I can delete it (Published views cannot be deleted)." Not blocking — the user decides.
 
-### 6. Publicacion (opcional)
+### 6. Publication (optional)
 
-Si se crearon o regeneraron vistas (no aplica a borrado), ofrecer publicacion:
-- "¿Quieres publicar las vistas creadas? Esto cambiara su estado a Pending Publish, listas para ser publicadas al virtualizador de datos."
-- Si el usuario acepta → ejecutar `publish_business_views(domain, view_names)` con las vistas creadas → presentar resultado: vistas publicadas + fallidas (transicion no permitida) + no encontradas
-- Si el usuario rechaza → continuar con la sugerencia de siguiente paso
-- No bloqueante: el usuario decide
+If views were created or regenerated (does not apply to deletion), offer publication:
+- "Do you want to publish the created views? This will change their state to Pending Publish, ready to be published to the data virtualizer."
+- If the user accepts → execute `publish_business_views(domain, view_names)` with the created views → present result: published views + failed (transition not allowed) + not found
+- If the user declines → continue with the suggested next step
+- Not blocking: the user decides
 
-Siguiente paso sugerido: "Puedes verificar o actualizar los mappings SQL con `/create-sql-mappings`, o generar terminos semanticos con `/create-semantic-terms`. Si no has publicado ahora, puedes hacerlo mas tarde"
+Suggested next step: "You can verify or update the SQL mappings with `/create-sql-mappings`, or generate semantic terms with `/create-semantic-terms`. If you did not publish now, you can do so later"

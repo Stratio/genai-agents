@@ -1,75 +1,77 @@
 # data-quality
 
-Agente experto en Gobernanza y Calidad del Dato. Evalua la cobertura de calidad de datos gobernados, identifica gaps, propone y crea reglas de calidad con aprobacion humana, y genera informes de cobertura.
+Expert agent in Data Governance and Data Quality. Assesses quality coverage of governed data, identifies gaps, proposes and creates quality rules with human approval, and generates coverage reports.
 
-## Capacidades
+## Capabilities
 
-- Evaluacion de cobertura de calidad por dominio, coleccion o tabla
-- Identificacion de gaps: dimensiones de calidad no cubiertas o tablas sin cobertura
-- Propuesta razonada de reglas de calidad basada en contexto semantico y datos reales
-- Creacion de reglas de calidad con aprobacion humana obligatoria
-- Planificacion de ejecucion automatica de reglas de calidad
-- Generacion de informes de cobertura (chat, PDF, DOCX, Markdown)
+- Quality coverage assessment by domain, collection, or table
+- Gap identification: uncovered quality dimensions or tables without coverage
+- Reasoned quality rule proposals based on semantic context and real data
+- Quality rule creation with mandatory human approval
+- Automatic execution scheduling for quality rules
+- Coverage report generation (chat, PDF, DOCX, Markdown)
 
-## Requisitos
+## Requirements
 
-- Python 3.10+ (dependencias en `requirements.txt`; instalar con `bash setup_env.sh`)
-- Acceso a dos servidores MCP de Stratio:
-  - `gov` (gobernanza): dimensiones de calidad, creacion de reglas
-  - `sql` (exploracion): discovery, generacion SQL, profiling, ejecucion
+- Python 3.10+ (dependencies in `requirements.txt`; install with `bash setup_env.sh`)
+- Access to two Stratio MCP servers:
+  - `gov` (governance): quality dimensions, rule creation
+  - `sql` (exploration): discovery, SQL generation, profiling, execution
 
-La configuracion de MCPs esta en `.mcp.json` (Claude Code / claude.ai) y en `opencode.json` (OpenCode), ambos preconfigurados para leer URL y credenciales desde variables de entorno.
+MCP configuration is in `.mcp.json` (Claude Code / claude.ai) and in `opencode.json` (OpenCode), both preconfigured to read URL and credentials from environment variables.
 
-## Variables de entorno
+## Environment variables
 
-| Variable | Descripcion |
+| Variable | Description |
 |----------|-------------|
-| `MCP_SQL_URL` | URL del servidor MCP SQL de Stratio |
-| `MCP_SQL_API_KEY` | API key del servidor MCP SQL |
-| `MCP_GOV_URL` | URL del servidor MCP Governance de Stratio |
-| `MCP_GOV_API_KEY` | API key del servidor MCP Governance |
+| `MCP_SQL_URL` | Stratio SQL MCP server URL |
+| `MCP_SQL_API_KEY` | SQL MCP server API key |
+| `MCP_GOV_URL` | Stratio Governance MCP server URL |
+| `MCP_GOV_API_KEY` | Governance MCP server API key |
 
 ## Skills
 
-| Skill | Comando | Descripcion |
+| Skill | Command | Description |
 |-------|---------|-------------|
-| Evaluacion de calidad | `/assess-quality` | Evaluar cobertura de calidad por dominio o tabla: dimensiones cubiertas, gaps y prioridades |
-| Creacion de reglas | `/create-quality-rules` | Disenar y crear reglas de calidad para cubrir gaps, con aprobacion humana obligatoria |
-| Planificacion de calidad | `/create-quality-planification` | Crear planificaciones de ejecucion automatica de reglas de calidad por dominio/coleccion |
-| Informe de calidad | `/quality-report` | Generar informe formal de cobertura en chat, PDF, DOCX o Markdown |
+| Quality assessment | `/assess-quality` | Assess quality coverage by domain or table: covered dimensions, gaps, and priorities |
+| Rule creation | `/create-quality-rules` | Design and create quality rules to cover gaps, with mandatory human approval |
+| Quality scheduling | `/create-quality-planification` | Create automatic execution schedules for quality rules by domain/collection |
+| Quality report | `/quality-report` | Generate a formal coverage report in chat, PDF, DOCX, or Markdown |
 
-## Scripts de empaquetado
+## Packaging scripts
 
-### Scripts especificos (desde esta carpeta)
+All scripts accept `--lang <code>` to generate output in a specific language (e.g., `--lang es` for Spanish). When `--lang` is used, output goes to `dist/<lang>/...` instead of `dist/...`.
 
-| Script | Plataforma destino | Output | Ejemplo |
-|--------|-------------------|--------|---------|
-| `pack_claude_ai_project.sh` | claude.ai (Projects) | `dist/claude_ai_projects/<nombre>/` | `bash pack_claude_ai_project.sh --name data-quality` |
-| `pack_claude_cowork.sh` | Claude Cowork | `dist/claude_cowork/<nombre>/` | `bash pack_claude_cowork.sh --name data-quality` |
+### Specific scripts (from this folder)
 
-El script de cowork acepta tambien `--gov-url <URL>`, `--gov-key <KEY>`, `--sql-url <URL>` y `--sql-key <KEY>` para configurar los dos servidores MCP. Si se omiten, quedan como variables de entorno template para configurar despues.
+| Script | Target platform | Output | Example |
+|--------|----------------|--------|---------|
+| `pack_claude_ai_project.sh` | claude.ai (Projects) | `dist/claude_ai_projects/<name>/` | `bash pack_claude_ai_project.sh --name data-quality` |
+| `pack_claude_cowork.sh` | Claude Cowork | `dist/claude_cowork/<name>/` | `bash pack_claude_cowork.sh --name data-quality` |
 
-### Scripts genericos (desde la raiz del monorepo)
+The cowork script also accepts `--gov-url <URL>`, `--gov-key <KEY>`, `--sql-url <URL>`, and `--sql-key <KEY>` to configure the two MCP servers. If omitted, they remain as environment variable templates to configure later.
 
-| Script | Plataforma destino | Output | Ejemplo |
-|--------|-------------------|--------|---------|
-| `pack_claude_code.sh` | Claude Code CLI | `dist/claude_code/<nombre>/` | `bash ../pack_claude_code.sh --agent data-quality` |
-| `pack_opencode.sh` | OpenCode | `dist/opencode/<nombre>/` | `bash ../pack_opencode.sh --agent data-quality` |
+### Generic scripts (from the monorepo root)
+
+| Script | Target platform | Output | Example |
+|--------|----------------|--------|---------|
+| `pack_claude_code.sh` | Claude Code CLI | `dist/claude_code/<name>/` | `bash ../pack_claude_code.sh --agent data-quality` |
+| `pack_opencode.sh` | OpenCode | `dist/opencode/<name>/` | `bash ../pack_opencode.sh --agent data-quality` |
 
 ## Quick start
 
 ```bash
-# 1. Configurar variables de entorno
-export MCP_SQL_URL="https://mi-servidor-sql.ejemplo.com/mcp"
-export MCP_SQL_API_KEY="mi-api-key-sql"
-export MCP_GOV_URL="https://mi-servidor-governance.ejemplo.com/mcp"
-export MCP_GOV_API_KEY="mi-api-key-governance"
+# 1. Configure environment variables
+export MCP_SQL_URL="https://my-sql-server.example.com/mcp"
+export MCP_SQL_API_KEY="my-sql-api-key"
+export MCP_GOV_URL="https://my-governance-server.example.com/mcp"
+export MCP_GOV_API_KEY="my-governance-api-key"
 
-# 2. Instalar dependencias (para generacion de informes PDF/DOCX)
+# 2. Install dependencies (for PDF/DOCX report generation)
 bash setup_env.sh
 
-# 3. Empaquetar para la plataforma deseada
+# 3. Package for the desired platform
 bash ../pack_opencode.sh --agent data-quality
-# o
+# or
 bash ../pack_claude_code.sh --agent data-quality
 ```

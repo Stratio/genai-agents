@@ -8,14 +8,14 @@ Usage:
     from chart_layout import apply_chart_layout, get_chart_colors
     fig, ax = plt.subplots()
     ax.plot(x, y, label="Series A")
-    apply_chart_layout(fig, ax, insight="Norte concentra el 45%",
-                       context="Ventas por region, Q4 2025")
+    apply_chart_layout(fig, ax, insight="North accounts for 45%",
+                       context="Sales by region, Q4 2025")
 
     # Plotly
     from chart_layout import apply_plotly_layout
-    fig = px.bar(df, x="region", y="ventas")
-    apply_plotly_layout(fig, insight="Norte concentra el 45%",
-                        context="Ventas por region, Q4 2025")
+    fig = px.bar(df, x="region", y="sales")
+    apply_plotly_layout(fig, insight="North accounts for 45%",
+                        context="Sales by region, Q4 2025")
 
     # Colors
     colors = get_chart_colors("corporate", n=5)

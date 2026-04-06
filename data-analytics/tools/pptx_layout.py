@@ -58,7 +58,7 @@ FOOTER_DEFAULT_HEIGHT = 0.35
 FOOTER_PADDING = 0.10
 
 # Panel layout
-PANEL_GAP = 0.3  # gap estándar entre imagen y panel lateral
+PANEL_GAP = 0.3  # standard gap between image and side panel
 
 
 # ---------------------------------------------------------------------------

@@ -1,97 +1,97 @@
 ---
 name: create-ontology
-description: Crear, ampliar o borrar clases de una ontologia en Stratio Governance.
-  Incluye planificacion interactiva con el usuario (dominio, ficheros de referencia,
-  clases, nomenclaturas) antes de crear.
-argument-hint: [dominio tecnico (opcional)]
+description: Create, extend or delete classes of an ontology in Stratio Governance.
+  Includes interactive planning with the user (domain, reference files,
+  classes, naming conventions) before creation.
+argument-hint: [technical domain (optional)]
 ---
 
-# Skill: Crear, Ampliar o Borrar Clases de Ontologia
+# Skill: Create, Extend or Delete Ontology Classes
 
-Crea, amplia o borra clases de una ontologia en Stratio Governance mediante planificacion interactiva con el usuario. Fase 2 del pipeline de capa semantica.
+Creates, extends or deletes classes of an ontology in Stratio Governance through interactive planning with the user. Phase 2 of the semantic layer pipeline.
 
-## Tools MCP utilizadas
+## MCP Tools Used
 
-| Tool | Servidor | Proposito |
-|------|----------|-----------|
-| `search_domains(search_text, domain_type='technical')` | sql | **Preferir**. Buscar dominios tecnicos por texto libre. Resultados por relevancia |
-| `list_domains(domain_type='technical', refresh?)` | sql | Listar todos los dominios tecnicos. `refresh=true` para bypass de cache |
-| `list_domain_tables(domain)` | sql | Conocer tablas del dominio |
-| `get_tables_details(domain, tables)` | sql | Detalle de tablas: reglas de negocio, contexto |
-| `get_table_columns_details(domain, table)` | sql | Columnas de una tabla (para planificar data properties) |
-| `search_domain_knowledge(question, domain)` | sql | Buscar conocimiento existente |
-| `search_ontologies(search_text)` | gov | Buscar ontologias por texto libre. Resultados por relevancia |
-| `list_ontologies()` | gov | Listar todas las ontologias existentes |
-| `get_ontology_info(name)` | gov | Estructura de clases, data properties y relaciones |
-| `create_ontology(domain, name, ontology_plan)` | gov | Crear ontologia nueva con plan en Markdown |
-| `update_ontology(domain, name, update_plan)` | gov | Anadir clases nuevas a ontologia existente |
-| `delete_ontology_classes(ontology_name, class_names)` | gov | DESTRUCTIVO: borrar clases especificas (protegido por Published) |
+| Tool | Server | Purpose |
+|------|--------|---------|
+| `search_domains(search_text, domain_type='technical')` | sql | **Prefer**. Search technical domains by free text. Results by relevance |
+| `list_domains(domain_type='technical', refresh?)` | sql | List all technical domains. `refresh=true` for cache bypass |
+| `list_domain_tables(domain)` | sql | Get domain tables |
+| `get_tables_details(domain, tables)` | sql | Table details: business rules, context |
+| `get_table_columns_details(domain, table)` | sql | Table columns (for planning data properties) |
+| `search_domain_knowledge(question, domain)` | sql | Search existing knowledge |
+| `search_ontologies(search_text)` | gov | Search ontologies by free text. Results by relevance |
+| `list_ontologies()` | gov | List all existing ontologies |
+| `get_ontology_info(name)` | gov | Class structure, data properties and relationships |
+| `create_ontology(domain, name, ontology_plan)` | gov | Create new ontology with Markdown plan |
+| `update_ontology(domain, name, update_plan)` | gov | Add new classes to existing ontology |
+| `delete_ontology_classes(ontology_name, class_names)` | gov | DESTRUCTIVE: delete specific classes (protected by Published) |
 
-**Reglas clave**: `domain_name` inmutable. Ontologias son ADD+DELETE: `update` anade clases, `delete_ontology_classes` borra clases (protegido: clases con vistas Published dependientes se saltan). No se pueden modificar clases existentes. Nomenclatura: sin espacios (→ guiones bajos), sin caracteres especiales. Ofrecer `user_instructions` antes de invocar.
+**Key rules**: `domain_name` immutable. Ontologies are ADD+DELETE: `update` adds classes, `delete_ontology_classes` deletes classes (protected: classes with dependent Published views are skipped). Existing classes cannot be modified. Naming: no spaces (→ underscores), no special characters. Offer `user_instructions` before invoking.
 
 ## Workflow
 
-### 1. Determinar dominio
+### 1. Determine domain
 
-Si `$ARGUMENTS` contiene un nombre de dominio, buscar con `search_domains($ARGUMENTS, domain_type='technical')`. Si no coincide, reintentar con `search_domains($ARGUMENTS, domain_type='technical', refresh=true)` por si es una coleccion recien creada. Si ahora coincide, continuar. Si sigue sin coincidir o no hay argumento, listar dominios con `list_domains(domain_type='technical')` y preguntar al usuario siguiendo la convencion de preguntas al usuario.
+If `$ARGUMENTS` contains a domain name, search with `search_domains($ARGUMENTS, domain_type='technical')`. If it does not match, retry with `search_domains($ARGUMENTS, domain_type='technical', refresh=true)` in case it is a recently created collection. If it now matches, continue. If it still does not match or there is no argument, list domains with `list_domains(domain_type='technical')` and ask the user following the user question convention.
 
-### 2. Evaluar ontologias existentes
+### 2. Evaluate existing ontologies
 
-Ejecutar en paralelo:
-- `search_ontologies(dominio_o_contexto)` o `list_ontologies()` → ontologias existentes. Preferir `search_ontologies` si el usuario menciona una ontologia concreta; usar `list_ontologies()` si se necesita el listado completo
-- `list_domain_tables(domain)` → tablas disponibles para la ontologia
+Execute in parallel:
+- `search_ontologies(domain_or_context)` or `list_ontologies()` → existing ontologies. Prefer `search_ontologies` if the user mentions a specific ontology; use `list_ontologies()` if the full list is needed
+- `list_domain_tables(domain)` → tables available for the ontology
 
-Si hay ontologias, mostrar al usuario:
-- "No hay ontologia → crearemos una nueva"
-- "Ya existe [nombre] con N clases → podemos ampliar, borrar clases o crear una nueva"
+If there are ontologies, show the user:
+- "No ontology found → we will create a new one"
+- "Already exists [name] with N classes → we can extend, delete classes or create a new one"
 
-Si aplica, ejecutar `get_ontology_info(name)` para mostrar estructura existente.
+If applicable, execute `get_ontology_info(name)` to show existing structure.
 
-### 3. Planificacion interactiva
+### 3. Interactive planning
 
-Este es el nucleo de la skill. Preguntar al usuario agrupando para minimizar interacciones:
+This is the core of the skill. Ask the user, grouping to minimize interactions:
 
-**Bloque de preguntas** (una sola interaccion):
-- ¿Tiene ficheros adicionales con informacion relevante? (ontologias .owl/.ttl, documentos de negocio, CSVs). Si proporciona rutas → **leer los ficheros** para extraer contexto
-- ¿Tiene ontologias existentes como referencia? (si si → `get_ontology_info` o leer fichero local)
-- ¿Que clases o entidades considera indispensables?
-- ¿Aspectos importantes sobre formato y nomenclaturas?
-- ¿Instrucciones adicionales para la IA que generara la ontologia?
+**Question block** (a single interaction):
+- Do you have additional files with relevant information? (ontologies .owl/.ttl, business documents, CSVs). If they provide paths → **read the files** to extract context
+- Do you have existing ontologies as reference? (if yes → `get_ontology_info` or read local file)
+- What classes or entities do you consider essential?
+- Any important aspects about format and naming conventions?
+- Any additional instructions for the AI that will generate the ontology?
 
-**Exploracion del dominio** (en paralelo con la interaccion si es posible):
-- `list_domain_tables(domain)` + `get_tables_details(domain, tables)` → entender tablas y su contexto
-- `get_table_columns_details(domain, table)` para tablas clave → datos disponibles para data properties
-- `search_domain_knowledge(question, domain)` → terminologia existente
+**Domain exploration** (in parallel with the interaction if possible):
+- `list_domain_tables(domain)` + `get_tables_details(domain, tables)` → understand tables and their context
+- `get_table_columns_details(domain, table)` for key tables → available data for data properties
+- `search_domain_knowledge(question, domain)` → existing terminology
 
-**Proponer plan**:
-1. Proponer nombre de ontologia (sin espacios → guiones bajos, sin caracteres especiales)
-2. Proponer **plan en Markdown** con:
-   - Clases propuestas con descripcion
-   - Data properties por clase
-   - Relaciones entre clases
-   - Tablas fuente de cada clase
-3. Presentar plan al usuario para revision
-4. Iterar hasta aprobacion (max 3 iteraciones de refinamiento)
+**Propose plan**:
+1. Propose ontology name (no spaces → underscores, no special characters)
+2. Propose **Markdown plan** with:
+   - Proposed classes with description
+   - Data properties per class
+   - Relationships between classes
+   - Source tables for each class
+3. Present plan to the user for review
+4. Iterate until approval (max 3 refinement iterations)
 
-### 4. Ejecucion
+### 4. Execution
 
-Segun decision del paso 2:
-- **Nueva ontologia**: `create_ontology(domain, name, ontology_plan)` con el plan aprobado en Markdown
-- **Ampliar existente**: `update_ontology(domain, name, update_plan)` — solo clases nuevas
-- **Borrar clases**: Operacion DESTRUCTIVA — confirmar con el usuario listando las clases a borrar y advirtiendo que las vistas de negocio dependientes se refrescaran. Ejecutar `delete_ontology_classes(ontology_name, class_names)`. Informar del resultado: clases borradas (`deleted`) y clases saltadas por tener vistas Published (`skipped_locked`)
+According to the decision from step 2:
+- **New ontology**: `create_ontology(domain, name, ontology_plan)` with the approved Markdown plan
+- **Extend existing**: `update_ontology(domain, name, update_plan)` — new classes only
+- **Delete classes**: DESTRUCTIVE operation — confirm with the user listing the classes to delete and warning that dependent business views will be refreshed. Execute `delete_ontology_classes(ontology_name, class_names)`. Report the result: deleted classes (`deleted`) and skipped classes due to Published views (`skipped_locked`)
 
-### 5. Verificacion
+### 5. Verification
 
-Ejecutar `get_ontology_info(name)` para confirmar la estructura creada. Presentar al usuario:
-- Clases generadas con sus data properties
-- Relaciones establecidas
-- Diferencias respecto al plan (si las hay)
+Execute `get_ontology_info(name)` to confirm the created structure. Present to the user:
+- Generated classes with their data properties
+- Established relationships
+- Differences from the plan (if any)
 
-Ofrecer proactivamente: "Si tras revisarla quieres eliminar alguna clase, puedo hacerlo (las clases con vistas Published no se pueden borrar)." No bloqueante — el usuario decide si continuar o borrar algo.
+Proactively offer: "If after reviewing it you want to remove any class, I can do it (classes with Published views cannot be deleted)." Not blocking — the user decides whether to continue or delete something.
 
-### 6. Resumen
+### 6. Summary
 
-- Ontologia creada/ampliada con nombre y numero de clases
-- Clases generadas vs planificadas
-- Advertencias o problemas encontrados
-- Siguiente paso sugerido: "Puedes crear las vistas de negocio con `/create-business-views`"
+- Ontology created/extended with name and number of classes
+- Generated classes vs planned
+- Warnings or issues found
+- Suggested next step: "You can create the business views with `/create-business-views`"

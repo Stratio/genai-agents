@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
-# clean.sh — Limpia artefactos generados por el build
+# clean.sh — Cleans build-generated artifacts
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-echo "==> Limpiando artefactos..."
+echo "==> Cleaning artifacts..."
 
-# --- dist/ global ---
+# --- Global dist/ ---
 if [[ -d "$REPO_ROOT/dist" ]]; then
   rm -rf "$REPO_ROOT/dist"
   echo "  [OK] dist/"
 fi
 
-# --- Artefactos por agente ---
+# --- Per-agent artifacts ---
 if [[ -f "$REPO_ROOT/release-modules" ]]; then
   while IFS= read -r module; do
     [[ -z "$module" || "$module" =~ ^# ]] && continue
@@ -24,7 +24,7 @@ if [[ -f "$REPO_ROOT/release-modules" ]]; then
       echo "  [OK] $module/dist"
     fi
 
-    # Legacy: limpiar directorios de artefactos pre-migracion a dist/
+    # Legacy: clean pre-migration artifact directories
     for legacy_dir in claude_code opencode claude_projects claude_ai_projects claude_plugins; do
       if [[ -d "$MODULE_DIR/$legacy_dir" ]]; then
         rm -rf "$MODULE_DIR/$legacy_dir"
@@ -41,4 +41,4 @@ if [[ -f "$REPO_ROOT/release-modules" ]]; then
   done < "$REPO_ROOT/release-modules"
 fi
 
-echo "==> Limpieza completada"
+echo "==> Cleaning completed"

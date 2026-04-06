@@ -1,226 +1,226 @@
 ---
 name: create-quality-planification
-description: Crear una planificacion (schedule) para ejecutar automaticamente todas las reglas de calidad de una o varias carpetas/colecciones. Opera a nivel de carpeta (dominio/coleccion), no de regla individual. Requiere confirmacion humana obligatoria antes de ejecutar.
-argument-hint: "[dominio/coleccion] [frecuencia (opcional)]"
+description: Create a schedule to automatically execute all quality rules in one or more folders/collections. Operates at the folder level (domain/collection), not individual rules. Requires mandatory human confirmation before execution.
+argument-hint: "[domain/collection] [frequency (optional)]"
 ---
 
-# Skill: Creacion de Planificacion de Reglas de Calidad
+# Skill: Quality Rule Schedule Creation
 
-Workflow para crear una planificacion que ejecute automaticamente todas las reglas de calidad contenidas en una o varias carpetas (colecciones/dominios) segun un calendario definido por el usuario.
+Workflow for creating a schedule that automatically executes all quality rules contained in one or more folders (collections/domains) according to a calendar defined by the user.
 
-## PAUSA DE APROBACION CRITICA
+## CRITICAL APPROVAL PAUSE
 
-**NUNCA llamar `create_quality_rule_planification` sin que el usuario haya confirmado explicitamente el plan.**
+**NEVER call `create_quality_rule_planification` without the user having explicitly confirmed the plan.**
 
-Si hay dudas sobre si el usuario ha aprobado, preguntar de nuevo. No interpretar silencio ni respuestas ambiguas como aprobacion.
-
----
-
-## 1. Determinacion de Scope
-
-### 1.1 Identificar colecciones/dominios
-
-A partir de la peticion del usuario, determinar que colecciones (dominios) incluir en la planificacion.
-
-- Si el usuario especifica nombres de dominio: validarlos usando `search_domains` o `list_domains` con el `domain_type` correspondiente (semantico o tecnico). Si no especifica el tipo, preguntar al usuario con opciones siguiendo la convencion de preguntas al usuario.
-- **Regla CRITICA**: los nombres de coleccion usados en la llamada a `create_quality_rule_planification` deben ser **exactamente** los valores devueltos por las herramientas de listado. NUNCA traducirlos, interpretarlos ni parafrasearlos.
-- Si el usuario no especifica dominios concretos: listar los disponibles y preguntar cuales incluir.
-- La planificacion soporta **multiples colecciones** en una sola llamada (`collection_names` es una lista).
-
-### 1.2 Filtro opcional por tablas
-
-Si el usuario quiere incluir solo tablas especificas dentro de las colecciones:
-
-1. Validar las tablas con `list_domain_tables(domain_name)` por cada coleccion.
-2. Confirmar que las tablas mencionadas existen en el dominio.
-3. Si alguna tabla no existe, informar y preguntar.
-
-Si el usuario no menciona tablas especificas, la planificacion incluira todas las tablas de cada coleccion (comportamiento por defecto).
+If there are doubts about whether the user has approved, ask again. Do not interpret silence or ambiguous responses as approval.
 
 ---
 
-## 2. Verificacion de Reglas Existentes
+## 1. Scope Determination
 
-Antes de crear la planificacion, verificar que las carpetas seleccionadas contienen reglas de calidad. Planificar la ejecucion de una carpeta sin reglas no tiene sentido.
+### 1.1 Identify collections/domains
 
-**Procedimiento** — por cada coleccion incluida:
+From the user's request, determine which collections (domains) to include in the schedule.
 
-1. Obtener las tablas del dominio con `list_domain_tables(domain_name)`.
-2. Llamar `get_tables_quality_details(domain_name, [tablas])` para obtener el inventario de reglas.
-   - Si se filtro por tablas (seccion 1.2), usar solo esas tablas.
-   - Si no, usar todas las tablas del dominio.
-3. Contar las reglas existentes y su estado (OK / KO / Warning / Sin ejecutar).
+- If the user specifies domain names: validate them using `search_domains` or `list_domains` with the corresponding `domain_type` (semantic or technical). If they do not specify the type, ask the user with options following the user question convention.
+- **CRITICAL rule**: the collection names used in the call to `create_quality_rule_planification` must be **exactly** the values returned by the listing tools. NEVER translate, interpret, or paraphrase them.
+- If the user does not specify specific domains: list the available ones and ask which to include.
+- The schedule supports **multiple collections** in a single call (`collection_names` is a list).
 
-**Evaluacion de resultados:**
+### 1.2 Optional table filter
 
-- **Coleccion sin reglas**: avisar al usuario explicitamente. Sugerir evaluar la cobertura y crear reglas antes de planificar. Preguntar al usuario con opciones, siguiendo la convencion de preguntas al usuario, si quiere continuar de todas formas o crear reglas primero.
-- **Coleccion con reglas en estado KO**: mencionarlo como informacion relevante — la planificacion ejecutara tambien las reglas KO, lo que puede generar alertas recurrentes.
-- **Coleccion con reglas**: resumir cuantas reglas hay, en cuantas tablas, y su estado general.
+If the user wants to include only specific tables within the collections:
 
-Si todas las colecciones seleccionadas estan vacias, no continuar con la planificacion. Redirigir al usuario a crear reglas primero.
+1. Validate the tables with `list_domain_tables(domain_name)` for each collection.
+2. Confirm that the mentioned tables exist in the domain.
+3. If any table does not exist, inform and ask.
 
-**Presentar resumen al usuario** antes de continuar:
+If the user does not mention specific tables, the schedule will include all tables in each collection (default behavior).
+
+---
+
+## 2. Existing Rules Verification
+
+Before creating the schedule, verify that the selected folders contain quality rules. Scheduling the execution of a folder without rules is pointless.
+
+**Procedure** — for each included collection:
+
+1. Get the domain tables with `list_domain_tables(domain_name)`.
+2. Call `get_tables_quality_details(domain_name, [tables])` to get the rules inventory.
+   - If filtered by tables (section 1.2), use only those tables.
+   - If not, use all domain tables.
+3. Count existing rules and their status (OK / KO / Warning / Not executed).
+
+**Result evaluation:**
+
+- **Collection without rules**: explicitly warn the user. Suggest assessing coverage and creating rules before scheduling. Ask the user with options, following the user question convention, whether they want to continue anyway or create rules first.
+- **Collection with rules in KO status**: mention it as relevant information — the schedule will also execute KO rules, which may generate recurring alerts.
+- **Collection with rules**: summarize how many rules there are, in how many tables, and their general status.
+
+If all selected collections are empty, do not continue with the schedule. Redirect the user to create rules first.
+
+**Present summary to the user** before continuing:
 
 ```markdown
-### Reglas en las colecciones seleccionadas
+### Rules in selected collections
 
-| Coleccion | Tablas con reglas | Reglas totales | OK | KO | Warning | Sin ejecutar |
-|-----------|-------------------|----------------|----|----|---------|-------------|
+| Collection | Tables with rules | Total rules | OK | KO | Warning | Not executed |
+|------------|-------------------|-------------|----|----|---------|-------------|
 | financial | 5 | 23 | 18 | 2 | 1 | 2 |
 | payments  | 3 | 12 | 10 | 0 | 2 | 0 |
 ```
 
 ---
 
-## 3. Recopilar Parametros de la Planificacion
+## 3. Collect Schedule Parameters
 
-Recopilar los parametros necesarios para crear la planificacion. Algunos se preguntan al usuario, otros tienen defaults razonables.
+Collect the parameters needed to create the schedule. Some are asked to the user, others have reasonable defaults.
 
-### 3.1 Nombre (`name`) — obligatorio
+### 3.1 Name (`name`) — mandatory
 
-Sugerir un nombre siguiendo la convencion `plan-[dominio]-[frecuencia]`:
+Suggest a name following the convention `plan-[domain]-[frequency]`:
 - `plan-financial-daily`
 - `plan-payments-weekly`
 - `plan-financial-payments-monthly`
 
-El usuario puede aceptar la sugerencia o proponer otro nombre. Si hay multiples colecciones, combinar los nombres relevantes o usar un nombre generico descriptivo.
+The user can accept the suggestion or propose another name. If there are multiple collections, combine the relevant names or use a descriptive generic name.
 
-### 3.2 Descripcion (`description`) — obligatorio
+### 3.2 Description (`description`) — mandatory
 
-Generar una descripcion en lenguaje de negocio que explique el proposito de la planificacion. **Reglas obligatorias** (mismas que para descripciones de reglas de calidad):
-1. NO incluir detalles tecnicos de scheduling (frecuencia, cron, horarios) — esa informacion ya esta en los campos de planificacion
-2. NO usar nombres tecnicos de tablas o columnas
-3. Describir el proposito de negocio de la planificacion
+Generate a business-language description that explains the purpose of the schedule. **Mandatory rules** (same as for quality rule descriptions):
+1. Do NOT include technical scheduling details (frequency, cron, times) — that information is already in the schedule fields
+2. Do NOT use technical table or column names
+3. Describe the business purpose of the schedule
 
-Ejemplo correcto: "Ejecucion periodica de las validaciones de calidad del dominio financiero para garantizar la integridad de los datos de cuentas y transacciones"
-Ejemplo incorrecto: "Cron diario a las 9:00 que ejecuta las reglas de la coleccion financial_domain sobre las tablas account y transaction"
+Correct example: "Periodic execution of quality validations for the financial domain to ensure data integrity of accounts and transactions"
+Incorrect example: "Daily cron at 9:00 that executes the rules in the financial_domain collection on the account and transaction tables"
 
-Presentar la descripcion propuesta al usuario para su validacion.
+Present the proposed description to the user for validation.
 
-### 3.3 Expresion cron (`cron_expression`) — obligatorio
+### 3.3 Cron expression (`cron_expression`) — mandatory
 
-Aceptar la frecuencia en **lenguaje natural** y traducir a expresion Quartz cron (6 o 7 campos: segundo minuto hora dia-mes mes dia-semana [ano]).
+Accept the frequency in **natural language** and translate to a Quartz cron expression (6 or 7 fields: second minute hour day-of-month month day-of-week [year]).
 
-**Ejemplos de traduccion:**
-- "diariamente a las 9:00" → `0 0 9 * * ?`
-- "cada lunes a las 8:30" → `0 30 8 ? * MON`
-- "primer dia de cada mes a las 6:00" → `0 0 6 1 * ?`
-- "cada 6 horas" → `0 0 */6 * * ?`
-- "de lunes a viernes a las 7:00" → `0 0 7 ? * MON-FRI`
+**Translation examples:**
+- "daily at 9:00" → `0 0 9 * * ?`
+- "every Monday at 8:30" → `0 30 8 ? * MON`
+- "first day of each month at 6:00" → `0 0 6 1 * ?`
+- "every 6 hours" → `0 0 */6 * * ?`
+- "Monday to Friday at 7:00" → `0 0 7 ? * MON-FRI`
 
-**Restriccion**: NO permitir expresiones de frecuencia muy baja (como `* * * * * *` o similares que ejecuten cada segundo/minuto). Si el usuario pide algo asi, explicar el riesgo y sugerir una frecuencia minima razonable.
+**Restriction**: Do NOT allow very low frequency expressions (like `* * * * * *` or similar that execute every second/minute). If the user asks for something like that, explain the risk and suggest a reasonable minimum frequency.
 
-Si el usuario proporciona directamente una expresion Quartz valida, usarla tal cual.
+If the user directly provides a valid Quartz expression, use it as-is.
 
-### 3.4 Zona horaria (`cron_timezone`) — opcional
+### 3.4 Timezone (`cron_timezone`) — optional
 
-Default: `Europe/Madrid`. **NO preguntar** salvo que el usuario mencione explicitamente otra zona horaria. Si la menciona, usar la zona indicada (ej: `UTC`, `America/New_York`).
+Default: `Europe/Madrid`. **Do NOT ask** unless the user explicitly mentions another timezone. If they do, use the indicated timezone (e.g., `UTC`, `America/New_York`).
 
-### 3.5 Fecha de inicio (`cron_start_datetime`) — opcional
+### 3.5 Start date (`cron_start_datetime`) — optional
 
-Preguntar: "¿Cuando quieres que empiece a ejecutarse? (dejar en blanco para empezar inmediatamente)".
+Ask: "When do you want execution to start? (leave blank to start immediately)".
 
-Si el usuario indica una fecha/hora en lenguaje natural, convertir a formato ISO 8601 (ej: "el proximo lunes a las 9" → `<YYYY-MM-DD>T09:00:00`, donde `<YYYY-MM-DD>` es la fecha del proximo lunes calculada desde hoy). Si no indica nada, la planificacion empieza inmediatamente tras la creacion.
+If the user indicates a date/time in natural language, convert to ISO 8601 format (e.g., "next Monday at 9" → `<YYYY-MM-DD>T09:00:00`, where `<YYYY-MM-DD>` is the date of next Monday calculated from today). If they indicate nothing, the schedule starts immediately after creation.
 
-### 3.6 Tamano de ejecucion (`execution_size`) — opcional
+### 3.6 Execution size (`execution_size`) — optional
 
-Default: `XS`. **NO preguntar** salvo que el usuario mencione preocupaciones de rendimiento, volumen de datos o tamano de ejecucion. Opciones disponibles: `XS`, `S`, `M`, `L`, `XL`.
+Default: `XS`. **Do NOT ask** unless the user mentions performance concerns, data volume, or execution size. Available options: `XS`, `S`, `M`, `L`, `XL`.
 
-Si el usuario pregunta o la planificacion abarca un volumen grande de reglas/tablas, orientar:
-- `XS` / `S`: dominios pequenos, pocas reglas
-- `M`: dominios medianos, decenas de reglas
-- `L` / `XL`: dominios grandes, cientos de reglas o queries complejas
+If the user asks or the schedule covers a large volume of rules/tables, guide:
+- `XS` / `S`: small domains, few rules
+- `M`: medium domains, dozens of rules
+- `L` / `XL`: large domains, hundreds of rules or complex queries
 
 ---
 
-## 4. PAUSA: Presentar Plan y Esperar Aprobacion
+## 4. PAUSE: Present Plan and Wait for Approval
 
-Antes de ejecutar la llamada a `create_quality_rule_planification`, presentar el plan completo al usuario.
+Before executing the call to `create_quality_rule_planification`, present the complete plan to the user.
 
-### Formato del plan
+### Plan format
 
 ```markdown
-## Plan de Planificacion de Calidad
+## Quality Schedule Plan
 
-**Nombre**: plan-financial-daily
-**Descripcion**: Ejecucion periodica de las validaciones de calidad del dominio financiero para garantizar la integridad de los datos de cuentas y transacciones
-**Colecciones**: financial_domain
-**Tablas filtradas**: todas (o lista de tablas si se filtro)
-**Reglas que se ejecutaran**: 23 reglas en 5 tablas
-**Programacion**: `0 0 9 * * ?` — diariamente a las 9:00 (Europe/Madrid)
-**Primera ejecucion**: inmediatamente (o fecha ISO 8601 si se indico)
-**Tamano de ejecucion**: XS
+**Name**: plan-financial-daily
+**Description**: Periodic execution of quality validations for the financial domain to ensure data integrity of accounts and transactions
+**Collections**: financial_domain
+**Filtered tables**: all (or list of tables if filtered)
+**Rules to be executed**: 23 rules across 5 tables
+**Schedule**: `0 0 9 * * ?` — daily at 9:00 (Europe/Madrid)
+**First execution**: immediately (or ISO 8601 date if indicated)
+**Execution size**: XS
 
 ---
 
-¿Procedo con la creacion de esta planificacion?
+Shall I proceed with creating this schedule?
 ```
 
-### Senales de aprobacion validas
+### Valid approval signals
 
-Cualquiera de estas respuestas (o equivalentes en el idioma del usuario):
-- "si", "sí", "s", "yes", "y"
-- "procede", "adelante", "ok", "OK", "vale"
-- "creala", "hazlo", "ejecuta"
-- "apruebo", "aprobado", "confirmo"
+Any of these responses (or equivalents in the user's language):
+- "yes", "y", "sure"
+- "proceed", "go ahead", "ok", "OK", "fine"
+- "create it", "do it", "execute"
+- "approved", "confirmed", "I confirm"
 
-### Senales de rechazo o modificacion
+### Rejection or modification signals
 
-- "no", "cancela", "para"
-- "cambia la frecuencia a..."
-- "cambia el nombre a..."
-- "añade/quita la coleccion X"
-- "filtra solo las tablas Y"
+- "no", "cancel", "stop"
+- "change the frequency to..."
+- "change the name to..."
+- "add/remove collection X"
+- "filter only tables Y"
 
-Si el usuario modifica algun parametro: actualizar el plan y volver a presentar para aprobacion.
-
----
-
-## 5. Ejecucion
-
-Solo tras aprobacion explicita del usuario:
-
-1. Llamar `create_quality_rule_planification` con todos los parametros configurados:
-   - `name`: nombre de la planificacion
-   - `description`: descripcion de negocio
-   - `collection_names`: lista de colecciones/dominios
-   - `cron_expression`: expresion Quartz cron
-   - `table_names`: lista de tablas (solo si se filtro; si no, omitir)
-   - `cron_timezone`: zona horaria (solo si difiere del default)
-   - `cron_start_datetime`: fecha de inicio (solo si se indico)
-   - `execution_size`: tamano (solo si difiere del default)
-
-2. Reportar el resultado inmediatamente en el chat.
-
-3. Si la llamada falla:
-   - Informar del error al usuario con el mensaje del MCP.
-   - Si el error es corregible (ej: expresion cron invalida, nombre duplicado), sugerir un ajuste y preguntar si quiere reintentar.
-   - Maximo 2 reintentos con parametros ajustados. Si sigue fallando, informar y sugerir acciones alternativas.
+If the user modifies any parameter: update the plan and present again for approval.
 
 ---
 
-## 6. Resumen Final
+## 5. Execution
 
-Tras la creacion exitosa, presentar confirmacion:
+Only after explicit user approval:
+
+1. Call `create_quality_rule_planification` with all configured parameters:
+   - `name`: schedule name
+   - `description`: business description
+   - `collection_names`: list of collections/domains
+   - `cron_expression`: Quartz cron expression
+   - `table_names`: list of tables (only if filtered; if not, omit)
+   - `cron_timezone`: timezone (only if different from default)
+   - `cron_start_datetime`: start date (only if indicated)
+   - `execution_size`: size (only if different from default)
+
+2. Report the result immediately in chat.
+
+3. If the call fails:
+   - Inform the user of the error with the MCP message.
+   - If the error is correctable (e.g., invalid cron expression, duplicate name), suggest an adjustment and ask if they want to retry.
+   - Maximum 2 retries with adjusted parameters. If it still fails, inform and suggest alternative actions.
+
+---
+
+## 6. Final Summary
+
+After successful creation, present confirmation:
 
 ```markdown
-## Planificacion Creada
+## Schedule Created
 
-- **Nombre**: plan-financial-daily
-- **Estado**: Creada correctamente
-- **Colecciones**: financial_domain
-- **Reglas programadas**: 23 reglas en 5 tablas
-- **Programacion**: diariamente a las 9:00 (Europe/Madrid)
-- **Primera ejecucion**: inmediatamente
-- **Tamano**: XS
+- **Name**: plan-financial-daily
+- **Status**: Created successfully
+- **Collections**: financial_domain
+- **Scheduled rules**: 23 rules across 5 tables
+- **Schedule**: daily at 9:00 (Europe/Madrid)
+- **First execution**: immediately
+- **Size**: XS
 ```
 
 ---
 
-## 7. Pregunta de Continuacion
+## 7. Follow-up Question
 
-Al finalizar, preguntar al usuario con opciones como quiere continuar, siguiendo la convencion de preguntas al usuario:
-- **Crear otra planificacion para otras colecciones**
-- **Crear reglas de calidad para colecciones que estaban vacias**
-- **Evaluar la cobertura de calidad actual**
-- **Finalizar**
+At the end, ask the user with options how they want to continue, following the user question convention:
+- **Create another schedule for other collections**
+- **Create quality rules for collections that were empty**
+- **Assess the current quality coverage**
+- **Finish**

@@ -1,80 +1,80 @@
-# Tecnicas Analiticas Avanzadas
+# Advanced Analytical Techniques
 
-Activar segun la profundidad seleccionada (ver matriz de activacion en Fase 2).
+Activate based on the selected depth (see activation matrix in Phase 2).
 
-## Rigor estadistico e incertidumbre
+## Statistical rigor and uncertainty
 
-**Cuando aplicar tests estadisticos:**
+**When to apply statistical tests:**
 
-| Pregunta | Test | Condiciones | Implementacion |
-|----------|------|-------------|----------------|
-| Diferencia entre 2 grupos (numerico) | t-test | Normales, n>30 | `scipy.stats.ttest_ind` |
-| Diferencia entre 2 grupos (no normal) | Mann-Whitney U | No normales o n<30 | `scipy.stats.mannwhitneyu` |
-| Diferencia entre 3+ grupos | ANOVA + Tukey | Normales, homocedasticos | `scipy.stats.f_oneway` |
-| Relacion entre categoricas | Chi-cuadrado | Frec. esperadas >5 | `scipy.stats.chi2_contingency` |
-| Correlacion | Pearson / Spearman | Lineal / Monotonico | `scipy.stats.pearsonr` / `spearmanr` |
-| Tendencia temporal significativa | Mann-Kendall | Serie >10 puntos | `scipy.stats.kendalltau` |
+| Question | Test | Conditions | Implementation |
+|----------|------|------------|----------------|
+| Difference between 2 groups (numeric) | t-test | Normal, n>30 | `scipy.stats.ttest_ind` |
+| Difference between 2 groups (non-normal) | Mann-Whitney U | Non-normal or n<30 | `scipy.stats.mannwhitneyu` |
+| Difference between 3+ groups | ANOVA + Tukey | Normal, homoscedastic | `scipy.stats.f_oneway` |
+| Relationship between categoricals | Chi-squared | Expected freq. >5 | `scipy.stats.chi2_contingency` |
+| Correlation | Pearson / Spearman | Linear / Monotonic | `scipy.stats.pearsonr` / `spearmanr` |
+| Significant temporal trend | Mann-Kendall | Series >10 points | `scipy.stats.kendalltau` |
 
-**Reglas:**
-- SIEMPRE reportar p-valor + tamano del efecto (Cohen's d, eta-cuadrado, V de Cramer)
-- p < 0.05 = significativo. p < 0.01 = altamente significativo
-- Resultado significativo con efecto pequeno puede no ser relevante para el negocio
-- Con muestras grandes (>10k), casi todo es "significativo" — priorizar tamano del efecto
-- Calcular IC95% para KPIs: `mean +/- 1.96 * (std / sqrt(n))`. Para proporciones: `p +/- 1.96 * sqrt(p*(1-p)/n)`
+**Rules:**
+- ALWAYS report p-value + effect size (Cohen's d, eta-squared, Cramer's V)
+- p < 0.05 = significant. p < 0.01 = highly significant
+- A significant result with a small effect may not be relevant for the business
+- With large samples (>10k), almost everything is "significant" — prioritize effect size
+- Calculate CI95% for KPIs: `mean +/- 1.96 * (std / sqrt(n))`. For proportions: `p +/- 1.96 * sqrt(p*(1-p)/n)`
 
-**Comunicacion de incertidumbre al negocio:**
+**Communicating uncertainty to business:**
 
-| Nivel tecnico | Como comunicarlo |
-|---------------|-----------------|
-| IC 95%: [120, 140] | "Entre 120 y 140 con alta confianza" |
-| p < 0.01 | "La diferencia es real, no es azar" |
-| p > 0.05 | "No hay evidencia suficiente para afirmar que hay diferencia" |
-| Cohen's d = 0.2 | "La diferencia existe pero es pequena" |
-| Cohen's d = 0.8 | "La diferencia es grande y relevante" |
-| R² = 0.65 | "El modelo explica el 65% de la variacion" |
+| Technical level | How to communicate it |
+|----------------|----------------------|
+| CI 95%: [120, 140] | "Between 120 and 140 with high confidence" |
+| p < 0.01 | "The difference is real, not due to chance" |
+| p > 0.05 | "There is not enough evidence to claim there is a difference" |
+| Cohen's d = 0.2 | "The difference exists but is small" |
+| Cohen's d = 0.8 | "The difference is large and relevant" |
+| R² = 0.65 | "The model explains 65% of the variation" |
 
-**Principio:** NUNCA presentar un numero sin contexto de confianza. Preferir rangos a puntos unicos. Adaptar precision del lenguaje a la audiencia.
+**Principle:** NEVER present a number without confidence context. Prefer ranges over single points. Adapt language precision to the audience.
 
-## Analisis prospectivo y escenarios
+## Prospective analysis and scenarios
 
-Aplicar cuando el usuario pregunte "que pasaria si...", "como evolucionara...", o cuando los datos sugieran proyecciones utiles.
+Apply when the user asks "what would happen if...", "how will it evolve...", or when the data suggests useful projections.
 
-| Tecnica | Cuando usar | Implementacion | Output |
-|---------|------------|----------------|--------|
-| **Escenarios** | Proyeccion con incertidumbre | Definir supuestos por escenario (+/- X%), calcular impacto | Tabla comparativa + fan chart |
-| **Sensibilidad** | Identificar variables influyentes | Variar 1 variable a la vez (+/-10%, +/-20%), medir impacto en KPI | Tornado chart |
-| **Monte Carlo** | Cuantificar riesgo multivariable | `numpy.random` con distribuciones, N=10000 iteraciones | Histograma + percentiles P5/P50/P95 |
-| **Proyeccion lineal** | Tendencia clara con >12 puntos | `linregress` o `polyfit` + IC95% | Line + banda de confianza |
+| Technique | When to use | Implementation | Output |
+|-----------|------------|----------------|--------|
+| **Scenarios** | Projection with uncertainty | Define assumptions per scenario (+/- X%), calculate impact | Comparison table + fan chart |
+| **Sensitivity** | Identify influential variables | Vary 1 variable at a time (+/-10%, +/-20%), measure KPI impact | Tornado chart |
+| **Monte Carlo** | Quantify multivariable risk | `numpy.random` with distributions, N=10000 iterations | Histogram + percentiles P5/P50/P95 |
+| **Linear projection** | Clear trend with >12 points | `linregress` or `polyfit` + CI95% | Line + confidence band |
 
-**Reglas:**
-- Siempre explicitar supuestos de cada escenario
-- Nunca presentar proyeccion sin banda de incertidumbre
-- Etiquetar: "Proyeccion basada en [supuesto], no prediccion"
-- Para Monte Carlo: documentar distribuciones y justificacion
+**Rules:**
+- Always make each scenario's assumptions explicit
+- Never present a projection without an uncertainty band
+- Label: "Projection based on [assumption], not a prediction"
+- For Monte Carlo: document distributions and justification
 
 ## Root cause analysis
 
-Activar cuando se detecta un problema, anomalia o desviacion significativa.
+Activate when a problem, anomaly, or significant deviation is detected.
 
 **Framework:**
-1. **Cuantificar**: Magnitud exacta (cuanto, desde cuando, en que dimensiones)
-2. **Drill-down dimensional**: Descomponer por cada dimension (tiempo, region, producto, segmento, canal). Query MCP: "metrica por [dimension] en periodo problema vs referencia". Buscar donde se concentra la desviacion
-3. **Arbol de varianza**: Para la dimension mas explicativa, seguir profundizando (region -> ciudad, producto -> SKU)
-4. **5 Whys**: Formular preguntas sucesivas hasta llegar a la causa raiz. Documentar cada nivel
-5. **Correlacion vs causacion**: Verificar temporalidad (causa precede efecto), mecanismo logico de negocio, y descartar factores confusores. Si no se puede establecer causacion, reportar como "asociacion"
+1. **Quantify**: Exact magnitude (how much, since when, in which dimensions)
+2. **Dimensional drill-down**: Decompose by each dimension (time, region, product, segment, channel). MCP query: "metric by [dimension] in problem period vs reference". Find where the deviation is concentrated
+3. **Variance tree**: For the most explanatory dimension, continue drilling down (region -> city, product -> SKU)
+4. **5 Whys**: Formulate successive questions until reaching the root cause. Document each level
+5. **Correlation vs causation**: Verify temporality (cause precedes effect), logical business mechanism, and rule out confounders. If causation cannot be established, report as "association"
 
-**Visualizaciones:** Waterfall de varianza, treemap de contribucion, timeline de eventos
+**Visualizations:** Variance waterfall, contribution treemap, event timeline
 
-## Deteccion de anomalias
+## Anomaly detection
 
-| Tipo | Metodo | Implementacion | Criterio |
+| Type | Method | Implementation | Criterion |
 |------|--------|----------------|----------|
-| **Outliers estaticos** | IQR o Z-score | `Q1 - 1.5*IQR` / `Q3 + 1.5*IQR`, o `abs(z) > 3` | Ya en EDA (Fase 1.1) |
-| **Anomalias temporales** | Desviacion de tendencia+estacionalidad | `statsmodels.tsa.seasonal_decompose`, residuo > 2*std | Serie >12 puntos |
-| **Cambio de tendencia** | Diferencia de medias pre/post | Media movil + t-test entre ventanas | Ventana minima: 5 puntos |
-| **Anomalias categoricas** | Desviacion de distribucion esperada | Chi-cuadrado vs distribucion historica | p < 0.01 |
+| **Static outliers** | IQR or Z-score | `Q1 - 1.5*IQR` / `Q3 + 1.5*IQR`, or `abs(z) > 3` | Already in EDA (Phase 1.1) |
+| **Temporal anomalies** | Deviation from trend+seasonality | `statsmodels.tsa.seasonal_decompose`, residual > 2*std | Series >12 points |
+| **Trend change** | Pre/post mean difference | Moving average + t-test between windows | Minimum window: 5 points |
+| **Categorical anomalies** | Deviation from expected distribution | Chi-squared vs historical distribution | p < 0.01 |
 
-**Anomalia real vs error de datos:**
-- Verificar con `search_domain_knowledge` si hay eventos conocidos
-- Si aparece en multiples metricas → probablemente real
-- Si solo en una columna/dimension → probable error → alertar, no reportar como insight
+**Real anomaly vs data error:**
+- Verify with `search_domain_knowledge` if there are known events
+- If it appears across multiple metrics → probably real
+- If only in one column/dimension → probable error → alert, do not report as insight

@@ -1,223 +1,223 @@
 ---
 name: assess-quality
-description: Evaluar la cobertura actual de calidad del dato para un dominio completo, una tabla especifica o una columna concreta. Devuelve un analisis de que dimensiones estan cubiertas, cuales faltan y cuales columnas son prioritarias para nuevas reglas. Usar cuando el usuario quiera conocer el estado de la calidad de sus datos.
-argument-hint: "[dominio] [tabla (opcional)] [columna (opcional)]"
+description: Assess the current data quality coverage for a full domain, a specific table, or a particular column. Returns an analysis of which dimensions are covered, which are missing, and which columns are priorities for new rules. Use when the user wants to understand the quality status of their data.
+argument-hint: "[domain] [table (optional)] [column (optional)]"
 ---
 
-# Skill: Evaluacion de Cobertura de Calidad
+# Skill: Quality Coverage Assessment
 
-Workflow completo para evaluar el estado de la calidad del dato en un dominio, tabla o columna gobernada.
+Complete workflow for assessing the state of data quality in a governed domain, table, or column.
 
-## 1. Determinacion de Scope
+## 1. Scope Determination
 
-Antes de ejecutar ninguna llamada MCP, determinar exactamente que se va a evaluar:
+Before executing any MCP call, determine exactly what will be assessed:
 
-**Si el dominio no está claro o hay que validar el `domain_name`**: seguir `skills-guides/stratio-data-tools.md` sec 4.1-4.2 para el workflow estándar de discovery. Si el dominio es tecnico, usar `search_domains(search_text, domain_type="technical")` o `list_domains(domain_type="technical")` (ver `skills-guides/exploration.md` sec 1 para detalles de dominios tecnicos). Tener en cuenta que el analisis semantico sera mas limitado en dominios tecnicos: las descripciones de negocio, contexto de tablas y terminologia pueden estar ausentes o ser parciales.
+**If the domain is unclear or the `domain_name` needs validation**: follow `skills-guides/stratio-data-tools.md` sec 4.1-4.2 for the standard discovery workflow. If the domain is technical, use `search_domains(search_text, domain_type="technical")` or `list_domains(domain_type="technical")` (see `skills-guides/exploration.md` sec 1 for technical domain details). Note that semantic analysis will be more limited for technical domains: business descriptions, table context, and terminology may be absent or partial.
 
-**Determinar scope:**
-- **Dominio completo**: evaluar todas sus tablas
-- **Tabla especifica**: evaluar solo esa tabla
-- **Multiples tablas**: evaluar el subconjunto indicado
-- **Columna especifica**: evaluar una sola columna dentro de una tabla (requiere dominio + tabla + columna)
+**Determine scope:**
+- **Full domain**: assess all its tables
+- **Specific table**: assess only that table
+- **Multiple tables**: assess the indicated subset
+- **Specific column**: assess a single column within a table (requires domain + table + column)
 
-## 2. Recopilacion de Datos (en paralelo)
+## 2. Data Collection (in parallel)
 
-Una vez determinado el scope, lanzar en paralelo. Es **OBLIGATORIO** incluir `get_quality_rule_dimensions` para entender que dimensiones soporta el dominio y sus definiciones.
+Once the scope is determined, launch in parallel. It is **MANDATORY** to include `get_quality_rule_dimensions` to understand what dimensions the domain supports and their definitions.
 
-**Sobre dimensiones**: ver sección 2 de `skills-guides/exploration.md` para entender por qué `get_quality_rule_dimensions` es obligatorio y cómo usar sus resultados.
+**About dimensions**: see section 2 of `skills-guides/exploration.md` to understand why `get_quality_rule_dimensions` is mandatory and how to use its results.
 
-**Para dominio completo:**
+**For full domain:**
 ```
-Paralelo:
+Parallel:
   A. list_domain_tables(domain_name)
-  B. get_quality_rule_dimensions(collection_name=domain_name)  <-- OBLIGATORIO
-  C. quality_rules_metadata(domain_name=domain_name)           <-- actualizar metadata AI, solo si no se ejecuto antes
+  B. get_quality_rule_dimensions(collection_name=domain_name)  <-- MANDATORY
+  C. quality_rules_metadata(domain_name=domain_name)           <-- update AI metadata, only if not executed before
 ```
-Luego, con la lista de tablas obtenida en A, lanzar en paralelo para TODAS las tablas:
+Then, with the table list obtained from A, launch in parallel for ALL tables:
 ```
-Por cada tabla (en paralelo):
-  get_tables_quality_details(domain_name, [tabla])
-  get_table_columns_details(domain_name, tabla)
-  get_tables_details(domain_name, [tabla])
-  generate_sql("obtener todos los campos de la tabla [tabla] sin filtros", domain_name)
+For each table (in parallel):
+  get_tables_quality_details(domain_name, [table])
+  get_table_columns_details(domain_name, table)
+  get_tables_details(domain_name, [table])
+  generate_sql("get all fields from table [table] without filters", domain_name)
 ```
-Finalmente, usar los SQLs generados para lanzar `profile_data(query=[sql])` en paralelo.
+Finally, use the generated SQLs to launch `profile_data(query=[sql])` in parallel.
 
-**Para tabla especifica:**
+**For specific table:**
 ```
-Paralelo:
-  A. get_tables_quality_details(domain_name, [tabla])
-  B. get_table_columns_details(domain_name, tabla)
-  C. get_quality_rule_dimensions(collection_name=domain_name)  <-- solo si no se obtuvo antes
-  D. get_tables_details(domain_name, [tabla])                  <-- solo si no se obtuvo antes
-  E. generate_sql("obtener todos los campos de la tabla [tabla] sin filtros", domain_name)
-  F. quality_rules_metadata(domain_name=domain_name)           <-- solo si no se ejecuto antes
+Parallel:
+  A. get_tables_quality_details(domain_name, [table])
+  B. get_table_columns_details(domain_name, table)
+  C. get_quality_rule_dimensions(collection_name=domain_name)  <-- only if not obtained before
+  D. get_tables_details(domain_name, [table])                  <-- only if not obtained before
+  E. generate_sql("get all fields from table [table] without filters", domain_name)
+  F. quality_rules_metadata(domain_name=domain_name)           <-- only if not executed before
 ```
-Tras obtener E, lanzar `profile_data(query=[sql])`.
+After obtaining E, launch `profile_data(query=[sql])`.
 
-**Para columna especifica:**
+**For specific column:**
 ```
-Paralelo:
-  A. get_tables_quality_details(domain_name, [tabla])
-  B. get_table_columns_details(domain_name, tabla)
-  C. get_quality_rule_dimensions(collection_name=domain_name)  <-- solo si no se obtuvo antes
-  D. generate_sql("obtener únicamente el campo [columna] de la tabla [tabla] sin filtros", domain_name)
-  E. quality_rules_metadata(domain_name=domain_name)           <-- solo si no se ejecuto antes
+Parallel:
+  A. get_tables_quality_details(domain_name, [table])
+  B. get_table_columns_details(domain_name, table)
+  C. get_quality_rule_dimensions(collection_name=domain_name)  <-- only if not obtained before
+  D. generate_sql("get only the [column] field from table [table] without filters", domain_name)
+  E. quality_rules_metadata(domain_name=domain_name)           <-- only if not executed before
 ```
-Tras obtener D, lanzar `profile_data(query=[sql])`.
-En el análisis posterior (sección 3), filtrar todo al scope de esa columna: inventario de reglas que afectan a esa columna, gaps solo para esa columna, EDA solo de esa columna.
+After obtaining D, launch `profile_data(query=[sql])`.
+In the subsequent analysis (section 3), filter everything to that column's scope: inventory of rules affecting that column, gaps only for that column, EDA only for that column.
 
-**Nota sobre `quality_rules_metadata`**: Esta llamada actualiza la metadata AI de las reglas (descripcion, dimension). Se ejecuta sin `force_update` — solo procesa reglas sin metadata o modificadas. Si falla, continuar sin bloquear: el workflow no depende de ella.
+**Note about `quality_rules_metadata`**: This call updates the AI metadata of the rules (description, dimension). It is executed without `force_update` — it only processes rules without metadata or modified ones. If it fails, continue without blocking: the workflow does not depend on it.
 
-**Nota**: El perfilado (EDA) es fundamental para detectar gaps reales (ej: nulos existentes sin regla de completeness). Si el dominio tiene >10 tablas, evaluar primero las que el usuario mencione explicitamente y preguntar si quiere continuar con el resto.
+**Note**: Profiling (EDA) is fundamental for detecting real gaps (e.g., existing nulls without a completeness rule). If the domain has >10 tables, assess first those the user explicitly mentions and ask if they want to continue with the rest.
 
-## 3. Analisis de Cobertura
+## 3. Coverage Analysis
 
-Con los datos recopilados (incluyendo el EDA de `profile_data`), analizar semanticamente la cobertura:
+With the collected data (including the EDA from `profile_data`), semantically analyze the coverage:
 
-### 3.1 Inventario de reglas existentes
+### 3.1 Existing rules inventory
 
-Usando los resultados de `get_tables_quality_details` (ya obtenidos en la fase 2), construir para cada tabla el inventario de reglas actualmente definidas:
+Using the results from `get_tables_quality_details` (already obtained in phase 2), build for each table the inventory of currently defined rules:
 
-- **Nombre de la regla** y dimensión que cubre (`completeness`, `uniqueness`, `validity`, etc.)
-- **Columna o columnas** a las que aplica (inferido del nombre y la descripción de la regla)
-- **Estado actual**: OK / KO / Warning y porcentaje de paso
+- **Rule name** and dimension it covers (`completeness`, `uniqueness`, `validity`, etc.)
+- **Column(s)** it applies to (inferred from the rule name and description)
+- **Current status**: OK / KO / Warning and pass percentage
 
-Este inventario es la línea base: **solo son gaps las dimensiones/columnas que NO están cubiertas por ninguna regla existente**. Nunca proponer una regla que duplique una ya existente, aunque su estado sea KO (en ese caso, reportarla como regla a revisar, no como gap).
+This inventory is the baseline: **only dimensions/columns NOT covered by any existing rule are gaps**. Never propose a rule that duplicates an existing one, even if its status is KO (in that case, report it as a rule to review, not as a gap).
 
-Si `get_tables_quality_details` devuelve lista vacía para una tabla: la tabla no tiene ninguna regla definida → todos los checks semánticos que se identifiquen en 3.2 son gaps.
+If `get_tables_quality_details` returns an empty list for a table: the table has no rules defined → all semantic checks identified in 3.2 are gaps.
 
-### 3.2 Evaluacion de gaps: Semantica primero, EDA como validador
+### 3.2 Gap assessment: Semantics first, EDA as validator
 
-El análisis tiene dos fuentes complementarias con roles distintos:
+The analysis has two complementary sources with distinct roles:
 
-**1. Análisis semántico (fuente primaria — determina QUÉ reglas deben existir)**
+**1. Semantic analysis (primary source — determines WHICH rules should exist)**
 
-La semántica del dominio es la base del razonamiento. Antes de mirar el EDA, estudiar en profundidad:
-- **Descripción del dominio**: ¿qué representa este dominio de negocio? ¿qué garantías de calidad son inherentes a su naturaleza?
-- **Contexto de negocio de cada tabla** (de `get_tables_details`): ¿qué proceso alimenta esta tabla? ¿qué uso se le da? ¿qué restricciones de negocio aplican?
-- **Semántica de cada columna** (de `get_table_columns_details`): nombre, descripción, tipo de dato, si es obligatoria, si es clave, si es referencia a otro maestro
-- **Reglas de negocio documentadas**: las restricciones ya descritas en la gobernanza del dominio son gaps inmediatos si no tienen regla asociada
+Domain semantics are the basis of reasoning. Before looking at the EDA, study in depth:
+- **Domain description**: what does this business domain represent? What quality guarantees are inherent to its nature?
+- **Business context of each table** (from `get_tables_details`): what process feeds this table? What is it used for? What business constraints apply?
+- **Semantics of each column** (from `get_table_columns_details`): name, description, data type, whether it is mandatory, whether it is a key, whether it references another master
+- **Documented business rules**: constraints already described in domain governance are immediate gaps if they have no associated rule
 
-Con esta lectura semántica, el modelo debe razonar **por qué** una columna necesita una dimensión concreta:
-
-```
-Columna ID / clave primaria     → completeness + uniqueness son obligatorios por definición
-Columna importe / métrica       → validity (rango >= 0 o según negocio) es obligatorio
-Columna fecha de negocio        → validity (rango lógico) y completeness si es campo clave
-Columna estado / clasificación  → validity (enumerado con los valores permitidos del negocio)
-Columna FK / referencia         → completeness si es obligatoria + consistency si hay maestro
-Columna texto obligatorio       → completeness (por definición de negocio)
-Columna texto libre / notas     → evaluación caso a caso; probablemente no necesita nada
-```
-
-**2. EDA con `profile_data` (fuente secundaria — confirma y cuantifica)**
-
-Una vez determinadas semánticamente las reglas esperadas, el EDA sirve para:
-- **Confirmar** que el problema existe realmente (un campo que debería ser no-nulo, ¿tiene nulos reales?)
-- **Priorizar** gaps por impacto real: un 30% de nulos en un ID es más urgente que un 0,1%
-- **Parametrizar** reglas de validity: los valores del EDA orientan rangos y enumerados (sin usarlos como límites exactos)
-- **Detectar gaps que la semántica no anticipaba**: anomalías estadísticas que indican un problema de calidad no documentado
+With this semantic reading, the model must reason **why** a column needs a specific dimension:
 
 ```
-Uso del EDA por tipo de gap:
-Completeness → ¿nulls > 0? Confirma el gap y da el % actual de fallo
-Uniqueness   → ¿distinct_count < count? Confirma duplicados reales
-Validity     → min/max/top_values orientan el rango o enumerado esperado
-Consistency  → cruzar columnas relacionadas para detectar incoherencias
+ID / primary key column       → completeness + uniqueness are mandatory by definition
+Amount / metric column        → validity (range >= 0 or per business logic) is mandatory
+Business date column          → validity (logical range) and completeness if it is a key field
+Status / classification column → validity (enumeration with allowed business values)
+FK / reference column         → completeness if mandatory + consistency if there is a master
+Mandatory text column         → completeness (by business definition)
+Free text / notes column      → case-by-case assessment; probably needs nothing
 ```
 
-**El EDA nunca es el motivo para NO proponer una regla** que la semántica justifica. Si el EDA muestra 0 nulos en un ID, la regla de `completeness` sigue siendo necesaria: protege frente a futuros nulos. Si muestra el 100% de nulos en un campo supuestamente obligatorio, proponer la regla informando al usuario del estado actual.
+**2. EDA with `profile_data` (secondary source — confirms and quantifies)**
 
-**Dominios tecnicos — ajuste del analisis de gaps:**
+Once the expected rules are semantically determined, the EDA serves to:
+- **Confirm** that the problem actually exists (a field that should be non-null — does it have real nulls?)
+- **Prioritize** gaps by real impact: 30% nulls in an ID is more urgent than 0.1%
+- **Parameterize** validity rules: EDA values guide ranges and enumerations (without using them as exact limits)
+- **Detect gaps that semantics did not anticipate**: statistical anomalies indicating an undocumented quality problem
 
-Cuando el dominio es tecnico (descubierto via `list_domains(domain_type="technical")`), las descripciones de negocio, contexto de tablas y terminologia pueden estar ausentes o muy limitadas. En este caso:
-- **EDA pasa a ser la fuente principal** de razonamiento: los patrones estadisticos (nulos, duplicados, rangos, distribuciones) son la base para identificar gaps.
-- **Razonar por nombres y tipos de columnas**: usar convenciones habituales (`*_id` → clave/FK, `*_date`/`*_dt` → fecha, `*_amount`/`*_amt` → importe, `*_code`/`*_status` → enumerado) para inferir la semantica probable.
-- **Recomendaciones con menor confianza semantica**: al no disponer de descripciones de negocio, las reglas propuestas deben marcarse como basadas en inferencia tecnica. Validar las asunciones con el usuario antes de comprometerse con reglas de `validity` (rangos, enumerados) que requieren conocimiento de negocio.
-- El flujo general (inventario → gaps → priorizar) se mantiene identico; solo cambia el peso relativo de las fuentes.
-
-### 3.3 Calculo del gap score
-
-Para cada tabla, estimar:
-- **Reglas esperadas**: suma de reglas que semanticamente deberian existir
-- **Reglas existentes**: cuantas de las esperadas existen realmente
-- **Cobertura estimada**: reglas_existentes / reglas_esperadas × 100
-
-Presentar como estimacion con razonamiento, no como cifra exacta. Usar rangos si hay incertidumbre ("entre el 40% y el 60% de cobertura").
-
-## 4. Presentacion del Resultado
-
-Estructurar el output en el chat con las siguientes secciones:
-
-### Seccion 1: Resumen Ejecutivo
 ```
-Dominio/Tabla: [nombre]
-Fecha evaluacion: [hoy]
-Tablas analizadas: N
-Reglas existentes: N
-Cobertura estimada: XX% (razonamiento resumido)
-Gaps identificados: N criticos, N moderados
+EDA usage by gap type:
+Completeness → nulls > 0? Confirms the gap and gives the current failure %
+Uniqueness   → distinct_count < count? Confirms real duplicates
+Validity     → min/max/top_values guide the expected range or enumeration
+Consistency  → cross related columns to detect inconsistencies
 ```
 
-### Seccion 2: Tabla de Cobertura por Dimension
+**The EDA is never the reason to NOT propose a rule** that semantics justify. If the EDA shows 0 nulls in an ID, the `completeness` rule is still necessary: it protects against future nulls. If it shows 100% nulls in a supposedly mandatory field, propose the rule informing the user of the current state.
 
-Para scope de **dominio o tabla**:
+**Technical domains — gap analysis adjustment:**
+
+When the domain is technical (discovered via `list_domains(domain_type="technical")`), business descriptions, table context, and terminology may be absent or very limited. In this case:
+- **EDA becomes the primary reasoning source**: statistical patterns (nulls, duplicates, ranges, distributions) are the basis for identifying gaps.
+- **Reason by column names and types**: use common conventions (`*_id` → key/FK, `*_date`/`*_dt` → date, `*_amount`/`*_amt` → amount, `*_code`/`*_status` → enumeration) to infer probable semantics.
+- **Recommendations with lower semantic confidence**: without business descriptions, proposed rules should be marked as based on technical inference. Validate assumptions with the user before committing to `validity` rules (ranges, enumerations) that require business knowledge.
+- The general flow (inventory → gaps → prioritize) remains identical; only the relative weight of sources changes.
+
+### 3.3 Gap score calculation
+
+For each table, estimate:
+- **Expected rules**: sum of rules that should semantically exist
+- **Existing rules**: how many of the expected actually exist
+- **Estimated coverage**: existing_rules / expected_rules x 100
+
+Present as an estimate with reasoning, not as an exact figure. Use ranges if there is uncertainty ("between 40% and 60% coverage").
+
+## 4. Result Presentation
+
+Structure the output in chat with the following sections:
+
+### Section 1: Executive Summary
+```
+Domain/Table: [name]
+Assessment date: [today]
+Tables analyzed: N
+Existing rules: N
+Estimated coverage: XX% (summarized reasoning)
+Gaps identified: N critical, N moderate
+```
+
+### Section 2: Coverage Table by Dimension
+
+For **domain or table** scope:
 ```markdown
-| Tabla | Completeness | Uniqueness | Validity | Consistency | Cobertura |
-|-------|-------------|------------|----------|-------------|-----------|
-| account | Parcial (2/4) | OK | Gap | No aplica | ~50% |
-| card | OK | OK | Parcial | Gap | ~70% |
+| Table | Completeness | Uniqueness | Validity | Consistency | Coverage |
+|-------|-------------|------------|----------|-------------|----------|
+| account | Partial (2/4) | OK | Gap | N/A | ~50% |
+| card | OK | OK | Partial | Gap | ~70% |
 ```
 
-Para scope de **columna especifica**:
+For **specific column** scope:
 ```markdown
-| Columna | Tipo | Completeness | Uniqueness | Validity | Consistency | Cobertura |
-|---------|------|-------------|------------|----------|-------------|-----------|
-| customer_id | INTEGER | OK | Gap | No aplica | No aplica | ~50% |
+| Column | Type | Completeness | Uniqueness | Validity | Consistency | Coverage |
+|--------|------|-------------|------------|----------|-------------|----------|
+| customer_id | INTEGER | OK | Gap | N/A | N/A | ~50% |
 ```
 
-Usar iconos para mayor legibilidad:
-- OK / cubierta: indicar que hay regla y pasa
-- Parcial: hay alguna regla pero no cubre todo lo esperado
-- Gap: no hay regla donde deberia haberla
-- No aplica: esta dimension no tiene sentido para esta tabla/columna
-- KO/Warning: hay regla pero esta fallando
+Use icons for better readability:
+- OK / covered: indicates rule exists and passes
+- Partial: some rule exists but does not cover everything expected
+- Gap: no rule where one should exist
+- N/A: this dimension does not make sense for this table/column
+- KO/Warning: rule exists but is failing
 
-### Seccion 3: Estado de Reglas Existentes
+### Section 3: Existing Rules Status
 
-Para cada regla existente, mostrar en tabla:
+For each existing rule, show in a table:
 ```
-| Regla | Tabla | Dimension | Estado | % Pass | Observaciones |
+| Rule | Table | Dimension | Status | % Pass | Observations |
 ```
 
-Si una regla esta en KO o WARNING, destacarla como accion prioritaria independientemente de los gaps.
+If a rule is in KO or WARNING, highlight it as a priority action regardless of gaps.
 
-### Seccion 4: Gaps Priorizados
+### Section 4: Prioritized Gaps
 
-Listar los gaps mas importantes, ordenados por prioridad:
-1. Claves primarias / IDs sin completeness o uniqueness (CRITICO)
-2. Campos obligatorios de negocio sin completeness (ALTO)
-3. Importes/metricas sin validity (ALTO)
-4. Fechas sin validity (MEDIO)
-5. Estados/clasificaciones sin validity (MEDIO)
-6. Campos secundarios sin cobertura (BAJO)
+List the most important gaps, ordered by priority:
+1. Primary keys / IDs without completeness or uniqueness (CRITICAL)
+2. Mandatory business fields without completeness (HIGH)
+3. Amounts/metrics without validity (HIGH)
+4. Dates without validity (MEDIUM)
+5. Statuses/classifications without validity (MEDIUM)
+6. Secondary fields without coverage (LOW)
 
-Para cada gap indicar: tabla, columna, dimension ausente, impacto potencial.
+For each gap indicate: table, column, missing dimension, potential impact.
 
-### Seccion 5: Recomendacion de Proximos Pasos
+### Section 5: Recommended Next Steps
 
-Resumir que acciones se recomiendan:
-- Si hay reglas KO/WARNING: resolver primero antes de crear nuevas
-- Si hay gaps criticos: proponer crear reglas para cubrirlos
-- Si la cobertura es buena (>80%): felicitar y mencionar mejoras opcionales
+Summarize recommended actions:
+- If there are KO/WARNING rules: resolve those first before creating new ones
+- If there are critical gaps: propose creating rules to cover them
+- If coverage is good (>80%): acknowledge and mention optional improvements
 
-## 5. Pregunta de Continuacion
+## 5. Follow-up Question
 
-Al finalizar, preguntar al usuario con opciones como quiere continuar, siguiendo la convencion de preguntas al usuario:
-- **Crear reglas para cubrir los gaps identificados**
-- **Generar un informe formal de cobertura**
-- **Profundizar en una tabla concreta**
-- **No hacer nada mas**
+At the end, ask the user with options how they want to continue, following the user question convention:
+- **Create rules to cover the identified gaps**
+- **Generate a formal coverage report**
+- **Dig deeper into a specific table**
+- **Do nothing else**
 
-No proponer continuacion automaticamente sin preguntar.
+Do not propose automatic continuation without asking.

@@ -1,72 +1,72 @@
-# Guia: Visualizacion y Data Storytelling
+# Guide: Visualization and Data Storytelling
 
-Principios compartidos por `/analyze`.
+Shared principles for `/analyze`.
 
-## 1. Seleccion de Tipo de Grafica
+## 1. Chart Type Selection
 
-Elegir segun la pregunta analitica:
+Choose based on the analytical question:
 
-| Pregunta analitica | Tipo recomendado | Evitar |
+| Analytical question | Recommended type | Avoid |
 |---|---|---|
-| Composicion (partes de un todo) | Stacked bar, treemap, pie (<=5 categorias) | Pie con >5 categorias |
-| Comparacion entre categorias | Bar chart (horizontal si nombres largos) | Line chart |
-| Tendencia temporal | Line chart, area chart | Bar chart (salvo periodos discretos) |
-| Distribucion | Histograma, box plot, violin | Pie chart |
-| Correlacion | Scatter plot, heatmap | Bar chart |
-| Ranking | Bar chart horizontal ordenado | Tabla sin ordenar |
-| Geografico | Mapa coropletico | Tablas con codigos de region |
-| KPIs destacados | Cards con valor + cambio % + sparkline | Solo numeros en texto |
+| Composition (parts of a whole) | Stacked bar, treemap, pie (<=5 categories) | Pie with >5 categories |
+| Comparison between categories | Bar chart (horizontal if long names) | Line chart |
+| Temporal trend | Line chart, area chart | Bar chart (except for discrete periods) |
+| Distribution | Histogram, box plot, violin | Pie chart |
+| Correlation | Scatter plot, heatmap | Bar chart |
+| Ranking | Horizontal bar chart sorted | Unsorted table |
+| Geographic | Choropleth map | Tables with region codes |
+| Highlighted KPIs | Cards with value + change % + sparkline | Numbers in text only |
 
-## 2. Principios Generales
+## 2. General Principles
 
-- Max 5-7 elementos por grafica (agrupar en "Otros" si hay mas)
-- Titulo descriptivo como insight + subtitulo con periodo/filtro
-- Eje Y comenzar en 0 para barras (evitar manipulacion visual)
-- Anotaciones para puntos notables (picos, caidas, anomalias)
-- **Accesibilidad**: Paletas colorblind-friendly, no depender solo del color (usar formas/patrones si es posible)
-- **Escalas dispares**: Si multiples series difieren por mas de 3x en magnitud, usar subplots con escalas Y independientes en lugar de eje compartido
+- Max 5-7 elements per chart (group into "Others" if there are more)
+- Descriptive title as insight + subtitle with period/filter
+- Y-axis starts at 0 for bars (avoid visual manipulation)
+- Annotations for notable points (peaks, drops, anomalies)
+- **Accessibility**: Colorblind-friendly palettes, do not rely solely on color (use shapes/patterns if possible)
+- **Disparate scales**: If multiple series differ by more than 3x in magnitude, use subplots with independent Y scales instead of a shared axis
 
 ## 3. Data Storytelling
 
-Estructura narrativa para presentar hallazgos (no solo secuencial):
+Narrative structure for presenting findings (not just sequential):
 
-1. **Hook**: El dato mas impactante o sorprendente primero — capturar atencion
-2. **Contexto**: Por que importa, cual era la situacion previa o el objetivo
-3. **Hallazgos**: De lo general a lo especifico, cada uno con su "so what"
-4. **Tension**: Que no encaja, que es sorprendente, que requiere atencion urgente
-5. **Resolucion**: Recomendaciones concretas con impacto estimado
+1. **Hook**: The most impactful or surprising data point first — capture attention
+2. **Context**: Why it matters, what was the prior situation or the target
+3. **Findings**: From general to specific, each with its "so what"
+4. **Tension**: What doesn't fit, what is surprising, what requires urgent attention
+5. **Resolution**: Concrete recommendations with estimated impact
 
-**Principios:**
-- Cada seccion del reporte debe contar una historia, no solo mostrar datos
-- Titulos de graficos como insights ("La region Norte concentra el 45%"), no descripciones ("Ventas por region")
-- Numeros siempre con contexto comparativo (vs periodo anterior, vs objetivo, vs media)
-- No presentar datos sin interpretacion — cada tabla o grafica necesita un parrafo explicativo
-- Adaptar nivel de detalle y vocabulario a la audiencia
+**Principles:**
+- Each section of the report should tell a story, not just show data
+- Chart titles as insights ("The North region accounts for 45%"), not descriptions ("Sales by region")
+- Numbers always with comparative context (vs previous period, vs target, vs average)
+- Do not present data without interpretation — every table or chart needs an explanatory paragraph
+- Adapt level of detail and vocabulary to the audience
 
-## 4. Mapping Hallazgos → Narrativa
+## 4. Mapping Findings to Narrative
 
-Mapear cada hallazgo a su rol narrativo:
+Map each finding to its narrative role:
 
-| Tipo de hallazgo | Rol en la narrativa | Ubicacion en reporte |
-|-----------------|---------------------|---------------------|
-| Insight CRITICO (alto impacto + alta confianza) | **Hook** | Apertura — primer dato mencionado |
-| Hipotesis CONFIRMADA (esperada) | **Context / Findings** | Cuerpo — baseline |
-| Hipotesis REFUTADA / anomalia | **Tension** | Hallazgos inesperados |
-| Recomendacion de alto impacto + alta confianza | **Resolution** | Cierre — call to action |
-| Limitacion de datos o analisis | **Caveat** | Metodologia o pie del hallazgo |
-| Hallazgo INFORMATIVO (bajo impacto) | **Supporting detail** | Apendice |
+| Finding type | Narrative role | Report location |
+|-------------|---------------|-----------------|
+| CRITICAL insight (high impact + high confidence) | **Hook** | Opening — first data point mentioned |
+| CONFIRMED hypothesis (expected) | **Context / Findings** | Body — baseline |
+| REFUTED hypothesis / anomaly | **Tension** | Unexpected findings |
+| High impact + high confidence recommendation | **Resolution** | Closing — call to action |
+| Data or analysis limitation | **Caveat** | Methodology or finding footnote |
+| INFORMATIONAL finding (low impact) | **Supporting detail** | Appendix |
 
-**Minimo narrativo**: Hook + al menos 1 Tension + Resolution. Si todo confirma expectativas, buscar el matiz menos obvio para la Tension.
+**Narrative minimum**: Hook + at least 1 Tension + Resolution. If everything confirms expectations, look for the least obvious nuance for the Tension.
 
-## 5. Paleta Corporate
+## 5. Corporate Palette
 
-Usar en orden de prioridad:
+Use in order of priority:
 
-| Orden | Hex | Nombre | Uso |
+| Order | Hex | Name | Usage |
 |-------|---------|--------|-----|
-| 1 | `#1a365d` | Azul oscuro | Primary — serie principal, barras destacadas |
-| 2 | `#2b6cb0` | Azul medio | Primary light — serie secundaria |
-| 3 | `#3182ce` | Azul claro | Accent — lineas de tendencia, destacados |
-| 4 | `#38a169` | Verde | Success — valores positivos, crecimiento |
-| 5 | `#d69e2e` | Ambar | Warning — valores de atencion |
-| 6 | `#e53e3e` | Rojo | Danger — valores negativos, caidas |
+| 1 | `#1a365d` | Dark blue | Primary — main series, highlighted bars |
+| 2 | `#2b6cb0` | Medium blue | Primary light — secondary series |
+| 3 | `#3182ce` | Light blue | Accent — trend lines, highlights |
+| 4 | `#38a169` | Green | Success — positive values, growth |
+| 5 | `#d69e2e` | Amber | Warning — attention values |
+| 6 | `#e53e3e` | Red | Danger — negative values, drops |

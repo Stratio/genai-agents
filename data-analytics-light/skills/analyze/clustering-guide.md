@@ -1,46 +1,46 @@
-# Guia de Segmentacion por Reglas y RFM
+# Rule-Based and RFM Segmentation Guide
 
-Referencia operativa para segmentacion como herramienta analitica dentro de `/analyze`. Usa exclusivamente pandas — sin dependencias de ML.
+Operational reference for segmentation as an analytical tool within `/analyze`. Uses exclusively pandas — no ML dependencies.
 
-## 1. Tabla de Decision
+## 1. Decision Table
 
-| Situacion | Enfoque | Cuando preferir |
-|-----------|---------|-----------------|
-| Segmentos ya definidos por negocio (VIP, Regular, Nuevo) | Rule-based con umbrales | Reglas claras, interpretabilidad maxima |
-| Datos transaccionales, segmentacion estandar retail | RFM con quintiles | Pocas variables, facil de comunicar |
+| Situation | Approach | When to prefer |
+|-----------|---------|---------------|
+| Segments already defined by the business (VIP, Regular, New) | Rule-based with thresholds | Clear rules, maximum interpretability |
+| Transactional data, standard retail segmentation | RFM with quintiles | Few variables, easy to communicate |
 
 ## 2. RFM (Recency, Frequency, Monetary)
 
-**Query MCP**: "fecha de ultima compra, numero total de compras y total gastado por cliente"
+**MCP Query**: "last purchase date, total number of purchases, and total spent per customer"
 
-**Calculo**:
-1. R = dias desde ultima compra (menor = mejor)
-2. F = numero de compras (mayor = mejor)
-3. M = total gastado (mayor = mejor)
-4. Quintiles: `pd.qcut(serie, q=5, labels=[1,2,3,4,5])`. Invertir R (5 = mas reciente)
-5. Score: concatenar R+F+M como string o sumar para score numerico
+**Calculation**:
+1. R = days since last purchase (lower = better)
+2. F = number of purchases (higher = better)
+3. M = total spent (higher = better)
+4. Quintiles: `pd.qcut(series, q=5, labels=[1,2,3,4,5])`. Invert R (5 = most recent)
+5. Score: concatenate R+F+M as string or sum for numeric score
 
-**Etiquetas de negocio** (obligatorio — nunca "Segmento 1, 2, 3"):
+**Business labels** (mandatory — never "Segment 1, 2, 3"):
 
-| Score RFM | Etiqueta | Descripcion |
-|-----------|----------|-------------|
-| 555, 554, 544 | Champions | Compraron reciente, compran frecuente, gastan mucho |
-| 543, 444, 435 | Leales | Compras regulares con buen gasto |
-| 512, 511, 422 | Potenciales | Compra reciente pero poca frecuencia |
-| 155, 154, 144 | En riesgo | Fueron buenos pero hace mucho que no compran |
-| 111, 112, 121 | Hibernando | Baja actividad en todas las dimensiones |
+| RFM Score | Label | Description |
+|-----------|-------|-------------|
+| 555, 554, 544 | Champions | Purchased recently, buy frequently, spend a lot |
+| 543, 444, 435 | Loyal | Regular purchases with good spending |
+| 512, 511, 422 | Potential | Recent purchase but low frequency |
+| 155, 154, 144 | At risk | Were good but haven't purchased in a long time |
+| 111, 112, 121 | Hibernating | Low activity across all dimensions |
 
-Adaptar etiquetas al dominio especifico. La tabla es orientativa.
+Adapt labels to the specific domain. The table is indicative.
 
-## 3. Profiling Obligatorio
+## 3. Mandatory Profiling
 
-Tras asignar segmentos (ya sea por reglas o RFM), SIEMPRE generar perfil de negocio:
+After assigning segments (whether by rules or RFM), ALWAYS generate a business profile:
 
-1. **Media por segmento como indice base 100**: `(media_segmento / media_total) * 100` por variable
-   - Indice > 120 = caracteristica distintiva del segmento
-   - Indice < 80 = debilidad relativa del segmento
-2. **Tabla resumen**: Una fila por segmento, columnas = variables + tamano (n y %)
-3. **Naming**: Asignar nombre de negocio basado en el perfil. Nunca "Segmento 0, 1, 2"
-   - Ejemplo: "Alto valor digital" (indice gasto online = 180, frecuencia = 150)
-   - Ejemplo: "Compradores ocasionales" (indice frecuencia = 45, recencia = 60)
-4. **Visualizacion**: Heatmap de indices (segmentos x variables), radar/spider chart por segmento
+1. **Mean per segment as base 100 index**: `(segment_mean / overall_mean) * 100` per variable
+   - Index > 120 = distinctive characteristic of the segment
+   - Index < 80 = relative weakness of the segment
+2. **Summary table**: One row per segment, columns = variables + size (n and %)
+3. **Naming**: Assign a business name based on the profile. Never "Segment 0, 1, 2"
+   - Example: "High-value digital" (online spending index = 180, frequency = 150)
+   - Example: "Occasional buyers" (frequency index = 45, recency = 60)
+4. **Visualization**: Index heatmap (segments x variables), radar/spider chart per segment

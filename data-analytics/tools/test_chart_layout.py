@@ -59,8 +59,8 @@ def plotly_fig():
     import plotly.graph_objects as go
 
     fig = go.Figure()
-    fig.add_trace(go.Bar(x=["A", "B", "C"], y=[10, 20, 15], name="Ventas"))
-    fig.add_trace(go.Bar(x=["A", "B", "C"], y=[8, 18, 12], name="Costes"))
+    fig.add_trace(go.Bar(x=["A", "B", "C"], y=[10, 20, 15], name="Sales"))
+    fig.add_trace(go.Bar(x=["A", "B", "C"], y=[8, 18, 12], name="Costs"))
     return fig
 
 
@@ -73,18 +73,18 @@ class TestApplyChartLayout:
         from chart_layout import apply_chart_layout
 
         fig, ax = mpl_fig_ax
-        apply_chart_layout(fig, ax, insight="Norte concentra el 45%", context="Q4 2025")
+        apply_chart_layout(fig, ax, insight="North accounts for 45%", context="Q4 2025")
 
         assert fig._suptitle is not None
-        assert fig._suptitle.get_text() == "Norte concentra el 45%"
+        assert fig._suptitle.get_text() == "North accounts for 45%"
 
     def test_sets_subtitle(self, mpl_fig_ax):
         from chart_layout import apply_chart_layout
 
         fig, ax = mpl_fig_ax
-        apply_chart_layout(fig, ax, insight="Insight", context="Periodo Q4")
+        apply_chart_layout(fig, ax, insight="Insight", context="Period Q4")
 
-        assert ax.get_title() == "Periodo Q4"
+        assert ax.get_title() == "Period Q4"
 
     def test_legend_bottom_default(self, mpl_fig_ax):
         from chart_layout import apply_chart_layout
@@ -122,9 +122,9 @@ class TestApplyChartLayout:
         from chart_layout import apply_chart_layout
 
         fig, ax = mpl_fig_ax_no_legend
-        apply_chart_layout(fig, ax, insight="Sin leyenda", context="Test")
+        apply_chart_layout(fig, ax, insight="No legend", context="Test")
 
-        assert fig._suptitle.get_text() == "Sin leyenda"
+        assert fig._suptitle.get_text() == "No legend"
         assert ax.get_legend() is None
 
     def test_subplots_primary_ax(self, mpl_fig_subplots):
@@ -132,10 +132,10 @@ class TestApplyChartLayout:
         from chart_layout import apply_chart_layout
 
         fig, axes = mpl_fig_subplots
-        apply_chart_layout(fig, axes[0], insight="Subplots test", context="Dos paneles")
+        apply_chart_layout(fig, axes[0], insight="Subplots test", context="Two panels")
 
         assert fig._suptitle.get_text() == "Subplots test"
-        assert axes[0].get_title() == "Dos paneles"
+        assert axes[0].get_title() == "Two panels"
 
     def test_reserves_space(self, mpl_fig_ax):
         from chart_layout import apply_chart_layout
@@ -151,9 +151,9 @@ class TestApplyChartLayout:
         from chart_layout import apply_chart_layout
 
         fig, ax = mpl_fig_ax
-        apply_chart_layout(fig, ax, insight="Solo insight")
+        apply_chart_layout(fig, ax, insight="Insight only")
 
-        assert fig._suptitle.get_text() == "Solo insight"
+        assert fig._suptitle.get_text() == "Insight only"
         assert ax.get_title() == ""
 
 
@@ -165,10 +165,10 @@ class TestApplyPlotlyLayout:
     def test_combined_html_title(self, plotly_fig):
         from chart_layout import apply_plotly_layout
 
-        apply_plotly_layout(plotly_fig, insight="Ventas suben 12%", context="vs Q3 2025")
+        apply_plotly_layout(plotly_fig, insight="Sales up 12%", context="vs Q3 2025")
 
         title = plotly_fig.layout.title
-        assert "<b>Ventas suben 12%</b>" in title.text
+        assert "<b>Sales up 12%</b>" in title.text
         assert "vs Q3 2025" in title.text
 
     def test_legend_horizontal_bottom(self, plotly_fig):
@@ -213,10 +213,10 @@ class TestApplyPlotlyLayout:
     def test_title_without_context(self, plotly_fig):
         from chart_layout import apply_plotly_layout
 
-        apply_plotly_layout(plotly_fig, insight="Solo insight")
+        apply_plotly_layout(plotly_fig, insight="Insight only")
 
         title_text = plotly_fig.layout.title.text
-        assert "<b>Solo insight</b>" in title_text
+        assert "<b>Insight only</b>" in title_text
         assert "<br>" not in title_text
 
 

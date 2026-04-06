@@ -1,78 +1,78 @@
 ---
 name: create-semantic-terms
-description: Generar o regenerar terminos semanticos de negocio en el glosario de Stratio
-  Governance para las vistas de negocio de un dominio.
-argument-hint: [dominio tecnico (opcional)]
+description: Generate or regenerate business semantic terms in the Stratio
+  Governance glossary for the business views of a domain.
+argument-hint: [technical domain (optional)]
 ---
 
-# Skill: Crear Terminos Semanticos
+# Skill: Create Semantic Terms
 
-Genera o regenera terminos semanticos de negocio en el glosario de Stratio Governance para las vistas de negocio de un dominio. Fase 5 del pipeline de capa semantica.
+Generates or regenerates business semantic terms in the Stratio Governance glossary for the business views of a domain. Phase 5 of the semantic layer pipeline.
 
-## Tools MCP utilizadas
+## MCP Tools Used
 
-| Tool | Servidor | Proposito |
-|------|----------|-----------|
-| `search_domains(search_text, domain_type='technical')` | sql | **Preferir**. Buscar dominios tecnicos por texto libre. Resultados por relevancia |
-| `list_domains(domain_type='technical', refresh?)` | sql | Listar todos los dominios tecnicos. `refresh=true` para bypass de cache |
-| `list_technical_domain_concepts(domain)` | gov | Listar vistas con estado de gobernanza, terminos semanticos y mappings |
-| `create_semantic_terms(domain, view_names?, user_instructions?, regenerate?)` | gov | Crear terminos semanticos. Con `regenerate=true`: DESTRUCTIVO, borra y recrea |
+| Tool | Server | Purpose |
+|------|--------|---------|
+| `search_domains(search_text, domain_type='technical')` | sql | **Prefer**. Search technical domains by free text. Results by relevance |
+| `list_domains(domain_type='technical', refresh?)` | sql | List all technical domains. `refresh=true` for cache bypass |
+| `list_technical_domain_concepts(domain)` | gov | List views with governance state, semantic terms and mappings |
+| `create_semantic_terms(domain, view_names?, user_instructions?, regenerate?)` | gov | Create semantic terms. With `regenerate=true`: DESTRUCTIVE, deletes and recreates |
 
-**Reglas clave**: `domain_name` inmutable. Confirmacion obligatoria para `regenerate=true`. Ofrecer `user_instructions` antes de invocar. Pre-requisito: las vistas deben tener SQL mapping antes de generar terminos semanticos.
+**Key rules**: `domain_name` immutable. Mandatory confirmation for `regenerate=true`. Offer `user_instructions` before invoking. Pre-requisite: views must have SQL mapping before generating semantic terms.
 
 ## Workflow
 
-### 1. Determinar dominio
+### 1. Determine domain
 
-Si `$ARGUMENTS` contiene nombre de dominio, buscar con `search_domains($ARGUMENTS, domain_type='technical')`. Si no coincide, reintentar con `search_domains($ARGUMENTS, domain_type='technical', refresh=true)` por si es una coleccion recien creada. Si ahora coincide, continuar. Si no coincide o no hay argumento, listar con `list_domains(domain_type='technical')` y preguntar al usuario siguiendo la convencion de preguntas al usuario.
+If `$ARGUMENTS` contains a domain name, search with `search_domains($ARGUMENTS, domain_type='technical')`. If it does not match, retry with `search_domains($ARGUMENTS, domain_type='technical', refresh=true)` in case it is a recently created collection. If it now matches, continue. If it does not match or there is no argument, list with `list_domains(domain_type='technical')` and ask the user following the user question convention.
 
-### 2. Evaluar estado
+### 2. Evaluate state
 
-Ejecutar `list_technical_domain_concepts(domain)` para obtener el listado de vistas con su estado de gobernanza, mappings y terminos semanticos.
+Execute `list_technical_domain_concepts(domain)` to obtain the list of views with their governance state, mappings and semantic terms.
 
-Presentar resumen:
+Present summary:
 ```
-## Terminos Semanticos — [domain_name]
-| Vista | Estado | Mapping | Terminos semanticos |
-|-------|--------|---------|---------------------|
-| Vista1 | Draft | ✓ | ✓ |
-| Vista2 | Pending Publish | ✓ | ✗ |
-| Vista3 | Draft | ✗ | — |
+## Semantic Terms — [domain_name]
+| View | State | Mapping | Semantic terms |
+|------|-------|---------|----------------|
+| View1 | Draft | ✓ | ✓ |
+| View2 | Pending Publish | ✓ | ✗ |
+| View3 | Draft | ✗ | — |
 ```
 
-### 3. Verificar pre-requisito
+### 3. Verify pre-requisite
 
-Las vistas necesitan SQL mapping para poder generar terminos semanticos. Si hay vistas sin mapping:
-- Advertir al usuario: "Las siguientes vistas no tienen mapping SQL: [lista]. No se pueden generar terminos semanticos para ellas."
-- Sugerir: "Usa `/create-sql-mappings` o `/create-business-views` para generar los mappings primero"
-- Continuar solo con las vistas que tienen mapping
+Views need SQL mapping to generate semantic terms. If there are views without mapping:
+- Warn the user: "The following views do not have SQL mapping: [list]. Semantic terms cannot be generated for them."
+- Suggest: "Use `/create-sql-mappings` or `/create-business-views` to generate the mappings first"
+- Continue only with views that have mapping
 
-### 4. Seleccion de alcance
+### 4. Scope selection
 
-Preguntar al usuario con opciones (solo vistas con mapping):
-1. **Crear para vistas sin terminos** — idempotente
-2. **Vistas especificas** — seleccion multiple
-3. **Regenerar todas** — DESTRUCTIVO: borra terminos existentes y recrea. Requiere confirmacion explicita
-4. **Regenerar vistas especificas** — DESTRUCTIVO para las seleccionadas. Requiere confirmacion
+Ask the user with options (only views with mapping):
+1. **Create for views without terms** — idempotent
+2. **Specific views** — multiple selection
+3. **Regenerate all** — DESTRUCTIVE: deletes existing terms and recreates. Requires explicit confirmation
+4. **Regenerate specific views** — DESTRUCTIVE for the selected ones. Requires confirmation
 
 ### 5. user_instructions
 
-Ofrecer al usuario la oportunidad de aportar contexto adicional:
-- **Ficheros locales**: Si el usuario tiene glosarios de negocio, documentacion funcional o guias de estilo terminologico → **leerlos** y extraer definiciones relevantes para incluirlas como contexto
-- **Definiciones de dominio**: Significado de negocio de conceptos clave, relaciones entre entidades, reglas que la IA deberia reflejar en los terminos
-- Ejemplos: "El concepto 'actor' en este dominio se refiere a actores de cine, no a actores del sistema", "Las vistas de `film` deben reflejar que rental_rate es el precio de alquiler por dia"
+Offer the user the opportunity to provide additional context:
+- **Local files**: If the user has business glossaries, functional documentation or terminological style guides → **read them** and extract relevant definitions to include as context
+- **Domain definitions**: Business meaning of key concepts, relationships between entities, rules that the AI should reflect in the terms
+- Examples: "The concept 'actor' in this domain refers to movie actors, not system actors", "The `film` views should reflect that rental_rate is the rental price per day"
 
-No sugerir opciones que la tool controla internamente (idioma, audiencia, formato). Si el usuario no aporta instrucciones, continuar sin el parametro. No es bloqueante.
+Do not suggest options that the tool controls internally (language, audience, format). If the user does not provide instructions, continue without the parameter. Not blocking.
 
-### 6. Ejecucion
+### 6. Execution
 
-Invocar `create_semantic_terms`. Para regenerar: pasar `regenerate=true` (DESTRUCTIVO). La tool devuelve un resumen de lo procesado — presentar al usuario directamente.
+Invoke `create_semantic_terms`. To regenerate: pass `regenerate=true` (DESTRUCTIVE). The tool returns a summary of what was processed — present to the user directly.
 
-Si hay errores, reintentar la vista fallida con `user_instructions` mejoradas (max 2 reintentos). Si persiste, documentar y continuar.
+If there are errors, retry the failed view with improved `user_instructions` (max 2 retries). If it persists, document and continue.
 
-### 7. Resumen
+### 7. Summary
 
-Basado en la respuesta de la tool:
-- Terminos creados/regenerados
-- Errores si los hubo
-- Siguiente paso sugerido: "La capa semantica esta lista para revision. Si las vistas aun estan en estado Draft, puedes enviarlas a Pending Publish pidiendo publicarlas directamente. Puedes crear business terms con `/manage-business-terms` para enriquecer el diccionario"
+Based on the tool's response:
+- Terms created/regenerated
+- Errors if any
+- Suggested next step: "The semantic layer is ready for review. If the views are still in Draft state, you can send them to Pending Publish by requesting their publication directly. You can create business terms with `/manage-business-terms` to enrich the dictionary"

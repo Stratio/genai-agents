@@ -1,47 +1,47 @@
-# Guia de Reasoning (Documentacion del Proceso)
+# Reasoning Guide (Process Documentation)
 
-Guia detallada para generar el reasoning de cada analisis. El reasoning documenta el razonamiento completo del analista: desde la pregunta original hasta las conclusiones y sugerencias.
+Detailed guide for generating reasoning for each analysis. Reasoning documents the analyst's complete thought process: from the original question to the conclusions and suggestions.
 
-## Cuando generar
+## When to generate
 
-| Profundidad | Reasoning | Formato |
-|-------------|-----------|---------|
-| Rapido | No generar fichero. Incluir notas clave en el chat (ver SKILL.md sec 7.1) | Solo chat |
-| Estandar | Generar en `output/[ANALISIS_DIR]/reasoning/reasoning.md` | Solo .md |
-| Profundo | Generar en `output/[ANALISIS_DIR]/reasoning/reasoning.md` | Solo .md (completo + sugerencias detalladas) |
+| Depth | Reasoning | Format |
+|-------|-----------|--------|
+| Quick | Do not generate file. Include key notes in chat (see SKILL.md sec 7.1) | Chat only |
+| Standard | Generate in `output/[ANALYSIS_DIR]/reasoning/reasoning.md` | .md only |
+| Deep | Generate in `output/[ANALYSIS_DIR]/reasoning/reasoning.md` | .md only (full + detailed suggestions) |
 
-**Override del usuario**: Si el usuario pide explicitamente reasoning en otros formatos (PDF, HTML, DOCX), generar el .md primero y luego convertir con:
+**User override**: If the user explicitly requests reasoning in other formats (PDF, HTML, DOCX), generate the .md first and then convert with:
 ```bash
-bash -c "source .venv/bin/activate && python tools/md_to_report.py output/[ANALISIS_DIR]/reasoning/reasoning.md --style corporate"
+bash -c "source .venv/bin/activate && python tools/md_to_report.py output/[ANALYSIS_DIR]/reasoning/reasoning.md --style corporate"
 ```
-Anadir `--html` si solicito HTML. Anadir `--docx` si solicito DOCX.
+Add `--html` if HTML was requested. Add `--docx` if DOCX was requested.
 
-## Contenido obligatorio
+## Mandatory content
 
-El reasoning debe incluir todas las secciones siguientes:
+The reasoning must include all of the following sections:
 
-1. **Pregunta original del usuario** — Transcripcion literal de la peticion
-2. **Hipotesis formuladas y resultado de su validacion** — Tabla resumen obligatoria:
+1. **User's original question** — Verbatim transcription of the request
+2. **Hypotheses formulated and validation results** — Mandatory summary table:
    ```
-   | ID | Hipotesis | Resultado | Esperado | Real | So What |
+   | ID | Hypothesis | Result | Expected | Actual | So What |
    ```
-3. **Dominio y tablas utilizadas** — Nombre exacto del dominio y listado de tablas consultadas
-4. **Resumen de calidad de datos** — Data Quality Score de la Fase 1.1 (ALTO/MEDIO/BAJO con %)
-5. **Decisiones tomadas y justificacion** — Elecciones metodologicas, filtros aplicados, exclusiones
-6. **Preguntas realizadas al MCP y resumen de los datos obtenidos** — Cada query con descripcion del resultado
-7. **Analisis realizados y hallazgos clave** — Tecnicas aplicadas y principales insights
-8. **Clustering o feature importance** (si aplica) — Enfoque, variables, resultados, limitaciones
-9. **Limitaciones identificadas** — En los datos o en el analisis
-10. **Sugerencias para analisis futuros** — Preguntas que quedaron abiertas o lineas de investigacion
-11. **Rutas de todos los archivos generados** — Listado completo de deliverables, scripts, datos y assets
+3. **Domain and tables used** — Exact domain name and list of tables queried
+4. **Data quality summary** — Data Quality Score from Phase 1.1 (HIGH/MEDIUM/LOW with %)
+5. **Decisions made and justification** — Methodological choices, applied filters, exclusions
+6. **Questions asked to the MCP and summary of data obtained** — Each query with result description
+7. **Analyses performed and key findings** — Techniques applied and main insights
+8. **Clustering or feature importance** (if applicable) — Approach, variables, results, limitations
+9. **Limitations identified** — In the data or in the analysis
+10. **Suggestions for future analyses** — Questions that remained open or lines of investigation
+11. **Paths of all generated files** — Complete listing of deliverables, scripts, data, and assets
 
-## Diferencias por profundidad
+## Differences by depth
 
-### Estandar
-- Contenido completo (todas las secciones anteriores)
-- Sugerencias para analisis futuros: breves, 2-3 lineas de investigacion
+### Standard
+- Full content (all sections above)
+- Suggestions for future analyses: brief, 2-3 lines of investigation
 
-### Profundo
-- Contenido completo (todas las secciones anteriores)
-- Sugerencias de analisis de seguimiento detalladas: para cada sugerencia incluir pregunta de negocio, hipotesis inicial, datos necesarios y tecnica analitica recomendada
-- Si se usaron tecnicas avanzadas (tests estadisticos, Monte Carlo, root cause analysis): documentar parametros, supuestos y sensibilidad de los resultados
+### Deep
+- Full content (all sections above)
+- Detailed follow-up analysis suggestions: for each suggestion include business question, initial hypothesis, required data, and recommended analytical technique
+- If advanced techniques were used (statistical tests, Monte Carlo, root cause analysis): document parameters, assumptions, and sensitivity of the results

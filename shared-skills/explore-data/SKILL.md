@@ -1,45 +1,45 @@
 ---
 name: explore-data
-description: Exploracion rapida de dominios de datos, tablas, columnas, perfilado estadistico y terminologia de negocio usando los MCPs de datos gobernados. Usar cuando el usuario quiera descubrir que datos hay disponibles, entender la estructura de un dominio o explorar tablas y columnas antes de un analisis.
-argument-hint: [dominio (opcional)]
+description: Quick exploration of data domains, tables, columns, statistical profiling and business terminology using the governed data MCPs. Use when the user wants to discover what data is available, understand a domain's structure, or explore tables and columns before an analysis.
+argument-hint: [domain (optional)]
 ---
 
-# Skill: Exploracion de Dominios y Datos
+# Skill: Domain and Data Exploration
 
-Guia para explorar rapidamente los datos disponibles en los dominios gobernados.
+Guide for quickly exploring available data in governed domains.
 
-## 1. Descubrimiento del Dominio
+## 1. Domain Discovery
 
-Leer y seguir `skills-guides/stratio-data-tools.md` sec 4-5 para los pasos de descubrimiento del dominio (buscar o listar dominios, seleccionar, explorar tablas, columnas, terminologia y profiling).
+Read and follow `skills-guides/stratio-data-tools.md` sec 4-5 for domain discovery steps (search or list domains, select, explore tables, columns, terminology and profiling).
 
-Si el usuario proporciona un argumento ($ARGUMENTS), buscar con `search_domains($ARGUMENTS)`. Si coincide con un dominio, saltar directamente a explorar tablas. Si no coincide, preguntar al usuario cual dominio explorar siguiendo la convencion de preguntas al usuario (adaptativa al entorno: interactivas si disponibles, lista numerada en chat si no). Preguntar si quiere profundizar en alguna tabla especifica o ver todas.
+If the user provides an argument ($ARGUMENTS), search with `search_domains($ARGUMENTS)`. If it matches a domain, skip directly to exploring tables. If it does not match, ask the user which domain to explore following the user question convention (adaptive to the environment: interactive if available, numbered list in chat otherwise). Ask if they want to drill into a specific table or see all of them.
 
-## 2. Contexto Previo del Dominio
+## 2. Prior Domain Context
 
-Si `output/MEMORY.md` existe, leer la seccion "Patrones de Datos Conocidos" del dominio que se va a explorar. Si hay patrones registrados, informar al usuario antes de perfilar (ej: "En analisis anteriores se detecto que la columna X tiene ~35% nulos").
+If `output/MEMORY.md` exists, read the "Known Data Patterns" section for the domain being explored. If there are registered patterns, inform the user before profiling (e.g.: "In previous analyses it was detected that column X has ~35% nulls").
 
-## 3. Resumen y Sugerencias Proactivas
+## 3. Summary and Proactive Suggestions
 
-Presentar un resumen estructurado:
-- Dominio explorado y su proposito
-- Numero de tablas disponibles
-- Tablas principales con su descripcion
-- Columnas clave identificadas
-- Terminos de negocio relevantes
-- Observaciones de calidad de datos (si se hizo perfilado)
+Present a structured summary:
+- Domain explored and its purpose
+- Number of available tables
+- Main tables with their description
+- Key columns identified
+- Relevant business terms
+- Data quality observations (if profiling was performed)
 
-### Analisis sugeridos basados en la estructura del dominio
+### Suggested analyses based on the domain structure
 
-Tras explorar, detectar automaticamente oportunidades analiticas y presentarlas al usuario:
+After exploring, automatically detect analytical opportunities and present them to the user:
 
-| Si encuentras... | Sugerir |
-|-----------------|---------|
-| Columnas de fecha (date, timestamp, periodo) | "**Tendencia temporal** — Como han evolucionado las [metricas] a lo largo del tiempo?" |
-| Categorias (region, producto, segmento, tipo) | "**Comparacion/Pareto** — Donde se concentra el 80% de [metrica]? Que [dimension] destaca?" |
-| Multiples tablas relacionadas (FK, entidades compartidas) | "**Cruce** — Que relacion hay entre [tabla A] y [tabla B]? Ej: clientes × productos" |
-| Variables numericas + categoricas juntas | "**Segmentacion** — Hay grupos naturales? Que perfiles de [entidad] existen?" |
-| Columna de estado o etapa (pipeline, fase, status) | "**Funnel** — Cual es la tasa de conversion entre etapas? Donde se pierde mas?" |
-| Columnas monetarias (importe, precio, coste, ingreso) | "**Concentracion** — El 20% de [entidades] genera el 80% de [metrica]?" |
-| Columna de fecha alta + actividad posterior | "**Cohortes** — Como se retienen los [entidades] segun su fecha de inicio?" |
+| If you find... | Suggest |
+|----------------|---------|
+| Date columns (date, timestamp, period) | "**Time trend** — How have the [metrics] evolved over time?" |
+| Categories (region, product, segment, type) | "**Comparison/Pareto** — Where is 80% of [metric] concentrated? Which [dimension] stands out?" |
+| Multiple related tables (FK, shared entities) | "**Cross-analysis** — What is the relationship between [table A] and [table B]? E.g.: customers x products" |
+| Numeric + categorical variables together | "**Segmentation** — Are there natural groups? What [entity] profiles exist?" |
+| Status or stage column (pipeline, phase, status) | "**Funnel** — What is the conversion rate between stages? Where is the most drop-off?" |
+| Monetary columns (amount, price, cost, revenue) | "**Concentration** — Does 20% of [entities] generate 80% of [metric]?" |
+| Registration date column + subsequent activity | "**Cohorts** — How are [entities] retained based on their start date?" |
 
-Presentar como lista priorizada de 3-5 sugerencias concretas, adaptadas a las tablas y columnas reales del dominio explorado. Cada sugerencia debe mencionar tablas y columnas especificas.
+Present as a prioritized list of 3-5 concrete suggestions, tailored to the actual tables and columns of the explored domain. Each suggestion should mention specific tables and columns.

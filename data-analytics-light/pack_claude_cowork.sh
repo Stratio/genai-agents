@@ -3,40 +3,58 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MONOREPO_ROOT="$(dirname "$SCRIPT_DIR")"
-cd "$SCRIPT_DIR"
+REAL_SCRIPT_DIR="$SCRIPT_DIR"
 
-# --- Parsear argumentos CLI ---
-ARG_NAME="" ARG_URL="" ARG_KEY=""
+# --- Parse CLI arguments ---
+ARG_NAME="" ARG_URL="" ARG_KEY="" LANG_CODE=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --name)  ARG_NAME="$2"; shift 2 ;;
     --url)   ARG_URL="$2"; shift 2 ;;
     --key)   ARG_KEY="$2"; shift 2 ;;
-    *) echo "ERROR: Argumento desconocido: $1"; echo "Uso: $0 [--name NOMBRE] [--url MCP_URL] [--key API_KEY]"; exit 1 ;;
+    --lang)  LANG_CODE="$2"; shift 2 ;;
+    *) echo "ERROR: Unknown argument: $1"; echo "Usage: $0 [--name NAME] [--url MCP_URL] [--key API_KEY] [--lang CODE]"; exit 1 ;;
   esac
 done
 
-# --- Nombre: argumento CLI o default ---
+# --- Language resolution ---
+_LANG_TMPDIR=""
+if [[ -n "$LANG_CODE" && "$LANG_CODE" != "en" ]]; then
+  _LANG_TMPDIR=$(mktemp -d "/tmp/pack-lang-${LANG_CODE}-XXXXXX")
+  bash "$MONOREPO_ROOT/bin/resolve-lang.sh" --lang "$LANG_CODE" --source "$MONOREPO_ROOT" --target "$_LANG_TMPDIR"
+  MONOREPO_ROOT="$_LANG_TMPDIR"
+  SCRIPT_DIR="$_LANG_TMPDIR/$(basename "$SCRIPT_DIR")"
+  cd "$SCRIPT_DIR"
+else
+  cd "$SCRIPT_DIR"
+fi
+trap '[[ -n "$_LANG_TMPDIR" ]] && rm -rf "$_LANG_TMPDIR"' EXIT
+
+# --- Name: CLI argument or default ---
 COWORK_NAME="${ARG_NAME:-data-analytics-light}"
 
-# Validar kebab-case
+# Validate kebab-case
 if ! echo "$COWORK_NAME" | grep -qE '^[a-z][a-z0-9]*(-[a-z0-9]+)*$'; then
-  echo "ERROR: El nombre debe ser kebab-case (ej: mi-agente, data-analytics-light)."
+  echo "ERROR: Name must be kebab-case (e.g.: my-agent, data-analytics-light)."
   exit 1
 fi
 
-COWORK_DIR="dist/claude_cowork/$COWORK_NAME"
+if [[ -n "$LANG_CODE" && "$LANG_CODE" != "en" ]]; then
+  COWORK_DIR="$REAL_SCRIPT_DIR/dist/$LANG_CODE/claude_cowork/$COWORK_NAME"
+else
+  COWORK_DIR="dist/claude_cowork/$COWORK_NAME"
+fi
 
-# --- Limpiar si existe ---
+# --- Clean if exists ---
 if [ -d "$COWORK_DIR" ]; then
-  echo "Borrando cowork existente en $COWORK_DIR..."
+  echo "Deleting existing cowork in $COWORK_DIR..."
   rm -rf "$COWORK_DIR"
 fi
 
 # ============================================================
-# Paso 1: Construir plugin inline (skills + MCP, sin agente)
+# Step 1: Build inline plugin (skills + MCP, without agent)
 # ============================================================
-echo "Construyendo plugin inline..."
+echo "Building inline plugin..."
 PLUGIN_BUILD="$COWORK_DIR/_plugin_build"
 mkdir -p "$PLUGIN_BUILD/.claude-plugin"
 mkdir -p "$PLUGIN_BUILD/skills"
@@ -50,8 +68,8 @@ cat > "$PLUGIN_BUILD/.claude-plugin/plugin.json" <<EOF
 }
 EOF
 
-# --- Copiar skills locales ---
-echo "Copiando skills..."
+# --- Copy local skills ---
+echo "Copying skills..."
 SKILLS_SRC=""
 if [ -d "skills" ]; then
   SKILLS_SRC="skills"
@@ -65,43 +83,43 @@ fi
 
 if [ -n "$SKILLS_SRC" ]; then
   cp -r "$SKILLS_SRC"/* "$PLUGIN_BUILD/skills/"
-  # Normalizar: archivos .md sueltos → subcarpeta/SKILL.md
+  # Normalize: loose .md files → subfolder/SKILL.md
   for md_file in "$PLUGIN_BUILD/skills/"*.md; do
     [ -f "$md_file" ] || continue
     skill_name="$(basename "$md_file" .md)"
     mkdir -p "$PLUGIN_BUILD/skills/$skill_name"
     mv "$md_file" "$PLUGIN_BUILD/skills/$skill_name/SKILL.md"
   done
-  echo "  Skills copiadas desde $SKILLS_SRC"
+  echo "  Skills copied from $SKILLS_SRC"
 else
-  echo "WARN: No se encontro directorio de skills — el plugin no tendra skills."
+  echo "WARN: Skills directory not found — the plugin will have no skills."
 fi
 
-# --- Copiar shared skills (si las declara el agente) ---
+# --- Copy shared skills (if declared by the agent) ---
 if [ -f "shared-skills" ]; then
   while IFS= read -r skill_name || [ -n "$skill_name" ]; do
     [ -z "$skill_name" ] || [[ "$skill_name" == \#* ]] && continue
     skill_src="$MONOREPO_ROOT/shared-skills/$skill_name"
     skill_dst="$PLUGIN_BUILD/skills/$skill_name"
     if [ ! -d "$skill_src" ]; then
-      echo "  WARN: shared skill '$skill_name' no encontrada en $skill_src — omitida" >&2
+      echo "  WARN: shared skill '$skill_name' not found in $skill_src — skipped" >&2
       continue
     fi
-    # Prioridad local
+    # Local priority
     if [ -d "$skill_dst" ]; then
-      echo "  '$skill_name' omitida (version local tiene prioridad)"
+      echo "  '$skill_name' skipped (local version takes priority)"
       continue
     fi
     cp -r "$skill_src" "$skill_dst"
-    # Eliminar fichero skill-guides del output
+    # Remove skill-guides file from output
     rm -f "$skill_dst/skill-guides"
-    echo "  Shared skill '$skill_name' incluida"
+    echo "  Shared skill '$skill_name' included"
   done < "shared-skills"
 fi
 
-# --- Recopilar y copiar skills-guides (inline: dentro de cada skill) ---
+# --- Collect and copy skills-guides (inline: inside each skill) ---
 GUIDES_NEEDED=()
-# Desde shared-skills/*/skill-guides
+# From shared-skills/*/skill-guides
 if [ -f "shared-skills" ]; then
   while IFS= read -r skill_name || [ -n "$skill_name" ]; do
     [ -z "$skill_name" ] || [[ "$skill_name" == \#* ]] && continue
@@ -114,14 +132,14 @@ if [ -f "shared-skills" ]; then
     fi
   done < "shared-skills"
 fi
-# Desde shared-guides del agente
+# From agent's shared-guides
 if [ -f "shared-guides" ]; then
   while IFS= read -r guide || [ -n "$guide" ]; do
     [ -z "$guide" ] || [[ "$guide" == \#* ]] && continue
     GUIDES_NEEDED+=("shared:$guide")
   done < "shared-guides"
 fi
-# Guides locales
+# Local guides
 if [ -d "skills-guides" ]; then
   for f in skills-guides/*.md; do
     [ -f "$f" ] || continue
@@ -129,7 +147,7 @@ if [ -d "skills-guides" ]; then
   done
 fi
 
-# Construir lista deduplicada
+# Build deduplicated list
 declare -A _GUIDES_MAP=()
 for entry in "${GUIDES_NEEDED[@]}"; do
   src_type="${entry%%:*}"
@@ -138,7 +156,7 @@ for entry in "${GUIDES_NEEDED[@]}"; do
 done
 
 if [ ${#_GUIDES_MAP[@]} -gt 0 ]; then
-  echo "Copiando skills-guides a skills..."
+  echo "Copying skills-guides into skills..."
   for skill_dir in "$PLUGIN_BUILD/skills/analyze" "$PLUGIN_BUILD/skills/explore-data"; do
     if [ -d "$skill_dir" ]; then
       for guide_name in "${!_GUIDES_MAP[@]}"; do
@@ -159,10 +177,10 @@ if [ ${#_GUIDES_MAP[@]} -gt 0 ]; then
   sed -i 's|`skills-guides/stratio-data-tools\.md`|`stratio-data-tools.md`|g' "$PLUGIN_BUILD/skills/"*/SKILL.md 2>/dev/null || true
 fi
 
-# --- Sustitucion de placeholders ---
+# --- Placeholder substitution ---
 sed -i 's/{{TOOL_PREGUNTAS}}/ (`AskUserQuestion`)/g' "$PLUGIN_BUILD/skills/"*/SKILL.md 2>/dev/null || true
 
-# --- .mcp.json del plugin ---
+# --- Plugin .mcp.json ---
 if [ -n "$ARG_URL" ] || [ -n "$ARG_KEY" ]; then
   MCP_URL_VALUE="${ARG_URL:-\$\{MCP_SQL_URL:-http://127.0.0.1:8080/mcp\}}"
   MCP_KEY_VALUE="${ARG_KEY:-\$\{MCP_SQL_API_KEY:-\}}"
@@ -199,33 +217,33 @@ else
 EOF
 fi
 
-# --- Generar plugin ZIP ---
+# --- Generate plugin ZIP ---
 PLUGIN_ZIP_NAME="${COWORK_NAME}.zip"
-echo "Generando plugin ZIP..."
+echo "Generating plugin ZIP..."
 (cd "$PLUGIN_BUILD" && zip -r "../${PLUGIN_ZIP_NAME}" . -q)
 
 # ============================================================
-# Paso 2: Generar CLAUDE.md desde AGENTS.md
+# Step 2: Generate CLAUDE.md from AGENTS.md
 # ============================================================
-echo "Generando CLAUDE.md desde AGENTS.md..."
+echo "Generating CLAUDE.md from AGENTS.md..."
 sed 's|`skills-guides/stratio-data-tools\.md`|`skills/analyze/stratio-data-tools.md`|g' AGENTS.md > "$COWORK_DIR/CLAUDE.md"
 sed -i 's/{{TOOL_PREGUNTAS}}/ (`AskUserQuestion`)/g' "$COWORK_DIR/CLAUDE.md"
 
-# --- README de usuario ---
+# --- User README ---
 if [ -f "USER_README.md" ]; then
   cp USER_README.md "$COWORK_DIR/README.md"
-  echo "  README.md copiado desde USER_README.md"
+  echo "  README.md copied from USER_README.md"
 fi
 
 # ============================================================
-# Paso 3: Limpiar build temporal
+# Step 3: Clean up temporary build
 # ============================================================
 rm -rf "$PLUGIN_BUILD"
 
-# --- Resumen ---
+# --- Summary ---
 PLUGIN_SIZE=$(du -sh "$COWORK_DIR/${COWORK_NAME}.zip" | cut -f1)
 echo ""
-echo "=== Cowork empaquetado ==="
-echo "  CLAUDE.md:  $COWORK_DIR/CLAUDE.md (folder instructions, generado desde AGENTS.md)"
-echo "  Plugin ZIP: $COWORK_DIR/${COWORK_NAME}.zip ($PLUGIN_SIZE) (skills + MCP, sin agente)"
+echo "=== Cowork packaged ==="
+echo "  CLAUDE.md:  $COWORK_DIR/CLAUDE.md (folder instructions, generated from AGENTS.md)"
+echo "  Plugin ZIP: $COWORK_DIR/${COWORK_NAME}.zip ($PLUGIN_SIZE) (skills + MCP, without agent)"
 echo ""

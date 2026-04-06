@@ -1,318 +1,374 @@
 # genai-agents
 
-Coleccion de agentes y skills de IA generativa que explotan la **Stratio Semantic Data Layer**, la capa de datos semantizados que **Stratio Governance** genera a partir de sus dominios de datos, capas semanticas, reglas de calidad del dato y business terms, produciendo colecciones listas para consumo analitico. Gracias a **Stratio Virtualizer**, un motor basado en Apache Spark, el acceso a los datos es independiente del datastore subyacente y compatible con big data. Los agentes de este repositorio se conectan a Governance para consultar, analizar y generar informes sobre esos datos gobernados.
+Collection of generative AI agents and skills that leverage the **Stratio Semantic Data Layer**, the semanticized data layer that **Stratio Governance** generates from its data domains, semantic layers, data quality rules and business terms, producing collections ready for analytical consumption. Thanks to **Stratio Virtualizer**, an Apache Spark-based engine, data access is independent of the underlying datastore and compatible with big data. The agents in this repository connect to Governance to query, analyze and generate reports on that governed data.
 
-El repositorio esta orientado principalmente a **OpenCode**, la herramienta opensource sobre la que Stratio basa su Agent Builder en la plataforma GenAI. Algunos agentes incluyen ademas empaquetados para otras plataformas como **claude.ai Projects** o **Claude Desktop** (Claude Cowork).
+The repository is primarily oriented towards **OpenCode**, the open-source tool on which Stratio bases its Agent Builder in the GenAI platform. Some agents also include packages for other platforms such as **claude.ai Projects** or **Claude Desktop** (Claude Cowork).
 
-## Agentes
+## Agents
 
-| Agente | Descripcion | Plataformas | Carpeta |
-|--------|-------------|-------------|---------|
-| **data-analytics** | Agente completo de BI/BA con analisis avanzado, clustering, informes multi-formato (PDF, DOCX, web, PowerPoint) y documentacion del razonamiento | Claude Code, OpenCode, Stratio Cowork | `data-analytics/` |
-| **data-analytics-light** | Agente ligero de BI/BA orientado a analisis en chat, sin generacion de informes formales. Incluye scripts de empaquetado para multiples plataformas | Claude Code, Claude Cowork, claude.ai, OpenCode | `data-analytics-light/` |
-| **semantic-layer** | Agente especializado en construccion y mantenimiento de capas semanticas en Stratio Governance: creacion de colecciones de datos (dominios tecnicos), terminos tecnicos, ontologias, vistas de negocio, SQL mappings, publicacion de vistas, terminos semanticos y business terms | Claude Code, Claude Cowork, claude.ai, OpenCode, Stratio Cowork | `semantic-layer/` |
-| **data-quality** | Agente de calidad del dato: evaluacion de cobertura, identificacion de gaps, creacion de reglas de calidad con human-in-the-loop y generacion de informes de cobertura | Claude Code, Claude Cowork, claude.ai, OpenCode, Stratio Cowork | `data-quality/` |
+| Agent | Description | Platforms | Folder |
+|-------|-------------|-----------|--------|
+| **data-analytics** | Full BI/BA agent with advanced analysis, clustering, multi-format reports (PDF, DOCX, web, PowerPoint) and reasoning documentation | Claude Code, OpenCode, Stratio Cowork | `data-analytics/` |
+| **data-analytics-light** | Lightweight BI/BA agent oriented to chat-based analysis, without formal report generation. Includes packaging scripts for multiple platforms | Claude Code, Claude Cowork, claude.ai, OpenCode | `data-analytics-light/` |
+| **semantic-layer** | Agent specialized in building and maintaining semantic layers in Stratio Governance: creation of data collections (technical domains), technical terms, ontologies, business views, SQL mappings, view publishing, semantic terms and business terms | Claude Code, Claude Cowork, claude.ai, OpenCode, Stratio Cowork | `semantic-layer/` |
+| **data-quality** | Data quality agent: coverage assessment, gap identification, quality rule creation with human-in-the-loop and coverage report generation | Claude Code, Claude Cowork, claude.ai, OpenCode, Stratio Cowork | `data-quality/` |
 
-## Empaquetado
+## Packaging
 
-Scripts en la raiz del monorepo para empaquetar cualquier agente en el formato de la plataforma destino:
+Scripts at the monorepo root to package any agent in the target platform format:
 
-| Script | Plataforma destino | Output |
-|--------|-------------------|--------|
-| `pack_claude_code.sh` | Claude Code CLI | `{agente}/dist/claude_code/{nombre}/` |
-| `pack_opencode.sh` | OpenCode | `{agente}/dist/opencode/{nombre}/` |
-| `pack_stratio_cowork.sh` | Stratio Cowork (OpenCode) | `dist/{nombre}-stratio-cowork.zip` |
-| `pack_shared_skills.sh` | Todas (skills sueltas) | `dist/shared-skills.zip` o `dist/{skill}.zip` |
+| Script | Target platform | Output |
+|--------|----------------|--------|
+| `pack_claude_code.sh` | Claude Code CLI | `{agent}/dist/claude_code/{name}/` |
+| `pack_opencode.sh` | OpenCode | `{agent}/dist/opencode/{name}/` |
+| `pack_stratio_cowork.sh` | Stratio Cowork (OpenCode) | `dist/{name}-stratio-cowork.zip` |
+| `pack_shared_skills.sh` | All (standalone skills) | `dist/shared-skills.zip` or `dist/{skill}.zip` |
 
 ```bash
-# Empaquetar data-analytics para Claude Code
+# Package data-analytics for Claude Code (English, default)
 bash pack_claude_code.sh --agent data-analytics
 
-# Empaquetar data-analytics para OpenCode con nombre personalizado
-bash pack_opencode.sh --agent data-analytics --name mi-agente
+# Package data-analytics for Claude Code in Spanish
+bash pack_claude_code.sh --agent data-analytics --lang es
 
-# Empaquetar semantic-layer para Stratio Cowork
+# Package data-analytics for OpenCode with a custom name
+bash pack_opencode.sh --agent data-analytics --name my-agent
+
+# Package semantic-layer for Stratio Cowork
 bash pack_stratio_cowork.sh --agent semantic-layer
 ```
 
-El nombre debe ser kebab-case. Si se omite, se usa el basename del directorio del agente. Los directorios generados estan excluidos del repositorio (`.gitignore`).
+All pack scripts accept `--lang <code>` to generate output in a specific language. Without `--lang`, English is used. With `--lang es`, the output goes to `dist/es/{format}/{name}/` for traceability. The name must be kebab-case. If omitted, the basename of the agent directory is used. The generated directories are excluded from the repository (`.gitignore`).
 
-`pack_stratio_cowork.sh` genera un ZIP compuesto con dos sub-ZIPs pensado para el despliegue en Stratio Cowork: uno con el agente sin sus shared skills, y otro con las shared skills por separado (para distribuirlas de forma independiente al agente). Además incluye en la raíz del bundle el fichero `mcps` del agente si existe (ver [Configurar herramientas externas](#4-configurar-herramientas-externas-mcps)).
+`pack_stratio_cowork.sh` generates a composite ZIP with two sub-ZIPs designed for deployment in Stratio Cowork: one with the agent without its shared skills, and another with the shared skills separately (to distribute them independently from the agent). It also includes the agent's `mcps` file at the bundle root if it exists (see [Configure external tools](#4-configure-external-tools-mcps)).
 
-`data-analytics-light` y `semantic-layer` incluyen ademas scripts de empaquetado para los diferentes formatos de Claude (AI Projects y Cowork). Ver [`data-analytics-light/README.md`](data-analytics-light/README.md) para instrucciones detalladas de como configurar cada formato en la plataforma destino.
+`data-analytics-light` and `semantic-layer` also include packaging scripts for the different Claude formats (AI Projects and Cowork). See [`data-analytics-light/README.md`](data-analytics-light/README.md) for detailed instructions on how to configure each format on the target platform.
 
-### Estructura de outputs (`make package`)
+### Output structure (`make package`)
 
-Todos los artefactos se generan bajo `dist/`, tanto a nivel de agente (intermedios) como en la raiz (zips finales versionados):
+All artifacts are generated under `dist/`, both at agent level (intermediates) and at root level (final versioned zips). `make package` generates artifacts for every language in the `languages` file:
 
 ```
 genai-agents/
-  dist/                                         # ZIPs finales versionados
-    data-analytics-claude-code-{v}.zip
+  dist/                                         # Final versioned ZIPs (EN + ES)
+    data-analytics-claude-code-{v}.zip          # English
+    data-analytics-claude-code-es-{v}.zip       # Spanish
     data-analytics-opencode-{v}.zip
-    data-analytics-stratio-cowork.zip            # Bundle Stratio Cowork (agente + shared skills)
-    data-analytics-light-claude-code-{v}.zip
-    data-analytics-light-opencode-{v}.zip
-    data-analytics-light-claude-cowork-{v}.zip
-    data-analytics-light-claude-ai-project-{v}.zip
-    semantic-layer-claude-code-{v}.zip
-    semantic-layer-opencode-{v}.zip
-    semantic-layer-claude-cowork-{v}.zip
-    semantic-layer-claude-ai-project-{v}.zip
-    semantic-layer-stratio-cowork.zip            # Bundle Stratio Cowork (agente + shared skills)
-    data-quality-claude-code-{v}.zip
-    data-quality-opencode-{v}.zip
-    data-quality-claude-cowork-{v}.zip
-    data-quality-claude-ai-project-{v}.zip
-    data-quality-stratio-cowork-{v}.zip
-    shared-skills-{v}.zip                        # Todas las shared skills juntas
-    shared-skill-propose-knowledge-{v}.zip       # Skill individual
-    shared-skill-explore-data-{v}.zip            # Skill individual
-    shared-skill-stratio-data-{v}.zip            # Skill individual
-    shared-skill-stratio-semantic-layer-{v}.zip  # Skill individual
-    shared-skill-generate-technical-terms-{v}.zip
-    shared-skill-create-ontology-{v}.zip
-    shared-skill-create-business-views-{v}.zip
-    shared-skill-create-sql-mappings-{v}.zip
-    shared-skill-create-semantic-terms-{v}.zip
-    shared-skill-manage-business-terms-{v}.zip
-    shared-skill-create-data-collection-{v}.zip
+    data-analytics-opencode-es-{v}.zip
+    data-analytics-stratio-cowork-{v}.zip
+    data-analytics-stratio-cowork-es-{v}.zip
+    ...                                         # Same pattern for all agents
+    shared-skills-{v}.zip
+    shared-skills-es-{v}.zip
+    shared-skill-explore-data-{v}.zip
+    shared-skill-explore-data-es-{v}.zip
+    ...                                         # Same pattern for all shared skills
 
   data-analytics/
-    dist/                                       # Artefactos intermedios
+    dist/                                       # Intermediate artifacts (EN)
       claude_code/data-analytics/
       opencode/data-analytics/
+      es/                                       # Intermediate artifacts (ES)
+        claude_code/data-analytics/
+        opencode/data-analytics/
 
   data-analytics-light/
-    dist/                                       # Artefactos intermedios
+    dist/                                       # Intermediate artifacts (EN)
       claude_code/data-analytics-light/
       opencode/data-analytics-light/
       claude_cowork/data-analytics-light/
       claude_ai_projects/data-analytics-light/
+      es/                                       # Intermediate artifacts (ES)
+        claude_code/data-analytics-light/
+        opencode/data-analytics-light/
+        claude_cowork/data-analytics-light/
+        claude_ai_projects/data-analytics-light/
 
-  semantic-layer/
-    dist/                                       # Artefactos intermedios
-      claude_code/semantic-layer/
-      opencode/semantic-layer/
-      claude_cowork/semantic-layer/
-      claude_ai_projects/semantic-layer/
-
-  data-quality/
-    dist/                                       # Artefactos intermedios
-      claude_code/data-quality/
-      opencode/data-quality/
-      claude_cowork/data-quality/
-      claude_ai_projects/data-quality/
+  ...                                           # Same pattern for semantic-layer, data-quality
 ```
 
-`make clean` elimina todos los `dist/` (raiz + agentes).
+`make clean` removes all `dist/` directories (root + agents).
 
-### Formatos de skills soportados
+### Supported skill formats
 
-Los pack scripts reconocen dos formatos de definicion de skills:
+The pack scripts recognize two skill definition formats:
 
-| Formato | Estructura | Ejemplo |
-|---------|-----------|---------|
-| **Canonico** (recomendado) | `skills/<nombre>/SKILL.md` | `skills/analyze/SKILL.md` |
-| **Plano** | `skills/<nombre>.md` | `skills/analyze.md` |
+| Format | Structure | Example |
+|--------|-----------|---------|
+| **Canonical** (recommended) | `skills/<name>/SKILL.md` | `skills/analyze/SKILL.md` |
+| **Flat** | `skills/<name>.md` | `skills/analyze.md` |
 
-El formato plano se normaliza automaticamente a canonico al empaquetar (`<nombre>.md` → `<nombre>/SKILL.md`).
+The flat format is automatically normalized to canonical when packaging (`<name>.md` → `<name>/SKILL.md`).
 
-Ubicaciones de busqueda (por orden de prioridad): `skills/` → `.claude/skills/` → `.opencode/skills/` → `.agents/skills/`.
+Search locations (by priority order): `skills/` → `.claude/skills/` → `.opencode/skills/` → `.agents/skills/`.
 
-### Plantillas de output
+### Output templates
 
-Si un agente tiene un directorio `output-templates/`, los pack scripts crean `output/` en el paquete con ese contenido. Esto permite versionar en git las plantillas semilla (ficheros de memoria inicial, etc.) sin versionar el runtime — `**/output/` sigue en `.gitignore`.
+If an agent has an `output-templates/` directory, the pack scripts create `output/` in the package with that content. This allows versioning seed templates (initial memory files, etc.) in git without versioning the runtime — `**/output/` remains in `.gitignore`.
 
-## Skills compartidas
+## Shared skills
 
-`shared-skills/` agrupa skills reutilizables entre varios agentes del monorepo. Los pack scripts las incluyen automáticamente en el output de cada agente que las declare, sin necesidad de duplicar código.
+`shared-skills/` groups reusable skills across multiple agents in the monorepo. The pack scripts automatically include them in the output of each agent that declares them, without the need to duplicate code.
 
-### Skills disponibles
+### Available skills
 
-| Skill | Descripcion | Agentes que la usan |
-|-------|-------------|---------------------|
-| `propose-knowledge` | Proponer terminos de negocio y preferencias a Stratio Governance tras un analisis | data-analytics, data-analytics-light |
-| `explore-data` | Exploracion rapida de dominios, tablas, columnas y terminologia gobernada | data-analytics, data-analytics-light |
-| `stratio-data` | Referencia de MCPs de datos Stratio: reglas, patrones de uso y buenas practicas | (independiente) |
-| `stratio-semantic-layer` | Referencia de MCPs de capa semantica Stratio: reglas, patrones de uso y buenas practicas para tools de gobernanza | semantic-layer |
-| `generate-technical-terms` | Generar o regenerar terminos tecnicos (descripciones de tablas y columnas) para un dominio | semantic-layer |
-| `create-ontology` | Crear o ampliar ontologias con planificacion interactiva | semantic-layer |
-| `create-business-views` | Crear, regenerar o publicar vistas de negocio y SQL mappings a partir de una ontologia | semantic-layer |
-| `create-sql-mappings` | Crear o actualizar SQL mappings de vistas existentes | semantic-layer |
-| `create-semantic-terms` | Generar o regenerar terminos semanticos de negocio para vistas | semantic-layer |
-| `manage-business-terms` | Crear Business Terms en el diccionario con relaciones a activos de datos | semantic-layer |
-| `create-data-collection` | Buscar tablas y paths en el diccionario de datos tecnico y crear una nueva coleccion (dominio tecnico) | semantic-layer |
+| Skill | Description | Agents that use it |
+|-------|-------------|-------------------|
+| `propose-knowledge` | Propose business terms and preferences to Stratio Governance after an analysis | data-analytics, data-analytics-light |
+| `explore-data` | Quick exploration of domains, tables, columns and governed terminology | data-analytics, data-analytics-light |
+| `stratio-data` | Stratio data MCPs reference: rules, usage patterns and best practices | (standalone) |
+| `stratio-semantic-layer` | Stratio semantic layer MCPs reference: rules, usage patterns and best practices for governance tools | semantic-layer |
+| `generate-technical-terms` | Generate or regenerate technical terms (table and column descriptions) for a domain | semantic-layer |
+| `create-ontology` | Create or extend ontologies with interactive planning | semantic-layer |
+| `create-business-views` | Create, regenerate or publish business views and SQL mappings from an ontology | semantic-layer |
+| `create-sql-mappings` | Create or update SQL mappings for existing views | semantic-layer |
+| `create-semantic-terms` | Generate or regenerate semantic business terms for views | semantic-layer |
+| `manage-business-terms` | Create Business Terms in the dictionary with relationships to data assets | semantic-layer |
+| `create-data-collection` | Search for tables and paths in the technical data dictionary and create a new collection (technical domain) | semantic-layer |
 
-Los guides compartidos (documentacion tecnica que las skills referencian) viven en `shared-skill-guides/`:
+Shared guides (technical documentation that skills reference) live in `shared-skill-guides/`:
 
-| Guide | Usado por |
-|-------|-----------|
+| Guide | Used by |
+|-------|---------|
 | `stratio-data-tools.md` | `explore-data`, `analyze`, `AGENTS.md` (data-analytics, data-analytics-light) |
 | `stratio-semantic-layer-tools.md` | `stratio-semantic-layer`, `AGENTS.md` (semantic-layer) |
 
-### Usar una shared skill en un agente
+### Using a shared skill in an agent
 
-1. Crear (si no existe) el fichero `shared-skills` en la carpeta del agente con el nombre de la skill, una por línea:
+1. Create (if it doesn't exist) the `shared-skills` file in the agent folder with the skill name, one per line:
 
    ```
    propose-knowledge
    explore-data
    ```
 
-2. Si el `AGENTS.md` del agente referencia directamente algún guide de `shared-skill-guides/`, declararlo también en `shared-guides`:
+2. If the agent's `AGENTS.md` directly references any guide from `shared-skill-guides/`, also declare it in `shared-guides`:
 
    ```
    stratio-data-tools.md
    ```
 
-3. Empaquetar con normalidad — los pack scripts genéricos (`pack_claude_code.sh`, `pack_opencode.sh`) copian cada guide declarado en `skill-guides` **dentro** de la carpeta de la skill en el output y reescriben las referencias en `SKILL.md` para que sean locales (skill autocontenida). Los guides declarados en `shared-guides` del agente se copian además a `skills-guides/` para que `AGENTS.md`/`CLAUDE.md` los referencie:
+3. Package as normal — the generic pack scripts (`pack_claude_code.sh`, `pack_opencode.sh`) copy each guide declared in `skill-guides` **inside** the skill folder in the output and rewrite the references in `SKILL.md` to make them local (self-contained skill). Guides declared in the agent's `shared-guides` are also copied to `skills-guides/` so that `AGENTS.md`/`CLAUDE.md` can reference them:
 
    ```bash
-   bash pack_claude_code.sh --agent mi-agente
+   bash pack_claude_code.sh --agent my-agent
    ```
 
-   Output resultante (ejemplo con `explore-data` que declara `stratio-data-tools.md`):
+   Resulting output (example with `explore-data` which declares `stratio-data-tools.md`):
    ```
    .claude/
      skills/
        explore-data/
-         SKILL.md                  # referencia "stratio-data-tools.md" (local)
-         stratio-data-tools.md     # guide dentro de la skill
+         SKILL.md                  # references "stratio-data-tools.md" (local)
+         stratio-data-tools.md     # guide inside the skill
      skills-guides/
-       stratio-data-tools.md       # para AGENTS.md (posible duplicado, ok)
+       stratio-data-tools.md       # for AGENTS.md (possible duplicate, ok)
    ```
 
-Si el agente tiene en `skills/` una skill con el mismo nombre, la versión local tiene prioridad sobre la shared.
+If the agent has a skill in `skills/` with the same name, the local version takes priority over the shared one.
 
-### Crear una shared skill nueva
+### Creating a new shared skill
 
-1. Crear la carpeta y el `SKILL.md` en `shared-skills/`:
+1. Create the folder and `SKILL.md` (in English) in `shared-skills/`, and the Spanish translation in `es/`:
 
    ```
    shared-skills/
-   └── mi-skill/
-       ├── SKILL.md       # Definicion de la skill (autocontenida o casi)
-       └── skill-guides   # (Opcional) Lista de shared-skill-guides que necesita
+   └── my-skill/
+       ├── SKILL.md       # Skill definition in English (self-contained or nearly so)
+       └── skill-guides   # (Optional) List of shared-skill-guides it needs
+   es/shared-skills/
+   └── my-skill/
+       └── SKILL.md       # Spanish translation
    ```
 
-2. Si la skill necesita guides externos, añadir los ficheros en `shared-skill-guides/` y listarlos en `skill-guides`:
+2. If the skill needs external guides, add the files in `shared-skill-guides/` (with their counterparts in `es/shared-skill-guides/`) and list them in `skill-guides`:
 
    ```
-   # shared-skills/mi-skill/skill-guides
-   mi-guide.md
+   # shared-skills/my-skill/skill-guides
+   my-guide.md
    ```
 
-3. Declarar la skill en los agentes que deban incluirla (fichero `shared-skills` en cada agente).
+3. Declare the skill in the agents that should include it (`shared-skills` file in each agent).
 
-Una shared skill debe ser lo más autocontenida posible: sin dependencias de herramientas Python, estilos ni templates específicos de un agente. Si una skill depende fuertemente de artefactos de un agente concreto, mantenerla como skill local en ese agente.
+A shared skill should be as self-contained as possible: no dependencies on Python tools, styles or templates specific to an agent. If a skill depends heavily on artifacts from a specific agent, keep it as a local skill in that agent.
 
-**Contenido del SKILL.md:** No referenciar `AGENTS.md` ni `CLAUDE.md` directamente — los pack scripts sustituyen estos nombres según la plataforma, pero una referencia directa puede quedar mal en algún destino. Usar formulaciones genéricas como "siguiendo la convención de preguntas al usuario" o "según las instrucciones del agente". Las referencias a guides deben usar la ruta `skills-guides/<fichero>` en el fuente — los pack scripts genéricos copian el guide dentro de la skill y reescriben la referencia para que sea local (autocontenida).
+**SKILL.md content:** Do not reference `AGENTS.md` or `CLAUDE.md` directly — the pack scripts substitute these names depending on the platform, but a direct reference may not work correctly on some targets. Use generic phrasing such as "following the user question convention" or "according to the agent's instructions". Guide references must use the path `skills-guides/<file>` in the source — the generic pack scripts copy the guide inside the skill and rewrite the reference to make it local (self-contained).
 
-## Formato y compatibilidad con herramientas de desarrollo
+## Internationalization (i18n)
 
-Los agentes siguen el formato `AGENTS.md` + `skills/`, reconocido por **OpenCode**, **Cursor**, plugins de **GitHub Copilot** y otras herramientas compatibles con el estandar de instrucciones de agente.
-
-Un agente se compone de:
-
-- `AGENTS.md` (o `CLAUDE.md`) — instrucciones del agente: rol, workflow, reglas (**obligatorio**)
-- `skills/` — skills invocables por el usuario (opcional)
-- `opencode.json` — configuracion de MCPs y permisos para OpenCode (opcional)
-- `.mcp.json` — configuracion de MCPs para Claude Code / claude.ai (opcional)
-
-Con estos ficheros, basta ejecutar el script de empaquetado correspondiente para generar el paquete listo para usar en la plataforma destino.
-
-La raiz del monorepo incluye un symlink `CLAUDE.md → AGENTS.md` para poder abrir el proyecto directamente con **Claude Code** y programar nuevos agentes con su asistente de codigo.
-
-## Crear un agente nuevo
-
-Esta guía explica cómo añadir un agente al monorepo para usarlo en **OpenCode**, **Claude Code** o el **framework de agentes de Stratio GenAI**. Un agente se compone de tres piezas: **instrucciones** (`AGENTS.md`), **skills** (`skills/`) y **configuración de herramientas**. Añadiendo `opencode.json` y/o `.mcp.json` el agente puede funcionar en ambas plataformas a la vez. Los scripts `pack_opencode.sh` y `pack_claude_code.sh` se encargan de empaquetarlo para cada destino.
-
-### 1. Estructura de carpetas
+The monorepo supports multiple languages. **English is the primary language** — files in the main tree contain English content. Translations live in a language overlay directory at the root (e.g., `es/` for Spanish) that mirrors the source tree structure:
 
 ```
-mi-agente/
-├── AGENTS.md              # Instrucciones principales — rol, workflow, reglas
-├── opencode.json          # Configuracion OpenCode (MCPs, permisos)
-├── .mcp.json              # Configuracion de MCPs para Claude Code / claude.ai
-├── mcps                   # (Opcional) Lista de MCPs requeridos para Stratio Cowork
-├── skills/                # Skills propias del agente (invocables por el usuario)
-│   └── mi-skill/
-│       └── SKILL.md       # Definicion de la skill (frontmatter YAML + cuerpo)
-├── skills-guides/         # (Opcional) Guias tecnicas locales compartidas entre skills
-├── shared-skills          # (Opcional) Lista de shared skills del monorepo a incluir
-├── shared-guides          # (Opcional) Lista de shared-skill-guides que AGENTS.md usa directamente
-└── output-templates/      # (Opcional) Semillas de memoria persistente
+genai-agents/
+  shared-skills/explore-data/SKILL.md       # English (primary)
+  es/shared-skills/explore-data/SKILL.md     # Spanish (overlay)
+  data-analytics/AGENTS.md                   # English
+  es/data-analytics/AGENTS.md                # Spanish
 ```
 
-Los directorios `skills-guides/` y `output-templates/` son opcionales: usar `skills-guides/` cuando varias skills del agente comparten documentación técnica extensa; usar `output-templates/` solo si el agente necesita persistir memoria entre sesiones.
+Supported languages are listed in the `languages` file at the root.
 
-Los ficheros `shared-skills` y `shared-guides` (texto plano, una entrada por línea) permiten incluir skills y guides del monorepo sin duplicarlos. Ver [Skills compartidas](#skills-compartidas) para el detalle.
+### What gets translated
 
-### 2. AGENTS.md — Instrucciones del agente
+All content files that the agent presents to the user or uses as instructions:
 
-Define el **rol**, el **workflow** y las **reglas transversales** del agente. Estructura orientativa:
+| File type | English (main tree) | Spanish (es/ overlay) | Translated? |
+|-----------|--------------------|-----------------------|-------------|
+| Agent instructions | `data-analytics/AGENTS.md` | `es/data-analytics/AGENTS.md` | Yes |
+| Skills | `skills/analyze/SKILL.md` | `es/.../skills/analyze/SKILL.md` | Yes |
+| Skill sub-guides | `analytical-patterns.md` | `es/.../analytical-patterns.md` | Yes |
+| Shared skill guides | `shared-skill-guides/*.md` | `es/shared-skill-guides/*.md` | Yes |
+| User READMEs | `USER_README.md` | `es/.../USER_README.md` | Yes |
+| Developer READMEs | `README.md` (agents) | `es/.../README.md` | Yes |
+| Cowork metadata | `cowork-metadata.yaml` | `es/.../cowork-metadata.yaml` | Yes |
+| Output templates | `output-templates/*.md` | `es/.../output-templates/*.md` | Yes |
+| Python code, HTML, CSS | `tools/*.py`, `templates/` | — | No |
+| Config files | `.mcp.json`, `opencode.json` | — | No |
+| Manifests | `shared-skills`, `skill-guides` | — | No |
+| Shell scripts | `pack_*.sh`, `bin/*.sh` | — | No |
+
+Skill and folder names are **technical identifiers** and stay in English regardless of language.
+
+### Packaging by language
+
+All pack scripts accept `--lang <code>` to generate output in a specific language. Without `--lang`, English is used. For non-English languages, the script resolves content from the `es/` overlay via `bin/resolve-lang.sh` internally. Intermediate files go to `dist/es/...` for traceability.
+
+```bash
+# English (default)
+bash pack_claude_code.sh --agent data-analytics
+# → data-analytics/dist/claude_code/data-analytics/
+
+# Spanish
+bash pack_claude_code.sh --agent data-analytics --lang es
+# → data-analytics/dist/es/claude_code/data-analytics/
+```
+
+`bin/package.sh` orchestrates all agents and languages, passing `--lang` to each pack script. Final versioned ZIPs go to `dist/`:
+
+| Language | Pattern | Example |
+|----------|---------|---------|
+| English (primary) | `{agent}-{format}-{version}.zip` | `data-analytics-claude-code-0.1.0.zip` |
+| Spanish | `{agent}-{format}-es-{version}.zip` | `data-analytics-claude-code-es-0.1.0.zip` |
+
+### Translation workflow
+
+When adding or modifying translatable content:
+
+1. Write the primary file in English (e.g., `SKILL.md`)
+2. Create or update the counterpart in `es/` (e.g., `es/.../SKILL.md`) with the Spanish translation
+3. Run `bin/check-translations.sh` to verify completeness
+
+### i18n helper scripts
+
+| Script | Purpose |
+|--------|---------|
+| `bin/resolve-lang.sh` | Creates a temporary tree with the language overlay applied (called internally by pack scripts when `--lang` is passed) |
+| `bin/check-translations.sh` | Verifies all translatable files have their counterpart in `es/` |
+
+## Format and compatibility with development tools
+
+The agents follow the `AGENTS.md` + `skills/` format, recognized by **OpenCode**, **Cursor**, **GitHub Copilot** plugins and other tools compatible with the agent instructions standard.
+
+An agent is composed of:
+
+- `AGENTS.md` (or `CLAUDE.md`) — agent instructions: role, workflow, rules (**required**)
+- `skills/` — user-invocable skills (optional)
+- `opencode.json` — MCP and permission configuration for OpenCode (optional)
+- `.mcp.json` — MCP configuration for Claude Code / claude.ai (optional)
+
+With these files, simply running the corresponding packaging script generates the package ready to use on the target platform.
+
+The monorepo root includes a symlink `CLAUDE.md → AGENTS.md` so the project can be opened directly with **Claude Code** to develop new agents with its code assistant.
+
+## Creating a new agent
+
+This guide explains how to add an agent to the monorepo for use in **OpenCode**, **Claude Code** or the **Stratio GenAI agent framework**. An agent is composed of three pieces: **instructions** (`AGENTS.md`), **skills** (`skills/`) and **tool configuration**. By adding `opencode.json` and/or `.mcp.json` the agent can work on both platforms at once. The `pack_opencode.sh` and `pack_claude_code.sh` scripts handle packaging it for each target.
+
+### 1. Folder structure
+
+```
+my-agent/
+├── AGENTS.md              # Main instructions in English — role, workflow, rules
+├── opencode.json          # OpenCode configuration (MCPs, permissions)
+├── .mcp.json              # MCP configuration for Claude Code / claude.ai
+├── mcps                   # (Optional) List of required MCPs for Stratio Cowork
+├── skills/                # Agent-specific skills (user-invocable)
+│   └── my-skill/
+│       └── SKILL.md       # Skill definition (YAML frontmatter + body)
+├── skills-guides/         # (Optional) Local technical guides shared between skills
+├── shared-skills          # (Optional) List of shared skills from the monorepo to include
+├── shared-guides          # (Optional) List of shared-skill-guides that AGENTS.md uses directly
+└── output-templates/      # (Optional) Persistent memory seeds
+```
+
+The `skills-guides/` and `output-templates/` directories are optional: use `skills-guides/` when multiple skills in the agent share extensive technical documentation; use `output-templates/` only if the agent needs to persist memory between sessions.
+
+The `shared-skills` and `shared-guides` files (plain text, one entry per line) allow including skills and guides from the monorepo without duplicating them. See [Shared skills](#shared-skills) for details.
+
+### 2. AGENTS.md — Agent instructions
+
+Defines the agent's **role**, **workflow** and **cross-cutting rules**. Suggested structure:
 
 ```markdown
-# [Nombre del Agente]
+# [Agent Name]
 
-## Rol y Contexto
-Descripcion del agente: qué hace, para quién, y con qué herramientas opera.
+## Role and Context
+Description of the agent: what it does, who it serves, and what tools it operates with.
 
-## Workflow Obligatorio
-Fases de ejecucion numeradas. Ejemplo: triage → exploracion → preguntas → plan → ejecucion.
-Cuanto mas detallado, mas predecible el comportamiento del agente.
+## Mandatory Workflow
+Numbered execution phases. Example: triage → exploration → questions → plan → execution.
+The more detailed, the more predictable the agent's behavior.
 
-## Reglas Transversales
-Normas que aplican a toda sesion (idioma de respuesta, validaciones obligatorias,
-herramientas que tiene prohibido usar, etc.).
+## Cross-cutting Rules
+Rules that apply to every session (response language, mandatory validations,
+tools it is forbidden to use, etc.).
 
-## Skills Disponibles
-Lista de skills y cuando activar cada una.
+## Available Skills
+List of skills and when to activate each one.
 ```
 
-### 3. Skills — Definir capacidades
+### 3. Skills — Defining capabilities
 
-Cada skill encapsula un workflow específico que el usuario puede invocar (ej: `/analizar`, `/generar-informe`). Formato de `SKILL.md`:
+Each skill encapsulates a specific workflow that the user can invoke (e.g.: `/analyze`, `/generate-report`). `SKILL.md` format:
 
 ```markdown
 ---
-name: mi-skill
-description: Descripcion de cuando usar esta skill y que hace
-argument-hint: [argumento esperado, ej: pregunta o tema]
+name: my-skill
+description: Description of when to use this skill and what it does
+argument-hint: [expected argument, e.g.: question or topic]
 ---
 
-# Skill: Mi Skill
+# Skill: My Skill
 
-## 1. Primer Paso
-Instrucciones operativas detalladas...
+## 1. First Step
+Detailed operational instructions...
 
-## 2. Segundo Paso
+## 2. Second Step
 ...
 ```
 
-El frontmatter YAML es obligatorio: `name` es el identificador, `description` lo usa el agente para decidir cuándo activarla, `argument-hint` aparece como placeholder en la UI. Las secciones del cuerpo son instrucciones paso a paso que sigue el agente al ejecutar la skill. Si varias skills comparten documentación, extraerla a `skills-guides/` y referenciarla desde el cuerpo de la skill.
+The YAML frontmatter is required: `name` is the identifier, `description` is used by the agent to decide when to activate it, `argument-hint` appears as a placeholder in the UI. The body sections are step-by-step instructions that the agent follows when executing the skill. If multiple skills share documentation, extract it to `skills-guides/` and reference it from the skill body.
 
-Para reutilizar skills ya existentes en el monorepo sin duplicarlas, ver la sección [Skills compartidas](#skills-compartidas) — el sistema de shared skills evita mantener copies de skills idénticas en cada agente.
+To reuse skills already existing in the monorepo without duplicating them, see the [Shared skills](#shared-skills) section — the shared skills system avoids maintaining copies of identical skills in each agent.
 
-### 4. Configurar herramientas externas (MCPs)
+### 4. Configure external tools (MCPs)
 
-Cada plataforma tiene su propio fichero de configuración. Se pueden crear ambos para que el agente funcione en OpenCode y en Claude Code a la vez.
+Each platform has its own configuration file. Both can be created so that the agent works on OpenCode and Claude Code simultaneously.
 
 #### 4a. `opencode.json` — OpenCode
 
-Declara las instrucciones, los MCPs disponibles y los permisos del agente:
+Declares the instructions, available MCPs and agent permissions:
 
 ```json
 {
   "$schema": "https://opencode.ai/config.json",
   "instructions": ["AGENTS.md"],
   "mcp": {
-    "mi-servidor": {
+    "my-server": {
       "type": "remote",
-      "url": "{env:MI_SERVIDOR_URL}",
+      "url": "{env:MY_SERVER_URL}",
       "timeout": 90000,
-      "headers": { "Authorization": "Bearer {env:MI_API_KEY}" }
+      "headers": { "Authorization": "Bearer {env:MY_API_KEY}" }
     }
   },
   "permission": {
@@ -324,113 +380,116 @@ Declara las instrucciones, los MCPs disponibles y los permisos del agente:
 }
 ```
 
-Las variables de entorno se referencian con la sintaxis `{env:NOMBRE_VAR}`. Si el agente no usa MCPs externos, omitir el bloque `mcp`.
+Environment variables are referenced with the `{env:VAR_NAME}` syntax. If the agent does not use external MCPs, omit the `mcp` block.
 
-El bloque `permission` controla tanto los comandos bash/ficheros como las herramientas MCP expuestas. Para las herramientas MCP el patrón es `{nombre-servidor}_*` (todas las tools de ese servidor) o `*{nombre-tool}` (una tool concreta en cualquier servidor).
+The `permission` block controls both bash/file commands and exposed MCP tools. For MCP tools the pattern is `{server-name}_*` (all tools from that server) or `*{tool-name}` (a specific tool on any server).
 
 #### 4b. `.mcp.json` — Claude Code / claude.ai
 
-Declara los servidores MCP disponibles para Claude Code:
+Declares the MCP servers available for Claude Code:
 
 ```json
 {
   "mcpServers": {
-    "mi-servidor": {
+    "my-server": {
       "type": "http",
-      "url": "${MI_SERVIDOR_URL:-http://127.0.0.1:8080/mcp}",
-      "headers": { "Authorization": "Bearer ${MI_API_KEY:-}" },
-      "allowedTools": ["nombre_tool_1", "nombre_tool_2"]
+      "url": "${MY_SERVER_URL:-http://127.0.0.1:8080/mcp}",
+      "headers": { "Authorization": "Bearer ${MY_API_KEY:-}" },
+      "allowedTools": ["tool_name_1", "tool_name_2"]
     }
   }
 }
 ```
 
-Las variables de entorno usan sintaxis bash `${VAR:-valor_por_defecto}`. `allowedTools` restringe qué herramientas del servidor MCP se exponen al agente. Los permisos de bash y sistema de ficheros los gestiona Claude Code por su cuenta (fuera de este fichero).
+Environment variables use bash syntax `${VAR:-default_value}`. `allowedTools` restricts which tools from the MCP server are exposed to the agent. Bash and filesystem permissions are managed by Claude Code itself (outside this file).
 
 #### 4c. `mcps` — Stratio Cowork
 
-Fichero de texto plano (una línea por MCP) que declara los servidores MCP que necesita el agente. Solo es relevante para el bundle de **Stratio Cowork** — `pack_stratio_cowork.sh` lo incluye en la raíz del ZIP compuesto como referencia para el administrador que configure la instalación.
+Plain text file (one line per MCP) that declares the MCP servers the agent needs. Only relevant for the **Stratio Cowork** bundle — `pack_stratio_cowork.sh` includes it at the root of the composite ZIP as a reference for the administrator configuring the installation.
 
 ```
 Stratio_Data
 Stratio_Gov
 ```
 
-No tiene efecto en los empaquetados para Claude Code ni para OpenCode (ambos scripts lo excluyen de su rsync). Si el agente no se va a distribuir via Stratio Cowork, no es necesario crearlo.
+It has no effect on Claude Code or OpenCode packages (both scripts exclude it from their rsync). If the agent will not be distributed via Stratio Cowork, there is no need to create it.
 
-### 5. Empaquetar
+### 5. Package
 
 ```bash
-# Empaquetar para OpenCode
-bash pack_opencode.sh --agent mi-agente
+# Package for OpenCode (English, default)
+bash pack_opencode.sh --agent my-agent
 
-# Empaquetar para Claude Code
-bash pack_claude_code.sh --agent mi-agente
+# Package for Claude Code
+bash pack_claude_code.sh --agent my-agent
 
-# Empaquetar bundle Stratio Cowork (agente + shared skills separadas + mcps)
-bash pack_stratio_cowork.sh --agent mi-agente
+# Package for Claude Code in Spanish
+bash pack_claude_code.sh --agent my-agent --lang es
 
-# Con nombre personalizado (kebab-case)
-bash pack_opencode.sh --agent mi-agente --name nombre-personalizado
+# Package Stratio Cowork bundle (agent + separate shared skills + mcps)
+bash pack_stratio_cowork.sh --agent my-agent
 
-# Empaquetar para ambas plataformas a la vez
+# With a custom name (kebab-case)
+bash pack_opencode.sh --agent my-agent --name custom-name
+
+# Package for all platforms and languages at once
 make package
 ```
 
-El output se genera en `mi-agente/dist/opencode/mi-agente/` y `mi-agente/dist/claude_code/mi-agente/` respectivamente (excluidos de git por `.gitignore`).
+The output is generated in `my-agent/dist/opencode/my-agent/` (English) and `my-agent/dist/es/opencode/my-agent/` (Spanish) respectively (excluded from git by `.gitignore`).
 
-### 6. Probar
+### 6. Test
 
-La carpeta `dist/` se sobreescribe en cada ejecución de los scripts de empaquetado, así que antes de abrir el agente conviene copiar el paquete generado a una ruta de trabajo.
+The `dist/` folder is overwritten on each packaging script run, so before opening the agent it is advisable to copy the generated package to a working path.
 
-#### 6a. Probar en OpenCode
-
-```bash
-cp -r mi-agente/dist/opencode/mi-agente ~/agentes/mi-agente
-```
-
-Si el `opencode.json` referencia variables de entorno para servidores MCP, exportarlas en el terminal antes de abrir OpenCode:
+#### 6a. Test in OpenCode
 
 ```bash
-export MI_SERVIDOR_URL="https://mi-servidor.ejemplo.com/mcp"
-export MI_API_KEY="mi-token-secreto"
+cp -r my-agent/dist/opencode/my-agent ~/agents/my-agent
 ```
 
-> **Nota sobre TLS:** Si los servidores MCP utilizan certificados TLS autofirmados (habitual en entornos de desarrollo o pre-producción), Node.js rechazará la conexión por defecto. Para permitirla, exportar también:
+If `opencode.json` references environment variables for MCP servers, export them in the terminal before opening OpenCode:
+
+```bash
+export MY_SERVER_URL="https://my-server.example.com/mcp"
+export MY_API_KEY="my-secret-token"
+```
+
+> **Note on TLS:** If the MCP servers use self-signed TLS certificates (common in development or pre-production environments), Node.js will reject the connection by default. To allow it, also export:
 >
 > ```bash
 > export NODE_TLS_REJECT_UNAUTHORIZED=0
 > ```
 >
-> Esta variable desactiva la validación de certificados TLS en todas las conexiones de Node.js del proceso. Usarla **solo en entornos de confianza** — nunca en producción.
+> This variable disables TLS certificate validation on all Node.js connections in the process. Use it **only in trusted environments** — never in production.
 
-A continuación, abrir OpenCode desde la carpeta del agente:
+Then open OpenCode from the agent folder:
 
 ```bash
-cd ~/agentes/mi-agente
+cd ~/agents/my-agent
 opencode
 ```
 
-Al arrancar, OpenCode carga automáticamente `AGENTS.md` como instrucciones del agente, las skills disponibles en `skills/` y conecta con los servidores MCP definidos en `opencode.json`. Las skills se invocan con `/nombre-skill` en el chat.
+On startup, OpenCode automatically loads `AGENTS.md` as the agent instructions, the available skills in `skills/` and connects to the MCP servers defined in `opencode.json`. Skills are invoked with `/skill-name` in the chat.
 
-El archivo `opencode.json` se puede editar a mano en cualquier momento para añadir, quitar o reconfigurar servidores MCP — solo hace falta reiniciar OpenCode para que los cambios surtan efecto.
+The `opencode.json` file can be manually edited at any time to add, remove or reconfigure MCP servers — just restart OpenCode for the changes to take effect.
 
-#### 6b. Probar en Claude Code
+#### 6b. Test in Claude Code
 
 ```bash
-cp -r mi-agente/dist/claude_code/mi-agente ~/agentes/mi-agente-cc
-export MI_SERVIDOR_URL="https://mi-servidor.ejemplo.com/mcp"
-export MI_API_KEY="mi-token-secreto"
-cd ~/agentes/mi-agente-cc
+cp -r my-agent/dist/claude_code/my-agent ~/agents/my-agent-cc
+export MY_SERVER_URL="https://my-server.example.com/mcp"
+export MY_API_KEY="my-secret-token"
+cd ~/agents/my-agent-cc
 claude .
 ```
 
-> **Nota sobre TLS:** Si los servidores MCP utilizan certificados TLS autofirmados (habitual en entornos de desarrollo o pre-producción), Node.js rechazará la conexión por defecto. Para permitirla, exportar también:
+> **Note on TLS:** If the MCP servers use self-signed TLS certificates (common in development or pre-production environments), Node.js will reject the connection by default. To allow it, also export:
 >
 > ```bash
 > export NODE_TLS_REJECT_UNAUTHORIZED=0
 > ```
 >
-> Esta variable desactiva la validación de certificados TLS en todas las conexiones de Node.js del proceso. Usarla **solo en entornos de confianza** — nunca en producción.
+> This variable disables TLS certificate validation on all Node.js connections in the process. Use it **only in trusted environments** — never in production.
 
-Al arrancar, Claude Code carga `CLAUDE.md` como instrucciones del agente y las skills disponibles en `.claude/skills/`. Los servidores MCP se leen de `.mcp.json`. Las skills se invocan con `/nombre-skill` en el chat.
+On startup, Claude Code loads `CLAUDE.md` as the agent instructions and the available skills in `.claude/skills/`. MCP servers are read from `.mcp.json`. Skills are invoked with `/skill-name` in the chat.
