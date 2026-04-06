@@ -1,113 +1,113 @@
 # data-analytics-light
 
-Agente ligero de Business Intelligence y Business Analytics. Mismo motor analitico que `data-analytics`, pero orientado a conversacion: el output principal es el chat, sin generacion de informes formales.
+Lightweight Business Intelligence and Business Analytics agent. Same analytical engine as `data-analytics`, but oriented to conversation: the primary output is the chat, without formal report generation.
 
-## Capacidades
+## Capabilities
 
-- Consulta de datos gobernados via MCP (servidor SQL de Stratio)
-- Analisis avanzado con Python (pandas, numpy, scipy)
-- Visualizaciones profesionales (matplotlib, seaborn, plotly)
-- Output directo en chat con insights accionables
+- Querying governed data via MCP (Stratio SQL server)
+- Advanced analysis with Python (pandas, numpy, scipy)
+- Professional visualizations (matplotlib, seaborn, plotly)
+- Direct chat output with actionable insights
 
-## Requisitos
+## Requirements
 
-- Python 3.10+ (dependencias en `requirements.txt`; instalar con `bash setup_env.sh`)
-- Acceso a un servidor MCP de Stratio. La configuracion esta en `.mcp.json` (Claude Code / claude.ai) y en `opencode.json` (OpenCode), ambos preconfigurados para leer la URL y credenciales desde variables de entorno
+- Python 3.10+ (dependencies in `requirements.txt`; install with `bash setup_env.sh`)
+- Access to a Stratio MCP server. Configuration is in `.mcp.json` (Claude Code / claude.ai) and in `opencode.json` (OpenCode), both preconfigured to read the URL and credentials from environment variables
 
-## Scripts de empaquetado
+## Packaging scripts
 
-Todos los scripts son no-interactivos (CI/CD-friendly). Si no se pasa `--name`, usan `data-analytics-light` por defecto.
+All scripts are non-interactive (CI/CD-friendly). If `--name` is not provided, they default to `data-analytics-light`.
 
-### Scripts especificos (desde esta carpeta)
+### Specific scripts (from this folder)
 
-| Script | Plataforma destino | Output | Ejemplo |
-|--------|-------------------|--------|---------|
-| `pack_claude_ai_project.sh` | claude.ai (Projects) | `dist/claude_ai_projects/<nombre>/` | `bash pack_claude_ai_project.sh --name data-analytics-light` |
-| `pack_claude_cowork.sh` | Claude Cowork | `dist/claude_cowork/<nombre>/` | `bash pack_claude_cowork.sh --name data-analytics-light` |
+| Script | Target platform | Output | Example |
+|--------|----------------|--------|---------|
+| `pack_claude_ai_project.sh` | claude.ai (Projects) | `dist/claude_ai_projects/<name>/` | `bash pack_claude_ai_project.sh --name data-analytics-light` |
+| `pack_claude_cowork.sh` | Claude Cowork | `dist/claude_cowork/<name>/` | `bash pack_claude_cowork.sh --name data-analytics-light` |
 
-El script de cowork acepta tambien `--url <MCP_URL>` y `--key <API_KEY>`. Si se omiten, quedan como variables de entorno template para configurar despues.
+The cowork script also accepts `--url <MCP_URL>` and `--key <API_KEY>`. If omitted, they remain as environment variable templates to be configured later.
 
-### Scripts genericos (desde la raiz del monorepo)
+### Generic scripts (from the monorepo root)
 
-| Script | Plataforma destino | Output | Ejemplo |
-|--------|-------------------|--------|---------|
-| `pack_claude_code.sh` | Claude Code CLI | `dist/claude_code/<nombre>/` | `bash ../pack_claude_code.sh --agent data-analytics-light` |
-| `pack_opencode.sh` | OpenCode | `dist/opencode/<nombre>/` | `bash ../pack_opencode.sh --agent data-analytics-light` |
+| Script | Target platform | Output | Example |
+|--------|----------------|--------|---------|
+| `pack_claude_code.sh` | Claude Code CLI | `dist/claude_code/<name>/` | `bash ../pack_claude_code.sh --agent data-analytics-light` |
+| `pack_opencode.sh` | OpenCode | `dist/opencode/<name>/` | `bash ../pack_opencode.sh --agent data-analytics-light` |
 
-### Ficheros incluidos por paquete
+### Files included per package
 
-| Fichero fuente | `claude_ai_project` | `claude_cowork` | `claude_code` | `opencode` |
+| Source file | `claude_ai_project` | `claude_cowork` | `claude_code` | `opencode` |
 |---|---|---|---|---|
 | `AGENTS.md` | ✅ → `CLAUDE.md` | ✅ → `CLAUDE.md`¹ | ✅ → `CLAUDE.md` | ✅ → `AGENTS.md` |
 | `requirements.txt` | ✅ | ❌ | ✅ | ✅ |
 | `setup_env.sh` | ✅ | ❌ | ✅ | ✅ |
-| `skills/` | ✅² | ✅ (en ZIP) | ✅ (en `.claude/skills/`) | ✅ (en `.opencode/skills/`) |
-| `skills-guides/` | ✅³ | ✅ (en ZIP) | ✅⁴ | ✅⁴ |
-| `.mcp.json` | ❌ | ✅ (en ZIP) | ✅ | ❌ |
+| `skills/` | ✅² | ✅ (in ZIP) | ✅ (in `.claude/skills/`) | ✅ (in `.opencode/skills/`) |
+| `skills-guides/` | ✅³ | ✅ (in ZIP) | ✅⁴ | ✅⁴ |
+| `.mcp.json` | ❌ | ✅ (in ZIP) | ✅ | ❌ |
 | `opencode.json` | ❌ | ❌ | ❌ | ✅ |
-| `plugin.json` | ❌ | ✅ (en ZIP) | ❌ | ❌ |
+| `plugin.json` | ❌ | ✅ (in ZIP) | ❌ | ❌ |
 | `.claude/settings.local.json` | ❌ | ❌ | ✅ | ❌ |
 
-¹ Generado (no copia directa): referencias `skills-guides/` → `skills/analyze/`, placeholder `{{TOOL_PREGUNTAS}}` resuelto.
-² Aplanadas en raíz: `analyze.md`, `analyze_*.md`, `explore-data.md`, `propose-knowledge.md`; guías prefijadas: `skills-guides_stratio-data-tools.md`.
-³ Guías renombradas con prefijo: `skills-guides_stratio-data-tools.md`.
-⁴ Guides dentro de cada skill (autocontenida) + en `skills-guides/` para referencias desde `CLAUDE.md`/`AGENTS.md`.
+¹ Generated (not a direct copy): `skills-guides/` references → `skills/analyze/`, placeholder `{{TOOL_PREGUNTAS}}` resolved.
+² Flattened to root: `analyze.md`, `analyze_*.md`, `explore-data.md`, `propose-knowledge.md`; guides prefixed: `skills-guides_stratio-data-tools.md`.
+³ Guides renamed with prefix: `skills-guides_stratio-data-tools.md`.
+⁴ Guides inside each skill (self-contained) + in `skills-guides/` for references from `CLAUDE.md`/`AGENTS.md`.
 
-### Empaquetado como Claude Cowork
+### Packaging as Claude Cowork
 
-Genera un paquete para configurar el agente en Claude Cowork sin reemplazar al orquestador. El script construye el plugin internamente (skills + MCP, sin agente) y lo combina con las instrucciones del agente. Produce dos ficheros:
+Generates a package to configure the agent in Claude Cowork without replacing the orchestrator. The script builds the plugin internally (skills + MCP, without agent) and combines it with the agent instructions. It produces two files:
 
-| Fichero | Que es | Para que sirve |
-|---------|--------|----------------|
-| `CLAUDE.md` | Folder instructions (generado desde AGENTS.md) | Instrucciones del agente — Cowork las lee automaticamente del directorio de trabajo |
-| `<nombre>.zip` | Plugin ZIP (solo skills + MCP, sin agente) | Se instala como plugin en Cowork; aporta las skills y la conexion MCP |
+| File | What it is | What it is for |
+|------|-----------|----------------|
+| `CLAUDE.md` | Folder instructions (generated from AGENTS.md) | Agent instructions — Cowork reads them automatically from the working directory |
+| `<name>.zip` | Plugin ZIP (skills + MCP only, without agent) | Installed as a plugin in Cowork; provides the skills and MCP connection |
 
-> **Nota:** Los plugins de Claude no incluyen instrucciones de agente (CLAUDE.md) — solo skills, MCP y hooks. Por eso el `CLAUDE.md` va aparte, como fichero del directorio de trabajo.
+> **Note:** Claude plugins do not include agent instructions (CLAUDE.md) — only skills, MCP, and hooks. That is why the `CLAUDE.md` goes separately, as a file in the working directory.
 
 ```bash
-bash pack_claude_cowork.sh --name data-analytics-light --url https://mcp.ejemplo.com --key mi-api-key
+bash pack_claude_cowork.sh --name data-analytics-light --url https://mcp.example.com --key my-api-key
 ```
 
-El resultado se encuentra en `dist/claude_cowork/data-analytics-light/`.
+The result is located in `dist/claude_cowork/data-analytics-light/`.
 
-**Como usarlo en Cowork:**
+**How to use it in Cowork:**
 
-1. Copiar `CLAUDE.md` al directorio de trabajo del proyecto en Cowork — Cowork lo lee automaticamente como folder instructions
-3. Instalar `<nombre>.zip` como plugin en Cowork (aporta las skills `/analyze`, `/explore-data`, `/propose-knowledge` y la conexion MCP)
-4. El orquestador de Cowork lee las instrucciones del `CLAUDE.md` y delega a las skills del plugin cuando corresponda
+1. Copy `CLAUDE.md` to the working directory of the project in Cowork — Cowork reads it automatically as folder instructions
+3. Install `<name>.zip` as a plugin in Cowork (provides the skills `/analyze`, `/explore-data`, `/propose-knowledge` and the MCP connection)
+4. The Cowork orchestrator reads the instructions from `CLAUDE.md` and delegates to the plugin skills when appropriate
 
-### Empaquetado como Claude AI Project (claude.ai)
+### Packaging as Claude AI Project (claude.ai)
 
-Genera los ficheros aplanados (skills, guias, requirements, setup):
+Generates the flattened files (skills, guides, requirements, setup):
 
 ```bash
 bash pack_claude_ai_project.sh --name data-analytics-light
 ```
 
-Para configurarlo en claude.ai:
+To configure it in claude.ai:
 
-1. Crear un nuevo **Project** en [claude.ai](https://claude.ai)
-2. Abrir `dist/claude_ai_projects/data-analytics-light/` y subir **todos los ficheros** (excepto `CLAUDE.md`) a la seccion de archivos del proyecto
-3. Abrir `CLAUDE.md` del paquete generado, copiar **todo su contenido** y pegarlo en el campo **Instructions** del proyecto
-4. Guardar el proyecto — el agente estara listo para usar
+1. Create a new **Project** in [claude.ai](https://claude.ai)
+2. Open `dist/claude_ai_projects/data-analytics-light/` and upload **all files** (except `CLAUDE.md`) to the project's files section
+3. Open `CLAUDE.md` from the generated package, copy **all its content** and paste it into the project's **Instructions** field
+4. Save the project — the agent will be ready to use
 
-## Compatibilidad
+## Compatibility
 
-Para usar con cualquier plataforma, empaquetar con el script correspondiente:
+To use with any platform, package with the corresponding script:
 
-- **Claude Code**: Empaquetar con `pack_claude_code.sh` para usar con Claude Code.
-- **OpenCode**: Empaquetar con `pack_opencode.sh` para usar con OpenCode.
+- **Claude Code**: Package with `pack_claude_code.sh` to use with Claude Code.
+- **OpenCode**: Package with `pack_opencode.sh` to use with OpenCode.
 
-Los pack scripts generan el formato correcto para cada plataforma (renombrando ficheros, reubicando skills, etc.).
+The pack scripts generate the correct format for each platform (renaming files, relocating skills, etc.).
 
-## Skills disponibles
+## Available skills
 
-| Skill | Comando | Origen | Descripcion |
+| Skill | Command | Origin | Description |
 |-------|---------|--------|-------------|
-| Analisis | `/analyze` | local | Analisis de datos BI/BA: descubrimiento de dominio, EDA, planificacion de KPIs, queries MCP, analisis Python y visualizaciones |
-| Exploracion | `/explore-data` | **shared** | Exploracion rapida de dominios, tablas, columnas y terminologia de negocio |
-| Conocimiento | `/propose-knowledge` | **shared** | Proponer terminos de negocio descubiertos a Stratio Governance |
+| Analysis | `/analyze` | local | BI/BA data analysis: domain discovery, EDA, KPI planning, MCP queries, Python analysis, and visualizations |
+| Exploration | `/explore-data` | **shared** | Quick exploration of domains, tables, columns, and business terminology |
+| Knowledge | `/propose-knowledge` | **shared** | Propose discovered business terms to Stratio Governance |
 
-Las skills marcadas como **shared** viven en `shared-skills/` en la raiz del monorepo y se comparten con `data-analytics`. Las locales viven en `skills/` de este agente.
+Skills marked as **shared** live in `shared-skills/` at the monorepo root and are shared with `data-analytics`. Local skills live in this agent's `skills/`.
 
-**Nota**: Este agente no usa memoria persistente en ficheros — el output principal es el chat.
+**Note**: This agent does not use persistent file-based memory — the primary output is the chat.

@@ -14,27 +14,27 @@ Usage:
     db = DashboardBuilder(title="Sales Q4", style="corporate")
 
     # Add filters
-    db.add_filter("region", "Region", options=["Norte", "Sur", "Este", "Oeste"])
-    db.add_filter("period", "Periodo", filter_type="date")
+    db.add_filter("region", "Region", options=["North", "South", "East", "West"])
+    db.add_filter("period", "Period", filter_type="date")
 
     # Add KPIs
-    db.add_kpi("revenue", "Ingresos", "1.2M", change=15, prefix="$")
-    db.add_kpi("clients", "Clientes activos", "8,432", change=-3)
+    db.add_kpi("revenue", "Revenue", "1.2M", change=15, prefix="$")
+    db.add_kpi("clients", "Active clients", "8,432", change=-3)
 
     # Add a Plotly chart section
     import plotly.express as px
-    fig = px.bar(df, x="region", y="ventas")
-    db.add_chart_section("ventas-region", "Ventas por Region", fig,
-                         nav_label="Ventas")
+    fig = px.bar(df, x="region", y="sales")
+    db.add_chart_section("sales-region", "Sales by Region", fig,
+                         nav_label="Sales")
 
     # Add a sortable table
-    db.add_table("top-products", "Top Productos",
-                 headers=["Producto", "Ventas", "Margen"],
+    db.add_table("top-products", "Top Products",
+                 headers=["Product", "Sales", "Margin"],
                  rows=[["Widget A", {"display": "1,234", "sort_value": "1234"}, "23%"]])
 
     # Add raw HTML section
-    db.add_html_section("commentary", "Comentarios", "<p>Texto libre...</p>",
-                        nav_label="Comentarios")
+    db.add_html_section("commentary", "Comments", "<p>Free-form text...</p>",
+                        nav_label="Comments")
 
     # Embed data for offline filtering
     db.set_data({"sales": df.to_dict(orient="records")})
@@ -92,7 +92,7 @@ class DashboardBuilder:
         date: str = "",
         show_cover: bool = True,
         footer: str = "",
-        lang: str = "es",
+        lang: str = "en",
     ) -> None:
         self.title = title
         self.style = style
@@ -337,7 +337,7 @@ class DashboardBuilder:
             nav=nav_html,
             kpis=kpis_html,
             sections=sections_html,
-            footer=_escape_html(self.footer or "Dashboard generado automaticamente"),
+            footer=_escape_html(self.footer or "Dashboard generated automatically"),
             data_json=data_json,
             custom_js=self._custom_js,
             author_meta=f'<meta name="author" content="{_escape_html(self.author)}">' if self.author else "",
@@ -370,11 +370,11 @@ class DashboardBuilder:
             parts.append(f'  <div class="cover-subtitle">{_escape_html(self.subtitle)}</div>')
         meta_lines = []
         if self.author:
-            meta_lines.append(f"<strong>Autor:</strong> {_escape_html(self.author)}")
+            meta_lines.append(f"<strong>Author:</strong> {_escape_html(self.author)}")
         if self.domain:
-            meta_lines.append(f"<strong>Dominio:</strong> {_escape_html(self.domain)}")
+            meta_lines.append(f"<strong>Domain:</strong> {_escape_html(self.domain)}")
         if self.date:
-            meta_lines.append(f"<strong>Fecha:</strong> {_escape_html(self.date)}")
+            meta_lines.append(f"<strong>Date:</strong> {_escape_html(self.date)}")
         if meta_lines:
             parts.append('  <div class="cover-meta">')
             for line in meta_lines:
@@ -385,14 +385,14 @@ class DashboardBuilder:
 
     def _render_filters(self) -> str:
         parts = ['<div class="filter-bar" id="filter-bar">']
-        parts.append('  <div class="filter-bar-title">Filtros</div>')
+        parts.append('  <div class="filter-bar-title">Filters</div>')
         parts.append('  <div class="filter-controls">')
         for f in self._filters:
             parts.append(f'    <div class="filter-group">')
             parts.append(f'      <label for="filter-{f["id"]}">{_escape_html(f["label"])}</label>')
             if f["type"] == "select":
                 parts.append(f'      <select id="filter-{f["id"]}" class="filter-input" data-filter-id="{f["id"]}" onchange="applyFilters()">')
-                parts.append('        <option value="__all__">Todos</option>')
+                parts.append('        <option value="__all__">All</option>')
                 for opt in f["options"]:
                     parts.append(f'        <option value="{_escape_html(str(opt))}">{_escape_html(str(opt))}</option>')
                 parts.append("      </select>")
@@ -401,7 +401,7 @@ class DashboardBuilder:
                 parts.append(f'      <span class="filter-date-sep">&mdash;</span>')
                 parts.append(f'      <input type="date" id="filter-{f["id"]}-end" class="filter-input filter-date" data-filter-id="{f["id"]}" data-filter-role="end" onchange="applyFilters()">')
             parts.append("    </div>")
-        parts.append('    <button class="filter-reset" onclick="resetFilters()">Limpiar filtros</button>')
+        parts.append('    <button class="filter-reset" onclick="resetFilters()">Clear filters</button>')
         parts.append("  </div>")
         parts.append("</div>")
         return "\n".join(parts)

@@ -1,73 +1,73 @@
 ---
 name: generate-technical-terms
-description: Generar o regenerar terminos tecnicos (descripciones de tablas y columnas) en
-  Stratio Governance para un dominio tecnico.
-argument-hint: [dominio tecnico (opcional)]
+description: Generate or regenerate technical terms (table and column descriptions) in
+  Stratio Governance for a technical domain.
+argument-hint: [technical domain (optional)]
 ---
 
-# Skill: Generar Terminos Tecnicos
+# Skill: Generate Technical Terms
 
-Genera descripciones tecnicas de tablas y columnas de un dominio en Stratio Governance. Fase 1 del pipeline de capa semantica.
+Generates technical descriptions for tables and columns of a domain in Stratio Governance. Phase 1 of the semantic layer pipeline.
 
-## Tools MCP utilizadas
+## MCP Tools Used
 
-| Tool | Servidor | Proposito |
-|------|----------|-----------|
-| `search_domains(search_text, domain_type='technical')` | sql | **Preferir**. Buscar dominios tecnicos por texto libre. Resultados por relevancia |
-| `list_domains(domain_type='technical', refresh?)` | sql | Listar todos los dominios tecnicos (incluye descripcion si existe). `refresh=true` para bypass de cache |
-| `list_domain_tables(domain)` | sql | Listar tablas con sus descripciones (indica si ya tienen terminos tecnicos) |
-| `create_technical_terms(domain, table_names?, user_instructions?, regenerate?)` | gov | Crear terminos tecnicos. Salta existentes. Con `regenerate=true`: DESTRUCTIVO, borra y recrea |
+| Tool | Server | Purpose |
+|------|--------|---------|
+| `search_domains(search_text, domain_type='technical')` | sql | **Prefer**. Search technical domains by free text. Results by relevance |
+| `list_domains(domain_type='technical', refresh?)` | sql | List all technical domains (includes description if exists). `refresh=true` for cache bypass |
+| `list_domain_tables(domain)` | sql | List tables with their descriptions (indicates if they already have technical terms) |
+| `create_technical_terms(domain, table_names?, user_instructions?, regenerate?)` | gov | Create technical terms. Skips existing. With `regenerate=true`: DESTRUCTIVE, deletes and recreates |
 
-**Reglas clave**: `domain_name` inmutable (valor exacto de `list_domains` o `search_domains`). Confirmacion obligatoria para `regenerate=true`. Ofrecer `user_instructions` antes de invocar.
+**Key rules**: `domain_name` immutable (exact value from `list_domains` or `search_domains`). Mandatory confirmation for `regenerate=true`. Offer `user_instructions` before invoking.
 
 ## Workflow
 
-### 1. Determinar dominio
+### 1. Determine domain
 
-Si `$ARGUMENTS` contiene un nombre de dominio, buscar con `search_domains($ARGUMENTS, domain_type='technical')`. Si coincide con un resultado, continuar. Si no coincide, reintentar con `search_domains($ARGUMENTS, domain_type='technical', refresh=true)` por si es una coleccion recien creada. Si ahora coincide, continuar. Si sigue sin coincidir o no hay argumento, listar dominios con `list_domains(domain_type='technical')` y preguntar al usuario siguiendo la convencion de preguntas al usuario.
+If `$ARGUMENTS` contains a domain name, search with `search_domains($ARGUMENTS, domain_type='technical')`. If it matches a result, continue. If it does not match, retry with `search_domains($ARGUMENTS, domain_type='technical', refresh=true)` in case it is a recently created collection. If it now matches, continue. If it still does not match or there is no argument, list domains with `list_domains(domain_type='technical')` and ask the user following the user question convention.
 
-### 2. Evaluar estado
+### 2. Evaluate state
 
-Ejecutar `list_domain_tables(domain)` para evaluar el estado actual:
-- Tablas con descripcion → ya tienen terminos tecnicos generados
-- Tablas sin descripcion → pendientes de generar
-- Si el dominio tiene descripcion (visible en `list_domains(domain_type='technical')`) → la descripcion general ya existe
+Execute `list_domain_tables(domain)` to evaluate the current state:
+- Tables with description → already have generated technical terms
+- Tables without description → pending generation
+- If the domain has a description (visible in `list_domains(domain_type='technical')`) → the general description already exists
 
-Presentar resumen al usuario:
+Present summary to the user:
 ```
-## Estado — [domain_name]
-- Tablas totales: N
-- Con terminos tecnicos: X
-- Pendientes: Y
-- Descripcion del dominio: Si/No
+## State — [domain_name]
+- Total tables: N
+- With technical terms: X
+- Pending: Y
+- Domain description: Yes/No
 ```
 
-### 3. Seleccion de alcance
+### 3. Scope selection
 
-Preguntar al usuario con opciones:
-1. **Crear para todas las tablas** — idempotente: `create_technical_terms` salta tablas que ya tienen descripcion
-2. **Crear para tablas especificas** — seleccion multiple de las tablas pendientes
-3. **Regenerar todas** — DESTRUCTIVO: borra y recrea. Requiere confirmacion explicita
-4. **Regenerar tablas especificas** — DESTRUCTIVO para las seleccionadas. Requiere confirmacion explicita
+Ask the user with options:
+1. **Create for all tables** — idempotent: `create_technical_terms` skips tables that already have a description
+2. **Create for specific tables** — multiple selection from pending tables
+3. **Regenerate all** — DESTRUCTIVE: deletes and recreates. Requires explicit confirmation
+4. **Regenerate specific tables** — DESTRUCTIVE for the selected ones. Requires explicit confirmation
 
 ### 4. user_instructions
 
-Antes de ejecutar, ofrecer al usuario la oportunidad de aportar contexto adicional:
-- **Ficheros locales**: Si el usuario tiene documentacion, glosarios, diccionarios de datos o especificaciones → **leerlos** y extraer definiciones relevantes para incluirlas como contexto
-- **Definiciones de dominio**: Conceptos de negocio, valores especificos de columnas, relaciones entre entidades que la IA deberia conocer
-- Ejemplos: "La columna `status` tiene valores: A=activo, I=inactivo, S=suspendido", "Las tablas `film_*` pertenecen al modulo de catalogo de peliculas", "El campo `last_update` es un timestamp de auditoria, no de negocio"
+Before executing, offer the user the opportunity to provide additional context:
+- **Local files**: If the user has documentation, glossaries, data dictionaries or specifications → **read them** and extract relevant definitions to include as context
+- **Domain definitions**: Business concepts, specific column values, relationships between entities that the AI should know
+- Examples: "The column `status` has values: A=active, I=inactive, S=suspended", "The `film_*` tables belong to the movie catalog module", "The field `last_update` is an audit timestamp, not a business one"
 
-No sugerir opciones que la tool controla internamente (idioma, audiencia, formato). Si el usuario no aporta instrucciones, continuar sin el parametro. No es bloqueante.
+Do not suggest options that the tool controls internally (language, audience, format). If the user does not provide instructions, continue without the parameter. Not blocking.
 
-### 5. Ejecucion
+### 5. Execution
 
-Invocar `create_technical_terms`. Para regenerar: pasar `regenerate=true` (DESTRUCTIVO). La tool devuelve un resumen de lo procesado — presentar ese resumen al usuario directamente. No llamar a tools adicionales post-creacion para no llenar contexto.
+Invoke `create_technical_terms`. To regenerate: pass `regenerate=true` (DESTRUCTIVE). The tool returns a summary of what was processed — present that summary to the user directly. Do not call additional tools post-creation to avoid filling up context.
 
-**Nota sobre descripcion de dominio**: `create_technical_terms` genera automaticamente la descripcion del dominio/coleccion si no tiene. No es necesario llamar a `create_collection_description` como paso separado.
+**Note on domain description**: `create_technical_terms` automatically generates the domain/collection description if it does not have one. It is not necessary to call `create_collection_description` as a separate step.
 
-### 6. Resumen
+### 6. Summary
 
-Basado en la respuesta de la tool, presentar:
-- Tablas procesadas
-- Errores si los hubo (reintentar entidades fallidas con `user_instructions` mejoradas, max 2 reintentos)
-- Siguiente paso sugerido: "Puedes crear una ontologia con `/create-ontology`"
+Based on the tool's response, present:
+- Tables processed
+- Errors if any (retry failed entities with improved `user_instructions`, max 2 retries)
+- Suggested next step: "You can create an ontology with `/create-ontology`"

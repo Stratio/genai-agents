@@ -1,22 +1,16 @@
 ---
 name: stratio-semantic-layer
-description: Referencia de MCPs de capa semantica Stratio — reglas obligatorias, patrones
-  de uso y buenas practicas para las herramientas MCP de gobernanza semantica
-  (create_ontology, create_business_views, etc.). Cargar para refrescar
-  las reglas de uso o antes de interactuar con tools de gobernanza sin una skill especifica.
+description: Stratio semantic layer MCPs reference — mandatory rules, usage patterns
+  and best practices for the semantic governance MCP tools
+  (create_ontology, create_business_views, etc.). Load to refresh
+  usage rules or before interacting with governance tools without a specific skill.
 argument-hint:
 ---
 
-# Stratio Semantic Layer — Referencia de MCPs de gobernanza
+# Stratio Semantic Layer — Governance MCPs Reference
 
-Carga esta skill cuando vayas a trabajar con herramientas MCP de gobernanza semantica de Stratio:
-crear ontologias, generar terminos tecnicos, construir vistas de negocio, mappings SQL o terminos
-semanticos. Contiene las reglas obligatorias, patrones de uso y buenas practicas para todas las
-herramientas MCP de gobernanza (create_ontology, create_business_views,
-create_technical_terms, etc.).
+Load this skill when you are going to work with Stratio semantic governance MCP tools: create ontologies, generate technical terms, build business views, SQL mappings or semantic terms. Contains the mandatory rules, usage patterns and best practices for all governance MCP tools (create_ontology, create_business_views, create_technical_terms, etc.).
 
-**Cuando invocarla**: Antes de la primera interaccion con cualquier tool de gobernanza semantica
-en una conversacion, o cuando necesites refrescar las reglas de uso (domain_name inmutable,
-user_instructions, confirmacion de destructivas, ontologias ADD+DELETE, deteccion de estado).
+**When to invoke**: Before the first interaction with any semantic governance tool in a conversation, or when you need to refresh usage rules (immutable domain_name, user_instructions, destructive confirmation, ADD+DELETE ontologies, state detection).
 
-Leer `skills-guides/stratio-semantic-layer-tools.md` para la referencia completa.
+Read `skills-guides/stratio-semantic-layer-tools.md` for the complete reference.

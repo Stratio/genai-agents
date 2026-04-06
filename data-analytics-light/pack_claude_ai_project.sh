@@ -5,49 +5,49 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MONOREPO_ROOT="$(dirname "$SCRIPT_DIR")"
 cd "$SCRIPT_DIR"
 
-# --- Parsear argumentos CLI ---
+# --- Parse CLI arguments ---
 ARG_NAME=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --name)  ARG_NAME="$2"; shift 2 ;;
-    *) echo "ERROR: Argumento desconocido: $1"; echo "Uso: $0 [--name NOMBRE]"; exit 1 ;;
+    *) echo "ERROR: Unknown argument: $1"; echo "Usage: $0 [--name NAME]"; exit 1 ;;
   esac
 done
 
-# --- Nombre: argumento CLI o default ---
+# --- Name: CLI argument or default ---
 PROJECT_NAME="${ARG_NAME:-data-analytics-light}"
 
 PROJECT_DIR="dist/claude_ai_projects/$PROJECT_NAME"
 
-# --- Limpiar si existe ---
+# --- Clean if exists ---
 if [ -d "$PROJECT_DIR" ]; then
-  echo "Borrando proyecto existente en $PROJECT_DIR..."
+  echo "Deleting existing project in $PROJECT_DIR..."
   rm -rf "$PROJECT_DIR"
 fi
 
 mkdir -p "$PROJECT_DIR"
 
-# --- 1. Ficheros raiz (sin cambio de nombre) ---
-echo "Copiando ficheros raiz..."
+# --- 1. Root files (no renaming) ---
+echo "Copying root files..."
 cp AGENTS.md "$PROJECT_DIR/CLAUDE.md"
 cp requirements.txt "$PROJECT_DIR/requirements.txt"
 cp setup_env.sh "$PROJECT_DIR/setup_env.sh"
 
-# --- 1b. README de usuario ---
+# --- 1b. User README ---
 if [ -f "USER_README.md" ]; then
   cp USER_README.md "$PROJECT_DIR/README.md"
-  echo "  README.md copiado desde USER_README.md"
+  echo "  README.md copied from USER_README.md"
 fi
 
-# --- 2. skills-guides/ → prefijo skills-guides_ ---
-echo "Copiando skills-guides..."
-# Leer shared-guides del agente para saber que guides incluir
+# --- 2. skills-guides/ → skills-guides_ prefix ---
+echo "Copying skills-guides..."
+# Read shared-guides from the agent to know which guides to include
 if [ -f "shared-guides" ]; then
   while IFS= read -r guide || [ -n "$guide" ]; do
     [ -z "$guide" ] || [[ "$guide" == \#* ]] && continue
     guide_src="$MONOREPO_ROOT/shared-skill-guides/$guide"
     if [ -d "$guide_src" ]; then
-      # Aplanar directorio: cada fichero interno se convierte en skills-guides_dir_file.md
+      # Flatten directory: each internal file becomes skills-guides_dir_file.md
       while IFS= read -r sub_file; do
         [ -f "$sub_file" ] || continue
         rel="${sub_file#$guide_src/}"
@@ -58,17 +58,17 @@ if [ -f "shared-guides" ]; then
       guide_flat="skills-guides_$(echo "$guide" | tr '/' '_')"
       cp "$guide_src" "$PROJECT_DIR/$guide_flat"
     else
-      echo "WARN: shared guide '$guide' no encontrado en $guide_src" >&2
+      echo "WARN: shared guide '$guide' not found in $guide_src" >&2
     fi
   done < "shared-guides"
 fi
-# Copiar guides locales restantes (si existen)
+# Copy remaining local guides (if any)
 if [ -d "skills-guides" ]; then
   for entry in skills-guides/*; do
     [ -e "$entry" ] || continue
     base=$(basename "$entry")
     if [ -d "$entry" ]; then
-      # Aplanar directorio local
+      # Flatten local directory
       while IFS= read -r sub_file; do
         [ -f "$sub_file" ] || continue
         rel="${sub_file#$entry/}"
@@ -85,9 +85,9 @@ if [ -d "skills-guides" ]; then
 fi
 
 # --- 3. Skills ---
-echo "Copiando skills..."
+echo "Copying skills..."
 
-# Resolver directorio base de skills (fallback en 4 ubicaciones)
+# Resolve skills base directory (fallback across 4 locations)
 SKILLS_SRC=""
 if [ -d "skills" ]; then
   SKILLS_SRC="skills"
@@ -100,17 +100,17 @@ elif [ -d ".agents/skills" ]; then
 fi
 
 if [ -z "$SKILLS_SRC" ]; then
-  echo "ERROR: No se encontro directorio de skills" >&2
+  echo "ERROR: Skills directory not found" >&2
   exit 1
 fi
 
-# Normalizar: detectar si el origen usa formato plano (analyze.md) o canónico (analyze/SKILL.md)
-# y crear un directorio temporal normalizado si es necesario
+# Normalize: detect if source uses flat format (analyze.md) or canonical (analyze/SKILL.md)
+# and create a temporary normalized directory if needed
 SKILLS_NORM=""
-# Comprobar si hay .md sueltos en la raíz de SKILLS_SRC (formato plano)
+# Check if there are loose .md files in the SKILLS_SRC root (flat format)
 HAS_FLAT=$(find "$SKILLS_SRC" -maxdepth 1 -name '*.md' -not -name 'SKILL.md' 2>/dev/null | head -1)
 if [ -n "$HAS_FLAT" ]; then
-  # Formato plano: normalizar a canónico en directorio temporal
+  # Flat format: normalize to canonical in temporary directory
   SKILLS_NORM=$(mktemp -d)
   cp -r "$SKILLS_SRC/." "$SKILLS_NORM/"
   for md_file in "$SKILLS_NORM"/*.md; do
@@ -122,7 +122,7 @@ if [ -n "$HAS_FLAT" ]; then
   SKILLS_SRC="$SKILLS_NORM"
 fi
 
-# analyze: SKILL.md → analyze.md, subficheros → analyze_*.md (caso especial: tiene subficheros)
+# analyze: SKILL.md → analyze.md, subfiles → analyze_*.md (special case: has subfiles)
 cp "$SKILLS_SRC/analyze/SKILL.md" "$PROJECT_DIR/analyze.md"
 for f in "$SKILLS_SRC"/analyze/*.md; do
   base=$(basename "$f")
@@ -130,7 +130,7 @@ for f in "$SKILLS_SRC"/analyze/*.md; do
   cp "$f" "$PROJECT_DIR/analyze_${base}"
 done
 
-# Otras skills locales (formato simple: <nombre>/SKILL.md → <nombre>.md)
+# Other local skills (simple format: <name>/SKILL.md → <name>.md)
 for skill_dir in "$SKILLS_SRC"/*/; do
   skill_name=$(basename "$skill_dir")
   [ "$skill_name" = "analyze" ] && continue
@@ -138,59 +138,62 @@ for skill_dir in "$SKILLS_SRC"/*/; do
   cp "$skill_dir/SKILL.md" "$PROJECT_DIR/${skill_name}.md"
 done
 
-# Limpiar directorio temporal si se creó
+# Clean up temporary directory if created
 if [ -n "$SKILLS_NORM" ]; then
   rm -rf "$SKILLS_NORM"
 fi
 
-# Shared skills (desde manifiesto shared-skills del agente)
+# Shared skills (from agent's shared-skills manifest)
 if [ -f "shared-skills" ]; then
   while IFS= read -r skill_name || [ -n "$skill_name" ]; do
     [ -z "$skill_name" ] || [[ "$skill_name" == \#* ]] && continue
-    # Prioridad local: si ya existe en el output, no sobreescribir
+    # Local priority: if already exists in output, do not overwrite
     if [ -f "$PROJECT_DIR/${skill_name}.md" ]; then
-      echo "  '$skill_name' omitida (version local tiene prioridad)"
+      echo "  '$skill_name' skipped (local version takes priority)"
       continue
     fi
     skill_src="$MONOREPO_ROOT/shared-skills/$skill_name/SKILL.md"
     if [ -f "$skill_src" ]; then
       cp "$skill_src" "$PROJECT_DIR/${skill_name}.md"
     else
-      echo "WARN: shared skill '$skill_name' no encontrada en $skill_src" >&2
+      echo "WARN: shared skill '$skill_name' not found in $skill_src" >&2
     fi
   done < "shared-skills"
 fi
 
-# --- 4. Reemplazos de referencias en todos los .md copiados ---
-echo "Actualizando referencias internas..."
+# --- 3.1 Cleanup of residual i18n files ---
+find "$PROJECT_DIR" \( -name '*.es.md' -o -name '*.es.yaml' \) -delete 2>/dev/null || true
 
-# Patron A: rutas skills-guides/
+# --- 4. Reference replacements in all copied .md files ---
+echo "Updating internal references..."
+
+# Pattern A: skills-guides/ paths
 sed -i 's|skills-guides/stratio-data-tools\.md|skills-guides_stratio-data-tools.md|g' "$PROJECT_DIR"/*.md
 sed -i 's|skills-guides/visualization\.md|skills-guides_visualization.md|g' "$PROJECT_DIR"/*.md
 
-# Patron B: links markdown a subficheros de analyze — buscar con parentesis
+# Pattern B: markdown links to analyze subfiles — search with parentheses
 sed -i 's|(advanced-analytics\.md)|(analyze_advanced-analytics.md)|g' "$PROJECT_DIR"/*.md
 sed -i 's|(analytical-patterns\.md)|(analyze_analytical-patterns.md)|g' "$PROJECT_DIR"/*.md
 sed -i 's|(clustering-guide\.md)|(analyze_clustering-guide.md)|g' "$PROJECT_DIR"/*.md
 sed -i 's|(visualization\.md)|(analyze_visualization.md)|g' "$PROJECT_DIR"/*.md
 
-# Patron C: rutas de subficheros de analyze en texto plano (sin parentesis)
+# Pattern C: analyze subfile paths in plain text (without parentheses)
 sed -i 's|skills/analyze/visualization\.md|analyze_visualization.md|g' "$PROJECT_DIR"/*.md
 
-# Patron D: AGENTS.md → CLAUDE.md (referencias en texto plano dentro de skills)
+# Pattern D: AGENTS.md → CLAUDE.md (plain text references inside skills)
 sed -i 's/AGENTS\.md/CLAUDE.md/g' "$PROJECT_DIR"/*.md
 
 sed -i 's/{{TOOL_PREGUNTAS}}/ (`AskUserQuestion`)/g' "$PROJECT_DIR"/*.md
 
-# --- 5. Verificacion ---
+# --- 5. Verification ---
 echo ""
-echo "=== Verificacion ==="
+echo "=== Verification ==="
 
-# Contar ficheros
+# Count files
 FILE_COUNT=$(ls -1 "$PROJECT_DIR"/*.md "$PROJECT_DIR"/*.txt "$PROJECT_DIR"/*.sh 2>/dev/null | wc -l)
-echo "  Ficheros generados: $FILE_COUNT"
+echo "  Files generated: $FILE_COUNT"
 
-# Buscar referencias rotas (rutas con / que no sean URLs ni rutas de output/)
+# Search for broken references (paths with / that are not URLs or output/ paths)
 BROKEN=$(grep -rn 'skills-guides/' "$PROJECT_DIR"/*.md 2>/dev/null || true)
 BROKEN+=$(grep -rn '(advanced-analytics\.md)' "$PROJECT_DIR"/*.md 2>/dev/null || true)
 BROKEN+=$(grep -rn '(analytical-patterns\.md)' "$PROJECT_DIR"/*.md 2>/dev/null || true)
@@ -198,11 +201,11 @@ BROKEN+=$(grep -rn '(clustering-guide\.md)' "$PROJECT_DIR"/*.md 2>/dev/null || t
 BROKEN+=$(grep -rn '(visualization\.md)' "$PROJECT_DIR"/*.md 2>/dev/null || true)
 
 if [ -n "$BROKEN" ]; then
-  echo "  WARN: Referencias posiblemente sin actualizar:"
+  echo "  WARN: Possibly outdated references:"
   echo "$BROKEN" | head -20
 else
-  echo "  OK: No se encontraron referencias rotas"
+  echo "  OK: No broken references found"
 fi
 
 echo ""
-echo "=== Proyecto empaquetado en $PROJECT_DIR ==="
+echo "=== Project packaged in $PROJECT_DIR ==="

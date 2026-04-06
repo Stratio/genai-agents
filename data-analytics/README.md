@@ -1,72 +1,72 @@
 # data-analytics
 
-Agente completo de Business Intelligence y Business Analytics para Claude Code y OpenCode.
+Complete Business Intelligence and Business Analytics agent for Claude Code and OpenCode.
 
-## Capacidades
+## Capabilities
 
-- Consulta de datos gobernados via MCP (servidor SQL de Stratio)
-- Analisis avanzado con Python (pandas, numpy, scipy)
-- Segmentacion y clustering (scikit-learn)
-- Visualizaciones profesionales (matplotlib, seaborn, plotly)
-- Generacion de informes multi-formato: PDF, DOCX, web interactiva, PowerPoint
-- Documentacion del razonamiento y validacion de output
-- Memoria persistente de analisis y preferencias
+- Querying governed data via MCP (Stratio SQL server)
+- Advanced analysis with Python (pandas, numpy, scipy)
+- Segmentation and clustering (scikit-learn)
+- Professional visualizations (matplotlib, seaborn, plotly)
+- Multi-format report generation: PDF, DOCX, interactive web, PowerPoint
+- Reasoning documentation and output validation
+- Persistent memory for analyses and preferences
 
-## Requisitos
+## Requirements
 
-- Python 3.10+ (dependencias en `requirements.txt`; instalar con `bash setup_env.sh`)
-- Acceso a un servidor MCP de Stratio. La configuracion esta en `.mcp.json` (Claude Code / claude.ai) y en `opencode.json` (OpenCode), ambos preconfigurados para leer la URL y credenciales desde variables de entorno
+- Python 3.10+ (dependencies in `requirements.txt`; install with `bash setup_env.sh`)
+- Access to a Stratio MCP server. Configuration is in `.mcp.json` (Claude Code / claude.ai) and in `opencode.json` (OpenCode), both preconfigured to read the URL and credentials from environment variables
 
-## Scripts de empaquetado
+## Packaging scripts
 
-Scripts genericos en la raiz del monorepo (desde `../`):
+Generic scripts at the monorepo root (from `../`):
 
-| Script | Plataforma destino | Output | Ejemplo |
-|--------|-------------------|--------|---------|
-| `pack_claude_code.sh` | Claude Code CLI | `claude_code/<nombre>/` | `bash ../pack_claude_code.sh --agent data-analytics` |
-| `pack_opencode.sh` | OpenCode | `opencode/<nombre>/` | `bash ../pack_opencode.sh --agent data-analytics` |
+| Script | Target platform | Output | Example |
+|--------|----------------|--------|---------|
+| `pack_claude_code.sh` | Claude Code CLI | `claude_code/<name>/` | `bash ../pack_claude_code.sh --agent data-analytics` |
+| `pack_opencode.sh` | OpenCode | `opencode/<name>/` | `bash ../pack_opencode.sh --agent data-analytics` |
 
-## Compatibilidad
+## Compatibility
 
-Este agente funciona directamente sin empaquetar en:
+This agent works directly without packaging on:
 
-- **Claude Code**: Empaquetar con `pack_claude_code.sh` para usar con Claude Code.
-- **OpenCode**: Empaquetar con `pack_opencode.sh` para usar con OpenCode.
+- **Claude Code**: Package with `pack_claude_code.sh` to use with Claude Code.
+- **OpenCode**: Package with `pack_opencode.sh` to use with OpenCode.
 
-Los pack scripts solo son necesarios para distribuir el agente fuera del repositorio.
+Pack scripts are only needed to distribute the agent outside the repository.
 
-## Skills disponibles
+## Available skills
 
-| Skill | Comando | Origen | Descripcion |
+| Skill | Command | Origin | Description |
 |-------|---------|--------|-------------|
-| Analisis | `/analyze` | local | Analisis completo de datos BI/BA: descubrimiento de dominio, EDA, planificacion de KPIs, queries MCP, analisis Python, visualizaciones e informes |
-| Exploracion | `/explore-data` | **shared** | Exploracion rapida de dominios, tablas, columnas y terminologia de negocio |
-| Informe | `/report` | local | Generacion de informes profesionales multi-formato (PDF, DOCX, web, PowerPoint) |
-| Memoria | `/update-memory` | local | Actualizar memoria persistente con preferencias, patrones y heuristicas |
-| Conocimiento | `/propose-knowledge` | **shared** | Proponer terminos de negocio descubiertos a Stratio Governance |
+| Analysis | `/analyze` | local | Full BI/BA data analysis: domain discovery, EDA, KPI planning, MCP queries, Python analysis, visualizations, and reports |
+| Exploration | `/explore-data` | **shared** | Quick exploration of domains, tables, columns, and business terminology |
+| Report | `/report` | local | Professional multi-format report generation (PDF, DOCX, web, PowerPoint) |
+| Memory | `/update-memory` | local | Update persistent memory with preferences, patterns, and heuristics |
+| Knowledge | `/propose-knowledge` | **shared** | Propose discovered business terms to Stratio Governance |
 
-Las skills marcadas como **shared** viven en `shared-skills/` en la raiz del monorepo y se comparten con otros agentes. Las locales viven en `skills/` de este agente.
+Skills marked as **shared** live in `shared-skills/` at the monorepo root and are shared with other agents. Local skills live in this agent's `skills/`.
 
-## Herramientas de generacion
+## Generation tools
 
-Scripts reutilizables en `tools/` para generar deliverables:
+Reusable scripts in `tools/` for generating deliverables:
 
-| Herramienta | Descripcion |
-|-------------|-------------|
-| `css_builder.py` | Ensamblador CSS de 3 capas (tokens + theme + target) y extraccion de paleta |
-| `chart_layout.py` | Anti-overlap para graficas matplotlib y Plotly (titulos, leyendas, margenes) |
-| `pdf_generator.py` | Generador de PDFs con Jinja2 + WeasyPrint (scaffold y modo libre) |
-| `docx_generator.py` | Generador de DOCX con estilos y scaffold |
-| `pptx_layout.py` | Helpers de layout para PowerPoint (safe areas, posicionamiento) |
-| `dashboard_builder.py` | Generador de dashboards web interactivos (filtros, KPI cards, tablas ordenables, Plotly) |
-| `md_to_report.py` | Conversor Markdown a HTML/PDF/DOCX con estilos y portada |
-| `image_utils.py` | Utilidades para embeber imagenes como base64 en HTML |
+| Tool | Description |
+|------|-------------|
+| `css_builder.py` | 3-layer CSS assembler (tokens + theme + target) and palette extraction |
+| `chart_layout.py` | Anti-overlap for matplotlib and Plotly charts (titles, legends, margins) |
+| `pdf_generator.py` | PDF generator with Jinja2 + WeasyPrint (scaffold and free mode) |
+| `docx_generator.py` | DOCX generator with styles and scaffold |
+| `pptx_layout.py` | Layout helpers for PowerPoint (safe areas, positioning) |
+| `dashboard_builder.py` | Interactive web dashboard generator (filters, KPI cards, sortable tables, Plotly) |
+| `md_to_report.py` | Markdown to HTML/PDF/DOCX converter with styles and cover page |
+| `image_utils.py` | Utilities for embedding images as base64 in HTML |
 
-## Memoria persistente
+## Persistent memory
 
-El agente mantiene memoria entre sesiones en dos ficheros:
+The agent maintains memory between sessions in two files:
 
-- `output/MEMORY.md` — Preferencias del usuario, patrones de datos conocidos, heuristicas aprendidas
-- `output/ANALYSIS_MEMORY.md` — Indice cronologico de analisis realizados con dominio, resumen y ruta al detalle
+- `output/MEMORY.md` — User preferences, known data patterns, learned heuristics
+- `output/ANALYSIS_MEMORY.md` — Chronological index of completed analyses with domain, summary, and path to detail
 
-Las plantillas iniciales (semilla) estan versionadas en `output-templates/`. Los pack scripts las copian a `output/` al empaquetar. En uso directo, el agente las crea en `output/` automaticamente.
+Initial templates (seed) are versioned in `output-templates/`. Pack scripts copy them to `output/` when packaging. In direct use, the agent creates them in `output/` automatically.

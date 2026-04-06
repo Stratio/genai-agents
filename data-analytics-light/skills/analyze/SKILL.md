@@ -1,288 +1,288 @@
 ---
 name: analyze
-description: Analisis completo de datos BI/BA — descubrimiento de dominio, EDA y calidad de datos, planificacion de metricas y KPIs con framework analitico, queries de datos via MCP, analisis Python con pandas, visualizaciones. Usar cuando el usuario necesite analizar datos de negocio, calcular KPIs, obtener insights o responder preguntas analiticas sobre dominios gobernados.
-argument-hint: [pregunta o tema de analisis]
+description: Full BI/BA data analysis — domain discovery, EDA and data quality, metric and KPI planning with analytical framework, data queries via MCP, Python analysis with pandas, visualizations. Use when the user needs to analyze business data, calculate KPIs, obtain insights, or answer analytical questions about governed domains.
+argument-hint: [analysis question or topic]
 ---
 
-# Skill: Analisis BI/BA Completo
+# Skill: Full BI/BA Analysis
 
-Esta guia define el workflow completo para realizar un analisis de Business Intelligence / Business Analytics.
+This guide defines the complete workflow for performing a Business Intelligence / Business Analytics analysis.
 
-## 1. Parsear la Peticion
+## 1. Parse the Request
 
-- Extraer la pregunta de negocio principal del argumento: $ARGUMENTS
-- Identificar sub-preguntas implicitas
-- Detectar si menciona un dominio, tablas o metricas especificas
+- Extract the main business question from the argument: $ARGUMENTS
+- Identify implicit sub-questions
+- Detect if it mentions a specific domain, tables, or metrics
 
-### 1.1 Triage rapido
+### 1.1 Quick triage
 
-Si la peticion se resuelve con una sola llamada MCP (ver Fase 0), responder directamente:
-- Definiciones/conceptos → `search_domain_knowledge` → chat
-- Estructura/columnas → `list_domain_tables` / `get_table_columns_details` → chat
-- Dato puntual → `query_data` → chat
-- En estos casos, NO continuar con el resto del workflow
+If the request can be resolved with a single MCP call (see Phase 0), respond directly:
+- Definitions/concepts → `search_domain_knowledge` → chat
+- Structure/columns → `list_domain_tables` / `get_table_columns_details` → chat
+- Point data → `query_data` → chat
+- In these cases, DO NOT continue with the rest of the workflow
 
-Si la peticion requiere analisis (cruce de datos, hipotesis, visualizaciones, multiples metricas), continuar con seccion 2.
+If the request requires analysis (data cross-referencing, hypotheses, visualizations, multiple metrics), continue with section 2.
 
-## 2. Descubrimiento de Dominio
+## 2. Domain Discovery
 
-Leer y seguir `skills-guides/stratio-data-tools.md` sec 4 para los pasos de descubrimiento del dominio (buscar o listar dominios, seleccionar, explorar tablas, columnas y terminologia).
+Read and follow `skills-guides/stratio-data-tools.md` sec 4 for domain discovery steps (search or list domains, select, explore tables, columns, and terminology).
 
-## 3. EDA y Calidad de Datos
+## 3. EDA and Data Quality
 
-Antes de preguntar al usuario y planificar metricas, entender la realidad de los datos:
+Before asking the user and planning metrics, understand the reality of the data:
 
-1. **Profiling**: Ejecutar `profile_data` sobre las tablas clave identificadas en el paso 2. Seguir la mecanica y umbrales adaptativos de `skills-guides/stratio-data-tools.md` sec 5
-2. **Evaluar calidad**:
-   - **Completitud**: % de nulos por columna. Marcar columnas con >50% nulos como limitacion
-   - **Rango temporal**: Verificar que los datos cubren el periodo que el usuario necesita
-   - **Outliers**: Identificar valores extremos (IQR) que podrian sesgar promedios o totales
-   - **Distribuciones**: Sesgo en numericas, desbalanceo en categoricas
-   - **Correlaciones**: Relaciones fuertes entre variables (|r| > 0.7) — pueden indicar multicolinealidad o redundancia
-   - **Cardinalidad**: Categoricas con >100 valores unicos son dificiles de visualizar o agrupar
-3. **Checklist de suficiencia** — Aplicar ANTES de preguntar al usuario:
+1. **Profiling**: Run `profile_data` on the key tables identified in step 2. Follow the mechanics and adaptive thresholds of `skills-guides/stratio-data-tools.md` sec 5
+2. **Assess quality**:
+   - **Completeness**: % of nulls per column. Flag columns with >50% nulls as a limitation
+   - **Time range**: Verify that the data covers the period the user needs
+   - **Outliers**: Identify extreme values (IQR) that could bias averages or totals
+   - **Distributions**: Skewness in numerics, imbalance in categoricals
+   - **Correlations**: Strong relationships between variables (|r| > 0.7) — may indicate multicollinearity or redundancy
+   - **Cardinality**: Categoricals with >100 unique values are difficult to visualize or group
+3. **Sufficiency checklist** — Apply BEFORE asking the user:
 
-   | Criterio | Umbral minimo | Si falla |
-   |----------|---------------|----------|
-   | Registros | >0 | STOP — reformular query |
-   | Completitud temporal | ≥80% del periodo pedido | Ofrecer analisis del periodo disponible |
-   | Nulos en vars clave | <30% | Alertar limitacion severa, considerar imputacion |
-   | Tamano para inferencia | n ≥ 30 | Reportar como exploratorio, sin tests estadisticos |
-   | Variabilidad | std > 0 en numericas clave | Excluir variable constante |
-   | Granularidad | Nivel pedido disponible | Ofrecer agregacion al disponible |
+   | Criterion | Minimum threshold | If it fails |
+   |-----------|-------------------|------------|
+   | Records | >0 | STOP — reformulate query |
+   | Temporal completeness | >=80% of the requested period | Offer analysis of the available period |
+   | Nulls in key vars | <30% | Alert severe limitation, consider imputation |
+   | Size for inference | n >= 30 | Report as exploratory, without statistical tests |
+   | Variability | std > 0 in key numerics | Exclude constant variable |
+   | Granularity | Requested level available | Offer aggregation to the available level |
 
-4. **Data Quality Score**: ALTO (80-100%), MEDIO (60-79%), BAJO (<60%). Si BAJO, recomendar mejorar datos o reformular
-5. **Informar al usuario**: Generar mini-resumen de calidad + Data Quality Score antes de preguntarle sobre profundidad. Ejemplo:
-   - "**Calidad: ALTO (85%)**. Los datos cubren de enero 2023 a diciembre 2025. La columna `descuento` tiene un 35% de nulos. Se detectaron 12 outliers en `importe_total` (>3 IQR). La distribucion de `categoria_producto` esta concentrada: 3 de 15 categorias representan el 80% de registros."
-6. **Ajustar expectativas**: Si hay limitaciones serias, advertir al usuario de que ciertas metricas o visualizaciones podrian no ser fiables
+4. **Data Quality Score**: HIGH (80-100%), MEDIUM (60-79%), LOW (<60%). If LOW, recommend improving data or reformulating
+5. **Inform the user**: Generate a quality mini-summary + Data Quality Score before asking about depth. Example:
+   - "**Quality: HIGH (85%)**. Data covers from January 2023 to December 2025. The `descuento` column has 35% nulls. 12 outliers were detected in `importe_total` (>3 IQR). The distribution of `categoria_producto` is concentrated: 3 of 15 categories represent 80% of records."
+6. **Adjust expectations**: If there are serious limitations, warn the user that certain metrics or visualizations may not be reliable
 
-## 4. Clasificacion y Preguntas al Usuario
+## 4. Classification and Questions to the User
 
-> **Nota**: Todas las preguntas con opciones de esta seccion siguen la convencion de preguntas (sec 10).
+> **Note**: All questions with options in this section follow the question convention (sec 10).
 
-### 4.0 Triage vs Analisis
+### 4.0 Triage vs Analysis
 
-Las preguntas simples (datos puntuales, sin dimensiones de corte) se resuelven en Triage (Fase 0 del workflow) sin invocar esta skill. Todo lo demas es un analisis y sigue el flujo de bloques de preguntas descrito a continuacion.
+Simple questions (point data, no breakdown dimensions) are resolved in Triage (Phase 0 of the workflow) without invoking this skill. Everything else is an analysis and follows the question block flow described below.
 
-### 4.1 Bloque 1 — Profundidad, Audiencia y Testing
+### 4.1 Block 1 — Depth, Audience, and Testing
 
-Una sola interaccion:
+A single interaction:
 
-| # | Pregunta | Opciones (literales) | Seleccion | Condicion |
-|---|----------|---------------------|-----------|-----------|
-| 1 | ¿Que profundidad de analisis prefieres? | **Rapido** · **Estandar** (Recomendado) · **Profundo** | Unica | Siempre |
-| 2 | ¿Para que audiencia es el analisis? | **C-level/Direccion** · **Manager/Responsable** · **Equipo tecnico/Data** · **Mixta/General** | Unica | Siempre |
-| 3 | ¿Quieres que se generen y ejecuten tests unitarios sobre el código Python? | **Sí** (Recomendado): mejora precisión y calidad, pero consume más tiempo, coste y contexto · **No**: ejecución directa sin tests | Única | Solo Estandar/Profundo |
+| # | Question | Options (literal) | Selection | Condition |
+|---|---------|-------------------|-----------|-----------|
+| 1 | What analysis depth do you prefer? | **Quick** · **Standard** (Recommended) · **Deep** | Single | Always |
+| 2 | What audience is the analysis for? | **C-level/Executive** · **Manager/Lead** · **Technical/Data team** · **Mixed/General** | Single | Always |
+| 3 | Do you want unit tests to be generated and run on the Python code? | **Yes** (Recommended): improves precision and quality, but consumes more time, cost, and context · **No**: direct execution without tests | Single | Standard/Deep only |
 
-- Los tests validan transformaciones y cálculos antes de ejecutar con datos reales. Mejoran la precisión pero consumen más tokens, tiempo y coste. **En profundidad Rápido, testing se desactiva automáticamente sin preguntar al usuario.**
+- Tests validate transformations and calculations before running with real data. They improve precision but consume more tokens, time, and cost. **In Quick depth, testing is automatically disabled without asking the user.**
 
-## 5. Planificacion
+## 5. Planning
 
-Elaborar un plan detallado siguiendo el framework analitico (sec "Framework Analitico" de AGENTS.md):
+Develop a detailed plan following the analytical framework (sec "Analytical Framework" in AGENTS.md):
 
-### 5.1 Enfoque analitico
+### 5.1 Analytical approach
 
-Determinar si la pregunta requiere analisis descriptivo, segmentacion por reglas, o tecnicas estadisticas avanzadas:
+Determine if the question requires descriptive analysis, rule-based segmentation, or advanced statistical techniques:
 
-| Escenario | Recomendacion |
-|-----------|---------------|
-| Describir que paso y por que | Analisis descriptivo (pandas, agrupaciones, comparativas) |
-| Segmentar clientes/productos | Segmentacion por reglas o RFM → sec 5.8 |
-| Proyectar tendencias | Tecnicas estadisticas (statsmodels, seasonal decompose) → sec 5.6 |
-| Detectar patrones y anomalias | Analisis estadistico avanzado → sec 5.6 |
+| Scenario | Recommendation |
+|----------|---------------|
+| Describe what happened and why | Descriptive analysis (pandas, groupings, comparisons) |
+| Segment customers/products | Rule-based segmentation or RFM → sec 5.8 |
+| Project trends | Statistical techniques (statsmodels, seasonal decompose) → sec 5.6 |
+| Detect patterns and anomalies | Advanced statistical analysis → sec 5.6 |
 
-### 5.2 Hipotesis
-Formular hipotesis ANTES de consultar datos. Usar la plantilla de sec "Pensamiento analitico" de AGENTS.md. Para cada sub-pregunta identificada en el paso 1:
-- Que esperamos encontrar y por que
-- Que resultado seria sorprendente
-- Documentar las hipotesis en el plan para validarlas luego con datos
-**Ejemplo completo:**
+### 5.2 Hypotheses
+Formulate hypotheses BEFORE querying data. Use the template from sec "Analytical thinking" in AGENTS.md. For each sub-question identified in step 1:
+- What we expect to find and why
+- What result would be surprising
+- Document the hypotheses in the plan to validate them later with data
+**Full example:**
 ```
-### H1: Ventas Q4 ≥30% superiores al promedio Q1-Q3 por estacionalidad retail
-- Enunciado: El ratio ventas_Q4 / promedio(ventas_Q1-Q3) es ≥ 1.30
-- Fundamento: Pico estacional observado en nov-dic durante EDA
-- Como validar: query "ventas totales por trimestre del ultimo ano"
-- Criterio: ratio ≥ 1.30
-→ Resultado: CONFIRMADA (ratio = 1.45)
-→ Evidencia: Q4 = €2.1M vs promedio Q1-Q3 = €1.45M
-→ So What: Q4 = 36% ventas anuales. Ajustar inventario desde oct, reforzar logistica nov
-→ Confianza: Alta (3 anos de datos, patron consistente)
+### H1: Q4 sales >=30% higher than Q1-Q3 average due to retail seasonality
+- Statement: The ratio sales_Q4 / average(sales_Q1-Q3) is >= 1.30
+- Rationale: Seasonal peak observed in Nov-Dec during EDA
+- How to validate: query "total sales by quarter for the last year"
+- Criterion: ratio >= 1.30
+-> Result: CONFIRMED (ratio = 1.45)
+-> Evidence: Q4 = EUR2.1M vs Q1-Q3 average = EUR1.45M
+-> So What: Q4 = 36% of annual sales. Adjust inventory from Oct, reinforce logistics in Nov
+-> Confidence: High (3 years of data, consistent pattern)
 ```
 
-### 5.3 Metricas y KPIs
+### 5.3 Metrics and KPIs
 
-Para cada KPI, documentar:
+For each KPI, document:
 
-| Campo | Descripcion |
+| Field | Description |
 |-------|-------------|
-| Nombre | Identificador claro |
-| Formula | Calculo exacto |
-| Granularidad | Temporal: diario/semanal/mensual/trimestral |
-| Dimensiones | Ejes de corte (region, producto, segmento) |
-| Benchmark | Objetivo, media del sector, o periodo anterior |
-| Fuente | Tabla(s) y columna(s) del dominio |
-| Test estadistico | Si requiere IC o comparacion entre grupos (ver seccion 5.6 de esta skill) |
+| Name | Clear identifier |
+| Formula | Exact calculation |
+| Granularity | Temporal: daily/weekly/monthly/quarterly |
+| Dimensions | Breakdown axes (region, product, segment) |
+| Benchmark | Target, industry average, or previous period |
+| Source | Domain table(s) and column(s) |
+| Statistical test | If it requires CI or comparison between groups (see section 5.6 of this skill) |
 
-**Benchmark Discovery** — Escala segun profundidad (ver matriz de activacion):
-- **Rapido**: No buscar activamente. Usar comparacion temporal natural si la query ya incluye dimension tiempo
-- **Estandar**: Best-effort silencioso:
-  1. `search_domain_knowledge("target/objetivo de [nombre_KPI]", domain)`
-  2. Query MCP adicional para mismo KPI en periodo T-1
-  3. Si no hay referencia externa: media/mediana como referencia interna
-  Sin benchmark → reportar el dato normalmente
-- **Profundo**: Pasos 1-3 + tendencia si >6 puntos temporales + preguntar al usuario
+**Benchmark Discovery** — Scale based on depth (see activation matrix):
+- **Quick**: Do not actively search. Use natural temporal comparison if the query already includes a time dimension
+- **Standard**: Silent best-effort:
+  1. `search_domain_knowledge("target/objetivo de [KPI_name]", domain)`
+  2. Additional MCP query for the same KPI in period T-1
+  3. If no external reference: mean/median as internal reference
+  No benchmark → report the data normally
+- **Deep**: Steps 1-3 + trend if >6 time points + ask the user
 
-### 5.4 Preguntas de datos
-Lista de preguntas en lenguaje natural para `query_data`. NUNCA escribir SQL.
+### 5.4 Data questions
+List of natural language questions for `query_data`. NEVER write SQL.
 
-Para buenas practicas de formulacion y estrategia de queries (orden de planificacion, ejecucion en paralelo), ver `skills-guides/stratio-data-tools.md` sec 9.
+For formulation best practices and query strategy (planning order, parallel execution), see `skills-guides/stratio-data-tools.md` sec 9.
 
-### 5.5 Visualizaciones
+### 5.5 Visualizations
 
-Ver [visualization.md](visualization.md) para principios de visualizacion y data storytelling.
+See [visualization.md](visualization.md) for visualization and data storytelling principles.
 
-Para cada visualizacion del plan, definir:
-- **Pregunta analitica** que responde
-- **Tipo de grafica**: Seleccionar segun la pregunta analitica (ver guia de seleccion en [visualization.md](visualization.md))
-- **Variables**: Que va en cada eje, agrupaciones, filtros
-- **Titulo**: Formulado como insight, no como descripcion
-- **Datos fuente**: Query MCP que alimenta la visualizacion
+For each visualization in the plan, define:
+- **Analytical question** it answers
+- **Chart type**: Select based on the analytical question (see selection guide in [visualization.md](visualization.md))
+- **Variables**: What goes on each axis, groupings, filters
+- **Title**: Formulated as an insight, not as a description
+- **Source data**: MCP query that feeds the visualization
 
-### 5.6 Tecnicas analiticas avanzadas
+### 5.6 Advanced analytical techniques
 
-Activar segun la profundidad seleccionada (ver matriz de activacion):
-- **Estandar**: Consultar [advanced-analytics.md](advanced-analytics.md) cuando sea relevante
-- **Profundo**: Consultar [advanced-analytics.md](advanced-analytics.md) sistematicamente
+Activate based on the selected depth (see activation matrix):
+- **Standard**: Consult [advanced-analytics.md](advanced-analytics.md) when relevant
+- **Deep**: Consult [advanced-analytics.md](advanced-analytics.md) systematically
 
-Cubre: rigor estadistico (tests, IC, effect sizes), analisis prospectivo (escenarios, Monte Carlo), root cause analysis, deteccion de anomalias.
+Covers: statistical rigor (tests, CI, effect sizes), prospective analysis (scenarios, Monte Carlo), root cause analysis, anomaly detection.
 
-### 5.7 Patrones analiticos adicionales
+### 5.7 Additional analytical patterns
 
-Implementacion detallada de patrones cuyo trigger esta en sec 3.2 (Lorenz/Gini, mix, indexacion, desviacion vs referencia, gap).
+Detailed implementation of patterns whose trigger is in sec 3.2 (Lorenz/Gini, mix, indexing, deviation vs reference, gap).
 
-Cuando un patron se active: consultar [analytical-patterns.md](analytical-patterns.md) para query MCP, Python e interpretacion.
+When a pattern is activated: consult [analytical-patterns.md](analytical-patterns.md) for MCP query, Python, and interpretation.
 
-### 5.8 Segmentacion y clustering
+### 5.8 Segmentation and clustering
 
-Para guia completa de segmentacion (RFM, clustering, validacion, profiling), ver [clustering-guide.md](clustering-guide.md).
+For a complete segmentation guide (RFM, clustering, validation, profiling), see [clustering-guide.md](clustering-guide.md).
 
-Usar cuando el usuario pida segmentacion, agrupacion de clientes/productos, o descubrimiento de perfiles. La guia cubre:
-- Tabla de decision (cuando usar rule-based o RFM)
-- RFM con quintiles y etiquetas de negocio
-- Profiling obligatorio de segmentos
+Use when the user asks for segmentation, customer/product grouping, or profile discovery. The guide covers:
+- Decision table (when to use rule-based or RFM)
+- RFM with quintiles and business labels
+- Mandatory segment profiling
 
-### 5.9 Estructura de la presentacion de resultados
-Secciones del analisis y orden narrativo para presentar en el chat. Aplicar principios de data storytelling (seccion 7.1)
+### 5.9 Results presentation structure
+Analysis sections and narrative order for presenting in chat. Apply data storytelling principles (section 7.1)
 
-### 5.10 Presentar plan
-Presentar plan completo al usuario y solicitar aprobacion antes de ejecutar
+### 5.10 Present plan
+Present the full plan to the user and request approval before execution
 
-## 6. Ejecucion
+## 6. Execution
 
-### 6.0 Obtencion de datos
-- Usar `query_data(data_question=..., domain_name=..., output_format="dict")` para cada pregunta de datos. **Lanzar en paralelo** todas las queries independientes definidas en el plan (paso 5.4). Solo serializar si una query necesita el resultado de otra para formularse
-- Seguir todas las reglas de `skills-guides/stratio-data-tools.md` (MCP-first, output_format, no SQL manual, ejecucion en paralelo)
-- Guardar datos intermedios como CSV solo si un script posterior los necesita como input
+### 6.0 Data retrieval
+- Use `query_data(data_question=..., domain_name=..., output_format="dict")` for each data question. **Launch in parallel** all independent queries defined in the plan (step 5.4). Only serialize if one query needs the result of another to be formulated
+- Follow all rules from `skills-guides/stratio-data-tools.md` (MCP-first, output_format, no manual SQL, parallel execution)
+- Save intermediate data as CSV only if a subsequent script needs them as input
 
-### 6.1 Validacion post-query (obligatorio)
-Aplicar las 7 validaciones de `skills-guides/stratio-data-tools.md` sec 7 a cada resultado recibido. Cuando se lanzan queries en paralelo, validar cada resultado conforme llega. Si alguna falla: reformular la pregunta al MCP, informar al usuario, ajustar el plan.
+### 6.1 Post-query validation (mandatory)
+Apply the 7 validations from `skills-guides/stratio-data-tools.md` sec 7 to each received result. When queries are launched in parallel, validate each result as it arrives. If any fails: reformulate the question to the MCP, inform the user, adjust the plan.
 
-### 6.2 Desarrollo de scripts
-- Escribir scripts con nombres descriptivos que incluyan contexto del analisis
-- Cada script debe:
-  - Leer datos de CSVs guardados previamente o recibir datos como parametro
-  - Realizar transformaciones y calculos
-  - Generar visualizaciones
-- **Datasets grandes (>100k filas)**: Usar muestreo estratificado para desarrollo rapido, datos completos para la version final
+### 6.2 Script development
+- Write scripts with descriptive names that include the analysis context
+- Each script should:
+  - Read data from previously saved CSVs or receive data as a parameter
+  - Perform transformations and calculations
+  - Generate visualizations
+- **Large datasets (>100k rows)**: Use stratified sampling for rapid development, full data for the final version
 
 ### 6.3 Testing
 
-> **Solo si la profundidad es Estándar/Profundo Y el usuario eligió "Sí" en la pregunta de testing del Bloque 1.** En profundidad Rápido o si el usuario eligió "No", omitir esta sección y ejecutar directamente el script con datos reales.
+> **Only if depth is Standard/Deep AND the user chose "Yes" to the testing question in Block 1.** In Quick depth or if the user chose "No", skip this section and directly run the script with real data.
 
-- Generar tests unitarios ANTES de ejecutar con datos reales
-- Usar DataFrames mock con estructura similar a los datos reales
-- Validar transformaciones, calculos y formatos de salida
-- Solo proceder si los tests pasan
+- Generate unit tests BEFORE running with real data
+- Use mock DataFrames with structure similar to real data
+- Validate transformations, calculations, and output formats
+- Only proceed if tests pass
 
-### 6.4 Ejecucion con datos reales
-Ejecutar scripts con datos reales.
+### 6.4 Execution with real data
+Run scripts with real data.
 
-### 6.5 Loop de iteracion
+### 6.5 Iteration loop
 
-Tras revisar resultados iniciales, evaluar si requieren iteracion:
+After reviewing initial results, assess whether they require iteration:
 
-1. **Trigger**: Hallazgo contradice hipotesis, patron inesperado, o pregunta critica no prevista
-2. **Accion**: Documentar hallazgo → formular nueva(s) pregunta(s) → queries MCP adicionales (6.0-6.1) → actualizar scripts
-3. **Limite**: Max 2 iteraciones. Mas → documentar como analisis de seguimiento
-4. **Registro**: Cada iteracion documentar en el chat: hipotesis → hallazgo → nueva hipotesis → resultado
+1. **Trigger**: Finding contradicts hypothesis, unexpected pattern, or unforeseen critical question
+2. **Action**: Document finding → formulate new question(s) → additional MCP queries (6.0-6.1) → update scripts
+3. **Limit**: Max 2 iterations. More → document as follow-up analysis
+4. **Record**: For each iteration, document in chat: hypothesis → finding → new hypothesis → result
 
 ### 6.6 Complexity Upgrade
 
-Si durante la ejecucion se detecta un hallazgo que excede el alcance del nivel de complejidad actual:
+If during execution a finding is detected that exceeds the scope of the current complexity level:
 
 **Triggers:**
-- Anomalia: resultado difiere >30% del benchmark o de lo razonable para el dominio
-- Inconsistencia: dos queries dan totales que no cuadran (diferencia >5%)
-- Patron critico: concentracion Gini >0.8, caida/crecimiento >50% interperiodo, outlier en KPI principal
+- Anomaly: result differs >30% from the benchmark or from what is reasonable for the domain
+- Inconsistency: two queries produce totals that don't add up (difference >5%)
+- Critical pattern: Gini concentration >0.8, drop/growth >50% between periods, outlier in main KPI
 
-**Accion:**
-1. Pausar la ejecucion normal
-2. Informar al usuario siguiendo la convencion de preguntas (sec 10): "He detectado [descripcion del hallazgo]. Esto requiere investigacion adicional. ¿Quieres que profundice?" con opciones:
-   - "Si, profundizar" → Escalar complejidad, activar fases adicionales (EDA completo, hipotesis sobre el hallazgo, visualizaciones de drill-down)
-   - "No, solo documentar" → Registrar hallazgo en el chat como "area de investigacion futura"
-3. El upgrade NO reinicia el analisis — extiende el analisis actual con fases adicionales
+**Action:**
+1. Pause normal execution
+2. Inform the user following the question convention (sec 10): "I have detected [finding description]. This requires additional investigation. Would you like me to dig deeper?" with options:
+   - "Yes, dig deeper" → Escalate complexity, activate additional phases (full EDA, hypotheses about the finding, drill-down visualizations)
+   - "No, just document it" → Record the finding in chat as "area for future investigation"
+3. The upgrade does NOT restart the analysis — it extends the current analysis with additional phases
 
-**Diferencia con el loop de iteracion (6.5):** El loop refina hipotesis dentro del mismo nivel de complejidad. El upgrade cambia el nivel (ej: Triage → Analisis) y activa capacidades adicionales (EDA, hipotesis formales, visualizaciones).
+**Difference from the iteration loop (6.5):** The loop refines hypotheses within the same complexity level. The upgrade changes the level (e.g.: Triage → Analysis) and activates additional capabilities (EDA, formal hypotheses, visualizations).
 
-### 6.7 Presentacion de resultados
-La presentacion de resultados se hace en el chat, siguiendo la estructura de la seccion 7.1. Las visualizaciones generadas se muestran inline como soporte del analisis.
+### 6.7 Results presentation
+Results are presented in chat, following the structure in section 7.1. Generated visualizations are shown inline as analysis support.
 
-### 6.8 Validacion de output final
-Antes de presentar al usuario, verificar:
-- Las visualizaciones se generaron correctamente
-- Los datos usados son coherentes entre si (totales cuadran, periodos alineados)
-- Los hallazgos pasan el checklist "So What?" de la seccion 7.1
+### 6.8 Final output validation
+Before presenting to the user, verify:
+- Visualizations were generated correctly
+- Data used is internally coherent (totals add up, periods aligned)
+- Findings pass the "So What?" checklist from section 7.1
 
-Si alguna visualizacion falla, regenerarla o presentar los datos en formato tabla.
+If any visualization fails, regenerate it or present the data in table format.
 
-## 7. Reporte Final
+## 7. Final Report
 
-### 7.1 Estructura del reporte en chat
+### 7.1 Chat report structure
 
-Al presentar hallazgos en la conversacion, seguir esta estructura:
+When presenting findings in the conversation, follow this structure:
 
-1. **Hook**: El hallazgo mas impactante primero
-2. Resumen ejecutivo (3-5 bullets con "so what")
-3. Insights con datos concretos y contexto comparativo (vs anterior, vs objetivo)
-4. Recomendaciones accionables priorizadas (alto impacto + alta confianza primero)
-5. Limitaciones y caveats
-6. Sugerencias de analisis de seguimiento
+1. **Hook**: The most impactful finding first
+2. Executive summary (3-5 bullets with "so what")
+3. Insights with concrete data and comparative context (vs previous, vs target)
+4. Prioritized actionable recommendations (high impact + high confidence first)
+5. Limitations and caveats
+6. Follow-up analysis suggestions
 
-**Checklist "So What?" obligatorio** — Para CADA hallazgo antes de incluirlo:
+**Mandatory "So What?" checklist** — For EACH finding before including it:
 
-| Pregunta | Malo (dato) | Bueno (insight accionable) |
-|----------|-------------|--------------------------|
-| **Magnitud?** | "Las ventas bajaron" | "Bajaron 12%, ≈€45K/mes" |
-| **Vs. que?** | "Norte va bien" | "Norte +23% vs media nacional, +8% vs target" |
-| **Que hacer?** | "Mejorar retencion" | "Programa fidelizacion en Premium (45% vs 72% benchmark) → ROI €120K/ano" |
-| **Confianza?** | "Clientes prefieren A" | Adaptar a profundidad: Rapido="67% (n=450, Alta)"; Estandar="67% (n=450, IC95%: 62-72%)"; Profundo="67% (n=450, IC95%: 62-72%, p<0.001)" |
+| Question | Bad (data point) | Good (actionable insight) |
+|----------|-----------------|--------------------------|
+| **Magnitude?** | "Sales dropped" | "Dropped 12%, ~EUR45K/month" |
+| **Vs. what?** | "North is doing well" | "North +23% vs national average, +8% vs target" |
+| **What to do?** | "Improve retention" | "Loyalty program for Premium (45% vs 72% benchmark) -> ROI EUR120K/year" |
+| **Confidence?** | "Customers prefer A" | Adapt to depth: Quick="67% (n=450, High)"; Standard="67% (n=450, CI95%: 62-72%)"; Deep="67% (n=450, CI95%: 62-72%, p<0.001)" |
 
-Si un hallazgo no pasa las 4 preguntas → es informacion, no insight. No va al resumen ejecutivo.
+If a finding does not pass all 4 questions → it is information, not insight. It does not go in the executive summary.
 
-**Clasificacion de insights** — Determina ubicacion en el reporte:
-- **CRITICO**: Alto impacto + alta confianza → Resumen ejecutivo, recomendacion firme
-- **IMPORTANTE**: Alto impacto + baja confianza → Seccion principal, investigar mas
-- **INFORMATIVO**: Bajo impacto → Apendice, sin recomendacion
+**Insight classification** — Determines placement in the report:
+- **CRITICAL**: High impact + high confidence → Executive summary, firm recommendation
+- **IMPORTANT**: High impact + low confidence → Main section, investigate further
+- **INFORMATIONAL**: Low impact → Appendix, no recommendation
 
-Para principios de data storytelling y mapping hallazgos → narrativa, leer [visualization.md](visualization.md) secciones 3 y 4.
+For data storytelling principles and mapping findings → narrative, read [visualization.md](visualization.md) sections 3 and 4.
 
-## 8. Propuesta de Conocimiento (Opcional)
+## 8. Knowledge Proposal (Optional)
 
-Tras presentar el reporte final, preguntar al usuario siguiendo la convencion de preguntas (sec 10):
-- **Si**: Analizar conversacion y proponer conocimiento al dominio
-- **No**: Finalizar sin proponer
+After presenting the final report, ask the user following the question convention (sec 10):
+- **Yes**: Analyze the conversation and propose knowledge to the domain
+- **No**: Finish without proposing
 
-Si acepta, cargar la skill `propose-knowledge` con el dominio usado en este analisis.
-Si rechaza, finalizar normalmente.
+If accepted, load the skill `propose-knowledge` with the domain used in this analysis.
+If declined, finish normally.
 
-Este paso es SIEMPRE opcional. Nunca proponer automaticamente.
+This step is ALWAYS optional. Never propose automatically.

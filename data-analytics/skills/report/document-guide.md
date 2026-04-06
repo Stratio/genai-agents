@@ -1,25 +1,25 @@
-# Guia de Generacion de Documento (PDF + DOCX)
+# Document Generation Guide (PDF + DOCX)
 
-Referencia operativa para el pipeline de documento dentro de `/report`.
+Operational reference for the document pipeline within `/report`.
 
 ## Pipeline
 
-1. Usar `tools/pdf_generator.py` (`PDFGenerator`) con el estilo visual elegido por el usuario
-2. Si estructura **scaffold**: usar `render_scaffold()` con KPIs, tablas, figuras y secciones estructuradas. Usa templates Jinja2 de `templates/pdf/`
-3. Si estructura **al vuelo**: usar `render_from_html()` con HTML libre generado en el script. Solo envuelve con CSS, portada opcional, base64 y metadata
-4. Ambos modos generan portada automatica, numeracion de paginas, headers, e imagenes embebidas en base64
-5. Generar script: `output/[ANALISIS_DIR]/scripts/generate_pdf.py` que importe y use `PDFGenerator`
-6. Guardar en `output/[ANALISIS_DIR]/report.pdf`
-7. `save()` por defecto no guarda el HTML (artefacto intermedio de build). Pasar `also_save_html=True` solo si se necesita una version web estatica del documento ademas del PDF
-8. Generar DOCX: instanciar `DOCXGenerator(style=estilo)` con los MISMOS datos que el PDF. Si scaffold → `render_scaffold()` con los mismos parametros. Si al vuelo → `render_from_markdown()` con el markdown source
-9. Guardar en `output/[ANALISIS_DIR]/report.docx`
+1. Use `tools/pdf_generator.py` (`PDFGenerator`) with the visual style chosen by the user
+2. If structure is **scaffold**: use `render_scaffold()` with KPIs, tables, figures, and structured sections. Uses Jinja2 templates from `templates/pdf/`
+3. If structure is **on the fly**: use `render_from_html()` with free HTML generated in the script. Only wraps with CSS, optional cover, base64, and metadata
+4. Both modes generate automatic cover page, page numbering, headers, and base64-embedded images
+5. Generate script: `output/[ANALYSIS_DIR]/scripts/generate_pdf.py` that imports and uses `PDFGenerator`
+6. Save in `output/[ANALYSIS_DIR]/report.pdf`
+7. `save()` by default does not save the HTML (intermediate build artifact). Pass `also_save_html=True` only if a static web version of the document is needed in addition to the PDF
+8. Generate DOCX: instantiate `DOCXGenerator(style=style)` with the SAME data as the PDF. If scaffold → `render_scaffold()` with the same parameters. If on the fly → `render_from_markdown()` with the markdown source
+9. Save in `output/[ANALYSIS_DIR]/report.docx`
 
-## Pitfalls DOCX
+## DOCX Pitfalls
 
-- Imagenes DEBEN ser PNG (no SVG) — python-docx no soporta SVG
-- Tablas muy anchas (>7 columnas) pueden desbordarse — dividir o transponer
-- No hay paginacion controlable — Word decide los saltos de pagina
-- Fuentes: usar fallback Arial/Calibri si la fuente del tema no esta instalada
-- **Imagenes inline**: Las secciones HTML (`executive_summary`, `analysis`, etc.) renderizan `<figure>`, `<img>`, `<table>`, `<h3>`, `<ul>`, `<ol>`, `<div class="callout">` y `<blockquote>` en su posicion correcta dentro del texto. Las imagenes base64 (`data:image/png;base64,...`) se decodifican automaticamente
-- **No duplicar imagenes**: Si una imagen ya esta embebida en el HTML de una seccion (ej. `<figure><img src="data:..."/></figure>`), NO pasarla tambien en el parametro `figures=` — se duplicaria en el documento
-- Las tablas, listas y subheadings dentro de secciones HTML tambien se renderizan inline en su posicion correcta
+- Images MUST be PNG (not SVG) — python-docx does not support SVG
+- Very wide tables (>7 columns) may overflow — split or transpose
+- There is no controllable pagination — Word decides page breaks
+- Fonts: use Arial/Calibri fallback if the theme font is not installed
+- **Inline images**: HTML sections (`executive_summary`, `analysis`, etc.) render `<figure>`, `<img>`, `<table>`, `<h3>`, `<ul>`, `<ol>`, `<div class="callout">`, and `<blockquote>` in their correct position within the text. Base64 images (`data:image/png;base64,...`) are decoded automatically
+- **Do not duplicate images**: If an image is already embedded in a section's HTML (e.g., `<figure><img src="data:..."/></figure>`), do NOT also pass it in the `figures=` parameter — it would be duplicated in the document
+- Tables, lists, and subheadings within HTML sections are also rendered inline in their correct position

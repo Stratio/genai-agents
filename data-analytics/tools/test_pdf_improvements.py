@@ -111,14 +111,14 @@ class TestBuildCoverHtml:
         html = _build_cover_html("Test Report")
         assert "cover-page" in html
         assert "Test Report" in html
-        assert "Fecha:" in html
+        assert "Date:" in html
 
     def test_cover_with_author_and_domain(self):
         html = _build_cover_html("Report", author="Alice", domain="Sales")
         assert "Alice" in html
         assert "Sales" in html
-        assert "Autor:" in html
-        assert "Dominio:" in html
+        assert "Author:" in html
+        assert "Domain:" in html
 
 
 class TestMdToHtml:

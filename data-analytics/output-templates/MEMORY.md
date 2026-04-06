@@ -1,13 +1,13 @@
-# Memoria del Agente BI/BA
+# BI/BA Agent Memory
 
-## Preferencias del Usuario
+## User Preferences
 
-(Sin preferencias registradas)
+(No preferences recorded)
 
-## Patrones de Datos Conocidos
+## Known Data Patterns
 
-(Sin patrones registrados)
+(No patterns recorded)
 
-## Heuristicas Aprendidas
+## Learned Heuristics
 
-(Sin heuristicas registradas)
+(No heuristics recorded)

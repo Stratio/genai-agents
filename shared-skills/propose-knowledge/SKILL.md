@@ -1,161 +1,161 @@
 ---
 name: propose-knowledge
-description: Analizar la conversacion para proponer terminos de negocio y preferencias descubiertos a la capa de `Stratio Governance` del dominio. Usar cuando el usuario quiera enriquecer el semantic layer con definiciones, reglas o preferencias descubiertas durante un analisis.
-argument-hint: [dominio (opcional)]
+description: Analyze the conversation to propose business terms and preferences discovered to the `Stratio Governance` layer of the domain. Use when the user wants to enrich the semantic layer with definitions, rules or preferences discovered during an analysis.
+argument-hint: [domain (optional)]
 ---
 
-# Skill: Propuesta de Conocimiento a Gobernanza
+# Skill: Knowledge Proposal to Governance
 
-Guia para analizar una conversacion de analisis y proponer conocimiento de negocio descubierto al semantic layer de `Stratio Governance`.
+Guide for analyzing an analysis conversation and proposing discovered business knowledge to the `Stratio Governance` semantic layer.
 
-## 1. Determinar Dominio
+## 1. Determine Domain
 
-- Si `$ARGUMENTS` contiene un nombre de dominio, validarlo con `search_domains($ARGUMENTS)` antes de usarlo. Usar el nombre exacto del resultado, no la interpretacion del usuario
-- Si no, inferir el dominio de la conversacion actual (buscar llamadas previas a MCPs con `domain_name`)
-- Si no es posible inferirlo, listar dominios disponibles via `list_domains()` y preguntar al usuario siguiendo la convencion de preguntas al usuario (adaptativa al entorno: interactivas si disponibles, lista numerada en chat si no)
+- If `$ARGUMENTS` contains a domain name, validate it with `search_domains($ARGUMENTS)` before using it. Use the exact name from the result, not the user's interpretation
+- If not, infer the domain from the current conversation (look for previous MCP calls with `domain_name`)
+- If it cannot be inferred, list available domains via `list_domains()` and ask the user following the user question convention (adaptive to the environment: interactive if available, numbered list in chat otherwise)
 
-## 2. Recopilar Contexto de la Conversacion
+## 2. Gather Conversation Context
 
-Revisar `output/MEMORY.md` sec "Patrones de Datos Conocidos" si existe — si hay patrones maduros del dominio (observados 3+ veces), considerar incluirlos como candidatos a propuesta de conocimiento gobernado.
+Review `output/MEMORY.md` sec "Known Data Patterns" if it exists — if there are mature patterns for the domain (observed 3+ times), consider including them as candidates for governed knowledge proposal.
 
-Analizar TODO lo ocurrido en la conversacion — pregunta original, plan de analisis, datos obtenidos, calculos realizados, insights descubiertos, conclusiones y recomendaciones.
+Analyze EVERYTHING that occurred in the conversation — original question, analysis plan, data obtained, calculations performed, insights discovered, conclusions and recommendations.
 
-Clasificar los hallazgos en dos categorias:
+Classify findings into two categories:
 
-### 2.1 Definiciones de negocio
-- Terminos de negocio usados o descubiertos (ej: "Clientes VIP", "Tasa de retencion")
-- Segmentaciones aplicadas (ej: "Top 10% por facturacion")
-- Umbrales o criterios (ej: "Churn: sin compras en 90 dias")
-- Metricas con formula (ej: "ARPU = ingresos totales / usuarios activos")
+### 2.1 Business definitions
+- Business terms used or discovered (e.g.: "VIP Customers", "Retention Rate")
+- Segmentations applied (e.g.: "Top 10% by revenue")
+- Thresholds or criteria (e.g.: "Churn: no purchases in 90 days")
+- Metrics with formula (e.g.: "ARPU = total revenue / active users")
 
-### 2.2 Preferencias
+### 2.2 Preferences
 
-**REGLA CRITICA**: Solo proponer preferencias **especificas del dominio de datos**. NUNCA proponer preferencias de workflow, sesion o formato de analisis — estas son opciones transitorias que el usuario elige en cada analisis (Fase 2 del workflow) y no constituyen conocimiento reutilizable del dominio.
+**CRITICAL RULE**: Only propose preferences **specific to the data domain**. NEVER propose workflow, session or analysis format preferences — these are transient options the user chooses in each analysis (Phase 2 of the workflow) and do not constitute reusable domain knowledge.
 
-#### 2.2.1 Exclusiones explicitas
+#### 2.2.1 Explicit exclusions
 
-Las siguientes categorias NUNCA se proponen como conocimiento de dominio:
+The following categories are NEVER proposed as domain knowledge:
 
-| Categoria | Ejemplos | Origen (no es conocimiento de dominio) |
-|-----------|----------|----------------------------------------|
-| Formatos de salida | PDF, Web, PowerPoint | Bloque 2, Fase 2 del workflow |
-| Estilo visual | Corporativo, Academico, Moderno | Bloque 2, Fase 2 del workflow |
-| Estructura de reporte | Scaffold, Al vuelo | Bloque 2, Fase 2 del workflow |
-| Audiencia | C-level, Manager, Tecnico | Bloque 1, Fase 2 del workflow |
-| Profundidad de analisis | Rapido, Estandar, Profundo | Bloque 1, Fase 2 del workflow |
+| Category | Examples | Origin (not domain knowledge) |
+|----------|----------|-------------------------------|
+| Output formats | PDF, Web, PowerPoint | Block 2, Phase 2 of the workflow |
+| Visual style | Corporate, Academic, Modern | Block 2, Phase 2 of the workflow |
+| Report structure | Scaffold, On the fly | Block 2, Phase 2 of the workflow |
+| Audience | C-level, Manager, Technical | Block 1, Phase 2 of the workflow |
+| Analysis depth | Quick, Standard, Deep | Block 1, Phase 2 of the workflow |
 
-#### 2.2.2 Que SI proponer como preferencia
+#### 2.2.2 What SHOULD be proposed as a preference
 
-**Criterio de validacion**: La preferencia debe mencionar tablas, columnas o metricas especificas del dominio. Si aplica a cualquier dominio de forma generica → descartar.
+**Validation criterion**: The preference must mention specific tables, columns or metrics from the domain. If it applies to any domain generically → discard.
 
-- Patrones SQL especificos del dominio (ej: "LEFT JOIN entre clientes y pedidos en el dominio retail porque pedidos tiene clientes sin registro")
-- Preferencias de visualizacion ligadas a metricas del dominio (ej: "Heatmap para matriz de retencion por cohorte en la tabla suscripciones")
-- Convenciones de filtrado del dominio (ej: "Excluir registros con estado='TEST' en la tabla transacciones")
+- Domain-specific SQL patterns (e.g.: "LEFT JOIN between customers and orders in the retail domain because orders has customers without a record")
+- Visualization preferences tied to domain metrics (e.g.: "Heatmap for retention matrix by cohort in the subscriptions table")
+- Domain filtering conventions (e.g.: "Exclude records with status='TEST' in the transactions table")
 
-## 3. Consultar Metadata Existente
+## 3. Query Existing Metadata
 
-Antes de proponer, verificar que no se duplique conocimiento ya gobernado:
+Before proposing, verify that already governed knowledge is not duplicated:
 
-1. Usar `get_tables_details(domain_name, table_names)` para revisar terminos de negocio ya definidos en las tablas relevantes
-2. Usar `search_domain_knowledge(question, domain_name)` para buscar cada termino/concepto candidato
+1. Use `get_tables_details(domain_name, table_names)` to review business terms already defined on the relevant tables
+2. Use `search_domain_knowledge(question, domain_name)` to search for each candidate term/concept
 
-Para cada hallazgo:
-- **Ya existe con misma definicion** (aunque redaccion diferente): Descartar (no proponer duplicado)
-- **Ya existe con definicion diferente**: Proponer actualizacion SOLO si la nueva definicion aporta informacion sustancialmente nueva (formula, umbral, contexto adicional). No proponer si es simplemente una reformulacion
-- **No existe**: Proponer como nuevo
+For each finding:
+- **Already exists with same definition** (even if different wording): Discard (do not propose duplicate)
+- **Already exists with different definition**: Propose update ONLY if the new definition adds substantially new information (formula, threshold, additional context). Do not propose if it is simply a rewording
+- **Does not exist**: Propose as new
 
-## 4. Priorizar y Limitar Propuestas
+## 4. Prioritize and Limit Proposals
 
-**Limite total: maximo 5 propuestas por ejecucion** (excepcionalmente 6 si hay un sexto `business_concept` de alta relevancia).
+**Total limit: maximum 5 proposals per execution** (exceptionally 6 if there is a sixth `business_concept` of high relevance).
 
-Clasificar cada propuesta candidata segun esta tabla de prioridades:
+Classify each candidate proposal according to this priority table:
 
-| Prioridad | Tipo | Criterio de inclusion | Limite |
-|-----------|------|----------------------|--------|
-| **P1 — Critica** | `business_concept` (nuevo) | Termino descubierto o definido en el analisis que NO existe en el dominio gobernado | Max 3 |
-| **P2 — Alta** | `business_concept` (actualizacion) | Termino que ya existe pero con definicion diferente/mejorada | Max 2 |
-| **P3 — Media** | `sql_preference` | Patron SQL descubierto que mejora las queries del dominio | Max 1 |
-| **P3 — Media** | `chart_preference` | Preferencia de visualizacion especifica del dominio | Max 1 |
+| Priority | Type | Inclusion criterion | Limit |
+|----------|------|---------------------|-------|
+| **P1 — Critical** | `business_concept` (new) | Term discovered or defined in the analysis that does NOT exist in the governed domain | Max 3 |
+| **P2 — High** | `business_concept` (update) | Term that already exists but with a different/improved definition | Max 2 |
+| **P3 — Medium** | `sql_preference` | SQL pattern discovered that improves domain queries | Max 1 |
+| **P3 — Medium** | `chart_preference` | Domain-specific visualization preference | Max 1 |
 
-Si hay mas candidatos que el limite, aplicar prioridad (P1 primero) y dentro de cada prioridad, ordenar por relevancia para la pregunta original del usuario.
+If there are more candidates than the limit, apply priority (P1 first) and within each priority, sort by relevance to the user's original question.
 
-### Criterios de calidad para business_concept
+### Quality criteria for business_concept
 
-Un `business_concept` solo se propone si cumple **AL MENOS 2** de estos criterios:
-- Tiene una **definicion precisa** con formula o umbral numerico
-- Fue **usado activamente** en el analisis (no solo mencionado)
-- Es **relevante para el dominio** (aplica a tablas/columnas existentes)
-- Fue **definido explicitamente** por el usuario en la conversacion
+A `business_concept` is only proposed if it meets **AT LEAST 2** of these criteria:
+- Has a **precise definition** with formula or numeric threshold
+- Was **actively used** in the analysis (not just mentioned)
+- Is **relevant to the domain** (applies to existing tables/columns)
+- Was **explicitly defined** by the user in the conversation
 
-Si un candidato no cumple al menos 2 criterios, descartarlo y documentar el motivo en el reporte.
+If a candidate does not meet at least 2 criteria, discard it and document the reason in the report.
 
-## 5. Preparar Propuestas
+## 5. Prepare Proposals
 
-Clasificar cada propuesta en uno de los 3 tipos soportados:
+Classify each proposal into one of the 3 supported types:
 
-| Tipo | Descripcion | Ejemplo |
+| Type | Description | Example |
 |------|-------------|---------|
-| `business_concept` | Definiciones de terminos, segmentaciones, metricas, umbrales | "Clientes VIP: facturacion anual > 10.000 EUR" |
-| `sql_preference` | Patrones SQL preferidos | "LEFT JOIN para clientes-pedidos" |
-| `chart_preference` | Preferencias de visualizacion | "Area charts para series temporales, barras para categorias" |
+| `business_concept` | Term definitions, segmentations, metrics, thresholds | "VIP Customers: annual revenue > 10,000 EUR" |
+| `sql_preference` | Preferred SQL patterns | "LEFT JOIN for customers-orders" |
+| `chart_preference` | Visualization preferences | "Area charts for time series, bars for categories" |
 
-Para cada propuesta, documentar:
-- **Tipo**: Uno de los 3 anteriores
-- **Prioridad**: P1, P2 o P3
-- **Nombre**: Nombre corto del termino o preferencia
-- **Definicion**: Descripcion completa y precisa
-- **Contexto**: Cita o referencia de donde surgio en el analisis
-- **Tablas relacionadas**: Tablas del dominio donde aplica (si corresponde)
+For each proposal, document:
+- **Type**: One of the 3 above
+- **Priority**: P1, P2 or P3
+- **Name**: Short name of the term or preference
+- **Definition**: Complete and precise description
+- **Context**: Quote or reference of where it arose in the analysis
+- **Related tables**: Domain tables where it applies (if applicable)
 
-## 6. Presentar al Usuario para Aprobacion
+## 6. Present to User for Approval
 
-Mostrar las propuestas organizadas por prioridad y tipo al usuario. Para cada una, indicar:
-- Prioridad (P1/P2/P3)
-- Tipo
-- Nombre
-- Definicion
-- Contexto (de donde surgio)
-- Tablas relacionadas
+Show proposals organized by priority and type to the user. For each one, indicate:
+- Priority (P1/P2/P3)
+- Type
+- Name
+- Definition
+- Context (where it arose)
+- Related tables
 
-Preguntar al usuario siguiendo la convencion de preguntas al usuario (adaptativa al entorno: interactivas si disponibles, lista numerada en chat si no):
-- **Enviar todas**: Proponer todo tal como esta
-- **Seleccionar**: El usuario indica cuales enviar (preguntar permitiendo seleccion multiple)
-- **Modificar**: El usuario quiere ajustar alguna definicion antes de enviar
-- **Cancelar**: No proponer nada
+Ask the user following the user question convention (adaptive to the environment: interactive if available, numbered list in chat otherwise):
+- **Send all**: Propose everything as is
+- **Select**: The user indicates which to send (ask allowing multiple selection)
+- **Modify**: The user wants to adjust a definition before sending
+- **Cancel**: Do not propose anything
 
-Si el usuario elige "Modificar", preguntar que cambios quiere hacer, aplicarlos y volver a presentar para aprobacion.
+If the user chooses "Modify", ask what changes they want to make, apply them and present again for approval.
 
-## 7. Enviar via MCP
+## 7. Send via MCP
 
-Para las propuestas aprobadas, llamar a `propose_knowledge(business_context=..., domain_name=...)`.
+For approved proposals, call `propose_knowledge(business_context=..., domain_name=...)`.
 
-El parametro `business_context` debe ser un texto markdown estructurado con el siguiente formato:
+The `business_context` parameter should be a structured markdown text with the following format:
 
 ```markdown
-## Propuestas de Conocimiento
+## Knowledge Proposals
 
 ### business_concept
-- **[Nombre del termino]**: [Definicion completa]
-  - Contexto: [De donde surgio en el analisis]
-  - Tablas relacionadas: [tabla1, tabla2]
+- **[Term name]**: [Complete definition]
+  - Context: [Where it arose in the analysis]
+  - Related tables: [table1, table2]
 
 ### sql_preference
-- **[Nombre de la preferencia]**: [Descripcion del patron SQL]
-  - Contexto: [De donde surgio]
+- **[Preference name]**: [SQL pattern description]
+  - Context: [Where it arose]
 
 ### chart_preference
-- **[Nombre de la preferencia]**: [Descripcion de la preferencia visual]
-  - Contexto: [De donde surgio]
+- **[Preference name]**: [Visual preference description]
+  - Context: [Where it arose]
 ```
 
-Solo incluir las secciones que tengan propuestas. No incluir secciones vacias.
+Only include sections that have proposals. Do not include empty sections.
 
-## 8. Reporte
+## 8. Report
 
-Presentar al usuario un resumen final:
+Present a final summary to the user:
 
-- Propuestas enviadas desglosadas por prioridad (P1/P2/P3) y tipo
-- Resumen de cada propuesta enviada
-- Propuestas descartadas y motivo (duplicado, baja prioridad, no cumple criterios de calidad)
-- Errores encontrados (si los hubo)
-- Nota: "Las propuestas seran revisadas por un administrador en la consola de Gobernanza antes de integrarse al semantic layer del dominio"
+- Proposals sent broken down by priority (P1/P2/P3) and type
+- Summary of each sent proposal
+- Discarded proposals and reason (duplicate, low priority, does not meet quality criteria)
+- Errors encountered (if any)
+- Note: "The proposals will be reviewed by an administrator in the Governance console before being integrated into the domain's semantic layer"

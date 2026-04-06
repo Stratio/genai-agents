@@ -67,10 +67,10 @@ def _build_cover_html(title: str, author: str | None = None,
     """Build HTML for a cover page."""
     meta_lines = []
     if author:
-        meta_lines.append(f"<strong>Autor:</strong> {author}")
+        meta_lines.append(f"<strong>Author:</strong> {author}")
     if domain:
-        meta_lines.append(f"<strong>Dominio:</strong> {domain}")
-    meta_lines.append(f"<strong>Fecha:</strong> {date.today().strftime('%d/%m/%Y')}")
+        meta_lines.append(f"<strong>Domain:</strong> {domain}")
+    meta_lines.append(f"<strong>Date:</strong> {date.today().strftime('%d/%m/%Y')}")
 
     meta_html = "<br>".join(meta_lines)
 
@@ -98,7 +98,7 @@ def md_to_html(md_content: str, css: str, title: str = "Report",
     running_header = f'<div class="running-header">{title}</div>\n' if not cover else f'<div class="running-header">{title}</div>\n<div class="running-title">{title}</div>\n'
 
     return f"""<!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
 {meta_tags}
     <title>{title}</title>

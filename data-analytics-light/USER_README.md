@@ -1,50 +1,50 @@
 # Data Analytics Light Agent
 
-Agente ligero de Business Intelligence y Business Analytics orientado a conversacion: analiza datos gobernados y responde directamente en el chat.
+A lightweight Business Intelligence and Business Analytics agent oriented to conversation: it analyzes governed data and responds directly in chat.
 
-## Que es este agente
+## What is this agent
 
-Data Analytics Light es una version conversacional del agente de BI/BA. Conecta con los datos gobernados de tu organizacion para realizar analisis y responde con insights directamente en el chat. A diferencia de la version completa, no genera informes formales (PDF, DOCX, PowerPoint) — su fortaleza es el analisis interactivo rapido con visualizaciones en linea.
+Data Analytics Light is a conversational version of the BI/BA agent. It connects to your organization's governed data to perform analyses and responds with insights directly in chat. Unlike the full version, it does not generate formal reports (PDF, DOCX, PowerPoint) — its strength is fast interactive analysis with inline visualizations.
 
-## Capacidades
+## Capabilities
 
-- Explorar dominios de datos gobernados y descubrir tablas, columnas y reglas de negocio
-- Responder preguntas de negocio con datos reales (KPIs, metricas, tendencias)
-- Realizar analisis estadisticos (correlaciones, distribuciones, tests de hipotesis)
-- Generar visualizaciones profesionales directamente en el chat
-- Proponer terminos de negocio al diccionario de gobernanza
+- Explore governed data domains and discover tables, columns, and business rules
+- Answer business questions with real data (KPIs, metrics, trends)
+- Perform statistical analyses (correlations, distributions, hypothesis tests)
+- Generate professional visualizations directly in chat
+- Propose business terms to the governance dictionary
 
-## Que puedes preguntarle
+## What you can ask
 
-### Consultas rapidas
-- "Cuantos clientes tenemos?"
-- "Cual fue el total de ventas del ultimo trimestre?"
-- "Que tablas hay en el dominio de facturacion?"
+### Quick queries
+- "How many customers do we have?"
+- "What was the total sales for last quarter?"
+- "What tables are in the billing domain?"
 
-### Analisis conversacional
-- "Analiza la tendencia de ventas por mes en el ultimo anio"
-- "Hay correlacion entre el gasto en marketing y las ventas?"
-- "Que productos tienen mas rotacion?"
-- "Compara los ingresos por canal de venta"
-- "Segmenta los clientes por comportamiento de compra"
+### Conversational analysis
+- "Analyze the sales trend by month over the last year"
+- "Is there a correlation between marketing spend and sales?"
+- "Which products have the highest turnover?"
+- "Compare revenue by sales channel"
+- "Segment customers by purchasing behavior"
 
-### Exploracion
-- "Que dominios de datos hay disponibles?"
-- "Describe las tablas del dominio de clientes"
-- "Que significa el campo 'lifetime_value'?"
+### Exploration
+- "What data domains are available?"
+- "Describe the tables in the customers domain"
+- "What does the 'lifetime_value' field mean?"
 
-## Skills disponibles
+## Available skills
 
-| Comando | Descripcion |
+| Command | Description |
 |---------|-------------|
-| `/analyze` | Analisis de datos: descubrimiento de dominio, planificacion, queries, analisis estadistico y visualizaciones |
-| `/explore-data` | Exploracion rapida de dominios, tablas, columnas y terminologia de negocio |
-| `/propose-knowledge` | Proponer terminos de negocio descubiertos al diccionario de gobernanza |
+| `/analyze` | Data analysis: domain discovery, planning, queries, statistical analysis, and visualizations |
+| `/explore-data` | Quick exploration of domains, tables, columns, and business terminology |
+| `/propose-knowledge` | Propose discovered business terms to the governance dictionary |
 
-## Conexiones necesarias
+## Required connections
 
-- **MCP de datos**: consultas SQL, exploracion de dominios, profiling de tablas y columnas
+- **Data MCP**: SQL queries, domain exploration, table and column profiling
 
-## Primeros pasos
+## Getting started
 
-Inicia el agente y pregunta: "Que dominios de datos hay disponibles?"
+Start the agent and ask: "What data domains are available?"

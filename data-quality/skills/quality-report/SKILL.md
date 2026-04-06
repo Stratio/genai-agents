@@ -1,148 +1,148 @@
 ---
 name: quality-report
-description: Generar un informe formal de cobertura de calidad del dato en el formato que elija el usuario (chat, PDF, DOCX o Markdown en disco). Usar cuando el usuario quiera un documento o presentacion con el estado actual de la calidad, despues de evaluar la cobertura o crear reglas de calidad.
-argument-hint: "[formato: chat|pdf|docx|md] [nombre-fichero (opcional)]"
+description: Generate a formal data quality coverage report in the format chosen by the user (chat, PDF, DOCX, or Markdown on disk). Use when the user wants a document or presentation with the current quality status, after assessing coverage or creating quality rules.
+argument-hint: "[format: chat|pdf|docx|md] [filename (optional)]"
 ---
 
-# Skill: Generacion de Informe de Calidad
+# Skill: Quality Report Generation
 
-Workflow para generar un informe estructurado con el estado de cobertura de calidad del dato.
+Workflow for generating a structured report with the state of data quality coverage.
 
-## 1. Prerequisitos y Datos del Informe
+## 1. Prerequisites and Report Data
 
-Esta skill necesita datos de calidad para generar el informe. Verificar si ya existen en la conversacion actual:
+This skill needs quality data to generate the report. Check if it already exists in the current conversation:
 
-**Si ya existen datos de evaluacion de cobertura o de creacion de reglas en la conversacion**: usar esos datos directamente. Esto incluye tanto reglas creadas desde el flujo de gaps (Flujo A) como reglas concretas creadas directamente por el usuario (Flujo B).
+**If coverage assessment or rule creation data already exists in the conversation**: use that data directly. This includes both rules created from the gap flow (Flow A) and specific rules created directly by the user (Flow B).
 
-**Si NO hay datos de cobertura en el contexto** (inventario de reglas, gaps, EDA): es necesario realizar primero una evaluacion completa del scope solicitado antes de generar el informe. Indicar al usuario y detenerse.
+**If there is NO coverage data in the context** (rule inventory, gaps, EDA): a full assessment of the requested scope must be performed first before generating the report. Inform the user and stop.
 
-### Datos a recopilar para el informe
+### Data to collect for the report
 
-Si los datos ya estan en contexto, extraerlos directamente. Si faltan, obtenerlos con llamadas MCP en paralelo:
+If the data is already in context, extract it directly. If missing, obtain it with parallel MCP calls:
 
 ```
-Paralelo:
-  A. get_tables_quality_details(domain_name, tablas)
-  B. get_table_columns_details(domain_name, tabla)  [por cada tabla]
+Parallel:
+  A. get_tables_quality_details(domain_name, tables)
+  B. get_table_columns_details(domain_name, table)  [for each table]
   C. get_quality_rule_dimensions(collection_name=domain_name)
 ```
 
-## 2. Seleccion de Formato
+## 2. Format Selection
 
-Si el usuario no ha especificado formato, preguntar al usuario con opciones siguiendo la convencion de preguntas al usuario:
+If the user has not specified a format, ask the user with options following the user question convention:
 
 ```
-¿En que formato quieres el informe?
-  1. Chat — resumen estructurado en esta conversacion (sin archivo)
-  2. PDF — documento formal descargable
-  3. DOCX — documento Word editable
-  4. Markdown — archivo .md en disco
+What format do you want the report in?
+  1. Chat — structured summary in this conversation (no file)
+  2. PDF — formal downloadable document
+  3. DOCX — editable Word document
+  4. Markdown — .md file on disk
 ```
 
-Si el usuario ha especificado formato en los argumentos o en el mensaje, usar ese directamente.
+If the user has specified the format in the arguments or message, use it directly.
 
-## 3. Estructura del Informe
+## 3. Report Structure
 
-El informe tiene la misma estructura independientemente del formato:
+The report has the same structure regardless of format:
 
-### Portada / Cabecera
-- Titulo: "Informe de Cobertura de Calidad del Dato"
-- Dominio / Coleccion: [nombre]
-- Scope: [dominio completo / tabla(s) especifica(s)]
-- Fecha de generacion: [hoy]
-- Agente: Data Quality Expert
+### Cover / Header
+- Title: "Data Quality Coverage Report"
+- Domain / Collection: [name]
+- Scope: [full domain / specific table(s)]
+- Generation date: [today]
+- Agent: Data Quality Expert
 
-### Seccion 1 — Resumen Ejecutivo
-- Tablas analizadas: N
-- Reglas de calidad existentes: N
-- Cobertura global estimada: XX%
-- Reglas en estado OK: N | KO: N | WARNING: N | Sin ejecutar: N
-- Gaps identificados: N criticos, N moderados, N bajos
-- Reglas creadas en esta sesion (si aplica): N
+### Section 1 — Executive Summary
+- Tables analyzed: N
+- Existing quality rules: N
+- Estimated global coverage: XX%
+- Rules in OK status: N | KO: N | WARNING: N | Not executed: N
+- Gaps identified: N critical, N moderate, N low
+- Rules created in this session (if applicable): N
 
-### Seccion 2 — Cobertura por Tabla
+### Section 2 — Coverage by Table
 
-Tabla matricial (incluir dimensiones estandar y propias del dominio):
+Matrix table (include standard and domain-specific dimensions):
 ```
-| Tabla | Completeness | Uniqueness | Validity | Consistency | Otras Dimensiones | Cobertura |
-```
-
-Con leyenda de iconos o colores (segun formato).
-
-### Seccion 3 — Detalle de Reglas Existentes
-
-Por cada tabla, listar sus reglas:
-```
-| Regla | Dimension | Estado | % Pass | Descripcion |
+| Table | Completeness | Uniqueness | Validity | Consistency | Other Dimensions | Coverage |
 ```
 
-Destacar (negrita o color rojo) las reglas en KO o WARNING.
+With icon or color legend (depending on format).
 
-### Seccion 4 — Gaps Identificados
+### Section 3 — Existing Rules Detail
 
-Lista priorizada de gaps:
-- Para cada gap: tabla, columna, dimension ausente, impacto estimado, recomendacion
+For each table, list its rules:
+```
+| Rule | Dimension | Status | % Pass | Description |
+```
 
-### Seccion 5 — Reglas Creadas en esta Sesion (si aplica)
+Highlight (bold or red) rules in KO or WARNING.
 
-Si se crearon reglas de calidad en esta sesion, incluir:
-- Lista de reglas creadas con su SQL
-- Cobertura antes y despues (solo si se realizo una evaluacion de cobertura previamente; para reglas del Flujo B sin evaluacion previa, omitir la comparacion de cobertura)
+### Section 4 — Identified Gaps
 
-**Para reglas del Flujo B (regla concreta)**: indicar que fueron solicitadas directamente por el usuario, incluir la logica de negocio descrita, el resultado de la validacion SQL (registros que pasan / total, % o conteo) y el estado calculado (OK / KO / WARNING / SIN_DATOS) basado en la configuracion de medicion aplicada (measurement_type + threshold_mode + umbrales).
+Prioritized list of gaps:
+- For each gap: table, column, missing dimension, estimated impact, recommendation
 
-**Para reglas del Flujo A (gaps)**: incluir el resultado de la validacion SQL con el estado calculado. Si la validacion mostro KO o WARNING, destacarlo visualmente (negrita) como dato a revisar.
+### Section 5 — Rules Created in this Session (if applicable)
 
-### Seccion 6 — Recomendaciones y Proximos Pasos
+If quality rules were created in this session, include:
+- List of created rules with their SQL
+- Coverage before and after (only if a coverage assessment was performed previously; for Flow B rules without prior assessment, omit the coverage comparison)
 
-- Reglas KO/WARNING a investigar con prioridad
-- Gaps criticos pendientes de cubrir
-- Estimation de esfuerzo para cobertura completa
+**For Flow B rules (specific rule)**: indicate they were directly requested by the user, include the described business logic, the SQL validation result (passing records / total, % or count) and the calculated status (OK / KO / WARNING / NO_DATA) based on the applied measurement configuration (measurement_type + threshold_mode + thresholds).
 
-## 4. Generacion por Formato
+**For Flow A rules (gaps)**: include the SQL validation result with the calculated status. If validation showed KO or WARNING, visually highlight it (bold) as data to review.
 
-### Formato: Chat
+### Section 6 — Recommendations and Next Steps
 
-Generar directamente el informe en markdown dentro de la respuesta del chat. Seguir la estructura de la seccion 3 con headers, tablas y listas bien formateadas.
+- Priority KO/WARNING rules to investigate
+- Critical pending gaps to cover
+- Effort estimation for full coverage
 
-No ejecutar Python ni crear archivos.
+## 4. Generation by Format
 
-### Formatos de archivo: PDF, DOCX y Markdown en disco
+### Format: Chat
 
-Los tres formatos de archivo (PDF, DOCX, MD) usan el mismo generador Python y el mismo fichero `report-input.json`. El proceso es identico salvo el flag `--format` y la extension del fichero de salida.
+Generate the report directly in markdown within the chat response. Follow the structure in section 3 with well-formatted headers, tables, and lists.
 
-#### Paso 1 — Verificar entorno
+Do not execute Python or create files.
+
+### File formats: PDF, DOCX, and Markdown on disk
+
+All three file formats (PDF, DOCX, MD) use the same Python generator and the same `report-input.json` file. The process is identical except for the `--format` flag and the output file extension.
+
+#### Step 1 — Verify environment
 
 ```bash
 bash setup_env.sh
 ```
 
-#### Paso 2 — Preparar report-input.json
+#### Step 2 — Prepare report-input.json
 
-Obtener la ruta absoluta del directorio output:
+Get the absolute path of the output directory:
 ```bash
 mkdir -p output/ && readlink -f output/
 ```
 
-Escribir `<ruta-absoluta>/report-input.json` con el schema exacto que sigue. **Los nombres de campo son literales — el generador los lee con `data.get("campo")` y devuelve `-` si no existen.**
+Write `<absolute-path>/report-input.json` with the exact schema that follows. **Field names are literal — the generator reads them with `data.get("field")` and returns `-` if they don't exist.**
 
-**Errores comunes a evitar (producen informe en blanco):**
-- NO `report_title` → `title`
-- NO `report_date` / `date` → `generated_at`
-- NO `executive_summary` → `summary`
-- NO `total_rules` / `rules_count` → `summary.rules_total`
-- NO `rules_pending` / `rules_not_run` → `summary.rules_not_executed`
-- NO `quality_rules` → `tables[].rules`
-- NO `coverage_by_dimension` (objeto anidado) → campos planos `tables[].completeness`, `tables[].uniqueness`, etc.
-- NO prioridades en español (`Alta/Media/Baja`) → `CRITICO|ALTO|MEDIO|BAJO`
-- NO `recommendations` como array de objetos → array de **strings** planos
-- NO `calculated_status` en `rules_created` → `status`
+**Common errors to avoid (produce blank report):**
+- NOT `report_title` → `title`
+- NOT `report_date` / `date` → `generated_at`
+- NOT `executive_summary` → `summary`
+- NOT `total_rules` / `rules_count` → `summary.rules_total`
+- NOT `rules_pending` / `rules_not_run` → `summary.rules_not_executed`
+- NOT `quality_rules` → `tables[].rules`
+- NOT `coverage_by_dimension` (nested object) → flat fields `tables[].completeness`, `tables[].uniqueness`, etc.
+- NOT priorities in Spanish (`Alta/Media/Baja`) → `CRITICO|ALTO|MEDIO|BAJO`
+- NOT `recommendations` as array of objects → array of **plain strings**
+- NOT `calculated_status` in `rules_created` → `status`
 
 ```json
 {
-  "title": "Informe de Cobertura de Calidad del Dato — <tabla> — <dominio>",
+  "title": "Data Quality Coverage Report — <table> — <domain>",
   "domain": "<domain_name>",
-  "scope": "<tabla(s) o 'Dominio completo'>",
+  "scope": "<table(s) or 'Full domain'>",
   "generated_at": "<YYYY-MM-DD>",
   "summary": {
     "tables_analyzed": <N>,
@@ -155,95 +155,95 @@ Escribir `<ruta-absoluta>/report-input.json` con el schema exacto que sigue. **L
     "gaps_critical": <N>,
     "gaps_moderate": <N>,
     "gaps_low": <N>,
-    "rules_created_this_session": <N o null>
+    "rules_created_this_session": <N or null>
   },
   "tables": [
     {
-      "name": "<tabla>",
+      "name": "<table>",
       "coverage_estimate": "<XX%>",
-      "completeness": "<OK|Gap|Parcial|N/A>",
-      "uniqueness": "<OK|Gap|Parcial|N/A>",
-      "validity": "<OK|Gap|Parcial|N/A>",
-      "consistency": "<OK|Gap|Parcial|N/A>",
+      "completeness": "<OK|Gap|Partial|N/A>",
+      "uniqueness": "<OK|Gap|Partial|N/A>",
+      "validity": "<OK|Gap|Partial|N/A>",
+      "consistency": "<OK|Gap|Partial|N/A>",
       "rules": [
         {
-          "name": "<nombre-regla>",
+          "name": "<rule-name>",
           "dimension": "<dimension>",
           "status": "<OK|KO|WARNING>",
-          "pass_pct": <0-100 o null>,
-          "description": "<descripcion>"
+          "pass_pct": <0-100 or null>,
+          "description": "<description>"
         }
       ],
       "gaps": [
         {
-          "column": "<columna o '—' si aplica a la tabla>",
-          "dimension": "<dimension ausente>",
+          "column": "<column or '—' if applies to the table>",
+          "dimension": "<missing dimension>",
           "priority": "<CRITICO|ALTO|MEDIO|BAJO>",
-          "description": "<descripcion del gap>"
+          "description": "<gap description>"
         }
       ]
     }
   ],
   "rules_created": [
     {
-      "name": "<nombre-regla>",
-      "table": "<tabla>",
+      "name": "<rule-name>",
+      "table": "<table>",
       "dimension": "<completeness|uniqueness|validity|consistency|...>",
       "status": "<created|OK|KO|WARNING|SIN_DATOS>"
     }
   ],
-  "recommendations": ["<recomendacion 1 como string plano>", "<recomendacion 2>"]
+  "recommendations": ["<recommendation 1 as plain string>", "<recommendation 2>"]
 }
 ```
 
-**Notas de mapeo desde los datos de evaluacion de cobertura:**
-- `summary.rules_total` ← total de reglas existentes en la coleccion (no solo las ejecutadas)
-- `summary.rules_not_executed` ← reglas sin resultado aun (pendientes)
-- `summary.gaps_critical` ← gaps con priority `CRITICO`; `gaps_moderate` ← `ALTO`; `gaps_low` ← `MEDIO` + `BAJO`
-- `tables[].completeness/uniqueness/validity/consistency` ← `OK` si hay regla activa, `Gap` si ninguna, `Parcial` si incompleta, `N/A` si no aplica
-- `tables[].rules[].status` ← para reglas sin ejecutar usar `WARNING` (nunca "Pendiente" ni "Sin ejecutar")
-- `tables[].gaps[].priority` ← `CRITICO` para PK/FK sin regla, `ALTO` para columnas clave, `MEDIO` para resto, `BAJO` para dimensiones opcionales
-- `rules_created[].status` ← usar `"created"` para reglas recien creadas en esta sesion sin validacion; `OK|KO|WARNING|SIN_DATOS` si se ejecuto validacion SQL
+**Mapping notes from coverage assessment data:**
+- `summary.rules_total` ← total existing rules in the collection (not only executed ones)
+- `summary.rules_not_executed` ← rules without results yet (pending)
+- `summary.gaps_critical` ← gaps with priority `CRITICO`; `gaps_moderate` ← `ALTO`; `gaps_low` ← `MEDIO` + `BAJO`
+- `tables[].completeness/uniqueness/validity/consistency` ← `OK` if there is an active rule, `Gap` if none, `Partial` if incomplete, `N/A` if not applicable
+- `tables[].rules[].status` ← for unexecuted rules use `WARNING` (never "Pending" or "Not executed")
+- `tables[].gaps[].priority` ← `CRITICO` for PK/FK without rule, `ALTO` for key columns, `MEDIO` for the rest, `BAJO` for optional dimensions
+- `rules_created[].status` ← use `"created"` for rules newly created this session without validation; `OK|KO|WARNING|SIN_DATOS` if SQL validation was executed
 
-#### Paso 3 — Determinar ruta de salida
+#### Step 3 — Determine output path
 
-- Si el usuario indico un nombre: usar ese (con la extension correcta)
-- Si no:
-  - PDF: `output/quality-report-[dominio]-[YYYY-MM-DD].pdf`
-  - DOCX: `output/quality-report-[dominio]-[YYYY-MM-DD].docx`
-  - MD: `output/quality-report-[dominio]-[YYYY-MM-DD].md`
+- If the user indicated a name: use that (with the correct extension)
+- If not:
+  - PDF: `output/quality-report-[domain]-[YYYY-MM-DD].pdf`
+  - DOCX: `output/quality-report-[domain]-[YYYY-MM-DD].docx`
+  - MD: `output/quality-report-[domain]-[YYYY-MM-DD].md`
 
-#### Paso 4 — Validar el JSON (OBLIGATORIO antes de ejecutar el generador)
+#### Step 4 — Validate the JSON (MANDATORY before running the generator)
 
 ```bash
 .venv/bin/python scripts/validate_report_input.py output/report-input.json
 ```
 
-- Si termina con `[OK]`: continuar al paso 5.
-- Si termina con `[VALIDATION FAILED]`: leer cada error, corregir el `report-input.json` y volver a ejecutar la validacion hasta que pase sin errores. **No ejecutar el generador con un JSON invalido** — producira un informe en blanco sin avisar.
+- If it ends with `[OK]`: continue to step 5.
+- If it ends with `[VALIDATION FAILED]`: read each error, correct the `report-input.json`, and re-run validation until it passes without errors. **Do not run the generator with an invalid JSON** — it will produce a blank report without warning.
 
-#### Paso 5 — Ejecutar el generador
+#### Step 5 — Run the generator
 
 ```bash
 .venv/bin/python scripts/quality_report_generator.py \
   --format <pdf|docx|md> \
-  --output "output/quality-report-[dominio]-[fecha].<ext>" \
+  --output "output/quality-report-[domain]-[date].<ext>" \
   --input-file output/report-input.json
 ```
 
-Si el usuario pide PDF y DOCX en la misma sesion, el `report-input.json` puede reutilizarse — ejecutar el generador dos veces con distinto `--format` y `--output`.
+If the user requests PDF and DOCX in the same session, the `report-input.json` can be reused — run the generator twice with different `--format` and `--output`.
 
-## 5. Verificacion Post-Generacion
+## 5. Post-Generation Verification
 
-Para formatos de archivo (PDF, DOCX, MD en disco):
-1. Verificar que el archivo existe: `ls -lh output/[nombre-archivo]`
-2. Informar al usuario: nombre del archivo, ruta completa, tamaño
-3. Si la generacion fallo: mostrar el error y ofrecer alternativa en chat
+For file formats (PDF, DOCX, MD on disk):
+1. Verify the file exists: `ls -lh output/[filename]`
+2. Inform the user: filename, full path, size
+3. If generation failed: show the error and offer a chat alternative
 
-## 6. Mensaje Final al Usuario
+## 6. Final Message to the User
 
-Tras generar el informe, presentar en el chat:
-- Confirmacion de generacion (o el informe si es formato chat)
-- Ruta del archivo (si aplica)
-- Resumen de 2-3 puntos clave del informe
-- Pregunta de si desea algo mas (crear reglas de los gaps, ampliar scope, etc.)
+After generating the report, present in chat:
+- Generation confirmation (or the report itself if chat format)
+- File path (if applicable)
+- Summary of 2-3 key points from the report
+- Question about whether they want anything else (create rules for gaps, expand scope, etc.)

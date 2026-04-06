@@ -149,7 +149,7 @@ class TestScaffold:
         doc = Document(str(path))
         texts = [p.text for p in doc.paragraphs]
         # Should not have the large title paragraph from cover
-        assert not any("Autor:" in t for t in texts)
+        assert not any("Author:" in t for t in texts)
 
     def test_has_kpi_table(self, tmp_dir, sample_kpis):
         gen = DOCXGenerator(style="corporate")
@@ -177,11 +177,11 @@ class TestScaffold:
         path = gen.save(tmp_dir / "sections.docx")
         doc = Document(str(path))
         headings = [p.text for p in doc.paragraphs if p.style.name.startswith("Heading")]
-        assert "Resumen Ejecutivo" in headings
-        assert "Metodologia" in headings
-        assert "Datos y Fuentes" in headings
-        assert "Analisis" in headings
-        assert "Conclusiones" in headings
+        assert "Executive Summary" in headings
+        assert "Methodology" in headings
+        assert "Data and Sources" in headings
+        assert "Analysis" in headings
+        assert "Conclusions" in headings
 
     def test_has_figures(self, tmp_dir, sample_figures):
         gen = DOCXGenerator(style="corporate")
@@ -316,7 +316,7 @@ class TestImages:
         assert path.exists()
         doc = Document(str(path))
         texts = [p.text for p in doc.paragraphs]
-        assert any("Imagen no encontrada" in t for t in texts)
+        assert any("Image not found" in t for t in texts)
 
 
 # ---------------------------------------------------------------------------

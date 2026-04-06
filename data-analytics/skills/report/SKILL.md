@@ -1,111 +1,111 @@
 ---
 name: report
-description: Generacion de informes profesionales en multiples formatos (PDF, DOCX, web interactiva con Plotly, PowerPoint) a partir de analisis de datos. Usar cuando el usuario necesite generar informes, dashboards, presentaciones o documentacion a partir de datos analizados.
-argument-hint: '[formato: pdf|web|pptx] [tema (opcional)]'
+description: Professional report generation in multiple formats (PDF, DOCX, interactive web with Plotly, PowerPoint) from data analysis. Use when the user needs to generate reports, dashboards, presentations, or documentation from analyzed data.
+argument-hint: '[format: pdf|web|pptx] [topic (optional)]'
 ---
 
-# Skill: Generacion de Informes
+# Skill: Report Generation
 
-Guia para generar informes profesionales en multiples formatos a partir de datos y analisis.
+Guide for generating professional reports in multiple formats from data and analyses.
 
-## 1. Determinar Formato, Estructura y Estilo
+## 1. Determine Format, Structure, and Style
 
-Parsear argumento: $ARGUMENTS
+Parse argument: $ARGUMENTS
 
-Si el formato no esta especificado, preguntar al usuario las 3 preguntas siguientes en una sola interaccion, siguiendo la convencion de preguntas (sec "Interaccion con el Usuario" de AGENTS.md) (adaptativa al entorno: interactivas si disponibles, lista numerada en chat si no). Las opciones son literales — no inventar, no omitir, no sustituir:
+If the format is not specified, ask the user the following 3 questions in a single interaction, following the question convention (sec "User Interaction" of AGENTS.md) (adaptive to the environment: interactive if available, numbered list in chat if not). Options are literal — do not invent, omit, or substitute:
 
-| # | Pregunta | Opciones (literales) | Seleccion |
-|---|----------|---------------------|-----------|
-| 1 | ¿En que formatos quieres los deliverables? | **Documento** (PDF + DOCX) · **Web** (HTML interactivo con Plotly) · **PowerPoint** (.pptx) | Multiple |
-| 2 | ¿Que estructura prefieres para el reporte? | **Scaffold base** (Recomendado): resumen ejecutivo → metodologia → datos → analisis → conclusiones · **Al vuelo**: estructura libre segun contexto | Unica |
-| 3 | ¿Que estilo visual prefieres? | **Corporativo** (`corporate.css`, Recomendado): limpio, profesional · **Formal/academico** (`academic.css`): serif, margenes amplios, estilo paper · **Moderno/creativo** (`modern.css`): colores, gradientes, visualmente atractivo | Unica |
+| # | Question | Options (literal) | Selection |
+|---|----------|-------------------|-----------|
+| 1 | In what formats do you want the deliverables? | **Document** (PDF + DOCX) · **Web** (Interactive HTML with Plotly) · **PowerPoint** (.pptx) | Multiple |
+| 2 | What structure do you prefer for the report? | **Base scaffold** (Recommended): executive summary → methodology → data → analysis → conclusions · **On the fly**: free structure based on context | Single |
+| 3 | What visual style do you prefer? | **Corporate** (`corporate.css`, Recommended): clean, professional · **Formal/academic** (`academic.css`): serif, wide margins, paper style · **Modern/creative** (`modern.css`): colors, gradients, visually appealing | Single |
 
-- La pregunta 1 SIEMPRE permite seleccion multiple (el usuario puede querer varios formatos)
-- Si no selecciona ningun formato, solo se da respuesta textual en el chat
-- Siempre se genera `output/[ANALISIS_DIR]/report.md` automaticamente como documentacion interna (no necesita opcion)
-- Si el formato viene en el argumento ($ARGUMENTS), saltar directamente a preguntar estructura y estilo (preguntas 2 y 3)
+- Question 1 ALWAYS allows multiple selection (the user may want several formats)
+- If no format is selected, only a text response is given in chat
+- `output/[ANALYSIS_DIR]/report.md` is always generated automatically as internal documentation (no option needed)
+- If the format comes from the argument ($ARGUMENTS), skip directly to asking about structure and style (questions 2 and 3)
 
-## 2. Verificar Datos Disponibles
+## 2. Verify Available Data
 
-- Comprobar si existen datos previos en `output/[ANALISIS_DIR]/data/` (CSVs, DataFrames)
-- Comprobar si existen graficas en `output/[ANALISIS_DIR]/assets/`
-- Si no hay datos: informar al usuario que primero necesita ejecutar un analisis
-- Si hay datos parciales: preguntar si reutilizar o regenerar
+- Check if previous data exists in `output/[ANALYSIS_DIR]/data/` (CSVs, DataFrames)
+- Check if charts exist in `output/[ANALYSIS_DIR]/assets/`
+- If there is no data: inform the user that they first need to run an analysis
+- If there is partial data: ask whether to reuse or regenerate
 
-### 2.1 Visualizacion y storytelling
+### 2.1 Visualization and storytelling
 
-Leer y seguir `skills-guides/visualization.md` para:
-- Seleccion de tipo de grafica segun pregunta analitica (sec 1)
-- Principios de visualizacion y accesibilidad (sec 2)
-- Data storytelling: estructura narrativa Hook→Contexto→Hallazgos→Tension→Resolucion (sec 3)
-- Mapping hallazgos analiticos → rol narrativo (sec 4)
+Read and follow `skills-guides/visualization.md` for:
+- Chart type selection based on analytical question (sec 1)
+- Visualization and accessibility principles (sec 2)
+- Data storytelling: Hook→Context→Findings→Tension→Resolution narrative structure (sec 3)
+- Mapping analytical findings → narrative role (sec 4)
 
-**Especifico de report — Layout anti-solapamiento**: Titulo como insight arriba, contexto como subtitulo, leyenda posicionada debajo del grafico o a la derecha exterior. Usar `tools/chart_layout.py` para layout estandar.
+**Report-specific — Anti-overlap layout**: Title as insight on top, context as subtitle, legend positioned below the chart or to the right exterior. Use `tools/chart_layout.py` for standard layout.
 
-## 3. Setup del Entorno
+## 3. Environment Setup
 
 ```bash
 bash setup_env.sh
 ```
-Verificar que las dependencias del formato estan disponibles (weasyprint para PDF, python-pptx para PowerPoint, etc.).
+Verify that format dependencies are available (weasyprint for PDF, python-pptx for PowerPoint, etc.).
 
-## 4. Herramientas de Estilo
+## 4. Style Tools
 
-Todos los formatos comparten la misma fuente de verdad para colores y fuentes:
+All formats share the same source of truth for colors and fonts:
 
-- **CSS (PDF, Web):** `build_css(style, target)` de `tools/css_builder.py` ensambla tokens + theme + target
-- **No-CSS (PPTX, DOCX):** `get_palette(style)` de `tools/css_builder.py` devuelve colores RGB y fuentes
-- **Reasoning (Markdown → PDF/HTML):** `tools/md_to_report.py` con opciones `--style`, `--cover`, `--author`, `--domain`
+- **CSS (PDF, Web):** `build_css(style, target)` from `tools/css_builder.py` assembles tokens + theme + target
+- **Non-CSS (PPTX, DOCX):** `get_palette(style)` from `tools/css_builder.py` returns RGB colors and fonts
+- **Reasoning (Markdown → PDF/HTML):** `tools/md_to_report.py` with options `--style`, `--cover`, `--author`, `--domain`
 
 ```python
 from css_builder import build_css, get_palette
-css, name = build_css("corporate", "pdf")    # CSS ensamblado
+css, name = build_css("corporate", "pdf")    # Assembled CSS
 palette = get_palette("corporate")           # {"primary": (0x1a,0x36,0x5d), "font_main": "Inter", ...}
 ```
 
-## 5. Generacion por Formato
+## 5. Generation by Format
 
-### 5.1 Documento (PDF + DOCX)
-Si el usuario selecciono "Documento": ver [document-guide.md](document-guide.md) para el pipeline completo de PDFGenerator, DOCXGenerator y pitfalls.
+### 5.1 Document (PDF + DOCX)
+If the user selected "Document": see [document-guide.md](document-guide.md) for the complete PDFGenerator, DOCXGenerator pipeline and pitfalls.
 
-### 5.2 Web (Dashboard Interactivo)
-Si el usuario selecciono "Web": ver [web-guide.md](web-guide.md) para el pipeline completo de DashboardBuilder, capacidades, workflow y pitfalls.
+### 5.2 Web (Interactive Dashboard)
+If the user selected "Web": see [web-guide.md](web-guide.md) for the complete DashboardBuilder pipeline, capabilities, workflow, and pitfalls.
 
 ### 5.3 PowerPoint
-Si el usuario selecciono "PowerPoint": ver [powerpoint-guide.md](powerpoint-guide.md) para el pipeline completo de pptx_layout, diseño de slides y pitfalls.
+If the user selected "PowerPoint": see [powerpoint-guide.md](powerpoint-guide.md) for the complete pptx_layout pipeline, slide design, and pitfalls.
 
-### 5.4 Markdown (siempre generado)
-Se genera automaticamente en todos los analisis, sin necesidad de que el usuario lo seleccione.
-1. Escribir .md directo con:
-   - Tablas markdown para datos tabulares
-   - Bloques mermaid para diagramas de flujo o relaciones
-   - Referencias a graficas en `output/[ANALISIS_DIR]/assets/`
-2. Guardar en `output/[ANALISIS_DIR]/report.md`
+### 5.4 Markdown (always generated)
+Generated automatically in all analyses, without the user needing to select it.
+1. Write .md directly with:
+   - Markdown tables for tabular data
+   - Mermaid blocks for flow diagrams or relationships
+   - References to charts in `output/[ANALYSIS_DIR]/assets/`
+2. Save in `output/[ANALYSIS_DIR]/report.md`
 
 ## 6. Reasoning
 
-Generar reasoning segun la profundidad seleccionada (ver sec "Reasoning" de AGENTS.md):
+Generate reasoning according to the selected depth (see sec "Reasoning" of AGENTS.md):
 
-- **Rapido**: No generar fichero. Notas clave en el chat.
-- **Estandar/Profundo**: Generar `output/[ANALISIS_DIR]/reasoning/reasoning.md`. Si el usuario solicito override a otros formatos (PDF, HTML, DOCX), convertir con `tools/md_to_report.py --style corporate` (anadir `--docx` si aplica).
+- **Quick**: Do not generate file. Key notes in chat.
+- **Standard/Deep**: Generate `output/[ANALYSIS_DIR]/reasoning/reasoning.md`. If the user requested override to other formats (PDF, HTML, DOCX), convert with `tools/md_to_report.py --style corporate` (add `--docx` if applicable).
 
-Documentando:
-- Formato(s) generado(s) y justificacion
-- Estructura elegida y por que
-- Datos utilizados y sus fuentes
-- Decisiones de diseno
-- Rutas de todos los archivos generados
+Documenting:
+- Format(s) generated and justification
+- Structure chosen and why
+- Data used and their sources
+- Design decisions
+- Paths of all generated files
 
-## 7. Entrega
+## 7. Delivery
 
-**Antes de reportar**, ejecutar verificación de existencia:
+**Before reporting**, run existence verification:
 ```bash
-ls -lh output/[ANALISIS_DIR]/
+ls -lh output/[ANALYSIS_DIR]/
 ```
-Si algún fichero solicitado no aparece en el listado → volver al paso 5 (generación) y regenerarlo. Solo reportar al usuario cuando todos los ficheros estén confirmados en disco.
+If any requested file does not appear in the listing → go back to step 5 (generation) and regenerate it. Only report to the user when all files are confirmed on disk.
 
-A continuación reportar en el chat:
-- Formato(s) generado(s)
-- Ruta(s) de los archivos
-- Vista previa del contenido (resumen ejecutivo)
-- Instrucciones para abrir/usar el deliverable
+Then report in chat:
+- Format(s) generated
+- File path(s)
+- Content preview (executive summary)
+- Instructions for opening/using the deliverable

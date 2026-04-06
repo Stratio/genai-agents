@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# pack_claude_code.sh — Empaqueta un agente del monorepo para Claude Code CLI
-# Uso: bash pack_claude_code.sh --agent <path> [--name <nombre-kebab>]
+# pack_claude_code.sh — Packages a monorepo agent for Claude Code CLI
+# Usage: bash pack_claude_code.sh --agent <path> [--name <kebab-name>]
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MONOREPO_ROOT="$SCRIPT_DIR"
 
 # ---------------------------------------------------------------------------
-# Fase 0 — Parseo y validación
+# Phase 0 — Parsing and validation
 # ---------------------------------------------------------------------------
 AGENT_PATH=""
 AGENT_NAME=""
@@ -16,69 +16,69 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --agent) AGENT_PATH="$2"; shift 2 ;;
     --name)  AGENT_NAME="$2"; shift 2 ;;
-    *) echo "ERROR: argumento desconocido: $1" >&2; exit 1 ;;
+    *) echo "ERROR: unknown argument: $1" >&2; exit 1 ;;
   esac
 done
 
 if [[ -z "$AGENT_PATH" ]]; then
-  echo "ERROR: --agent es obligatorio" >&2
-  echo "Uso: bash pack_claude_code.sh --agent <path> [--name <nombre-kebab>]" >&2
+  echo "ERROR: --agent is required" >&2
+  echo "Usage: bash pack_claude_code.sh --agent <path> [--name <kebab-name>]" >&2
   exit 1
 fi
 
-# Resolver ruta absoluta: primero relativo a SCRIPT_DIR, luego como absoluta
+# Resolve absolute path: first relative to SCRIPT_DIR, then as absolute
 if [[ -d "$SCRIPT_DIR/$AGENT_PATH" ]]; then
   AGENT_ABS="$(cd "$SCRIPT_DIR/$AGENT_PATH" && pwd)"
 elif [[ -d "$AGENT_PATH" ]]; then
   AGENT_ABS="$(cd "$AGENT_PATH" && pwd)"
 else
-  echo "ERROR: directorio del agente no encontrado: $AGENT_PATH" >&2
+  echo "ERROR: agent directory not found: $AGENT_PATH" >&2
   exit 1
 fi
 
-# Nombre por defecto: basename del directorio
+# Default name: basename of the directory
 if [[ -z "$AGENT_NAME" ]]; then
   AGENT_NAME="$(basename "$AGENT_ABS")"
 fi
 
-# Validar formato kebab-case
+# Validate kebab-case format
 KEBAB_RE='^[a-z][a-z0-9]*(-[a-z0-9]+)*$'
 if [[ ! "$AGENT_NAME" =~ $KEBAB_RE ]]; then
-  echo "ERROR: el nombre '$AGENT_NAME' no es kebab-case válido (ej: mi-agente, data-analytics)" >&2
+  echo "ERROR: name '$AGENT_NAME' is not valid kebab-case (e.g.: my-agent, data-analytics)" >&2
   exit 1
 fi
 
 OUTPUT_DIR="$AGENT_ABS/dist/claude_code/$AGENT_NAME"
-echo "==> Empaquetando '$AGENT_NAME' para Claude Code"
-echo "    Fuente : $AGENT_ABS"
-echo "    Destino: $OUTPUT_DIR"
+echo "==> Packaging '$AGENT_NAME' for Claude Code"
+echo "    Source : $AGENT_ABS"
+echo "    Target : $OUTPUT_DIR"
 
 # ---------------------------------------------------------------------------
-# Fase 1 — Preparación del output
+# Phase 1 — Output preparation
 # ---------------------------------------------------------------------------
 rm -rf "$OUTPUT_DIR"
 mkdir -p "$OUTPUT_DIR/.claude/skills"
 
 # ---------------------------------------------------------------------------
-# Fase 2 — CLAUDE.md
+# Phase 2 — CLAUDE.md
 # ---------------------------------------------------------------------------
 if [[ -f "$AGENT_ABS/AGENTS.md" ]]; then
   cp "$AGENT_ABS/AGENTS.md" "$OUTPUT_DIR/CLAUDE.md"
-  echo "    [2] CLAUDE.md copiado desde AGENTS.md"
+  echo "    [2] CLAUDE.md copied from AGENTS.md"
 elif [[ -f "$AGENT_ABS/CLAUDE.md" ]]; then
   cp "$AGENT_ABS/CLAUDE.md" "$OUTPUT_DIR/CLAUDE.md"
-  echo "    [2] CLAUDE.md copiado desde CLAUDE.md"
+  echo "    [2] CLAUDE.md copied from CLAUDE.md"
 else
-  echo "ERROR: no se encontró CLAUDE.md ni AGENTS.md en $AGENT_ABS" >&2
+  echo "ERROR: neither CLAUDE.md nor AGENTS.md found in $AGENT_ABS" >&2
   exit 1
 fi
 
 # ---------------------------------------------------------------------------
-# Fase 3 — .claude/settings.local.json
+# Phase 3 — .claude/settings.local.json
 # ---------------------------------------------------------------------------
 if [[ -f "$AGENT_ABS/.claude/settings.local.json" ]]; then
   cp "$AGENT_ABS/.claude/settings.local.json" "$OUTPUT_DIR/.claude/settings.local.json"
-  echo "    [3] .claude/settings.local.json copiado (real)"
+  echo "    [3] .claude/settings.local.json copied (real)"
 else
   cat > "$OUTPUT_DIR/.claude/settings.local.json" << 'EOF'
 {
@@ -93,15 +93,15 @@ else
   "enabledMcpjsonServers": ["stratio_data"]
 }
 EOF
-  echo "    [3] .claude/settings.local.json generado (template)"
+  echo "    [3] .claude/settings.local.json generated (template)"
 fi
 
 # ---------------------------------------------------------------------------
-# Fase 4 — .mcp.json
+# Phase 4 — .mcp.json
 # ---------------------------------------------------------------------------
 if [[ -f "$AGENT_ABS/.mcp.json" ]]; then
   cp "$AGENT_ABS/.mcp.json" "$OUTPUT_DIR/.mcp.json"
-  echo "    [4] .mcp.json copiado (real)"
+  echo "    [4] .mcp.json copied (real)"
 else
   cat > "$OUTPUT_DIR/.mcp.json" << 'EOF'
 {
@@ -118,11 +118,11 @@ else
   }
 }
 EOF
-  echo "    [4] .mcp.json generado (template)"
+  echo "    [4] .mcp.json generated (template)"
 fi
 
 # ---------------------------------------------------------------------------
-# Fase 5 — Skills (opcional)
+# Phase 5 — Skills (optional)
 # ---------------------------------------------------------------------------
 SKILLS_SRC=""
 if [[ -d "$AGENT_ABS/skills" ]]; then
@@ -137,7 +137,7 @@ fi
 
 if [[ -n "$SKILLS_SRC" ]]; then
   cp -r "$SKILLS_SRC/." "$OUTPUT_DIR/.claude/skills/"
-  # Normalizar: archivos .md sueltos → subcarpeta/SKILL.md
+  # Normalize: loose .md files → subfolder/SKILL.md
   for md_file in "$OUTPUT_DIR/.claude/skills/"*.md; do
     [[ -f "$md_file" ]] || continue
     skill_name="$(basename "$md_file" .md)"
@@ -145,35 +145,35 @@ if [[ -n "$SKILLS_SRC" ]]; then
     mv "$md_file" "$OUTPUT_DIR/.claude/skills/$skill_name/SKILL.md"
   done
   N_SKILLS=$(find "$OUTPUT_DIR/.claude/skills" -type f | wc -l)
-  echo "    [5] $N_SKILLS skill(s) copiadas desde $SKILLS_SRC"
+  echo "    [5] $N_SKILLS skill(s) copied from $SKILLS_SRC"
 else
-  echo "    [5] Sin skills (continuando sin error)"
+  echo "    [5] No skills (continuing without error)"
 fi
 
 # ---------------------------------------------------------------------------
-# Fase 5.1 — Shared skills (opcional)
+# Phase 5.1 — Shared skills (optional)
 # ---------------------------------------------------------------------------
 SHARED_GUIDES_NEEDED=()
 
 if [[ -f "$AGENT_ABS/shared-skills" ]]; then
   N_SHARED=0
   while IFS= read -r skill_name || [[ -n "$skill_name" ]]; do
-    # Ignorar lineas vacias y comentarios
+    # Ignore empty lines and comments
     [[ -z "$skill_name" || "$skill_name" == \#* ]] && continue
     skill_src="$MONOREPO_ROOT/shared-skills/$skill_name"
     skill_dst="$OUTPUT_DIR/.claude/skills/$skill_name"
     if [[ ! -d "$skill_src" ]]; then
-      echo "    WARN: shared skill '$skill_name' no encontrada en $skill_src — omitida" >&2
+      echo "    WARN: shared skill '$skill_name' not found in $skill_src — skipped" >&2
       continue
     fi
-    # Prioridad local: si ya existe en el output, no sobreescribir
+    # Local priority: if already exists in the output, do not overwrite
     if [[ -d "$skill_dst" ]]; then
-      echo "    [5.1] '$skill_name' omitida (version local tiene prioridad)"
+      echo "    [5.1] '$skill_name' skipped (local version takes priority)"
       continue
     fi
     cp -r "$skill_src" "$skill_dst"
     rm -f "$skill_dst/skill-guides"
-    # Copiar guides declarados DENTRO de la skill (autocontenida)
+    # Copy guides declared WITHIN the skill (self-contained)
     if [[ -f "$skill_src/skill-guides" ]]; then
       while IFS= read -r guide || [[ -n "$guide" ]]; do
         [[ -z "$guide" || "$guide" == \#* ]] && continue
@@ -183,14 +183,14 @@ if [[ -f "$AGENT_ABS/shared-skills" ]]; then
         elif [[ -f "$guide_src" ]]; then
           cp "$guide_src" "$skill_dst/$guide"
         else
-          echo "    WARN: shared guide '$guide' no encontrado — omitido" >&2
+          echo "    WARN: shared guide '$guide' not found — skipped" >&2
         fi
       done < "$skill_src/skill-guides"
-      # Actualizar referencias en la skill para que sean locales
+      # Update references in the skill to make them local
       find "$skill_dst" -type f -name '*.md' -exec sed -i 's|skills-guides/||g' {} \;
     fi
     N_SHARED=$((N_SHARED + 1))
-    # Acumular guides declarados en la skill
+    # Accumulate guides declared in the skill
     if [[ -f "$skill_src/skill-guides" ]]; then
       while IFS= read -r guide || [[ -n "$guide" ]]; do
         [[ -z "$guide" || "$guide" == \#* ]] && continue
@@ -198,12 +198,12 @@ if [[ -f "$AGENT_ABS/shared-skills" ]]; then
       done < "$skill_src/skill-guides"
     fi
   done < "$AGENT_ABS/shared-skills"
-  echo "    [5.1] $N_SHARED shared skill(s) incluidas"
+  echo "    [5.1] $N_SHARED shared skill(s) included"
 else
-  echo "    [5.1] Sin shared-skills declaradas (continuando sin error)"
+  echo "    [5.1] No shared-skills declared (continuing without error)"
 fi
 
-# Acumular guides declarados directamente por el agente
+# Accumulate guides declared directly by the agent
 if [[ -f "$AGENT_ABS/shared-guides" ]]; then
   while IFS= read -r guide || [[ -n "$guide" ]]; do
     [[ -z "$guide" || "$guide" == \#* ]] && continue
@@ -211,7 +211,7 @@ if [[ -f "$AGENT_ABS/shared-guides" ]]; then
   done < "$AGENT_ABS/shared-guides"
 fi
 
-# Copiar shared-skill-guides al output (deduplicando)
+# Copy shared-skill-guides to output (deduplicating)
 if [[ ${#SHARED_GUIDES_NEEDED[@]} -gt 0 ]]; then
   mkdir -p "$OUTPUT_DIR/skills-guides"
   declare -A _GUIDES_SEEN=()
@@ -225,26 +225,26 @@ if [[ ${#SHARED_GUIDES_NEEDED[@]} -gt 0 ]]; then
     elif [[ -f "$guide_src" ]]; then
       cp "$guide_src" "$OUTPUT_DIR/skills-guides/$guide"
     else
-      echo "    WARN: shared guide '$guide' no encontrado en $guide_src — omitido" >&2
+      echo "    WARN: shared guide '$guide' not found in $guide_src — skipped" >&2
       continue
     fi
     N_GUIDES=$((N_GUIDES + 1))
   done
-  echo "    [5.1] $N_GUIDES shared guide(s) copiados a skills-guides/"
+  echo "    [5.1] $N_GUIDES shared guide(s) copied to skills-guides/"
 fi
 
 # ---------------------------------------------------------------------------
-# Fase 5.5 — Output templates (opcional)
+# Phase 5.5 — Output templates (optional)
 # ---------------------------------------------------------------------------
 if [[ -d "$AGENT_ABS/output-templates" ]]; then
   mkdir -p "$OUTPUT_DIR/output"
   cp -r "$AGENT_ABS/output-templates/." "$OUTPUT_DIR/output/"
   N_TEMPLATES=$(find "$OUTPUT_DIR/output" -type f | wc -l)
-  echo "    [5.5] $N_TEMPLATES plantilla(s) copiadas desde output-templates/"
+  echo "    [5.5] $N_TEMPLATES template(s) copied from output-templates/"
 fi
 
 # ---------------------------------------------------------------------------
-# Fase 6 — rsync del resto de ficheros
+# Phase 6 — rsync remaining files
 # ---------------------------------------------------------------------------
 rsync -a \
   --exclude=README.md \
@@ -270,51 +270,58 @@ rsync -a \
   --exclude='*.pyc' \
   --exclude=.idea/ \
   --exclude=node_modules/ \
+  --exclude='*.es.md' \
+  --exclude='*.es.yaml' \
   "$AGENT_ABS/" "$OUTPUT_DIR/"
-echo "    [6] rsync completado"
+echo "    [6] rsync completed"
 
 # ---------------------------------------------------------------------------
-# Fase 6.1 — README de usuario
+# Phase 6.0.1 — Cleanup of residual i18n files
+# ---------------------------------------------------------------------------
+find "$OUTPUT_DIR" \( -name '*.es.md' -o -name '*.es.yaml' \) -delete 2>/dev/null || true
+
+# ---------------------------------------------------------------------------
+# Phase 6.1 — User README
 # ---------------------------------------------------------------------------
 if [[ -f "$AGENT_ABS/USER_README.md" ]]; then
   cp "$AGENT_ABS/USER_README.md" "$OUTPUT_DIR/README.md"
-  echo "    [6.1] README.md copiado desde USER_README.md"
+  echo "    [6.1] README.md copied from USER_README.md"
 fi
 
 # ---------------------------------------------------------------------------
-# Fase 7 — Reemplazos de texto (AGENTS.md → CLAUDE.md)
+# Phase 7 — Text replacements (AGENTS.md -> CLAUDE.md)
 # ---------------------------------------------------------------------------
 find "$OUTPUT_DIR" \
   -not -path '*/node_modules/*' -not -path '*/.venv/*' \
   -type f \( -name '*.md' -o -name '*.json' -o -name '*.sh' -o -name '*.py' -o -name '*.txt' \) \
   -exec sed -i 's/AGENTS\.md/CLAUDE.md/g' {} \;
-echo "    [7] Reemplazos AGENTS.md → CLAUDE.md aplicados"
+echo "    [7] Replacements AGENTS.md -> CLAUDE.md applied"
 
-# Sustituir placeholder de tool de preguntas por la tool de Claude Code
+# Replace question tool placeholder with the Claude Code tool
 find "$OUTPUT_DIR" \
   -not -path '*/node_modules/*' -not -path '*/.venv/*' \
   -type f \( -name '*.md' -o -name '*.json' -o -name '*.sh' -o -name '*.py' -o -name '*.txt' \) \
   -exec sed -i 's/{{TOOL_PREGUNTAS}}/ (`AskUserQuestion`)/g' {} \;
-echo "    [7b] Placeholder TOOL_PREGUNTAS → AskUserQuestion"
+echo "    [7b] Placeholder TOOL_PREGUNTAS -> AskUserQuestion"
 
 # ---------------------------------------------------------------------------
-# Fase 8 — Verificación de integridad
+# Phase 8 — Integrity verification
 # ---------------------------------------------------------------------------
-echo "    [8] Verificando integridad..."
+echo "    [8] Verifying integrity..."
 ERRORS=0
 
-# CLAUDE.md existe y no está vacío
+# CLAUDE.md exists and is not empty
 if [[ ! -s "$OUTPUT_DIR/CLAUDE.md" ]]; then
-  echo "    ERROR: CLAUDE.md no existe o está vacío" >&2
+  echo "    ERROR: CLAUDE.md does not exist or is empty" >&2
   ERRORS=$((ERRORS + 1))
 fi
 
-# Validar JSON con python3 si disponible
+# Validate JSON with python3 if available
 _validate_json() {
   local file="$1"
   if command -v python3 &>/dev/null; then
     if ! python3 -c "import json; json.load(open('$file'))" 2>/dev/null; then
-      echo "    ERROR: JSON inválido: $file" >&2
+      echo "    ERROR: invalid JSON: $file" >&2
       ERRORS=$((ERRORS + 1))
     fi
   fi
@@ -322,46 +329,46 @@ _validate_json() {
 _validate_json "$OUTPUT_DIR/.claude/settings.local.json"
 _validate_json "$OUTPUT_DIR/.mcp.json"
 
-# 0 ficheros con referencia a AGENTS.md
+# 0 files with reference to AGENTS.md
 REFS=$(grep -rl 'AGENTS\.md' "$OUTPUT_DIR" --include='*.md' --include='*.json' \
        --include='*.sh' --include='*.py' --include='*.txt' 2>/dev/null | wc -l) || true
 if [[ "$REFS" -gt 0 ]]; then
-  echo "    ERROR: $REFS fichero(s) aún contienen referencia a AGENTS.md:" >&2
+  echo "    ERROR: $REFS file(s) still contain reference to AGENTS.md:" >&2
   grep -rl 'AGENTS\.md' "$OUTPUT_DIR" --include='*.md' --include='*.json' \
        --include='*.sh' --include='*.py' --include='*.txt' 2>/dev/null >&2 || true
   ERRORS=$((ERRORS + 1))
 fi
 
-# Verificar que skills-guides referenciados desde CLAUDE.md existen
+# Verify that skills-guides referenced from CLAUDE.md exist
 if [[ -f "$OUTPUT_DIR/CLAUDE.md" ]]; then
   while IFS= read -r ref; do
     if [[ ! -f "$OUTPUT_DIR/$ref" ]]; then
-      echo "    ERROR: referencia rota en CLAUDE.md: $ref" >&2
+      echo "    ERROR: broken reference in CLAUDE.md: $ref" >&2
       ERRORS=$((ERRORS + 1))
     fi
   done < <(grep -oP 'skills-guides/[a-zA-Z0-9_.-]+\.md' "$OUTPUT_DIR/CLAUDE.md" | sort -u)
 fi
 
-# No debe haber fichero mcps
+# mcps file must not be present
 if [[ -f "$OUTPUT_DIR/mcps" ]]; then
-  echo "    ERROR: fichero mcps no debe estar presente en el output Claude Code" >&2
+  echo "    ERROR: mcps file must not be present in the Claude Code output" >&2
   ERRORS=$((ERRORS + 1))
 fi
 
-# Ningún directorio prohibido
+# No forbidden directories
 for FORBIDDEN in .opencode .agents opencode dist; do
   if [[ -d "$OUTPUT_DIR/$FORBIDDEN" ]]; then
-    echo "    ERROR: directorio prohibido encontrado: $FORBIDDEN" >&2
+    echo "    ERROR: forbidden directory found: $FORBIDDEN" >&2
     ERRORS=$((ERRORS + 1))
   fi
 done
 
-# Total de ficheros
+# Total files
 TOTAL=$(find "$OUTPUT_DIR" -type f | wc -l)
 
 if [[ "$ERRORS" -gt 0 ]]; then
-  echo "==> FALLO: $ERRORS error(es) de verificación" >&2
+  echo "==> FAILED: $ERRORS verification error(s)" >&2
   exit 1
 fi
 
-echo "==> OK — $TOTAL fichero(s) generados en $OUTPUT_DIR"
+echo "==> OK — $TOTAL file(s) generated in $OUTPUT_DIR"

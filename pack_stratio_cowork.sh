@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
-# pack_stratio_cowork.sh — Genera un ZIP compuesto formato agents/v1 para Stratio Cowork:
-#   metadata.yaml                   → manifiesto del bundle (agents/v1)
-#   {name}-opencode-agent.zip       → agente sin las shared skills declaradas
-#   {name}-shared-skills.zip        → shared skills del agente (autocontenidas, opcional)
-#   Resultado: dist/{name}-stratio-cowork.zip
+# pack_stratio_cowork.sh — Generates a composite ZIP in agents/v1 format for Stratio Cowork:
+#   metadata.yaml                   → bundle manifest (agents/v1)
+#   {name}-opencode-agent.zip       → agent without the declared shared skills
+#   {name}-shared-skills.zip        → agent's shared skills (self-contained, optional)
+#   Result: dist/{name}-stratio-cowork.zip
 #
-# Uso: bash pack_stratio_cowork.sh --agent <path> [--name <nombre-kebab>] [--version <semver>]
+# Usage: bash pack_stratio_cowork.sh --agent <path> [--name <kebab-name>] [--version <semver>]
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MONOREPO_ROOT="$SCRIPT_DIR"
 
 # ---------------------------------------------------------------------------
-# Fase 0 — Parseo y validación
+# Phase 0 — Parsing and validation
 # ---------------------------------------------------------------------------
 AGENT_PATH=""
 AGENT_NAME=""
@@ -23,84 +23,84 @@ while [[ $# -gt 0 ]]; do
     --agent)   AGENT_PATH="$2";   shift 2 ;;
     --name)    AGENT_NAME="$2";   shift 2 ;;
     --version) AGENT_VERSION="$2"; shift 2 ;;
-    *) echo "ERROR: argumento desconocido: $1" >&2
-       echo "Uso: bash pack_stratio_cowork.sh --agent <path> [--name <nombre-kebab>] [--version <semver>]" >&2
+    *) echo "ERROR: unknown argument: $1" >&2
+       echo "Usage: bash pack_stratio_cowork.sh --agent <path> [--name <kebab-name>] [--version <semver>]" >&2
        exit 1 ;;
   esac
 done
 
 if [[ -z "$AGENT_PATH" ]]; then
-  echo "ERROR: --agent es obligatorio" >&2
-  echo "Uso: bash pack_stratio_cowork.sh --agent <path> [--name <nombre-kebab>] [--version <semver>]" >&2
+  echo "ERROR: --agent is required" >&2
+  echo "Usage: bash pack_stratio_cowork.sh --agent <path> [--name <kebab-name>] [--version <semver>]" >&2
   exit 1
 fi
 
-# Resolver ruta absoluta
+# Resolve absolute path
 if [[ -d "$SCRIPT_DIR/$AGENT_PATH" ]]; then
   AGENT_ABS="$(cd "$SCRIPT_DIR/$AGENT_PATH" && pwd)"
 elif [[ -d "$AGENT_PATH" ]]; then
   AGENT_ABS="$(cd "$AGENT_PATH" && pwd)"
 else
-  echo "ERROR: directorio del agente no encontrado: $AGENT_PATH" >&2
+  echo "ERROR: agent directory not found: $AGENT_PATH" >&2
   exit 1
 fi
 
-# Nombre por defecto: basename del directorio
+# Default name: basename of the directory
 if [[ -z "$AGENT_NAME" ]]; then
   AGENT_NAME="$(basename "$AGENT_ABS")"
 fi
 
-# Validar formato kebab-case
+# Validate kebab-case format
 KEBAB_RE='^[a-z][a-z0-9]*(-[a-z0-9]+)*$'
 if [[ ! "$AGENT_NAME" =~ $KEBAB_RE ]]; then
-  echo "ERROR: el nombre '$AGENT_NAME' no es kebab-case válido (ej: mi-agente, data-analytics)" >&2
+  echo "ERROR: name '$AGENT_NAME' is not valid kebab-case (e.g.: my-agent, data-analytics)" >&2
   exit 1
 fi
 
-echo "==> Generando bundle Stratio Cowork (agents/v1) para '$AGENT_NAME'"
-echo "    Fuente : $AGENT_ABS"
+echo "==> Generating Stratio Cowork bundle (agents/v1) for '$AGENT_NAME'"
+echo "    Source : $AGENT_ABS"
 
 # ---------------------------------------------------------------------------
-# Fase 1 — Leer manifiesto de shared skills
+# Phase 1 — Read shared skills manifest
 # ---------------------------------------------------------------------------
 SHARED_SKILLS=()
 
 if [[ -f "$AGENT_ABS/shared-skills" ]]; then
   while IFS= read -r skill_name || [[ -n "$skill_name" ]]; do
     [[ -z "$skill_name" || "$skill_name" == \#* ]] && continue
-    # Solo incluir skills que realmente existen en shared-skills/
+    # Only include skills that actually exist in shared-skills/
     if [[ -d "$MONOREPO_ROOT/shared-skills/$skill_name" ]]; then
       SHARED_SKILLS+=("$skill_name")
     else
-      echo "    WARN: shared skill '$skill_name' no encontrada en shared-skills/ — omitida"
+      echo "    WARN: shared skill '$skill_name' not found in shared-skills/ — skipped"
     fi
   done < "$AGENT_ABS/shared-skills"
 fi
 
 if [[ ${#SHARED_SKILLS[@]} -eq 0 ]]; then
-  echo "    WARN: no hay shared skills declaradas para este agente"
+  echo "    WARN: no shared skills declared for this agent"
 fi
 
-echo "    [1] ${#SHARED_SKILLS[@]} shared skill(s) detectadas: ${SHARED_SKILLS[*]:-ninguna}"
+echo "    [1] ${#SHARED_SKILLS[@]} shared skill(s) detected: ${SHARED_SKILLS[*]:-none}"
 
 # ---------------------------------------------------------------------------
-# Fase 2 — Empaquetar agente completo con pack_opencode.sh
+# Phase 2 — Package full agent with pack_opencode.sh
 # ---------------------------------------------------------------------------
-echo "    [2] Ejecutando pack_opencode.sh..."
+echo "    [2] Running pack_opencode.sh..."
 bash "$MONOREPO_ROOT/pack_opencode.sh" --agent "$AGENT_ABS" --name "$AGENT_NAME"
 
 STAGING_FULL="$AGENT_ABS/dist/opencode/$AGENT_NAME"
 
 if [[ ! -d "$STAGING_FULL" ]]; then
-  echo "ERROR: staging de pack_opencode.sh no encontrado en $STAGING_FULL" >&2
+  echo "ERROR: pack_opencode.sh staging not found at $STAGING_FULL" >&2
   exit 1
 fi
-echo "    [2] Staging completo listo en $STAGING_FULL"
+echo "    [2] Full staging ready at $STAGING_FULL"
 
 # ---------------------------------------------------------------------------
-# Fase 3 — Clonar staging y eliminar shared skills del clon
+# Phase 3 — Clone staging and remove shared skills from the clone
 # ---------------------------------------------------------------------------
-echo "    [3] Clonando staging para versión sin shared skills..."
+echo "    [3] Cloning staging for version without shared skills..."
 STAGING_NO_SHARED=$(mktemp -d)
 trap 'rm -rf "$STAGING_NO_SHARED"' EXIT
 
@@ -112,26 +112,26 @@ for skill_name in "${SHARED_SKILLS[@]}"; do
   if [[ -d "$skill_dst" ]]; then
     rm -rf "$skill_dst"
     N_REMOVED=$((N_REMOVED + 1))
-    echo "    [3] Skill '$skill_name' eliminada del staging"
+    echo "    [3] Skill '$skill_name' removed from staging"
   else
-    echo "    [3] WARN: '$skill_name' no encontrada en el staging (posiblemente overrideada por local)"
+    echo "    [3] WARN: '$skill_name' not found in staging (possibly overridden by local)"
   fi
 done
 
-# Si skills-guides/ quedó vacío tras eliminar las shared skills, limpiarlo
+# If skills-guides/ became empty after removing shared skills, clean it up
 SKILLS_GUIDES_DIR="$STAGING_NO_SHARED/skills-guides"
 if [[ -d "$SKILLS_GUIDES_DIR" ]]; then
-  # Comprobar si las skills locales usan algún guide de skills-guides/
-  # Los guides de shared-skills están embebidos dentro de cada carpeta de skill,
-  # no en skills-guides/ — pero shared-guides del agente sí se copian ahí.
-  # Por tanto no tocamos skills-guides/: puede contener guides del agente.
-  echo "    [3] skills-guides/ conservado (puede contener guides propios del agente)"
+  # Check if local skills use any guide from skills-guides/
+  # Shared-skills guides are embedded within each skill folder,
+  # not in skills-guides/ — but agent's shared-guides are copied there.
+  # Therefore we leave skills-guides/ alone: it may contain agent-specific guides.
+  echo "    [3] skills-guides/ preserved (may contain agent-specific guides)"
 fi
 
-echo "    [3] $N_REMOVED skill(s) eliminadas del clon"
+echo "    [3] $N_REMOVED skill(s) removed from clone"
 
 # ---------------------------------------------------------------------------
-# Fase 4 — Sub-ZIP del agente sin shared skills
+# Phase 4 — Sub-ZIP of agent without shared skills
 # ---------------------------------------------------------------------------
 BUNDLE_STAGING=$(mktemp -d)
 trap 'rm -rf "$STAGING_NO_SHARED" "$BUNDLE_STAGING"' EXIT
@@ -139,16 +139,16 @@ trap 'rm -rf "$STAGING_NO_SHARED" "$BUNDLE_STAGING"' EXIT
 mkdir -p "$BUNDLE_STAGING"
 
 ZIP_NO_SHARED="${AGENT_NAME}-opencode-agent.zip"
-echo "    [4] Generando $ZIP_NO_SHARED..."
+echo "    [4] Generating $ZIP_NO_SHARED..."
 (cd "$STAGING_NO_SHARED" && zip -r "$BUNDLE_STAGING/$ZIP_NO_SHARED" . -q)
 ZIP_SIZE=$(du -sh "$BUNDLE_STAGING/$ZIP_NO_SHARED" | cut -f1)
-echo "    [4] $ZIP_NO_SHARED generado ($ZIP_SIZE)"
+echo "    [4] $ZIP_NO_SHARED generated ($ZIP_SIZE)"
 
 # ---------------------------------------------------------------------------
-# Fase 5 — Sub-ZIP de shared skills del agente
+# Phase 5 — Sub-ZIP of agent's shared skills
 # ---------------------------------------------------------------------------
 ZIP_SHARED="${AGENT_NAME}-shared-skills.zip"
-echo "    [5] Generando $ZIP_SHARED..."
+echo "    [5] Generating $ZIP_SHARED..."
 
 SKILLS_STAGING=$(mktemp -d)
 trap 'rm -rf "$STAGING_NO_SHARED" "$BUNDLE_STAGING" "$SKILLS_STAGING"' EXIT
@@ -163,7 +163,7 @@ for skill_name in "${SHARED_SKILLS[@]}"; do
   mkdir -p "$skill_dst"
   cp -r "$skill_src/." "$skill_dst/"
 
-  # Embeber guides declarados en skill-guides
+  # Embed guides declared in skill-guides
   if [[ -f "$skill_src/skill-guides" ]]; then
     while IFS= read -r guide || [[ -n "$guide" ]]; do
       [[ -z "$guide" || "$guide" == \#* ]] && continue
@@ -175,18 +175,21 @@ for skill_name in "${SHARED_SKILLS[@]}"; do
         cp "$guide_src" "$skill_dst/$guide"
         N_GUIDES_PACKED=$((N_GUIDES_PACKED + 1))
       else
-        echo "    WARN: guide '$guide' no encontrado — omitido"
+        echo "    WARN: guide '$guide' not found — skipped"
       fi
     done < "$skill_src/skill-guides"
   fi
 
-  # Eliminar el manifiesto skill-guides del output
+  # Remove the skill-guides manifest from output
   rm -f "$skill_dst/skill-guides"
 
   N_SKILLS_PACKED=$((N_SKILLS_PACKED + 1))
 done
 
-# Sustituciones de rutas
+# Cleanup of residual i18n files
+find "$SKILLS_STAGING" \( -name '*.es.md' -o -name '*.es.yaml' \) -delete 2>/dev/null || true
+
+# Path substitutions
 find "$SKILLS_STAGING" \
   -type f \( -name '*.md' -o -name '*.txt' \) \
   -exec sed -i 's|skills-guides/||g' {} \;
@@ -197,15 +200,15 @@ find "$SKILLS_STAGING" \
 if [[ $N_SKILLS_PACKED -gt 0 ]]; then
   (cd "$SKILLS_STAGING" && zip -r "$BUNDLE_STAGING/$ZIP_SHARED" . -q)
   ZIP_SIZE=$(du -sh "$BUNDLE_STAGING/$ZIP_SHARED" | cut -f1)
-  echo "    [5] $ZIP_SHARED generado ($N_SKILLS_PACKED skill(s), $N_GUIDES_PACKED guide(s)) ($ZIP_SIZE)"
+  echo "    [5] $ZIP_SHARED generated ($N_SKILLS_PACKED skill(s), $N_GUIDES_PACKED guide(s)) ($ZIP_SIZE)"
 else
-  echo "    [5] Sin shared skills — $ZIP_SHARED omitido"
+  echo "    [5] No shared skills — $ZIP_SHARED skipped"
 fi
 
 # ---------------------------------------------------------------------------
-# Fase 5.5 — Generar metadata.yaml (manifiesto agents/v1)
+# Phase 5.5 — Generate metadata.yaml (agents/v1 manifest)
 # ---------------------------------------------------------------------------
-echo "    [5.5] Generando metadata.yaml..."
+echo "    [5.5] Generating metadata.yaml..."
 
 METADATA_FILE="$BUNDLE_STAGING/metadata.yaml"
 
@@ -228,103 +231,103 @@ METADATA_FILE="$BUNDLE_STAGING/metadata.yaml"
   fi
 } > "$METADATA_FILE"
 
-# Inyectar metadatos adicionales del agente (si existen)
+# Inject additional agent metadata (if exists)
 COWORK_META_FILE="$AGENT_ABS/cowork-metadata.yaml"
 if [[ -f "$COWORK_META_FILE" ]]; then
   cat "$COWORK_META_FILE" >> "$METADATA_FILE"
-  echo "    [5.5] Metadatos de cowork-metadata.yaml inyectados"
+  echo "    [5.5] Metadata from cowork-metadata.yaml injected"
 else
-  echo "    [5.5] WARN: cowork-metadata.yaml no encontrado — sin metadatos adicionales"
+  echo "    [5.5] WARN: cowork-metadata.yaml not found — no additional metadata"
 fi
 
-echo "    [5.5] metadata.yaml generado"
+echo "    [5.5] metadata.yaml generated"
 
 # ---------------------------------------------------------------------------
-# Fase 6 — ZIP contenedor
+# Phase 6 — Container ZIP
 # ---------------------------------------------------------------------------
 mkdir -p "$MONOREPO_ROOT/dist"
 BUNDLE_ZIP="$MONOREPO_ROOT/dist/${AGENT_NAME}-stratio-cowork.zip"
 rm -f "$BUNDLE_ZIP"
 (cd "$BUNDLE_STAGING" && zip -r "$BUNDLE_ZIP" . -q)
 BUNDLE_SIZE=$(du -sh "$BUNDLE_ZIP" | cut -f1)
-echo "    [6] Bundle generado: dist/${AGENT_NAME}-stratio-cowork.zip ($BUNDLE_SIZE)"
+echo "    [6] Bundle generated: dist/${AGENT_NAME}-stratio-cowork.zip ($BUNDLE_SIZE)"
 
 # ---------------------------------------------------------------------------
-# Fase 7 — Verificación de integridad
+# Phase 7 — Integrity verification
 # ---------------------------------------------------------------------------
-echo "    [7] Verificando integridad..."
+echo "    [7] Verifying integrity..."
 ERRORS=0
 
-# Los tres ficheros obligatorios deben estar en el bundle
+# The three required files must be in the bundle
 BUNDLE_CONTENTS=$(unzip -Z1 "$BUNDLE_ZIP" 2>/dev/null) || true
 if ! echo "$BUNDLE_CONTENTS" | grep -q "^metadata\.yaml$"; then
-  echo "    ERROR: metadata.yaml no encontrado en el bundle" >&2
+  echo "    ERROR: metadata.yaml not found in the bundle" >&2
   ERRORS=$((ERRORS + 1))
 fi
 if ! echo "$BUNDLE_CONTENTS" | grep -q "$ZIP_NO_SHARED"; then
-  echo "    ERROR: $ZIP_NO_SHARED no encontrado en el bundle" >&2
+  echo "    ERROR: $ZIP_NO_SHARED not found in the bundle" >&2
   ERRORS=$((ERRORS + 1))
 fi
 if [[ ${#SHARED_SKILLS[@]} -gt 0 ]]; then
   if ! echo "$BUNDLE_CONTENTS" | grep -q "$ZIP_SHARED"; then
-    echo "    ERROR: $ZIP_SHARED no encontrado en el bundle" >&2
+    echo "    ERROR: $ZIP_SHARED not found in the bundle" >&2
     ERRORS=$((ERRORS + 1))
   fi
 fi
 
-# metadata.yaml debe declarar format_version agents/v1
+# metadata.yaml must declare format_version agents/v1
 METADATA_CONTENT=$(unzip -p "$BUNDLE_ZIP" metadata.yaml 2>/dev/null) || true
 if ! echo "$METADATA_CONTENT" | grep -q 'format_version:.*agents/v1'; then
-  echo "    ERROR: metadata.yaml no contiene format_version: \"agents/v1\"" >&2
+  echo "    ERROR: metadata.yaml does not contain format_version: \"agents/v1\"" >&2
   ERRORS=$((ERRORS + 1))
 fi
 if ! echo "$METADATA_CONTENT" | grep -q "agent_zip:.*${ZIP_NO_SHARED}"; then
-  echo "    ERROR: metadata.yaml no referencia correctamente agent_zip ($ZIP_NO_SHARED)" >&2
+  echo "    ERROR: metadata.yaml does not correctly reference agent_zip ($ZIP_NO_SHARED)" >&2
   ERRORS=$((ERRORS + 1))
 fi
 
-# Sub-ZIP del agente debe contener AGENTS.md
+# Agent sub-ZIP must contain AGENTS.md
 AGENT_ZIP_CONTENTS=$(unzip -Z1 "$BUNDLE_STAGING/$ZIP_NO_SHARED" 2>/dev/null) || true
 if ! echo "$AGENT_ZIP_CONTENTS" | grep -q 'AGENTS\.md'; then
-  echo "    ERROR: AGENTS.md no encontrado en $ZIP_NO_SHARED" >&2
+  echo "    ERROR: AGENTS.md not found in $ZIP_NO_SHARED" >&2
   ERRORS=$((ERRORS + 1))
 fi
 
-# Sub-ZIP del agente NO debe contener las shared skills eliminadas
+# Agent sub-ZIP must NOT contain the removed shared skills
 for skill_name in "${SHARED_SKILLS[@]}"; do
   if echo "$AGENT_ZIP_CONTENTS" | grep -q "\.opencode/skills/$skill_name/"; then
-    echo "    ERROR: skill '$skill_name' aún presente en $ZIP_NO_SHARED" >&2
+    echo "    ERROR: skill '$skill_name' still present in $ZIP_NO_SHARED" >&2
     ERRORS=$((ERRORS + 1))
   fi
 done
 
-# Sub-ZIP de skills debe contener SKILL.md por cada skill
+# Skills sub-ZIP must contain SKILL.md for each skill
 for skill_name in "${SHARED_SKILLS[@]}"; do
   SKILLS_ZIP_CONTENTS=$(unzip -Z1 "$BUNDLE_STAGING/$ZIP_SHARED" 2>/dev/null) || true
   if ! echo "$SKILLS_ZIP_CONTENTS" | grep -q "${skill_name}/SKILL\.md"; then
-    echo "    ERROR: ${skill_name}/SKILL.md no encontrado en $ZIP_SHARED" >&2
+    echo "    ERROR: ${skill_name}/SKILL.md not found in $ZIP_SHARED" >&2
     ERRORS=$((ERRORS + 1))
   fi
 done
 
-# Sin referencias residuales a skill-guides en el ZIP de skills
+# No residual references to skill-guides in the skills ZIP
 if [[ ${#SHARED_SKILLS[@]} -gt 0 ]]; then
   SKILLS_REFS=$(unzip -p "$BUNDLE_STAGING/$ZIP_SHARED" "*/SKILL.md" 2>/dev/null | grep -c 'skills-guides/' || true)
   if [[ "$SKILLS_REFS" -gt 0 ]]; then
-    echo "    ERROR: referencias residuales a skills-guides/ en $ZIP_SHARED" >&2
+    echo "    ERROR: residual references to skills-guides/ in $ZIP_SHARED" >&2
     ERRORS=$((ERRORS + 1))
   fi
 fi
 
 if [[ "$ERRORS" -gt 0 ]]; then
-  echo "==> FALLO: $ERRORS error(es) de verificación" >&2
+  echo "==> FAILED: $ERRORS verification error(s)" >&2
   exit 1
 fi
 
 echo "==> OK — dist/${AGENT_NAME}-stratio-cowork.zip"
-echo "    Contiene:"
-echo "      - metadata.yaml  (manifiesto agents/v1)"
-echo "      - $ZIP_NO_SHARED  (agente sin shared skills)"
+echo "    Contains:"
+echo "      - metadata.yaml  (agents/v1 manifest)"
+echo "      - $ZIP_NO_SHARED  (agent without shared skills)"
 if [[ ${#SHARED_SKILLS[@]} -gt 0 ]]; then
   echo "      - $ZIP_SHARED  (${#SHARED_SKILLS[@]} shared skill(s))"
 fi

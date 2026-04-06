@@ -1,33 +1,33 @@
-# Patrones Analiticos Adicionales
+# Additional Analytical Patterns
 
-Implementacion detallada de patrones cuyo trigger esta en sec 3.2 (tabla de patrones operacionalizados).
+Detailed implementation of patterns whose trigger is in sec 3.2 (operationalized patterns table).
 
-## Concentracion (Lorenz/Gini)
-- **Query MCP**: "metrica acumulada por [entidad] ordenada de mayor a menor"
-- **Python**: Ordenar desc, `cumsum() / total` para curva de Lorenz. Gini = 1 - 2 * area bajo curva (`np.trapz`)
-- **Visualizacion**: Curva de Lorenz (linea acumulada) + diagonal de igualdad perfecta + Gini anotado en leyenda. `legend_position="inside"` (<=3 items)
-- **Interpretacion**: Gini > 0.6 = alta concentracion ("El 20% de clientes genera el X% de ingresos")
+## Concentration (Lorenz/Gini)
+- **MCP Query**: "cumulative metric by [entity] sorted from highest to lowest"
+- **Python**: Sort desc, `cumsum() / total` for Lorenz curve. Gini = 1 - 2 * area under curve (`np.trapz`)
+- **Visualization**: Lorenz curve (cumulative line) + perfect equality diagonal + Gini annotated in legend. `legend_position="inside"` (<=3 items)
+- **Interpretation**: Gini > 0.6 = high concentration ("The top 20% of customers generate X% of revenue")
 
-## Analisis de mix
-- **Query MCP**: "metrica desglosada por componentes (volumen, precio unitario) en periodo A y periodo B"
-- **Python**: Descomponer delta total en: efecto volumen (Δvol × precio_base), efecto precio (Δprecio × vol_base), efecto mix (Δvol × Δprecio)
-- **Visualizacion**: Waterfall chart con contribucion de cada factor al cambio total
-- **Interpretacion**: "El crecimiento de €X se explica en un Y% por volumen y un Z% por precio"
+## Mix analysis
+- **MCP Query**: "metric broken down by components (volume, unit price) in period A and period B"
+- **Python**: Decompose total delta into: volume effect (delta_vol x base_price), price effect (delta_price x base_vol), mix effect (delta_vol x delta_price)
+- **Visualization**: Waterfall chart with contribution of each factor to total change
+- **Interpretation**: "The EUR X growth is explained Y% by volume and Z% by price"
 
-## Indexacion (base 100)
-- **Query MCP**: "metricas [mensuales] por [dimension] del [periodo]"
-- **Python**: `(serie / serie.iloc[0]) * 100` por cada grupo. Permite comparar evoluciones relativas
-- **Visualizacion**: Line chart con todas las series partiendo de 100 en el periodo base. `legend_position="bottom"` (multiples series)
-- **Interpretacion**: "Desde base, la categoria A crecio un 45% mientras B solo un 12%"
+## Indexing (base 100)
+- **MCP Query**: "metrics [monthly] by [dimension] for [period]"
+- **Python**: `(series / series.iloc[0]) * 100` per group. Allows comparing relative evolutions
+- **Visualization**: Line chart with all series starting at 100 in the base period. `legend_position="bottom"` (multiple series)
+- **Interpretation**: "Since the base period, category A grew 45% while B grew only 12%"
 
-## Desviacion vs referencia
-- **Query MCP**: "metrica por [dimension]", calcular media o buscar target en knowledge
-- **Python**: `desviacion = valor - referencia` por categoria, ordenar
-- **Visualizacion**: Bar chart divergente (horizontal) centrado en la referencia (0). Positivos a derecha, negativos a izquierda. Sin leyenda (cada barra es su categoria)
-- **Interpretacion**: "5 de 12 regiones superan la media. La mayor desviacion positiva es X (+23%)"
+## Deviation vs reference
+- **MCP Query**: "metric by [dimension]", calculate average or search for target in knowledge
+- **Python**: `deviation = value - reference` per category, sort
+- **Visualization**: Diverging bar chart (horizontal) centered on the reference (0). Positive to the right, negative to the left. No legend (each bar is its own category)
+- **Interpretation**: "5 of 12 regions exceed the average. The largest positive deviation is X (+23%)"
 
-## Analisis gap
-- **Query MCP**: "metrica actual y objetivo por [dimension]"
-- **Python**: `gap = target - actual`, `pct_gap = gap / target * 100`, ordenar por gap descendente
-- **Visualizacion**: Lollipop chart (punto = actual, linea hasta target) o bullet chart por dimension
-- **Interpretacion**: "La mayor brecha esta en X (€45K, 23% del target). Cerrar las 3 mayores brechas aporta €120K"
+## Gap analysis
+- **MCP Query**: "actual metric and target by [dimension]"
+- **Python**: `gap = target - actual`, `pct_gap = gap / target * 100`, sort by gap descending
+- **Visualization**: Lollipop chart (dot = actual, line to target) or bullet chart by dimension
+- **Interpretation**: "The largest gap is in X (EUR45K, 23% of target). Closing the top 3 gaps contributes EUR120K"

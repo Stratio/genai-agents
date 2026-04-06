@@ -111,11 +111,11 @@ class DOCXGenerator:
 
         # Sections
         sections = [
-            ("Resumen Ejecutivo", executive_summary),
-            ("Metodologia", methodology),
-            ("Datos y Fuentes", data_section),
-            ("Analisis", analysis),
-            ("Conclusiones", conclusions),
+            ("Executive Summary", executive_summary),
+            ("Methodology", methodology),
+            ("Data and Sources", data_section),
+            ("Analysis", analysis),
+            ("Conclusions", conclusions),
         ]
         first_section_rendered = False
         for heading, content in sections:
@@ -274,10 +274,10 @@ class DOCXGenerator:
         # Metadata
         meta_lines = []
         if author:
-            meta_lines.append(f"Autor: {author}")
+            meta_lines.append(f"Author: {author}")
         if domain:
-            meta_lines.append(f"Dominio: {domain}")
-        meta_lines.append(f"Fecha: {date.today().strftime('%d/%m/%Y')}")
+            meta_lines.append(f"Domain: {domain}")
+        meta_lines.append(f"Date: {date.today().strftime('%d/%m/%Y')}")
 
         for line in meta_lines:
             meta_para = doc.add_paragraph()
@@ -369,7 +369,7 @@ class DOCXGenerator:
             img_para.paragraph_format.keep_with_next = True
             img_para.paragraph_format.keep_together = True
         else:
-            p = doc.add_paragraph(f"[Imagen no encontrada: {path}]")
+            p = doc.add_paragraph(f"[Image not found: {path}]")
             p.runs[0].font.italic = True
             p.runs[0].font.color.rgb = RGBColor(150, 150, 150)
             p.paragraph_format.keep_with_next = True

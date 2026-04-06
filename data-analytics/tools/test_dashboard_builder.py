@@ -81,9 +81,9 @@ class TestBasicBuild:
         assert 'name="author"' in html
         assert "Test Author" in html
 
-    def test_build_default_lang_es(self, builder):
+    def test_build_default_lang_en(self, builder):
         html = builder.build()
-        assert 'lang="es"' in html
+        assert 'lang="en"' in html
 
     def test_build_custom_lang(self):
         db = DashboardBuilder(title="Test", lang="en")
@@ -97,15 +97,15 @@ class TestBasicBuild:
 
 class TestFilters:
     def test_add_select_filter(self, builder):
-        builder.add_filter("region", "Region", options=["Norte", "Sur"])
+        builder.add_filter("region", "Region", options=["North", "South"])
         html = builder.build()
         assert 'id="filter-region"' in html
-        assert "Norte" in html
-        assert "Sur" in html
+        assert "North" in html
+        assert "South" in html
         assert 'value="__all__"' in html
 
     def test_add_date_filter(self, builder):
-        builder.add_filter("period", "Periodo", filter_type="date")
+        builder.add_filter("period", "Period", filter_type="date")
         html = builder.build()
         assert 'type="date"' in html
         assert 'data-filter-role="start"' in html
@@ -120,7 +120,7 @@ class TestFilters:
         builder.add_filter("x", "X", options=["A"])
         html = builder.build()
         assert "resetFilters()" in html
-        assert "Limpiar filtros" in html
+        assert "Clear filters" in html
 
 
 # ---------------------------------------------------------------------------
@@ -129,11 +129,11 @@ class TestFilters:
 
 class TestKPIs:
     def test_add_kpi(self, builder):
-        builder.add_kpi("revenue", "Ingresos", "1.2M", change=15, prefix="EUR ")
+        builder.add_kpi("revenue", "Revenue", "1.2M", change=15, prefix="EUR ")
         html = builder.build()
         assert 'data-kpi-id="revenue"' in html
         assert "1.2M" in html
-        assert "Ingresos" in html
+        assert "Revenue" in html
         assert "EUR" in html
         assert "+15%" in html
 
@@ -161,7 +161,7 @@ class TestKPIs:
 
 class TestSections:
     def test_add_chart_section(self, builder, mock_plotly_fig):
-        builder.add_chart_section("sales", "Ventas", mock_plotly_fig, nav_label="Sales")
+        builder.add_chart_section("sales", "Sales", mock_plotly_fig, nav_label="Sales")
         html = builder.build()
         assert 'id="sales"' in html
         assert "mock chart" in html
@@ -169,7 +169,7 @@ class TestSections:
         mock_plotly_fig.to_html.assert_called_once()
 
     def test_add_html_section(self, builder):
-        builder.add_html_section("notes", "Notas", "<p>Hello</p>", nav_label="Notes")
+        builder.add_html_section("notes", "Notes", "<p>Hello</p>", nav_label="Notes")
         html = builder.build()
         assert 'id="notes"' in html
         assert "<p>Hello</p>" in html
@@ -270,12 +270,12 @@ class TestTables:
 
 class TestDataEmbedding:
     def test_set_data_embedded_as_json(self, builder):
-        data = {"sales": [{"region": "Norte", "amount": 100}]}
+        data = {"sales": [{"region": "North", "amount": 100}]}
         builder.set_data(data)
         html = builder.build()
         assert "DASHBOARD_DATA" in html
         # Verify the JSON is valid by finding it in the HTML
-        assert '"region": "Norte"' in html or '"region":"Norte"' in html
+        assert '"region": "North"' in html or '"region":"North"' in html
 
     def test_empty_data(self, builder):
         html = builder.build()

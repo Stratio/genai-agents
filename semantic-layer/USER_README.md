@@ -1,67 +1,67 @@
 # Semantic Layer Builder Agent
 
-Agente especialista en construccion y mantenimiento de capas semanticas en Stratio Data Governance.
+An agent specialized in building and maintaining semantic layers in Stratio Data Governance.
 
-## Que es este agente
+## What is this agent
 
-Semantic Layer Builder te guia en la creacion, mantenimiento y publicacion de los artefactos de gobernanza que componen la capa semantica de un dominio de datos. Trabaja con un pipeline de 5 fases — desde la descripcion tecnica de tablas hasta la generacion de terminos semanticos de negocio — y puede ejecutar cada fase de forma independiente o como un pipeline completo.
+Semantic Layer Builder guides you in the creation, maintenance, and publication of the governance artifacts that compose the semantic layer of a data domain. It works with a 5-phase pipeline — from technical table descriptions to the generation of business semantic terms — and can execute each phase independently or as a complete pipeline.
 
-El agente no ejecuta queries de datos ni genera ficheros en disco. Su output es la interaccion directa con las herramientas de gobernanza y resumenes en chat.
+The agent does not execute data queries or generate files on disk. Its output is direct interaction with the governance tools and summaries in chat.
 
-## Capacidades
+## Capabilities
 
-- Construir capas semanticas completas con un pipeline guiado de 5 fases
-- Generar descripciones tecnicas automaticas de tablas y columnas
-- Crear y gestionar ontologias con planificacion interactiva
-- Crear vistas de negocio a partir de ontologias existentes
-- Generar y actualizar SQL mappings para vistas de negocio
-- Crear terminos semanticos de negocio
-- Gestionar business terms con relaciones a activos de datos
-- Crear colecciones de datos (dominios tecnicos) desde busquedas en el diccionario
-- Diagnosticar el estado de la capa semantica de un dominio
-- Leer ficheros locales (.owl, .ttl, CSV, documentos) para enriquecer la planificacion
+- Build complete semantic layers with a guided 5-phase pipeline
+- Generate automatic technical descriptions of tables and columns
+- Create and manage ontologies with interactive planning
+- Create business views from existing ontologies
+- Generate and update SQL mappings for business views
+- Create business semantic terms
+- Manage business terms with relationships to data assets
+- Create data collections (technical domains) from dictionary searches
+- Diagnose the status of a domain's semantic layer
+- Read local files (.owl, .ttl, CSV, documents) to enrich planning
 
-## Que puedes preguntarle
+## What you can ask
 
-### Pipeline completo
-- "Construye la capa semantica del dominio clientes"
-- "Quiero crear la capa semantica para el dominio de facturacion desde cero"
+### Full pipeline
+- "Build the semantic layer for the customers domain"
+- "I want to create the semantic layer for the billing domain from scratch"
 
-### Fases individuales
-- "Genera las descripciones tecnicas de las tablas del dominio ventas"
-- "Crea una ontologia para el dominio de clientes"
-- "Crea las vistas de negocio a partir de la ontologia existente"
-- "Actualiza los SQL mappings de las vistas del dominio"
-- "Genera los terminos semanticos para las vistas publicadas"
+### Individual phases
+- "Generate the technical descriptions of the tables in the sales domain"
+- "Create an ontology for the customers domain"
+- "Create the business views from the existing ontology"
+- "Update the SQL mappings for the domain's views"
+- "Generate the semantic terms for the published views"
 
-### Gestion de artefactos
-- "Crea un business term para Customer Lifetime Value"
-- "Crea una coleccion de datos con las tablas de facturacion"
-- "Publica las vistas de negocio del dominio Y"
+### Artifact management
+- "Create a business term for Customer Lifetime Value"
+- "Create a data collection with the billing tables"
+- "Publish the business views for domain Y"
 
-### Exploracion y diagnostico
-- "Cual es el estado de la capa semantica del dominio X?"
-- "Que tablas hay sobre clientes en el diccionario de datos?"
-- "Que dominios de datos hay disponibles?"
+### Exploration and diagnostics
+- "What is the status of the semantic layer for domain X?"
+- "What tables are there about customers in the data dictionary?"
+- "What data domains are available?"
 
-## Skills disponibles
+## Available skills
 
-| Comando | Descripcion |
+| Command | Description |
 |---------|-------------|
-| `/build-semantic-layer` | Pipeline completo de 5 fases para construir la capa semantica de un dominio |
-| `/generate-technical-terms` | Generar descripciones tecnicas automaticas de tablas y columnas |
-| `/create-ontology` | Crear, ampliar o eliminar clases de ontologia con planificacion interactiva |
-| `/create-business-views` | Crear, regenerar o eliminar vistas de negocio desde una ontologia |
-| `/create-sql-mappings` | Crear o actualizar SQL mappings para vistas de negocio existentes |
-| `/create-semantic-terms` | Generar terminos semanticos de negocio para las vistas de un dominio |
-| `/manage-business-terms` | Crear business terms con relaciones a activos de datos |
-| `/create-data-collection` | Buscar tablas en el diccionario y crear una nueva coleccion de datos |
+| `/build-semantic-layer` | Complete 5-phase pipeline to build the semantic layer of a domain |
+| `/generate-technical-terms` | Generate automatic technical descriptions of tables and columns |
+| `/create-ontology` | Create, extend, or delete ontology classes with interactive planning |
+| `/create-business-views` | Create, regenerate, or delete business views from an ontology |
+| `/create-sql-mappings` | Create or update SQL mappings for existing business views |
+| `/create-semantic-terms` | Generate business semantic terms for the views of a domain |
+| `/manage-business-terms` | Create business terms with relationships to data assets |
+| `/create-data-collection` | Search tables in the dictionary and create a new data collection |
 
-## Conexiones necesarias
+## Required connections
 
-- **MCP de gobernanza**: creacion y gestion de artefactos semanticos (ontologias, vistas, terminos, business terms)
-- **MCP de datos**: exploracion de dominios y diccionario de datos
+- **Governance MCP**: creation and management of semantic artifacts (ontologies, views, terms, business terms)
+- **Data MCP**: exploration of domains and data dictionary
 
-## Primeros pasos
+## Getting started
 
-Inicia el agente y pregunta: "Cual es el estado de la capa semantica del dominio X?"
+Start the agent and ask: "What is the status of the semantic layer for domain X?"
