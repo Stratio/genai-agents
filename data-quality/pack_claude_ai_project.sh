@@ -33,6 +33,12 @@ cp AGENTS.md "$PROJECT_DIR/CLAUDE.md"
 cp requirements.txt "$PROJECT_DIR/requirements.txt"
 cp setup_env.sh "$PROJECT_DIR/setup_env.sh"
 
+# --- 1b. README de usuario ---
+if [ -f "USER_README.md" ]; then
+  cp USER_README.md "$PROJECT_DIR/README.md"
+  echo "  README.md copiado desde USER_README.md"
+fi
+
 # --- 2. skills-guides/ → prefijo skills-guides_ ---
 echo "Copiando skills-guides..."
 # Leer shared-guides del agente para saber que guides incluir

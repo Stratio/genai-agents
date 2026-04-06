@@ -248,6 +248,7 @@ fi
 # ---------------------------------------------------------------------------
 rsync -a \
   --exclude=README.md \
+  --exclude=USER_README.md \
   --exclude=mcps \
   --exclude=CLAUDE.md \
   --exclude=AGENTS.md \
@@ -271,6 +272,14 @@ rsync -a \
   --exclude=node_modules/ \
   "$AGENT_ABS/" "$OUTPUT_DIR/"
 echo "    [6] rsync completado"
+
+# ---------------------------------------------------------------------------
+# Fase 6.1 — README de usuario
+# ---------------------------------------------------------------------------
+if [[ -f "$AGENT_ABS/USER_README.md" ]]; then
+  cp "$AGENT_ABS/USER_README.md" "$OUTPUT_DIR/README.md"
+  echo "    [6.1] README.md copiado desde USER_README.md"
+fi
 
 # ---------------------------------------------------------------------------
 # Fase 7 — Reemplazos de texto (AGENTS.md → CLAUDE.md)

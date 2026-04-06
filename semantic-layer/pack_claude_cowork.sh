@@ -235,6 +235,12 @@ echo "Generando CLAUDE.md desde AGENTS.md..."
 sed 's|`skills-guides/stratio-semantic-layer-tools\.md`|`skills/stratio-semantic-layer/stratio-semantic-layer-tools.md`|g' AGENTS.md > "$COWORK_DIR/CLAUDE.md"
 sed -i 's/{{TOOL_PREGUNTAS}}/ (`AskUserQuestion`)/g' "$COWORK_DIR/CLAUDE.md"
 
+# --- README de usuario ---
+if [ -f "USER_README.md" ]; then
+  cp USER_README.md "$COWORK_DIR/README.md"
+  echo "  README.md copiado desde USER_README.md"
+fi
+
 # ============================================================
 # Paso 3: Limpiar build temporal
 # ============================================================

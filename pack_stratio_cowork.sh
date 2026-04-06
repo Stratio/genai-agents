@@ -228,6 +228,15 @@ METADATA_FILE="$BUNDLE_STAGING/metadata.yaml"
   fi
 } > "$METADATA_FILE"
 
+# Inyectar metadatos adicionales del agente (si existen)
+COWORK_META_FILE="$AGENT_ABS/cowork-metadata.yaml"
+if [[ -f "$COWORK_META_FILE" ]]; then
+  cat "$COWORK_META_FILE" >> "$METADATA_FILE"
+  echo "    [5.5] Metadatos de cowork-metadata.yaml inyectados"
+else
+  echo "    [5.5] WARN: cowork-metadata.yaml no encontrado — sin metadatos adicionales"
+fi
+
 echo "    [5.5] metadata.yaml generado"
 
 # ---------------------------------------------------------------------------
