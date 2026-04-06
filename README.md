@@ -25,8 +25,11 @@ Scripts at the monorepo root to package any agent in the target platform format:
 | `pack_shared_skills.sh` | All (standalone skills) | `dist/shared-skills.zip` or `dist/{skill}.zip` |
 
 ```bash
-# Package data-analytics for Claude Code
+# Package data-analytics for Claude Code (English, default)
 bash pack_claude_code.sh --agent data-analytics
+
+# Package data-analytics for Claude Code in Spanish
+bash pack_claude_code.sh --agent data-analytics --lang es
 
 # Package data-analytics for OpenCode with a custom name
 bash pack_opencode.sh --agent data-analytics --name my-agent
@@ -35,7 +38,7 @@ bash pack_opencode.sh --agent data-analytics --name my-agent
 bash pack_stratio_cowork.sh --agent semantic-layer
 ```
 
-The name must be kebab-case. If omitted, the basename of the agent directory is used. The generated directories are excluded from the repository (`.gitignore`).
+All pack scripts accept `--lang <code>` to generate output in a specific language. Without `--lang`, English is used. With `--lang es`, the output goes to `dist/es/{format}/{name}/` for traceability. The name must be kebab-case. If omitted, the basename of the agent directory is used. The generated directories are excluded from the repository (`.gitignore`).
 
 `pack_stratio_cowork.sh` generates a composite ZIP with two sub-ZIPs designed for deployment in Stratio Cowork: one with the agent without its shared skills, and another with the shared skills separately (to distribute them independently from the agent). It also includes the agent's `mcps` file at the bundle root if it exists (see [Configure external tools](#4-configure-external-tools-mcps)).
 
@@ -43,66 +46,45 @@ The name must be kebab-case. If omitted, the basename of the agent directory is 
 
 ### Output structure (`make package`)
 
-All artifacts are generated under `dist/`, both at agent level (intermediates) and at root level (final versioned zips):
+All artifacts are generated under `dist/`, both at agent level (intermediates) and at root level (final versioned zips). `make package` generates artifacts for every language in the `languages` file:
 
 ```
 genai-agents/
-  dist/                                         # Final versioned ZIPs
-    data-analytics-claude-code-{v}.zip
+  dist/                                         # Final versioned ZIPs (EN + ES)
+    data-analytics-claude-code-{v}.zip          # English
+    data-analytics-claude-code-es-{v}.zip       # Spanish
     data-analytics-opencode-{v}.zip
-    data-analytics-stratio-cowork.zip            # Stratio Cowork bundle (agent + shared skills)
-    data-analytics-light-claude-code-{v}.zip
-    data-analytics-light-opencode-{v}.zip
-    data-analytics-light-claude-cowork-{v}.zip
-    data-analytics-light-claude-ai-project-{v}.zip
-    semantic-layer-claude-code-{v}.zip
-    semantic-layer-opencode-{v}.zip
-    semantic-layer-claude-cowork-{v}.zip
-    semantic-layer-claude-ai-project-{v}.zip
-    semantic-layer-stratio-cowork.zip            # Stratio Cowork bundle (agent + shared skills)
-    data-quality-claude-code-{v}.zip
-    data-quality-opencode-{v}.zip
-    data-quality-claude-cowork-{v}.zip
-    data-quality-claude-ai-project-{v}.zip
-    data-quality-stratio-cowork-{v}.zip
-    shared-skills-{v}.zip                        # All shared skills together
-    shared-skill-propose-knowledge-{v}.zip       # Individual skill
-    shared-skill-explore-data-{v}.zip            # Individual skill
-    shared-skill-stratio-data-{v}.zip            # Individual skill
-    shared-skill-stratio-semantic-layer-{v}.zip  # Individual skill
-    shared-skill-generate-technical-terms-{v}.zip
-    shared-skill-create-ontology-{v}.zip
-    shared-skill-create-business-views-{v}.zip
-    shared-skill-create-sql-mappings-{v}.zip
-    shared-skill-create-semantic-terms-{v}.zip
-    shared-skill-manage-business-terms-{v}.zip
-    shared-skill-create-data-collection-{v}.zip
+    data-analytics-opencode-es-{v}.zip
+    data-analytics-stratio-cowork-{v}.zip
+    data-analytics-stratio-cowork-es-{v}.zip
+    ...                                         # Same pattern for all agents
+    shared-skills-{v}.zip
+    shared-skills-es-{v}.zip
+    shared-skill-explore-data-{v}.zip
+    shared-skill-explore-data-es-{v}.zip
+    ...                                         # Same pattern for all shared skills
 
   data-analytics/
-    dist/                                       # Intermediate artifacts
+    dist/                                       # Intermediate artifacts (EN)
       claude_code/data-analytics/
       opencode/data-analytics/
+      es/                                       # Intermediate artifacts (ES)
+        claude_code/data-analytics/
+        opencode/data-analytics/
 
   data-analytics-light/
-    dist/                                       # Intermediate artifacts
+    dist/                                       # Intermediate artifacts (EN)
       claude_code/data-analytics-light/
       opencode/data-analytics-light/
       claude_cowork/data-analytics-light/
       claude_ai_projects/data-analytics-light/
+      es/                                       # Intermediate artifacts (ES)
+        claude_code/data-analytics-light/
+        opencode/data-analytics-light/
+        claude_cowork/data-analytics-light/
+        claude_ai_projects/data-analytics-light/
 
-  semantic-layer/
-    dist/                                       # Intermediate artifacts
-      claude_code/semantic-layer/
-      opencode/semantic-layer/
-      claude_cowork/semantic-layer/
-      claude_ai_projects/semantic-layer/
-
-  data-quality/
-    dist/                                       # Intermediate artifacts
-      claude_code/data-quality/
-      opencode/data-quality/
-      claude_cowork/data-quality/
-      claude_ai_projects/data-quality/
+  ...                                           # Same pattern for semantic-layer, data-quality
 ```
 
 `make clean` removes all `dist/` directories (root + agents).
@@ -187,17 +169,19 @@ If the agent has a skill in `skills/` with the same name, the local version take
 
 ### Creating a new shared skill
 
-1. Create the folder and `SKILL.md` (in English) in `shared-skills/`:
+1. Create the folder and `SKILL.md` (in English) in `shared-skills/`, and the Spanish translation in `es/`:
 
    ```
    shared-skills/
    └── my-skill/
        ├── SKILL.md       # Skill definition in English (self-contained or nearly so)
-       ├── SKILL.es.md    # Spanish translation
        └── skill-guides   # (Optional) List of shared-skill-guides it needs
+   es/shared-skills/
+   └── my-skill/
+       └── SKILL.md       # Spanish translation
    ```
 
-2. If the skill needs external guides, add the files in `shared-skill-guides/` (with their `.es.md` variants) and list them in `skill-guides`:
+2. If the skill needs external guides, add the files in `shared-skill-guides/` (with their counterparts in `es/shared-skill-guides/`) and list them in `skill-guides`:
 
    ```
    # shared-skills/my-skill/skill-guides
@@ -212,7 +196,15 @@ A shared skill should be as self-contained as possible: no dependencies on Pytho
 
 ## Internationalization (i18n)
 
-The monorepo supports multiple languages. **English is the primary language** — files without a language suffix contain English content. Secondary languages use a two-letter suffix before the extension (e.g., `.es.md` for Spanish, `.es.yaml`).
+The monorepo supports multiple languages. **English is the primary language** — files in the main tree contain English content. Translations live in a language overlay directory at the root (e.g., `es/` for Spanish) that mirrors the source tree structure:
+
+```
+genai-agents/
+  shared-skills/explore-data/SKILL.md       # English (primary)
+  es/shared-skills/explore-data/SKILL.md     # Spanish (overlay)
+  data-analytics/AGENTS.md                   # English
+  es/data-analytics/AGENTS.md                # Spanish
+```
 
 Supported languages are listed in the `languages` file at the root.
 
@@ -220,26 +212,38 @@ Supported languages are listed in the `languages` file at the root.
 
 All content files that the agent presents to the user or uses as instructions:
 
-| File type | Example | Translated? |
-|-----------|---------|-------------|
-| Agent instructions | `AGENTS.md` / `AGENTS.es.md` | Yes |
-| Skills | `SKILL.md` / `SKILL.es.md` | Yes |
-| Skill sub-guides | `analytical-patterns.md` / `.es.md` | Yes |
-| Shared skill guides | `stratio-data-tools.md` / `.es.md` | Yes |
-| User READMEs | `USER_README.md` / `.es.md` | Yes |
-| Developer READMEs | `README.md` / `.es.md` | Yes |
-| Cowork metadata | `cowork-metadata.yaml` / `.es.yaml` | Yes |
-| Output templates | `MEMORY.md` / `.es.md` | Yes |
-| Python code, HTML, CSS | `tools/*.py`, `templates/` | No |
-| Config files | `.mcp.json`, `opencode.json` | No |
-| Manifests | `shared-skills`, `skill-guides` | No |
-| Shell scripts | `pack_*.sh`, `bin/*.sh` | No |
+| File type | English (main tree) | Spanish (es/ overlay) | Translated? |
+|-----------|--------------------|-----------------------|-------------|
+| Agent instructions | `data-analytics/AGENTS.md` | `es/data-analytics/AGENTS.md` | Yes |
+| Skills | `skills/analyze/SKILL.md` | `es/.../skills/analyze/SKILL.md` | Yes |
+| Skill sub-guides | `analytical-patterns.md` | `es/.../analytical-patterns.md` | Yes |
+| Shared skill guides | `shared-skill-guides/*.md` | `es/shared-skill-guides/*.md` | Yes |
+| User READMEs | `USER_README.md` | `es/.../USER_README.md` | Yes |
+| Developer READMEs | `README.md` (agents) | `es/.../README.md` | Yes |
+| Cowork metadata | `cowork-metadata.yaml` | `es/.../cowork-metadata.yaml` | Yes |
+| Output templates | `output-templates/*.md` | `es/.../output-templates/*.md` | Yes |
+| Python code, HTML, CSS | `tools/*.py`, `templates/` | — | No |
+| Config files | `.mcp.json`, `opencode.json` | — | No |
+| Manifests | `shared-skills`, `skill-guides` | — | No |
+| Shell scripts | `pack_*.sh`, `bin/*.sh` | — | No |
 
 Skill and folder names are **technical identifiers** and stay in English regardless of language.
 
 ### Packaging by language
 
-`bin/package.sh` builds artifacts for every language declared in `languages`. For non-primary languages, it uses `bin/resolve-lang.sh` to create a temporary tree where `.es.md` replaces `.md`, then runs the pack scripts unchanged. Artifact naming:
+All pack scripts accept `--lang <code>` to generate output in a specific language. Without `--lang`, English is used. For non-English languages, the script resolves content from the `es/` overlay via `bin/resolve-lang.sh` internally. Intermediate files go to `dist/es/...` for traceability.
+
+```bash
+# English (default)
+bash pack_claude_code.sh --agent data-analytics
+# → data-analytics/dist/claude_code/data-analytics/
+
+# Spanish
+bash pack_claude_code.sh --agent data-analytics --lang es
+# → data-analytics/dist/es/claude_code/data-analytics/
+```
+
+`bin/package.sh` orchestrates all agents and languages, passing `--lang` to each pack script. Final versioned ZIPs go to `dist/`:
 
 | Language | Pattern | Example |
 |----------|---------|---------|
@@ -251,15 +255,15 @@ Skill and folder names are **technical identifiers** and stay in English regardl
 When adding or modifying translatable content:
 
 1. Write the primary file in English (e.g., `SKILL.md`)
-2. Create or update the `.es.md` variant with the Spanish translation
+2. Create or update the counterpart in `es/` (e.g., `es/.../SKILL.md`) with the Spanish translation
 3. Run `bin/check-translations.sh` to verify completeness
 
 ### i18n helper scripts
 
 | Script | Purpose |
 |--------|---------|
-| `bin/resolve-lang.sh` | Creates a temporary resolved tree for a given language |
-| `bin/check-translations.sh` | Verifies all translatable files have their `.es.md` / `.es.yaml` variants |
+| `bin/resolve-lang.sh` | Creates a temporary tree with the language overlay applied (called internally by pack scripts when `--lang` is passed) |
+| `bin/check-translations.sh` | Verifies all translatable files have their counterpart in `es/` |
 
 ## Format and compatibility with development tools
 
@@ -285,7 +289,6 @@ This guide explains how to add an agent to the monorepo for use in **OpenCode**,
 ```
 my-agent/
 ├── AGENTS.md              # Main instructions in English — role, workflow, rules
-├── AGENTS.es.md           # Spanish translation of instructions
 ├── opencode.json          # OpenCode configuration (MCPs, permissions)
 ├── .mcp.json              # MCP configuration for Claude Code / claude.ai
 ├── mcps                   # (Optional) List of required MCPs for Stratio Cowork
@@ -414,11 +417,14 @@ It has no effect on Claude Code or OpenCode packages (both scripts exclude it fr
 ### 5. Package
 
 ```bash
-# Package for OpenCode
+# Package for OpenCode (English, default)
 bash pack_opencode.sh --agent my-agent
 
 # Package for Claude Code
 bash pack_claude_code.sh --agent my-agent
+
+# Package for Claude Code in Spanish
+bash pack_claude_code.sh --agent my-agent --lang es
 
 # Package Stratio Cowork bundle (agent + separate shared skills + mcps)
 bash pack_stratio_cowork.sh --agent my-agent
@@ -426,11 +432,11 @@ bash pack_stratio_cowork.sh --agent my-agent
 # With a custom name (kebab-case)
 bash pack_opencode.sh --agent my-agent --name custom-name
 
-# Package for both platforms at once
+# Package for all platforms and languages at once
 make package
 ```
 
-The output is generated in `my-agent/dist/opencode/my-agent/` and `my-agent/dist/claude_code/my-agent/` respectively (excluded from git by `.gitignore`).
+The output is generated in `my-agent/dist/opencode/my-agent/` (English) and `my-agent/dist/es/opencode/my-agent/` (Spanish) respectively (excluded from git by `.gitignore`).
 
 ### 6. Test
 

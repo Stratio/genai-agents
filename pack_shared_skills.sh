@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # pack_shared_skills.sh — Packages the monorepo's shared skills into a self-contained ZIP
-# Usage: bash pack_shared_skills.sh [--name <name>] [--skill <skill-name>]
+# Usage: bash pack_shared_skills.sh [--name <name>] [--skill <skill-name>] [--lang <code>]
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -11,14 +11,25 @@ MONOREPO_ROOT="$SCRIPT_DIR"
 # ---------------------------------------------------------------------------
 PACK_NAME=""
 SKILL_FILTER=""
+LANG_CODE=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --name) PACK_NAME="$2"; shift 2 ;;
     --skill) SKILL_FILTER="$2"; shift 2 ;;
-    *) echo "ERROR: unknown argument: $1" >&2; echo "Usage: bash pack_shared_skills.sh [--name <name>] [--skill <skill-name>]" >&2; exit 1 ;;
+    --lang) LANG_CODE="$2"; shift 2 ;;
+    *) echo "ERROR: unknown argument: $1" >&2; echo "Usage: bash pack_shared_skills.sh [--name <name>] [--skill <skill-name>] [--lang <code>]" >&2; exit 1 ;;
   esac
 done
+
+# Language resolution
+_LANG_TMPDIR=""
+if [[ -n "$LANG_CODE" && "$LANG_CODE" != "en" ]]; then
+  _LANG_TMPDIR=$(mktemp -d "/tmp/pack-lang-${LANG_CODE}-XXXXXX")
+  bash "$MONOREPO_ROOT/bin/resolve-lang.sh" --lang "$LANG_CODE" --source "$MONOREPO_ROOT" --target "$_LANG_TMPDIR"
+  MONOREPO_ROOT="$_LANG_TMPDIR"
+fi
+trap '[[ -n "$_LANG_TMPDIR" ]] && rm -rf "$_LANG_TMPDIR"' EXIT
 
 if [[ -n "$SKILL_FILTER" ]]; then
   PACK_NAME="${PACK_NAME:-$SKILL_FILTER}"
@@ -99,9 +110,6 @@ fi
 
 echo "    $N_SKILLS skill(s), $N_GUIDES guide(s) copied"
 
-# Cleanup of residual i18n files
-find "$STAGING" \( -name '*.es.md' -o -name '*.es.yaml' \) -delete 2>/dev/null || true
-
 # ---------------------------------------------------------------------------
 # Phase 3 — Path substitutions in .md and .txt
 # ---------------------------------------------------------------------------
@@ -116,8 +124,9 @@ echo "    Path substitutions applied"
 # ---------------------------------------------------------------------------
 # Phase 4 — Generate ZIP
 # ---------------------------------------------------------------------------
-mkdir -p "$MONOREPO_ROOT/dist"
-ZIP_PATH="$MONOREPO_ROOT/dist/${PACK_NAME}.zip"
+REAL_DIST="$SCRIPT_DIR/dist"
+mkdir -p "$REAL_DIST"
+ZIP_PATH="$REAL_DIST/${PACK_NAME}.zip"
 rm -f "$ZIP_PATH"
 (cd "$STAGING" && zip -r "$ZIP_PATH" . -q)
 ZIP_SIZE=$(du -sh "$ZIP_PATH" | cut -f1)

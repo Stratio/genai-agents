@@ -16,7 +16,7 @@ Agente ligero de Business Intelligence y Business Analytics. Mismo motor analiti
 
 ## Scripts de empaquetado
 
-Todos los scripts son no-interactivos (CI/CD-friendly). Si no se pasa `--name`, usan `data-analytics-light` por defecto.
+Todos los scripts son no-interactivos (CI/CD-friendly). Si no se pasa `--name`, usan `data-analytics-light` por defecto. Todos los scripts aceptan `--lang <codigo>` para generar output en un idioma especifico (ej: `--lang es` para español). Cuando se usa `--lang`, el output va a `dist/<lang>/...` en lugar de `dist/...`.
 
 ### Scripts especificos (desde esta carpeta)
 

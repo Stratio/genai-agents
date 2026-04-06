@@ -5,7 +5,7 @@
 #   {name}-shared-skills.zip        → agent's shared skills (self-contained, optional)
 #   Result: dist/{name}-stratio-cowork.zip
 #
-# Usage: bash pack_stratio_cowork.sh --agent <path> [--name <kebab-name>] [--version <semver>]
+# Usage: bash pack_stratio_cowork.sh --agent <path> [--name <kebab-name>] [--version <semver>] [--lang <code>]
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -17,21 +17,23 @@ MONOREPO_ROOT="$SCRIPT_DIR"
 AGENT_PATH=""
 AGENT_NAME=""
 AGENT_VERSION=""
+LANG_CODE=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --agent)   AGENT_PATH="$2";   shift 2 ;;
     --name)    AGENT_NAME="$2";   shift 2 ;;
     --version) AGENT_VERSION="$2"; shift 2 ;;
+    --lang)    LANG_CODE="$2";    shift 2 ;;
     *) echo "ERROR: unknown argument: $1" >&2
-       echo "Usage: bash pack_stratio_cowork.sh --agent <path> [--name <kebab-name>] [--version <semver>]" >&2
+       echo "Usage: bash pack_stratio_cowork.sh --agent <path> [--name <kebab-name>] [--version <semver>] [--lang <code>]" >&2
        exit 1 ;;
   esac
 done
 
 if [[ -z "$AGENT_PATH" ]]; then
   echo "ERROR: --agent is required" >&2
-  echo "Usage: bash pack_stratio_cowork.sh --agent <path> [--name <kebab-name>] [--version <semver>]" >&2
+  echo "Usage: bash pack_stratio_cowork.sh --agent <path> [--name <kebab-name>] [--version <semver>] [--lang <code>]" >&2
   exit 1
 fi
 
@@ -57,7 +59,22 @@ if [[ ! "$AGENT_NAME" =~ $KEBAB_RE ]]; then
   exit 1
 fi
 
-echo "==> Generating Stratio Cowork bundle (agents/v1) for '$AGENT_NAME'"
+# ---------------------------------------------------------------------------
+# Language resolution
+# ---------------------------------------------------------------------------
+REAL_AGENT_ABS="$AGENT_ABS"
+_LANG_TMPDIR=""
+LANG_ARGS=()
+if [[ -n "$LANG_CODE" && "$LANG_CODE" != "en" ]]; then
+  _LANG_TMPDIR=$(mktemp -d "/tmp/pack-lang-${LANG_CODE}-XXXXXX")
+  bash "$MONOREPO_ROOT/bin/resolve-lang.sh" --lang "$LANG_CODE" --source "$MONOREPO_ROOT" --target "$_LANG_TMPDIR"
+  MONOREPO_ROOT="$_LANG_TMPDIR"
+  AGENT_ABS="$_LANG_TMPDIR/$(basename "$REAL_AGENT_ABS")"
+  LANG_ARGS=(--lang "$LANG_CODE")
+fi
+trap '[[ -n "$_LANG_TMPDIR" ]] && rm -rf "$_LANG_TMPDIR"' EXIT
+
+echo "==> Generating Stratio Cowork bundle (agents/v1) for '$AGENT_NAME'${LANG_CODE:+ ($LANG_CODE)}"
 echo "    Source : $AGENT_ABS"
 
 # ---------------------------------------------------------------------------
@@ -186,9 +203,6 @@ for skill_name in "${SHARED_SKILLS[@]}"; do
   N_SKILLS_PACKED=$((N_SKILLS_PACKED + 1))
 done
 
-# Cleanup of residual i18n files
-find "$SKILLS_STAGING" \( -name '*.es.md' -o -name '*.es.yaml' \) -delete 2>/dev/null || true
-
 # Path substitutions
 find "$SKILLS_STAGING" \
   -type f \( -name '*.md' -o -name '*.txt' \) \
@@ -245,8 +259,9 @@ echo "    [5.5] metadata.yaml generated"
 # ---------------------------------------------------------------------------
 # Phase 6 — Container ZIP
 # ---------------------------------------------------------------------------
-mkdir -p "$MONOREPO_ROOT/dist"
-BUNDLE_ZIP="$MONOREPO_ROOT/dist/${AGENT_NAME}-stratio-cowork.zip"
+REAL_DIST="$SCRIPT_DIR/dist"
+mkdir -p "$REAL_DIST"
+BUNDLE_ZIP="$REAL_DIST/${AGENT_NAME}-stratio-cowork.zip"
 rm -f "$BUNDLE_ZIP"
 (cd "$BUNDLE_STAGING" && zip -r "$BUNDLE_ZIP" . -q)
 BUNDLE_SIZE=$(du -sh "$BUNDLE_ZIP" | cut -f1)

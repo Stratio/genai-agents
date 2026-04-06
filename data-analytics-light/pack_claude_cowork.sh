@@ -3,18 +3,32 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MONOREPO_ROOT="$(dirname "$SCRIPT_DIR")"
-cd "$SCRIPT_DIR"
+REAL_SCRIPT_DIR="$SCRIPT_DIR"
 
 # --- Parse CLI arguments ---
-ARG_NAME="" ARG_URL="" ARG_KEY=""
+ARG_NAME="" ARG_URL="" ARG_KEY="" LANG_CODE=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --name)  ARG_NAME="$2"; shift 2 ;;
     --url)   ARG_URL="$2"; shift 2 ;;
     --key)   ARG_KEY="$2"; shift 2 ;;
-    *) echo "ERROR: Unknown argument: $1"; echo "Usage: $0 [--name NAME] [--url MCP_URL] [--key API_KEY]"; exit 1 ;;
+    --lang)  LANG_CODE="$2"; shift 2 ;;
+    *) echo "ERROR: Unknown argument: $1"; echo "Usage: $0 [--name NAME] [--url MCP_URL] [--key API_KEY] [--lang CODE]"; exit 1 ;;
   esac
 done
+
+# --- Language resolution ---
+_LANG_TMPDIR=""
+if [[ -n "$LANG_CODE" && "$LANG_CODE" != "en" ]]; then
+  _LANG_TMPDIR=$(mktemp -d "/tmp/pack-lang-${LANG_CODE}-XXXXXX")
+  bash "$MONOREPO_ROOT/bin/resolve-lang.sh" --lang "$LANG_CODE" --source "$MONOREPO_ROOT" --target "$_LANG_TMPDIR"
+  MONOREPO_ROOT="$_LANG_TMPDIR"
+  SCRIPT_DIR="$_LANG_TMPDIR/$(basename "$SCRIPT_DIR")"
+  cd "$SCRIPT_DIR"
+else
+  cd "$SCRIPT_DIR"
+fi
+trap '[[ -n "$_LANG_TMPDIR" ]] && rm -rf "$_LANG_TMPDIR"' EXIT
 
 # --- Name: CLI argument or default ---
 COWORK_NAME="${ARG_NAME:-data-analytics-light}"
@@ -25,7 +39,11 @@ if ! echo "$COWORK_NAME" | grep -qE '^[a-z][a-z0-9]*(-[a-z0-9]+)*$'; then
   exit 1
 fi
 
-COWORK_DIR="dist/claude_cowork/$COWORK_NAME"
+if [[ -n "$LANG_CODE" && "$LANG_CODE" != "en" ]]; then
+  COWORK_DIR="$REAL_SCRIPT_DIR/dist/$LANG_CODE/claude_cowork/$COWORK_NAME"
+else
+  COWORK_DIR="dist/claude_cowork/$COWORK_NAME"
+fi
 
 # --- Clean if exists ---
 if [ -d "$COWORK_DIR" ]; then
@@ -158,9 +176,6 @@ if [ ${#_GUIDES_MAP[@]} -gt 0 ]; then
   done
   sed -i 's|`skills-guides/stratio-data-tools\.md`|`stratio-data-tools.md`|g' "$PLUGIN_BUILD/skills/"*/SKILL.md 2>/dev/null || true
 fi
-
-# --- Cleanup of residual i18n files ---
-find "$PLUGIN_BUILD" \( -name '*.es.md' -o -name '*.es.yaml' \) -delete 2>/dev/null || true
 
 # --- Placeholder substitution ---
 sed -i 's/{{TOOL_PREGUNTAS}}/ (`AskUserQuestion`)/g' "$PLUGIN_BUILD/skills/"*/SKILL.md 2>/dev/null || true

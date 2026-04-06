@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # check-translations.sh — Verifies that all translatable files have
-# their variant in each language declared in the 'languages' file.
+# their counterpart in each language directory declared in 'languages'.
 #
 # Translatable files: AGENTS.md, SKILL.md, USER_README.md, README.md (agents),
 #   cowork-metadata.yaml, *.md in skills/*/ and skills-guides/, shared-skill-guides/,
@@ -44,7 +44,7 @@ if [[ ${#SECONDARY_LANGS[@]} -eq 0 ]]; then
 fi
 
 # ---------------------------------------------------------------------------
-# Collect translatable files (primary, without language suffix)
+# Collect translatable files (primary English, in the main tree)
 # ---------------------------------------------------------------------------
 TRANSLATABLE=()
 
@@ -70,9 +70,6 @@ if [[ -f "$MODULES_FILE" ]]; then
     # Local skills: SKILL.md and sub-guides *.md
     if [[ -d "$MODULE_DIR/skills" ]]; then
       while IFS= read -r md_file; do
-        # Exclude files already with language suffix
-        base=$(basename "$md_file")
-        [[ "$base" == *.??.md ]] && continue
         TRANSLATABLE+=("$md_file")
       done < <(find "$MODULE_DIR/skills" -type f -name '*.md' 2>/dev/null)
     fi
@@ -80,17 +77,13 @@ if [[ -f "$MODULES_FILE" ]]; then
     # Local skills-guides
     if [[ -d "$MODULE_DIR/skills-guides" ]]; then
       while IFS= read -r md_file; do
-        base=$(basename "$md_file")
-        [[ "$base" == *.??.md ]] && continue
         TRANSLATABLE+=("$md_file")
       done < <(find "$MODULE_DIR/skills-guides" -type f -name '*.md' 2>/dev/null)
     fi
 
-    # output-templates
+    # Output templates
     if [[ -d "$MODULE_DIR/output-templates" ]]; then
       while IFS= read -r md_file; do
-        base=$(basename "$md_file")
-        [[ "$base" == *.??.md ]] && continue
         TRANSLATABLE+=("$md_file")
       done < <(find "$MODULE_DIR/output-templates" -type f -name '*.md' 2>/dev/null)
     fi
@@ -102,8 +95,6 @@ if [[ -d "$REPO_ROOT/shared-skills" ]]; then
   for skill_dir in "$REPO_ROOT/shared-skills"/*/; do
     [[ ! -d "$skill_dir" ]] && continue
     while IFS= read -r md_file; do
-      base=$(basename "$md_file")
-      [[ "$base" == *.??.md ]] && continue
       TRANSLATABLE+=("$md_file")
     done < <(find "$skill_dir" -type f -name '*.md' 2>/dev/null)
   done
@@ -112,14 +103,12 @@ fi
 # Shared skill guides
 if [[ -d "$REPO_ROOT/shared-skill-guides" ]]; then
   while IFS= read -r md_file; do
-    base=$(basename "$md_file")
-    [[ "$base" == *.??.md ]] && continue
     TRANSLATABLE+=("$md_file")
   done < <(find "$REPO_ROOT/shared-skill-guides" -type f -name '*.md' 2>/dev/null)
 fi
 
 # ---------------------------------------------------------------------------
-# Verify translations
+# Verify translations (look for counterpart in es/<relative-path>)
 # ---------------------------------------------------------------------------
 MISSING=0
 TOTAL=${#TRANSLATABLE[@]}
@@ -129,15 +118,11 @@ for lang in "${SECONDARY_LANGS[@]}"; do
   LANG_MISSING=0
 
   for file in "${TRANSLATABLE[@]}"; do
-    dir=$(dirname "$file")
-    base=$(basename "$file")
-    ext="${base##*.}"
-    stem="${base%.*}"
-    lang_file="$dir/${stem}.${lang}.${ext}"
+    rel_path="${file#$REPO_ROOT/}"
+    lang_file="$REPO_ROOT/$lang/$rel_path"
 
     if [[ ! -f "$lang_file" ]]; then
-      rel_path="${file#$REPO_ROOT/}"
-      echo "  MISSING: ${stem}.${lang}.${ext}  (for $rel_path)"
+      echo "  MISSING: $lang/$rel_path"
       LANG_MISSING=$((LANG_MISSING + 1))
     fi
   done

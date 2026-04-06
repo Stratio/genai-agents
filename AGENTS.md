@@ -21,6 +21,13 @@ genai-agents/
   shared-skill-guides/     # Shared guides (not skills; copied to skills-guides/ in the output)
     stratio-data-tools.md
     stratio-semantic-layer-tools.md
+  es/                      # Spanish translations (overlay directory, mirrors main tree)
+    shared-skills/
+    shared-skill-guides/
+    data-analytics/
+    data-analytics-light/
+    semantic-layer/
+    data-quality/
   data-analytics/          # Full agent (analysis + multi-format reports)
     shared-skills          # List of shared skills included by this agent
     shared-guides          # List of shared-skill-guides that AGENTS.md references directly
@@ -77,15 +84,17 @@ Generic scripts that work with any agent in the monorepo:
 | `pack_opencode.sh` | OpenCode | `{agent}/opencode/{name}/` |
 | `pack_shared_skills.sh` | All (standalone skills) | `dist/shared-skills.zip` or `dist/{skill}.zip` |
 
-Usage: `bash pack_claude_code.sh --agent <agent-path> [--name <kebab-case-name>]`
+Usage: `bash pack_claude_code.sh --agent <agent-path> [--name <kebab-case-name>] [--lang <code>]`
+
+All pack scripts accept `--lang <code>` to generate output in a specific language. Without `--lang` (or with `--lang en`), English is used. With `--lang es`, the script resolves Spanish content from the `es/` overlay and generates the output in `dist/es/...` for traceability.
 
 ## Shared skills
 
 ### Creating a shared skill
 
 1. Create `shared-skills/<name>/SKILL.md` with the skill content (in English)
-2. Create the Spanish translation as `shared-skills/<name>/SKILL.es.md`
-3. If the skill needs external guides, create the files in `shared-skill-guides/` (with their `.es.md` variants) and list them in `shared-skills/<name>/skill-guides` (plain text, one line per file)
+2. Create the Spanish translation at `es/shared-skills/<name>/SKILL.md`
+3. If the skill needs external guides, create the files in `shared-skill-guides/` (with their counterparts in `es/shared-skill-guides/`) and list them in `shared-skills/<name>/skill-guides` (plain text, one line per file)
 4. Declare the skill in the agents that use it by adding its name to the `<agent>/shared-skills` file
 5. If the agent's AGENTS.md references the guide directly, also add it to `<agent>/shared-guides`
 
@@ -103,12 +112,15 @@ If the agent already has a skill in `skills/` with the same name, the local vers
 
 ## Internationalization (i18n)
 
-The monorepo supports multiple languages. **English is the primary language** — all files without a language suffix (`.md`, `.yaml`) contain English content. Secondary languages use a two-letter suffix before the extension:
+The monorepo supports multiple languages. **English is the primary language** — files in the main tree contain English content. Translations live in a language overlay directory at the root (e.g., `es/` for Spanish) that mirrors the source tree structure:
 
-- `SKILL.md` — English (primary)
-- `SKILL.es.md` — Spanish
-- `cowork-metadata.yaml` — English
-- `cowork-metadata.es.yaml` — Spanish
+```
+genai-agents/
+  shared-skills/explore-data/SKILL.md          # English (primary)
+  es/shared-skills/explore-data/SKILL.md        # Spanish (overlay)
+  data-analytics/AGENTS.md                      # English
+  es/data-analytics/AGENTS.md                   # Spanish
+```
 
 Supported languages are listed in the `languages` file at the monorepo root.
 
@@ -120,17 +132,29 @@ Supported languages are listed in the `languages` file at the monorepo root.
 
 ### Packaging by language
 
-`bin/package.sh` builds artifacts for every language in the `languages` file. For secondary languages it uses `bin/resolve-lang.sh` to create a temporary resolved tree where `.es.md` → `.md`, then runs the pack scripts unchanged. Artifact naming:
+Each pack script accepts `--lang <code>` to package in a specific language. When `--lang es` is passed, the script internally resolves the Spanish content from `es/` and generates output in `dist/es/{format}/{name}/` (intermediate files available for inspection). `bin/package.sh` orchestrates this for all agents and languages, producing final versioned ZIPs in `dist/`:
 
 - English (primary): `data-analytics-claude-code-0.1.0.zip` (no suffix)
 - Spanish: `data-analytics-claude-code-es-0.1.0.zip`
+
+Individual pack script usage:
+
+```bash
+# English (default)
+bash pack_claude_code.sh --agent data-analytics
+# → data-analytics/dist/claude_code/data-analytics/
+
+# Spanish
+bash pack_claude_code.sh --agent data-analytics --lang es
+# → data-analytics/dist/es/claude_code/data-analytics/
+```
 
 ### Translation workflow
 
 When adding or modifying translatable content:
 
 1. Edit the primary file (e.g., `SKILL.md`) with English content
-2. Create or update the `.es.md` variant with the Spanish translation
+2. Create or update the counterpart in `es/` (e.g., `es/.../SKILL.md`) with the Spanish translation
 3. Run `bin/check-translations.sh` to verify no translations are missing
 
 ## Adding a new agent
@@ -145,4 +169,4 @@ The complete creation guide is in `README.md` (section "Creating a new agent"). 
    - `shared-guides` — optional; list of shared-skill-guides that AGENTS.md references directly
 2. Add `my-agent` to the `release-modules` file (one line per agent) so that `make package` includes it
 3. Update the agents table in `README.md`
-4. Create `.es.md` / `.es.yaml` variants for all translatable files (see [Internationalization](#internationalization-i18n))
+4. Create counterparts in `es/<agent>/` for all translatable files (see [Internationalization](#internationalization-i18n))

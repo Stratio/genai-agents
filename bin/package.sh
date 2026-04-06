@@ -31,21 +31,18 @@ for lang in "${LANGUAGES[@]}"; do
   echo "==> Language: $lang"
   echo "=========================================="
 
-  # Resolve working tree per language
-  if [[ "$lang" == "en" ]]; then
-    WORK_ROOT="$REPO_ROOT"
-    LANG_SUFFIX=""
-  else
-    WORK_ROOT=$(mktemp -d "/tmp/genai-agents-${lang}-XXXXXX")
-    echo "    Resolving content tree for '$lang' in $WORK_ROOT..."
-    bash "$REPO_ROOT/bin/resolve-lang.sh" --lang "$lang" --source "$REPO_ROOT" --target "$WORK_ROOT"
+  # Build --lang argument for pack scripts (empty for English)
+  LANG_ARGS=()
+  LANG_SUFFIX=""
+  if [[ "$lang" != "en" ]]; then
+    LANG_ARGS=(--lang "$lang")
     LANG_SUFFIX="-${lang}"
   fi
 
   # --- Generic pack per agent (claude_code + opencode + stratio_cowork) ---
   while IFS= read -r module; do
     [[ -z "$module" || "$module" =~ ^# ]] && continue
-    MODULE_DIR="$WORK_ROOT/$module"
+    MODULE_DIR="$REPO_ROOT/$module"
 
     if [[ ! -d "$MODULE_DIR" ]]; then
       echo "  WARN: Module '$module' does not exist, skipping"
@@ -53,48 +50,59 @@ for lang in "${LANGUAGES[@]}"; do
     fi
 
     echo "  [$module] Packaging claude_code..."
-    bash "$WORK_ROOT/pack_claude_code.sh" --agent "$module" --name "$module"
-    if [[ -d "$MODULE_DIR/dist/claude_code/$module" ]]; then
-      (cd "$MODULE_DIR/dist/claude_code/$module" && zip -r "$DIST_DIR/${module}-claude-code${LANG_SUFFIX}-${VERSION}.zip" . -q)
+    bash "$REPO_ROOT/pack_claude_code.sh" --agent "$module" --name "$module" "${LANG_ARGS[@]}"
+    # Intermediate output: {agent}/dist/[{lang}/]claude_code/{name}/
+    if [[ -n "$LANG_SUFFIX" ]]; then
+      INTERMEDIATE="$MODULE_DIR/dist/$lang/claude_code/$module"
+    else
+      INTERMEDIATE="$MODULE_DIR/dist/claude_code/$module"
+    fi
+    if [[ -d "$INTERMEDIATE" ]]; then
+      (cd "$INTERMEDIATE" && zip -r "$DIST_DIR/${module}-claude-code${LANG_SUFFIX}-${VERSION}.zip" . -q)
       echo "    -> dist/${module}-claude-code${LANG_SUFFIX}-${VERSION}.zip"
     fi
 
     echo "  [$module] Packaging opencode..."
-    bash "$WORK_ROOT/pack_opencode.sh" --agent "$module" --name "$module"
-    if [[ -d "$MODULE_DIR/dist/opencode/$module" ]]; then
-      (cd "$MODULE_DIR/dist/opencode/$module" && zip -r "$DIST_DIR/${module}-opencode${LANG_SUFFIX}-${VERSION}.zip" . -q)
+    bash "$REPO_ROOT/pack_opencode.sh" --agent "$module" --name "$module" "${LANG_ARGS[@]}"
+    if [[ -n "$LANG_SUFFIX" ]]; then
+      INTERMEDIATE="$MODULE_DIR/dist/$lang/opencode/$module"
+    else
+      INTERMEDIATE="$MODULE_DIR/dist/opencode/$module"
+    fi
+    if [[ -d "$INTERMEDIATE" ]]; then
+      (cd "$INTERMEDIATE" && zip -r "$DIST_DIR/${module}-opencode${LANG_SUFFIX}-${VERSION}.zip" . -q)
       echo "    -> dist/${module}-opencode${LANG_SUFFIX}-${VERSION}.zip"
     fi
 
     if [[ "$module" != "data-analytics-light" ]]; then
       echo "  [$module] Packaging Stratio cowork (agent + mcps + shared skills separately)..."
-      bash "$WORK_ROOT/pack_stratio_cowork.sh" --agent "$module" --name "$module" --version "$VERSION" || {
+      bash "$REPO_ROOT/pack_stratio_cowork.sh" --agent "$module" --name "$module" --version "$VERSION" "${LANG_ARGS[@]}" || {
         echo "  WARN: pack_stratio_cowork.sh failed for $module — continuing"
       }
-      if [[ -f "$WORK_ROOT/dist/${module}-stratio-cowork.zip" ]]; then
-        mv "$WORK_ROOT/dist/${module}-stratio-cowork.zip" "$DIST_DIR/${module}-stratio-cowork${LANG_SUFFIX}-${VERSION}.zip"
+      if [[ -f "$REPO_ROOT/dist/${module}-stratio-cowork.zip" ]]; then
+        mv "$REPO_ROOT/dist/${module}-stratio-cowork.zip" "$DIST_DIR/${module}-stratio-cowork${LANG_SUFFIX}-${VERSION}.zip"
         echo "    -> dist/${module}-stratio-cowork${LANG_SUFFIX}-${VERSION}.zip"
       fi
     fi
 
-  done < "$WORK_ROOT/release-modules"
+  done < "$REPO_ROOT/release-modules"
 
   # --- Pack shared-skills ---
   echo "  [shared-skills] Packaging shared skills..."
-  bash "$WORK_ROOT/pack_shared_skills.sh" --name shared-skills
-  if [[ -f "$WORK_ROOT/dist/shared-skills.zip" ]]; then
-    mv "$WORK_ROOT/dist/shared-skills.zip" "$DIST_DIR/shared-skills${LANG_SUFFIX}-${VERSION}.zip"
+  bash "$REPO_ROOT/pack_shared_skills.sh" --name shared-skills "${LANG_ARGS[@]}"
+  if [[ -f "$REPO_ROOT/dist/shared-skills.zip" ]]; then
+    mv "$REPO_ROOT/dist/shared-skills.zip" "$DIST_DIR/shared-skills${LANG_SUFFIX}-${VERSION}.zip"
     echo "    -> dist/shared-skills${LANG_SUFFIX}-${VERSION}.zip"
   fi
 
   # --- Pack individual shared-skills ---
-  for skill_dir in "$WORK_ROOT/shared-skills"/*/; do
+  for skill_dir in "$REPO_ROOT/shared-skills"/*/; do
     [[ -d "$skill_dir" ]] || continue
     skill_name="$(basename "$skill_dir")"
     echo "  [shared-skills] Packaging individual skill '$skill_name'..."
-    bash "$WORK_ROOT/pack_shared_skills.sh" --skill "$skill_name"
-    if [[ -f "$WORK_ROOT/dist/${skill_name}.zip" ]]; then
-      mv "$WORK_ROOT/dist/${skill_name}.zip" "$DIST_DIR/shared-skill-${skill_name}${LANG_SUFFIX}-${VERSION}.zip"
+    bash "$REPO_ROOT/pack_shared_skills.sh" --skill "$skill_name" "${LANG_ARGS[@]}"
+    if [[ -f "$REPO_ROOT/dist/${skill_name}.zip" ]]; then
+      mv "$REPO_ROOT/dist/${skill_name}.zip" "$DIST_DIR/shared-skill-${skill_name}${LANG_SUFFIX}-${VERSION}.zip"
       echo "    -> dist/shared-skill-${skill_name}${LANG_SUFFIX}-${VERSION}.zip"
     fi
   done
@@ -102,7 +110,7 @@ for lang in "${LANGUAGES[@]}"; do
   # --- Additional packs for agents with their own scripts ---
   _pack_agent_extras() {
     local agent_name="$1"
-    local agent_dir="$WORK_ROOT/$agent_name"
+    local agent_dir="$REPO_ROOT/$agent_name"
     [[ -d "$agent_dir" ]] || return 0
 
     for pack_script in "$agent_dir"/pack_claude_*.sh; do
@@ -115,7 +123,7 @@ for lang in "${LANGUAGES[@]}"; do
       pack_type="${pack_type%.sh}"
 
       echo "  [$agent_name] Running $script_name..."
-      (cd "$agent_dir" && bash "$script_name" --name "$agent_name") || {
+      (cd "$agent_dir" && bash "$script_name" --name "$agent_name" "${LANG_ARGS[@]}") || {
         echo "  WARN: $script_name failed — continuing"
         continue
       }
@@ -123,8 +131,8 @@ for lang in "${LANGUAGES[@]}"; do
       # Find the generated output directory
       local output_subdir=""
       case "$pack_type" in
-        ai_project) output_subdir="dist/claude_ai_projects/$agent_name" ;;
-        cowork)     output_subdir="dist/claude_cowork/$agent_name" ;;
+        ai_project) output_subdir="dist${LANG_SUFFIX:+/$lang}/claude_ai_projects/$agent_name" ;;
+        cowork)     output_subdir="dist${LANG_SUFFIX:+/$lang}/claude_cowork/$agent_name" ;;
         *) echo "  WARN: Unknown type: $pack_type"; continue ;;
       esac
 
@@ -143,12 +151,6 @@ for lang in "${LANGUAGES[@]}"; do
   _pack_agent_extras "data-analytics-light"
   _pack_agent_extras "semantic-layer"
   _pack_agent_extras "data-quality"
-
-  # Clean up temporary tree
-  if [[ "$lang" != "en" && -d "$WORK_ROOT" ]]; then
-    rm -rf "$WORK_ROOT"
-    echo "    Temporary tree cleaned up"
-  fi
 done
 
 # --- Summary ---

@@ -19,6 +19,8 @@ Complete Business Intelligence and Business Analytics agent for Claude Code and 
 
 ## Packaging scripts
 
+All scripts accept `--lang <code>` to generate output in a specific language (e.g., `--lang es` for Spanish). When `--lang` is used, output goes to `dist/<lang>/...` instead of `dist/...`.
+
 Generic scripts at the monorepo root (from `../`):
 
 | Script | Target platform | Output | Example |

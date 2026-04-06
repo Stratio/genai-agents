@@ -3,21 +3,40 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MONOREPO_ROOT="$(dirname "$SCRIPT_DIR")"
-cd "$SCRIPT_DIR"
+REAL_SCRIPT_DIR="$SCRIPT_DIR"
 
 # --- Parse CLI arguments ---
 ARG_NAME=""
+LANG_CODE=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --name)  ARG_NAME="$2"; shift 2 ;;
-    *) echo "ERROR: Unknown argument: $1"; echo "Usage: $0 [--name NAME]"; exit 1 ;;
+    --lang)  LANG_CODE="$2"; shift 2 ;;
+    *) echo "ERROR: Unknown argument: $1"; echo "Usage: $0 [--name NAME] [--lang CODE]"; exit 1 ;;
   esac
 done
+
+# --- Language resolution ---
+_LANG_TMPDIR=""
+if [[ -n "$LANG_CODE" && "$LANG_CODE" != "en" ]]; then
+  _LANG_TMPDIR=$(mktemp -d "/tmp/pack-lang-${LANG_CODE}-XXXXXX")
+  bash "$MONOREPO_ROOT/bin/resolve-lang.sh" --lang "$LANG_CODE" --source "$MONOREPO_ROOT" --target "$_LANG_TMPDIR"
+  MONOREPO_ROOT="$_LANG_TMPDIR"
+  SCRIPT_DIR="$_LANG_TMPDIR/$(basename "$SCRIPT_DIR")"
+  cd "$SCRIPT_DIR"
+else
+  cd "$SCRIPT_DIR"
+fi
+trap '[[ -n "$_LANG_TMPDIR" ]] && rm -rf "$_LANG_TMPDIR"' EXIT
 
 # --- Name: CLI argument or default ---
 PROJECT_NAME="${ARG_NAME:-data-quality}"
 
-PROJECT_DIR="dist/claude_ai_projects/$PROJECT_NAME"
+if [[ -n "$LANG_CODE" && "$LANG_CODE" != "en" ]]; then
+  PROJECT_DIR="$REAL_SCRIPT_DIR/dist/$LANG_CODE/claude_ai_projects/$PROJECT_NAME"
+else
+  PROJECT_DIR="dist/claude_ai_projects/$PROJECT_NAME"
+fi
 
 # --- Clean if exists ---
 if [ -d "$PROJECT_DIR" ]; then
@@ -147,9 +166,6 @@ if [ -f "shared-skills" ]; then
     fi
   done < "shared-skills"
 fi
-
-# --- 3.1 Cleanup of residual i18n files ---
-find "$PROJECT_DIR" \( -name '*.es.md' -o -name '*.es.yaml' \) -delete 2>/dev/null || true
 
 # --- 4. Reference replacements in all copied .md files ---
 echo "Updating internal references..."

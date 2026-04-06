@@ -24,7 +24,7 @@ This agent does not execute data queries, does not generate files on disk, and d
 
 ## Packaging scripts
 
-All scripts are non-interactive (CI/CD-friendly). If `--name` is not provided, they default to `semantic-layer`.
+All scripts are non-interactive (CI/CD-friendly). If `--name` is not provided, they default to `semantic-layer`. All scripts accept `--lang <code>` to generate output in a specific language (e.g., `--lang es` for Spanish). When `--lang` is used, output goes to `dist/<lang>/...` instead of `dist/...`.
 
 ### Specific scripts (from this folder)
 

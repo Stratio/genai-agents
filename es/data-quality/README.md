@@ -40,6 +40,8 @@ La configuracion de MCPs esta en `.mcp.json` (Claude Code / claude.ai) y en `ope
 
 ## Scripts de empaquetado
 
+Todos los scripts aceptan `--lang <codigo>` para generar output en un idioma especifico (ej: `--lang es` para español). Cuando se usa `--lang`, el output va a `dist/<lang>/...` en lugar de `dist/...`.
+
 ### Scripts especificos (desde esta carpeta)
 
 | Script | Plataforma destino | Output | Ejemplo |

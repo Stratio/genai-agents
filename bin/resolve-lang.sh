@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # resolve-lang.sh — Creates a temporary repo tree in the specified language
 #
-# For --lang en: copies the repo and removes *.es.md / *.es.yaml
-# For --lang es: copies the repo, replaces .md with .es.md, removes residuals
+# For --lang en: copies the repo without language overlay directories
+# For --lang es: copies the repo, then overlays es/ on top (replacing English with Spanish)
 #
 # Usage: bin/resolve-lang.sh --lang <code> --source <repo> --target <directory>
 set -euo pipefail
@@ -32,7 +32,7 @@ if [[ ! -d "$SOURCE" ]]; then
 fi
 
 # ---------------------------------------------------------------------------
-# Phase 1 — Copy full repo (excluding artifacts and git metadata)
+# Phase 1 — Copy repo (excluding language overlay directories and artifacts)
 # ---------------------------------------------------------------------------
 mkdir -p "$TARGET"
 
@@ -45,28 +45,19 @@ rsync -a \
   --exclude='.pytest_cache/' \
   --exclude='node_modules/' \
   --exclude='.idea/' \
+  --exclude='es/' \
   "$SOURCE/" "$TARGET/"
 
 # ---------------------------------------------------------------------------
-# Phase 2 — Resolve language
+# Phase 2 — Overlay language directory (for non-English languages)
 # ---------------------------------------------------------------------------
 if [[ "$LANG_CODE" != "en" ]]; then
-  # Replace .md files with their language variant (.{lang}.md -> .md)
-  find "$TARGET" -name "*.${LANG_CODE}.md" -type f | while IFS= read -r lang_file; do
-    base_file="${lang_file%.${LANG_CODE}.md}.md"
-    mv "$lang_file" "$base_file"
-  done
-
-  # Replace .yaml files with their language variant (.{lang}.yaml -> .yaml)
-  find "$TARGET" -name "*.${LANG_CODE}.yaml" -type f | while IFS= read -r lang_file; do
-    base_file="${lang_file%.${LANG_CODE}.yaml}.yaml"
-    mv "$lang_file" "$base_file"
-  done
+  LANG_DIR="$SOURCE/$LANG_CODE"
+  if [[ -d "$LANG_DIR" ]]; then
+    rsync -a "$LANG_DIR/" "$TARGET/"
+  else
+    echo "WARN: language directory '$LANG_DIR' not found — using English content" >&2
+  fi
 fi
-
-# ---------------------------------------------------------------------------
-# Phase 3 — Remove residual language files (all *.XX.md / *.XX.yaml)
-# ---------------------------------------------------------------------------
-find "$TARGET" -type f \( -name '*.??.md' -o -name '*.??.yaml' \) -delete 2>/dev/null || true
 
 echo "==> Tree resolved for language '$LANG_CODE' in $TARGET"
