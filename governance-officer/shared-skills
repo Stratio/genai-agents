@@ -7,3 +7,7 @@ create-semantic-terms
 manage-business-terms
 create-data-collection
 build-semantic-layer
+assess-quality
+create-quality-rules
+create-quality-planification
+quality-report

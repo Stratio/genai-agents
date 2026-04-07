@@ -1,4 +1,4 @@
-# Guia de Exploracion y Contexto de Calidad
+# Guia de Exploracion y Contexto de Calidad del Dato
 
 Pasos para explorar y validar dominios antes de ejecutar cualquier evaluacion de calidad.
 

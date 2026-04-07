@@ -12,6 +12,7 @@ The repository is primarily oriented towards **OpenCode**, the open-source tool 
 | **data-analytics-light** | Lightweight BI/BA agent oriented to chat-based analysis, without formal report generation. Includes packaging scripts for multiple platforms | Claude Code, Claude Cowork, claude.ai, OpenCode | `data-analytics-light/` |
 | **semantic-layer** | Agent specialized in building and maintaining semantic layers in Stratio Governance: creation of data collections (technical domains), technical terms, ontologies, business views, SQL mappings, view publishing, semantic terms and business terms | Claude Code, Claude Cowork, claude.ai, OpenCode, Stratio Cowork | `semantic-layer/` |
 | **data-quality** | Data quality agent: coverage assessment, gap identification, quality rule creation with human-in-the-loop and coverage report generation | Claude Code, Claude Cowork, claude.ai, OpenCode, Stratio Cowork | `data-quality/` |
+| **governance-officer** | Combined governance agent: full semantic layer building + data quality management in a single agent with unrestricted access to all governance tools | Claude Code, Claude Cowork, claude.ai, OpenCode, Stratio Cowork | `governance-officer/` |
 
 ## Packaging
 
@@ -42,7 +43,7 @@ All pack scripts accept `--lang <code>` to generate output in a specific languag
 
 `pack_stratio_cowork.sh` generates a composite ZIP with two sub-ZIPs designed for deployment in Stratio Cowork: one with the agent without its shared skills, and another with the shared skills separately (to distribute them independently from the agent). It also includes the agent's `mcps` file at the bundle root if it exists (see [Configure external tools](#4-configure-external-tools-mcps)).
 
-`data-analytics-light` and `semantic-layer` also include packaging scripts for the different Claude formats (AI Projects and Cowork). See [`data-analytics-light/README.md`](data-analytics-light/README.md) for detailed instructions on how to configure each format on the target platform.
+`data-analytics-light`, `semantic-layer`, `data-quality` and `governance-officer` also include packaging scripts for the different Claude formats (AI Projects and Cowork). See [`data-analytics-light/README.md`](data-analytics-light/README.md) for detailed instructions on how to configure each format on the target platform.
 
 ### Output structure (`make package`)
 
@@ -84,7 +85,7 @@ genai-agents/
         claude_cowork/data-analytics-light/
         claude_ai_projects/data-analytics-light/
 
-  ...                                           # Same pattern for semantic-layer, data-quality
+  ...                                           # Same pattern for semantic-layer, data-quality, governance-officer
 ```
 
 `make clean` removes all `dist/` directories (root + agents).
@@ -117,21 +118,27 @@ If an agent has an `output-templates/` directory, the pack scripts create `outpu
 | `propose-knowledge` | Propose business terms and preferences to Stratio Governance after an analysis | data-analytics, data-analytics-light |
 | `explore-data` | Quick exploration of domains, tables, columns and governed terminology | data-analytics, data-analytics-light |
 | `stratio-data` | Stratio data MCPs reference: rules, usage patterns and best practices | (standalone) |
-| `stratio-semantic-layer` | Stratio semantic layer MCPs reference: rules, usage patterns and best practices for governance tools | semantic-layer |
-| `generate-technical-terms` | Generate or regenerate technical terms (table and column descriptions) for a domain | semantic-layer |
-| `create-ontology` | Create or extend ontologies with interactive planning | semantic-layer |
-| `create-business-views` | Create, regenerate or publish business views and SQL mappings from an ontology | semantic-layer |
-| `create-sql-mappings` | Create or update SQL mappings for existing views | semantic-layer |
-| `create-semantic-terms` | Generate or regenerate semantic business terms for views | semantic-layer |
-| `manage-business-terms` | Create Business Terms in the dictionary with relationships to data assets | semantic-layer |
-| `create-data-collection` | Search for tables and paths in the technical data dictionary and create a new collection (technical domain) | semantic-layer |
+| `stratio-semantic-layer` | Stratio semantic layer MCPs reference: rules, usage patterns and best practices for governance tools | semantic-layer, governance-officer |
+| `generate-technical-terms` | Generate or regenerate technical terms (table and column descriptions) for a domain | semantic-layer, governance-officer |
+| `create-ontology` | Create or extend ontologies with interactive planning | semantic-layer, governance-officer |
+| `create-business-views` | Create, regenerate or publish business views and SQL mappings from an ontology | semantic-layer, governance-officer |
+| `create-sql-mappings` | Create or update SQL mappings for existing views | semantic-layer, governance-officer |
+| `create-semantic-terms` | Generate or regenerate semantic business terms for views | semantic-layer, governance-officer |
+| `manage-business-terms` | Create Business Terms in the dictionary with relationships to data assets | semantic-layer, governance-officer |
+| `create-data-collection` | Search for tables and paths in the technical data dictionary and create a new collection (technical domain) | semantic-layer, governance-officer |
+| `build-semantic-layer` | Full semantic layer pipeline: orchestrates technical terms, ontology, views, mappings and semantic terms creation | semantic-layer, governance-officer |
+| `assess-quality` | Assess quality coverage by domain, table or column: dimensions covered, gaps and priorities | data-quality, governance-officer |
+| `create-quality-rules` | Design and create quality rules to cover gaps, with mandatory human approval | data-quality, governance-officer |
+| `create-quality-planification` | Create automatic execution schedules for quality rule folders | data-quality, governance-officer |
+| `quality-report` | Generate a formal quality coverage report in PDF, DOCX or Markdown | data-quality, governance-officer |
 
 Shared guides (technical documentation that skills reference) live in `shared-skill-guides/`:
 
 | Guide | Used by |
 |-------|---------|
-| `stratio-data-tools.md` | `explore-data`, `analyze`, `AGENTS.md` (data-analytics, data-analytics-light) |
-| `stratio-semantic-layer-tools.md` | `stratio-semantic-layer`, `AGENTS.md` (semantic-layer) |
+| `stratio-data-tools.md` | `explore-data`, `assess-quality`, `AGENTS.md` (data-analytics, data-analytics-light, data-quality, governance-officer) |
+| `stratio-semantic-layer-tools.md` | `stratio-semantic-layer`, `build-semantic-layer`, `AGENTS.md` (semantic-layer, governance-officer) |
+| `quality-exploration.md` | `assess-quality`, `create-quality-rules` (data-quality, governance-officer) |
 
 ### Using a shared skill in an agent
 

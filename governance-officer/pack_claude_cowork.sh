@@ -33,11 +33,11 @@ fi
 trap '[[ -n "$_LANG_TMPDIR" ]] && rm -rf "$_LANG_TMPDIR"' EXIT
 
 # --- Name: CLI argument or default ---
-COWORK_NAME="${ARG_NAME:-data-quality}"
+COWORK_NAME="${ARG_NAME:-governance-officer}"
 
 # Validate kebab-case
 if ! echo "$COWORK_NAME" | grep -qE '^[a-z][a-z0-9]*(-[a-z0-9]+)*$'; then
-  echo "ERROR: Name must be kebab-case (e.g.: my-agent, data-quality)."
+  echo "ERROR: Name must be kebab-case (e.g.: my-agent, governance-officer)."
   exit 1
 fi
 
@@ -65,7 +65,7 @@ mkdir -p "$PLUGIN_BUILD/skills"
 cat > "$PLUGIN_BUILD/.claude-plugin/plugin.json" <<EOF
 {
   "name": "$COWORK_NAME",
-  "description": "Data Quality Agent",
+  "description": "Governance Officer Agent",
   "version": "1.0.0"
 }
 EOF
@@ -94,7 +94,7 @@ if [ -n "$SKILLS_SRC" ]; then
   done
   echo "  Skills copied from $SKILLS_SRC"
 else
-  echo "WARN: Skills directory not found — the plugin will have no skills."
+  echo "  No local skills directory found (shared skills only)."
 fi
 
 # --- Copy shared skills (if declared by the agent) ---
@@ -177,6 +177,7 @@ if [ ${#_GUIDES_MAP[@]} -gt 0 ]; then
     done
   done
   sed -i 's|`skills-guides/stratio-data-tools\.md`|`stratio-data-tools.md`|g' "$PLUGIN_BUILD/skills/"*/SKILL.md 2>/dev/null || true
+  sed -i 's|`skills-guides/stratio-semantic-layer-tools\.md`|`stratio-semantic-layer-tools.md`|g' "$PLUGIN_BUILD/skills/"*/SKILL.md 2>/dev/null || true
   sed -i 's|`skills-guides/quality-exploration\.md`|`quality-exploration.md`|g' "$PLUGIN_BUILD/skills/"*/SKILL.md 2>/dev/null || true
 fi
 
@@ -251,6 +252,7 @@ echo "Generating plugin ZIP..."
 # ============================================================
 echo "Generating CLAUDE.md from AGENTS.md..."
 sed 's|`skills-guides/stratio-data-tools\.md`|`skills/assess-quality/stratio-data-tools.md`|g' AGENTS.md > "$COWORK_DIR/CLAUDE.md"
+sed -i 's|`skills-guides/stratio-semantic-layer-tools\.md`|`skills/stratio-semantic-layer/stratio-semantic-layer-tools.md`|g' "$COWORK_DIR/CLAUDE.md"
 sed -i 's|`skills-guides/quality-exploration\.md`|`skills/assess-quality/quality-exploration.md`|g' "$COWORK_DIR/CLAUDE.md"
 sed -i 's/{{TOOL_PREGUNTAS}}/ (`AskUserQuestion`)/g' "$COWORK_DIR/CLAUDE.md"
 

@@ -18,9 +18,15 @@ genai-agents/
     create-semantic-terms/
     manage-business-terms/
     create-data-collection/
+    build-semantic-layer/
+    assess-quality/
+    create-quality-rules/
+    create-quality-planification/
+    quality-report/
   shared-skill-guides/     # Shared guides (not skills; copied to skills-guides/ in the output)
     stratio-data-tools.md
     stratio-semantic-layer-tools.md
+    quality-exploration.md
   es/                      # Spanish translations (overlay directory, mirrors main tree)
     shared-skills/
     shared-skill-guides/
@@ -28,6 +34,7 @@ genai-agents/
     data-analytics-light/
     semantic-layer/
     data-quality/
+    governance-officer/
   data-analytics/          # Full agent (analysis + multi-format reports)
     shared-skills          # List of shared skills included by this agent
     shared-guides          # List of shared-skill-guides that AGENTS.md references directly
@@ -37,15 +44,12 @@ genai-agents/
   semantic-layer/          # Semantic layer construction agent
     shared-skills
     shared-guides
-    skills/
-      build-semantic-layer/  # Local skill: full pipeline
   data-quality/            # Data quality agent (assessment, rules, reports)
+    shared-skills
     shared-guides
-    skills/
-      assess-quality/               # Local skill: coverage assessment
-      create-quality-planification/ # Local skill: quality planification creation
-      create-quality-rules/         # Local skill: rule creation
-      quality-report/               # Local skill: report generation
+  governance-officer/      # Governance officer: semantic layer + data quality combined
+    shared-skills
+    shared-guides
 ```
 
 ## Development instructions
@@ -57,7 +61,7 @@ genai-agents/
 - Each shared skill can declare which guides from `shared-skill-guides/` it needs in a `skill-guides` file inside its folder
 - If an agent has a skill in `skills/` with the same name as a shared skill, the local version takes priority
 - Generic packaging scripts at the monorepo root: `pack_claude_code.sh` and `pack_opencode.sh` (any agent)
-- Platform-specific packaging scripts in `data-analytics-light/`, `semantic-layer/` and `data-quality/` (`pack_claude_ai_project.sh`, `pack_claude_cowork.sh`)
+- Platform-specific packaging scripts in `data-analytics-light/`, `semantic-layer/`, `data-quality/` and `governance-officer/` (`pack_claude_ai_project.sh`, `pack_claude_cowork.sh`)
 - The root `.gitignore` covers all agents
 
 ## Agent summary
@@ -73,6 +77,9 @@ Agent specialized in building and maintaining semantic layers in Stratio Governa
 
 ### data-quality
 Agent specialized in data governance and quality. Evaluates quality coverage by domain, collection, table or column, identifies gaps (uncovered dimensions), proposes and creates quality rules with mandatory human approval, and generates coverage reports in multiple formats (PDF, DOCX, Markdown). Operates on governed data via SQL and governance MCPs.
+
+### governance-officer
+Combined governance agent with the full capabilities of both semantic-layer and data-quality. Builds and maintains semantic layers (ontologies, views, mappings, terms) AND manages data quality (assessment, rule creation, scheduling, reports). Has full access to all governance and data MCP tools with no restrictions.
 
 ## Packaging scripts (root)
 

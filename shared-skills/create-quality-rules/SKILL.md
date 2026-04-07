@@ -41,7 +41,7 @@ Identify:
 - Which dimensions are missing in each table (considering both standard and domain-specific ones)
 - Which are the priority gaps based on the prior EDA from `profile_data`
 
-**About dimensions**: the domain definitions (obtained during the coverage assessment via `get_quality_rule_dimensions`) always prevail over standard ones. See section 2 of `skills-guides/exploration.md`.
+**About dimensions**: the domain definitions (obtained during the coverage assessment via `get_quality_rule_dimensions`) always prevail over standard ones. See section 2 of `skills-guides/quality-exploration.md`.
 
 If the user has specified a subset ("only the account table"), respect that restriction.
 
