@@ -4,9 +4,9 @@ description: "Diseñar y crear reglas de calidad. Flujo A (gaps): cubrir gaps id
 argument-hint: "[dominio] [tabla (opcional)]"
 ---
 
-# Skill: Creacion de Reglas de Calidad
+# Skill: Creación de Reglas de Calidad
 
-Workflow para disenar, proponer y crear reglas de calidad con aprobacion humana. Esta skill tiene un prerequisito obligatorio y una pausa de aprobacion critica.
+Workflow para diseñar, proponer y crear reglas de calidad con aprobacion humana. Esta skill tiene un prerequisito obligatorio y una pausa de aprobacion critica.
 
 ## PREREQUISITO
 
