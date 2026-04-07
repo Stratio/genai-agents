@@ -37,3 +37,4 @@
 * [ROCK-NA] Add USER_README.md support to all pack scripts (copied as README.md in output); add cowork-metadata.yaml injection in pack_stratio_cowork.sh; add USER_README.md and cowork-metadata.yaml for all agents
 * [ROCK-NA] Internationalize monorepo: translate all primary files to English, add Spanish variants (.es.md/.es.yaml) for all agents and shared skills, add bin/check-translations.sh and bin/resolve-lang.sh, add languages file, update bin/package.sh to build multi-language artifacts
 * [ROCK-14601] Add governance-officer agent combining semantic layer and data quality; promote data-quality and semantic-layer local skills to shared-skills; rename exploration.md to quality-exploration.md in shared-skill-guides
+* [ROCK-NA] Document NODE_TLS_REJECT_UNAUTHORIZED setup for Claude Desktop and Claude Cowork on macOS and Windows (local and remote MCP servers)
