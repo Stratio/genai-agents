@@ -108,18 +108,18 @@ Los pack scripts generan el formato correcto para cada plataforma (renombrando f
 
 ## Skills disponibles
 
-| Skill | Comando | Origen | Descripcion |
-|-------|---------|--------|-------------|
-| Pipeline completo | `/build-semantic-layer` | local | Pipeline de 5 fases para construir la capa semantica de un dominio |
-| Referencia MCP semantica | `/stratio-semantic-layer` | **shared** | Referencia de herramientas MCP de gobernanza: reglas, patrones y buenas practicas |
-| Terminos tecnicos | `/generate-technical-terms` | **shared** | Generar descripciones tecnicas de tablas y columnas |
-| Ontologia | `/create-ontology` | **shared** | Crear, ampliar o borrar clases de ontologia con planificacion interactiva |
-| Vistas de negocio | `/create-business-views` | **shared** | Crear, regenerar o borrar vistas de negocio desde una ontologia |
-| SQL Mappings | `/create-sql-mappings` | **shared** | Crear o actualizar SQL mappings para vistas existentes |
-| Terminos semanticos | `/create-semantic-terms` | **shared** | Generar terminos semanticos de negocio para las vistas de un dominio |
-| Business Terms | `/manage-business-terms` | **shared** | Crear Business Terms con relaciones a activos de datos |
-| Coleccion de datos | `/create-data-collection` | **shared** | Buscar tablas en el diccionario y crear una nueva coleccion de datos |
+| Skill | Comando | Descripcion |
+|-------|---------|-------------|
+| Pipeline completo | `/build-semantic-layer` | Pipeline de 5 fases para construir la capa semantica de un dominio |
+| Referencia MCP semantica | `/stratio-semantic-layer` | Referencia de herramientas MCP de gobernanza: reglas, patrones y buenas practicas |
+| Terminos tecnicos | `/generate-technical-terms` | Generar descripciones tecnicas de tablas y columnas |
+| Ontologia | `/create-ontology` | Crear, ampliar o borrar clases de ontologia con planificacion interactiva |
+| Vistas de negocio | `/create-business-views` | Crear, regenerar o borrar vistas de negocio desde una ontologia |
+| SQL Mappings | `/create-sql-mappings` | Crear o actualizar SQL mappings para vistas existentes |
+| Terminos semanticos | `/create-semantic-terms` | Generar terminos semanticos de negocio para las vistas de un dominio |
+| Business Terms | `/manage-business-terms` | Crear Business Terms con relaciones a activos de datos |
+| Coleccion de datos | `/create-data-collection` | Buscar tablas en el diccionario y crear una nueva coleccion de datos |
 
-Las skills marcadas como **shared** viven en `shared-skills/` en la raiz del monorepo y se comparten con otros agentes. La skill local vive en `skills/` de este agente.
+Todas las skills viven en `shared-skills/` en la raiz del monorepo y se comparten con el agente governance-officer.
 
 **Nota**: Este agente no usa memoria persistente en ficheros ni genera ficheros en disco — el output principal es interaccion con tools MCP + resumenes en chat.

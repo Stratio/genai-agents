@@ -108,18 +108,18 @@ The pack scripts generate the correct format for each platform (renaming files, 
 
 ## Available skills
 
-| Skill | Command | Source | Description |
-|-------|---------|--------|-------------|
-| Full pipeline | `/build-semantic-layer` | local | 5-phase pipeline to build the semantic layer of a domain |
-| Semantic MCP reference | `/stratio-semantic-layer` | **shared** | Governance MCP tools reference: rules, patterns, and best practices |
-| Technical terms | `/generate-technical-terms` | **shared** | Generate technical descriptions of tables and columns |
-| Ontology | `/create-ontology` | **shared** | Create, extend, or delete ontology classes with interactive planning |
-| Business views | `/create-business-views` | **shared** | Create, regenerate, or delete business views from an ontology |
-| SQL Mappings | `/create-sql-mappings` | **shared** | Create or update SQL mappings for existing views |
-| Semantic terms | `/create-semantic-terms` | **shared** | Generate business semantic terms for the views of a domain |
-| Business Terms | `/manage-business-terms` | **shared** | Create Business Terms with relationships to data assets |
-| Data collection | `/create-data-collection` | **shared** | Search tables in the dictionary and create a new data collection |
+| Skill | Command | Description |
+|-------|---------|-------------|
+| Full pipeline | `/build-semantic-layer` | 5-phase pipeline to build the semantic layer of a domain |
+| Semantic MCP reference | `/stratio-semantic-layer` | Governance MCP tools reference: rules, patterns, and best practices |
+| Technical terms | `/generate-technical-terms` | Generate technical descriptions of tables and columns |
+| Ontology | `/create-ontology` | Create, extend, or delete ontology classes with interactive planning |
+| Business views | `/create-business-views` | Create, regenerate, or delete business views from an ontology |
+| SQL Mappings | `/create-sql-mappings` | Create or update SQL mappings for existing views |
+| Semantic terms | `/create-semantic-terms` | Generate business semantic terms for the views of a domain |
+| Business Terms | `/manage-business-terms` | Create Business Terms with relationships to data assets |
+| Data collection | `/create-data-collection` | Search tables in the dictionary and create a new data collection |
 
-Skills marked as **shared** live in `shared-skills/` at the monorepo root and are shared with other agents. The local skill lives in `skills/` of this agent.
+All skills live in `shared-skills/` at the monorepo root and are shared with the governance-officer agent.
 
 **Note**: This agent does not use persistent memory in files nor generates files on disk — the main output is interaction with MCP tools + summaries in chat.
