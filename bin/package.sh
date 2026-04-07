@@ -151,6 +151,7 @@ for lang in "${LANGUAGES[@]}"; do
   _pack_agent_extras "data-analytics-light"
   _pack_agent_extras "semantic-layer"
   _pack_agent_extras "data-quality"
+  _pack_agent_extras "governance-officer"
 done
 
 # --- Summary ---

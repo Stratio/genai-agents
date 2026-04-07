@@ -12,7 +12,7 @@ Complete workflow for assessing the state of data quality in a governed domain, 
 
 Before executing any MCP call, determine exactly what will be assessed:
 
-**If the domain is unclear or the `domain_name` needs validation**: follow `skills-guides/stratio-data-tools.md` sec 4.1-4.2 for the standard discovery workflow. If the domain is technical, use `search_domains(search_text, domain_type="technical")` or `list_domains(domain_type="technical")` (see `skills-guides/exploration.md` sec 1 for technical domain details). Note that semantic analysis will be more limited for technical domains: business descriptions, table context, and terminology may be absent or partial.
+**If the domain is unclear or the `domain_name` needs validation**: follow `skills-guides/stratio-data-tools.md` sec 4.1-4.2 for the standard discovery workflow. If the domain is technical, use `search_domains(search_text, domain_type="technical")` or `list_domains(domain_type="technical")` (see `skills-guides/quality-exploration.md` sec 1 for technical domain details). Note that semantic analysis will be more limited for technical domains: business descriptions, table context, and terminology may be absent or partial.
 
 **Determine scope:**
 - **Full domain**: assess all its tables
@@ -24,7 +24,7 @@ Before executing any MCP call, determine exactly what will be assessed:
 
 Once the scope is determined, launch in parallel. It is **MANDATORY** to include `get_quality_rule_dimensions` to understand what dimensions the domain supports and their definitions.
 
-**About dimensions**: see section 2 of `skills-guides/exploration.md` to understand why `get_quality_rule_dimensions` is mandatory and how to use its results.
+**About dimensions**: see section 2 of `skills-guides/quality-exploration.md` to understand why `get_quality_rule_dimensions` is mandatory and how to use its results.
 
 **For full domain:**
 ```

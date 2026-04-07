@@ -30,7 +30,7 @@ fi
 trap '[[ -n "$_LANG_TMPDIR" ]] && rm -rf "$_LANG_TMPDIR"' EXIT
 
 # --- Name: CLI argument or default ---
-PROJECT_NAME="${ARG_NAME:-data-quality}"
+PROJECT_NAME="${ARG_NAME:-governance-officer}"
 
 if [[ -n "$LANG_CODE" && "$LANG_CODE" != "en" ]]; then
   PROJECT_DIR="$REAL_SCRIPT_DIR/dist/$LANG_CODE/claude_ai_projects/$PROJECT_NAME"
@@ -170,8 +170,9 @@ fi
 # --- 4. Reference replacements in all copied .md files ---
 echo "Updating internal references..."
 
-# Pattern A: skills-guides/ paths
+# Pattern A: skills-guides/ paths (all 3 guides)
 sed -i 's|skills-guides/stratio-data-tools\.md|skills-guides_stratio-data-tools.md|g' "$PROJECT_DIR"/*.md
+sed -i 's|skills-guides/stratio-semantic-layer-tools\.md|skills-guides_stratio-semantic-layer-tools.md|g' "$PROJECT_DIR"/*.md
 sed -i 's|skills-guides/quality-exploration\.md|skills-guides_quality-exploration.md|g' "$PROJECT_DIR"/*.md
 
 # Pattern B: AGENTS.md → CLAUDE.md (plain text references inside skills)

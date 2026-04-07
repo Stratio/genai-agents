@@ -12,7 +12,7 @@ Workflow completo para evaluar el estado de la calidad del dato en un dominio, t
 
 Antes de ejecutar ninguna llamada MCP, determinar exactamente que se va a evaluar:
 
-**Si el dominio no está claro o hay que validar el `domain_name`**: seguir `skills-guides/stratio-data-tools.md` sec 4.1-4.2 para el workflow estándar de discovery. Si el dominio es tecnico, usar `search_domains(search_text, domain_type="technical")` o `list_domains(domain_type="technical")` (ver `skills-guides/exploration.md` sec 1 para detalles de dominios tecnicos). Tener en cuenta que el analisis semantico sera mas limitado en dominios tecnicos: las descripciones de negocio, contexto de tablas y terminologia pueden estar ausentes o ser parciales.
+**Si el dominio no está claro o hay que validar el `domain_name`**: seguir `skills-guides/stratio-data-tools.md` sec 4.1-4.2 para el workflow estándar de discovery. Si el dominio es tecnico, usar `search_domains(search_text, domain_type="technical")` o `list_domains(domain_type="technical")` (ver `skills-guides/quality-exploration.md` sec 1 para detalles de dominios tecnicos). Tener en cuenta que el analisis semantico sera mas limitado en dominios tecnicos: las descripciones de negocio, contexto de tablas y terminologia pueden estar ausentes o ser parciales.
 
 **Determinar scope:**
 - **Dominio completo**: evaluar todas sus tablas
@@ -24,7 +24,7 @@ Antes de ejecutar ninguna llamada MCP, determinar exactamente que se va a evalua
 
 Una vez determinado el scope, lanzar en paralelo. Es **OBLIGATORIO** incluir `get_quality_rule_dimensions` para entender que dimensiones soporta el dominio y sus definiciones.
 
-**Sobre dimensiones**: ver sección 2 de `skills-guides/exploration.md` para entender por qué `get_quality_rule_dimensions` es obligatorio y cómo usar sus resultados.
+**Sobre dimensiones**: ver sección 2 de `skills-guides/quality-exploration.md` para entender por qué `get_quality_rule_dimensions` es obligatorio y cómo usar sus resultados.
 
 **Para dominio completo:**
 ```

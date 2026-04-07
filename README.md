@@ -12,6 +12,7 @@ The repository is primarily oriented towards **OpenCode**, the open-source tool 
 | **data-analytics-light** | Lightweight BI/BA agent oriented to chat-based analysis, without formal report generation. Includes packaging scripts for multiple platforms | Claude Code, Claude Cowork, claude.ai, OpenCode | `data-analytics-light/` |
 | **semantic-layer** | Agent specialized in building and maintaining semantic layers in Stratio Governance: creation of data collections (technical domains), technical terms, ontologies, business views, SQL mappings, view publishing, semantic terms and business terms | Claude Code, Claude Cowork, claude.ai, OpenCode, Stratio Cowork | `semantic-layer/` |
 | **data-quality** | Data quality agent: coverage assessment, gap identification, quality rule creation with human-in-the-loop and coverage report generation | Claude Code, Claude Cowork, claude.ai, OpenCode, Stratio Cowork | `data-quality/` |
+| **governance-officer** | Combined governance agent: full semantic layer building + data quality management in a single agent with unrestricted access to all governance tools | Claude Code, Claude Cowork, claude.ai, OpenCode | `governance-officer/` |
 
 ## Packaging
 

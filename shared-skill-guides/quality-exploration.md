@@ -1,4 +1,4 @@
-# Exploration and Quality Context Guide
+# Quality Exploration and Context Guide
 
 Steps for exploring and validating domains before executing any quality assessment.
 
