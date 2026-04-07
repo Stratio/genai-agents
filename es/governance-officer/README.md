@@ -1,37 +1,37 @@
 # governance-officer
 
-Agente governance officer que combina la construccion de capas semanticas y la gestion de calidad del dato. Orquesta el ciclo de vida completo de los artefactos de gobierno: ontologias, vistas, mappings, terminos, reglas de calidad e informes de cobertura.
+Agente governance officer que combina la construcción de capas semánticas y la gestión de calidad del dato. Orquesta el ciclo de vida completo de los artefactos de gobierno: ontologías, vistas, mappings, términos, reglas de calidad e informes de cobertura.
 
 ## Capacidades
 
-### Capa semantica
-- Construccion y mantenimiento de capas semanticas via MCPs de gobierno
-- Publicacion de business views (Draft → Pending Publish)
-- Exploracion de dominios tecnicos y capas semanticas publicadas
-- Planificacion interactiva de ontologias con lectura de ficheros locales
-- Creacion de data collections a partir de busquedas en el diccionario de datos
-- Gestion de business terms en el diccionario de gobierno
+### Capa semántica
+- Construcción y mantenimiento de capas semánticas vía MCPs de gobierno
+- Publicación de business views (Draft → Pending Publish)
+- Exploración de dominios técnicos y capas semánticas publicadas
+- Planificación interactiva de ontologías con lectura de ficheros locales
+- Creación de data collections a partir de busquedas en el diccionario de datos
+- Gestión de business terms en el diccionario de gobierno
 
 ### Calidad del dato
-- Evaluacion de cobertura de calidad por dominio, coleccion, tabla o columna
-- Identificacion de gaps: dimensiones de calidad no cubiertas
-- Propuesta razonada de reglas de calidad basada en contexto semantico y datos reales
-- Creacion de reglas de calidad con aprobacion humana obligatoria
-- Planificacion de ejecucion automatica de reglas de calidad
-- Generacion de informes de cobertura (chat, PDF, DOCX, Markdown)
+- Evaluación de cobertura de calidad por dominio, colección, tabla o columna
+- Identificación de gaps: dimensiones de calidad no cubiertas
+- Propuesta razonada de reglas de calidad basada en contexto semántico y datos reales
+- Creación de reglas de calidad con aprobación humana obligatoria
+- Planificación de ejecución automática de reglas de calidad
+- Generación de informes de cobertura (chat, PDF, DOCX, Markdown)
 
 ## Requisitos
 
 - Python 3.10+ (dependencias en `requirements.txt`; instalar con `bash setup_env.sh`)
 - Acceso a dos servidores MCP de Stratio:
-  - `gov` (gobierno): herramientas de capa semantica, dimensiones de calidad, creacion de reglas
-  - `sql` (exploracion): descubrimiento, generacion SQL, profiling, ejecucion
+  - `gov` (gobierno): herramientas de capa semántica, dimensiones de calidad, creación de reglas
+  - `sql` (exploración): descubrimiento, generación SQL, profiling, ejecución
 
-La configuracion MCP esta en `.mcp.json` (Claude Code / claude.ai) y en `opencode.json` (OpenCode), ambos preconfigurados para leer URL y credenciales de variables de entorno.
+La configuración MCP está en `.mcp.json` (Claude Code / claude.ai) y en `opencode.json` (OpenCode), ambos preconfigurados para leer URL y credenciales de variables de entorno.
 
 ## Variables de entorno
 
-| Variable | Descripcion |
+| Variable | Descripción |
 |----------|-------------|
 | `MCP_SQL_URL` | URL del servidor MCP SQL de Stratio |
 | `MCP_SQL_API_KEY` | API key del servidor MCP SQL |
@@ -40,42 +40,42 @@ La configuracion MCP esta en `.mcp.json` (Claude Code / claude.ai) y en `opencod
 
 ## Skills
 
-| Skill | Comando | Descripcion |
+| Skill | Comando | Descripción |
 |-------|---------|-------------|
-| Pipeline completo | `/build-semantic-layer` | Construir capa semantica completa: terminos, ontologia, vistas, mappings, terminos semanticos |
-| Terminos tecnicos | `/generate-technical-terms` | Generar descripciones tecnicas para tablas y columnas |
-| Ontologia | `/create-ontology` | Crear, extender o eliminar clases de ontologia |
+| Pipeline completo | `/build-semantic-layer` | Construir capa semántica completa: términos, ontología, vistas, mappings, términos semánticos |
+| Términos técnicos | `/generate-technical-terms` | Generar descripciones técnicas para tablas y columnas |
+| Ontología | `/create-ontology` | Crear, extender o eliminar clases de ontología |
 | Business views | `/create-business-views` | Crear, regenerar o eliminar business views |
 | SQL mappings | `/create-sql-mappings` | Crear o actualizar SQL mappings para vistas |
-| Terminos semanticos | `/create-semantic-terms` | Generar terminos semanticos de negocio |
+| Términos semánticos | `/create-semantic-terms` | Generar términos semánticos de negocio |
 | Business terms | `/manage-business-terms` | Crear business terms en el diccionario de gobierno |
-| Data collection | `/create-data-collection` | Buscar y crear nuevos dominios tecnicos |
-| Evaluacion de calidad | `/assess-quality` | Evaluar la cobertura de calidad por dominio o tabla |
-| Creacion de reglas | `/create-quality-rules` | Disenar y crear reglas de calidad con aprobacion humana |
-| Planificacion de calidad | `/create-quality-planification` | Crear planificaciones de ejecucion automatica |
+| Data collection | `/create-data-collection` | Buscar y crear nuevos dominios técnicos |
+| Evaluación de calidad | `/assess-quality` | Evaluar la cobertura de calidad por dominio o tabla |
+| Creación de reglas | `/create-quality-rules` | Diseñar y crear reglas de calidad con aprobación humana |
+| Planificación de calidad | `/create-quality-planification` | Crear planificaciones de ejecución automática |
 | Informe de calidad | `/quality-report` | Generar informe formal de cobertura (PDF, DOCX, Markdown) |
 
 ## Scripts de empaquetado
 
-Todos los scripts aceptan `--lang <code>` para generar la salida en un idioma especifico (ej. `--lang es` para espanol). Cuando se usa `--lang`, la salida va a `dist/<lang>/...` en lugar de `dist/...`.
+Todos los scripts aceptan `--lang <code>` para generar la salida en un idioma específico (ej. `--lang es` para español). Cuando se usa `--lang`, la salida va a `dist/<lang>/...` en lugar de `dist/...`.
 
-### Scripts especificos (desde esta carpeta)
+### Scripts específicos (desde esta carpeta)
 
 | Script | Plataforma destino | Salida | Ejemplo |
 |--------|-------------------|--------|---------|
 | `pack_claude_ai_project.sh` | claude.ai (Projects) | `dist/claude_ai_projects/<name>/` | `bash pack_claude_ai_project.sh --name governance-officer` |
 | `pack_claude_cowork.sh` | Claude Cowork | `dist/claude_cowork/<name>/` | `bash pack_claude_cowork.sh --name governance-officer` |
 
-El script de cowork tambien acepta `--gov-url <URL>`, `--gov-key <KEY>`, `--sql-url <URL>` y `--sql-key <KEY>` para configurar los dos servidores MCP. Si se omiten, permanecen como plantillas de variables de entorno para configurar posteriormente.
+El script de cowork también acepta `--gov-url <URL>`, `--gov-key <KEY>`, `--sql-url <URL>` y `--sql-key <KEY>` para configurar los dos servidores MCP. Si se omiten, permanecen como plantillas de variables de entorno para configurar posteriormente.
 
-### Scripts genericos (desde la raiz del monorepo)
+### Scripts genéricos (desde la raíz del monorepo)
 
 | Script | Plataforma destino | Salida | Ejemplo |
 |--------|-------------------|--------|---------|
 | `pack_claude_code.sh` | Claude Code CLI | `dist/claude_code/<name>/` | `bash ../pack_claude_code.sh --agent governance-officer` |
 | `pack_opencode.sh` | OpenCode | `dist/opencode/<name>/` | `bash ../pack_opencode.sh --agent governance-officer` |
 
-## Inicio rapido
+## Inicio rápido
 
 ```bash
 # 1. Configurar variables de entorno
@@ -84,7 +84,7 @@ export MCP_SQL_API_KEY="my-sql-api-key"
 export MCP_GOV_URL="https://my-governance-server.example.com/mcp"
 export MCP_GOV_API_KEY="my-governance-api-key"
 
-# 2. Instalar dependencias (para generacion de informes PDF/DOCX)
+# 2. Instalar dependencias (para generación de informes PDF/DOCX)
 bash setup_env.sh
 
 # 3. Empaquetar para la plataforma deseada

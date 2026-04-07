@@ -1,47 +1,47 @@
-# Guia de Reasoning (Documentacion del Proceso)
+# Guía de Reasoning (Documentación del Proceso)
 
-Guia detallada para generar el reasoning de cada analisis. El reasoning documenta el razonamiento completo del analista: desde la pregunta original hasta las conclusiones y sugerencias.
+Guía detallada para generar el reasoning de cada análisis. El reasoning documenta el razonamiento completo del analista: desde la pregunta original hasta las conclusiones y sugerencias.
 
-## Cuando generar
+## Cuándo generar
 
 | Profundidad | Reasoning | Formato |
 |-------------|-----------|---------|
-| Rapido | No generar fichero. Incluir notas clave en el chat (ver SKILL.md sec 7.1) | Solo chat |
-| Estandar | Generar en `output/[ANALISIS_DIR]/reasoning/reasoning.md` | Solo .md |
+| Rápido | No generar fichero. Incluir notas clave en el chat (ver SKILL.md sec 7.1) | Solo chat |
+| Estándar | Generar en `output/[ANALISIS_DIR]/reasoning/reasoning.md` | Solo .md |
 | Profundo | Generar en `output/[ANALISIS_DIR]/reasoning/reasoning.md` | Solo .md (completo + sugerencias detalladas) |
 
-**Override del usuario**: Si el usuario pide explicitamente reasoning en otros formatos (PDF, HTML, DOCX), generar el .md primero y luego convertir con:
+**Override del usuario**: Si el usuario pide explícitamente reasoning en otros formatos (PDF, HTML, DOCX), generar el .md primero y luego convertir con:
 ```bash
 bash -c "source .venv/bin/activate && python tools/md_to_report.py output/[ANALISIS_DIR]/reasoning/reasoning.md --style corporate"
 ```
-Anadir `--html` si solicito HTML. Anadir `--docx` si solicito DOCX.
+Añadir `--html` si solicitó HTML. Añadir `--docx` si solicitó DOCX.
 
 ## Contenido obligatorio
 
 El reasoning debe incluir todas las secciones siguientes:
 
-1. **Pregunta original del usuario** — Transcripcion literal de la peticion
-2. **Hipotesis formuladas y resultado de su validacion** — Tabla resumen obligatoria:
+1. **Pregunta original del usuario** — Transcripción literal de la petición
+2. **Hipótesis formuladas y resultado de su validación** — Tabla resumen obligatoria:
    ```
-   | ID | Hipotesis | Resultado | Esperado | Real | So What |
+   | ID | Hipótesis | Resultado | Esperado | Real | So What |
    ```
 3. **Dominio y tablas utilizadas** — Nombre exacto del dominio y listado de tablas consultadas
 4. **Resumen de calidad de datos** — Data Quality Score de la Fase 1.1 (ALTO/MEDIO/BAJO con %)
-5. **Decisiones tomadas y justificacion** — Elecciones metodologicas, filtros aplicados, exclusiones
-6. **Preguntas realizadas al MCP y resumen de los datos obtenidos** — Cada query con descripcion del resultado
-7. **Analisis realizados y hallazgos clave** — Tecnicas aplicadas y principales insights
+5. **Decisiones tomadas y justificación** — Elecciones metodologicas, filtros aplicados, exclusiones
+6. **Preguntas realizadas al MCP y resumen de los datos obtenidos** — Cada query con descripción del resultado
+7. **Análisis realizados y hallazgos clave** — Técnicas aplicadas y principales insights
 8. **Clustering o feature importance** (si aplica) — Enfoque, variables, resultados, limitaciones
-9. **Limitaciones identificadas** — En los datos o en el analisis
-10. **Sugerencias para analisis futuros** — Preguntas que quedaron abiertas o lineas de investigacion
+9. **Limitaciones identificadas** — En los datos o en el análisis
+10. **Sugerencias para análisis futuros** — Preguntas que quedaron abiertas o líneas de investigación
 11. **Rutas de todos los archivos generados** — Listado completo de deliverables, scripts, datos y assets
 
 ## Diferencias por profundidad
 
-### Estandar
+### Estándar
 - Contenido completo (todas las secciones anteriores)
-- Sugerencias para analisis futuros: breves, 2-3 lineas de investigacion
+- Sugerencias para análisis futuros: breves, 2-3 líneas de investigación
 
 ### Profundo
 - Contenido completo (todas las secciones anteriores)
-- Sugerencias de analisis de seguimiento detalladas: para cada sugerencia incluir pregunta de negocio, hipotesis inicial, datos necesarios y tecnica analitica recomendada
-- Si se usaron tecnicas avanzadas (tests estadisticos, Monte Carlo, root cause analysis): documentar parametros, supuestos y sensibilidad de los resultados
+- Sugerencias de análisis de seguimiento detalladas: para cada sugerencia incluir pregunta de negocio, hipótesis inicial, datos necesarios y técnica analítica recomendada
+- Si se usaron técnicas avanzadas (tests estadísticos, Monte Carlo, root cause analysis): documentar parámetros, supuestos y sensibilidad de los resultados

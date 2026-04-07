@@ -8,6 +8,6 @@
 
 (Sin patrones registrados)
 
-## Heuristicas Aprendidas
+## Heurísticas Aprendidas
 
-(Sin heuristicas registradas)
+(Sin heurísticas registradas)
