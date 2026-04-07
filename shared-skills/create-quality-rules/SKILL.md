@@ -1,6 +1,6 @@
 ---
 name: create-quality-rules
-description: Design and create quality rules. Flow A (gaps): cover gaps identified in a prior coverage assessment. Flow B (specific rule): create a specific rule described by the user without prior assessment. Both flows require mandatory human confirmation before execution.
+description: "Design and create quality rules. Flow A (gaps): cover gaps identified in a prior coverage assessment. Flow B (specific rule): create a specific rule described by the user without prior assessment. Both flows require mandatory human confirmation before execution."
 argument-hint: "[domain] [table (optional)]"
 ---
 
