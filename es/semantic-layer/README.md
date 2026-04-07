@@ -1,41 +1,41 @@
 # semantic-layer
 
-Agente especializado en construccion y mantenimiento de capas semanticas en Stratio Data Governance.
+Agente especializado en construcción y mantenimiento de capas semánticas en Stratio Data Governance.
 
 ## Capacidades
 
-- Construccion de capas semanticas via MCPs de gobernanza (servidor `stratio_gov`)
-- Exploracion de dominios tecnicos y capas semanticas publicadas (servidor `stratio_data`)
-- Pipeline completo de 5 fases: terminos tecnicos → ontologia → vistas de negocio → SQL mappings → terminos semanticos
-- Planificacion interactiva de ontologias (con lectura de ficheros locales .owl/.ttl, CSVs, documentos de negocio)
-- Diagnostico de estado de la capa semantica de un dominio
-- Gestion de business terms en el diccionario de gobernanza
-- Creacion de colecciones de datos (dominios tecnicos) a partir de busquedas en el diccionario de datos
+- Construcción de capas semánticas vía MCPs de gobernanza (servidor `stratio_gov`)
+- Exploración de dominios técnicos y capas semánticas publicadas (servidor `stratio_data`)
+- Pipeline completo de 5 fases: términos técnicos → ontología → vistas de negocio → SQL mappings → términos semánticos
+- Planificación interactiva de ontologías (con lectura de ficheros locales .owl/.ttl, CSVs, documentos de negocio)
+- Diagnóstico de estado de la capa semántica de un dominio
+- Gestión de business terms en el diccionario de gobernanza
+- Creación de colecciones de datos (dominios técnicos) a partir de busquedas en el diccionario de datos
 
-Este agente no ejecuta queries de datos, no genera ficheros en disco y no analiza datos — su output es interaccion con tools MCP de gobernanza + resumenes en chat.
+Este agente no ejecuta queries de datos, no genera ficheros en disco y no analiza datos — su output es interacción con tools MCP de gobernanza + resúmenes en chat.
 
 ## Requisitos
 
 - Acceso a dos servidores MCP de Stratio:
-  - `stratio_gov` (gobernanza): creacion y gestion de artefactos semanticos
+  - `stratio_gov` (gobernanza): creación y gestión de artefactos semánticos
   - `stratio_data` (exploración): consulta de dominios y diccionario de datos
 - Variables de entorno: `MCP_GOV_URL`, `MCP_GOV_API_KEY`, `MCP_SQL_URL`, `MCP_SQL_API_KEY`
-- Configuracion preconfigurada en `.mcp.json` (Claude Code / claude.ai) y en `opencode.json` (OpenCode), ambos preconfigurados para leer la URL y credenciales desde variables de entorno
+- Configuración preconfigurada en `.mcp.json` (Claude Code / claude.ai) y en `opencode.json` (OpenCode), ambos preconfigurados para leer la URL y credenciales desde variables de entorno
 
 ## Scripts de empaquetado
 
-Todos los scripts son no-interactivos (CI/CD-friendly). Si no se pasa `--name`, usan `semantic-layer` por defecto. Todos los scripts aceptan `--lang <codigo>` para generar output en un idioma especifico (ej: `--lang es` para español). Cuando se usa `--lang`, el output va a `dist/<lang>/...` en lugar de `dist/...`.
+Todos los scripts son no-interactivos (CI/CD-friendly). Si no se pasa `--name`, usan `semantic-layer` por defecto. Todos los scripts aceptan `--lang <código>` para generar output en un idioma específico (ej: `--lang es` para español). Cuando se usa `--lang`, el output va a `dist/<lang>/...` en lugar de `dist/...`.
 
-### Scripts especificos (desde esta carpeta)
+### Scripts específicos (desde esta carpeta)
 
 | Script | Plataforma destino | Output | Ejemplo |
 |--------|-------------------|--------|---------|
 | `pack_claude_ai_project.sh` | claude.ai (Projects) | `dist/claude_ai_projects/<nombre>/` | `bash pack_claude_ai_project.sh --name semantic-layer` |
 | `pack_claude_cowork.sh` | Claude Cowork | `dist/claude_cowork/<nombre>/` | `bash pack_claude_cowork.sh --name semantic-layer` |
 
-El script de cowork acepta tambien `--gov-url <URL>`, `--gov-key <KEY>`, `--sql-url <URL>` y `--sql-key <KEY>` para configurar los dos servidores MCP. Si se omiten, quedan como variables de entorno template para configurar despues.
+El script de cowork acepta también `--gov-url <URL>`, `--gov-key <KEY>`, `--sql-url <URL>` y `--sql-key <KEY>` para configurar los dos servidores MCP. Si se omiten, quedan como variables de entorno template para configurar después.
 
-### Scripts genericos (desde la raiz del monorepo)
+### Scripts genéricos (desde la raíz del monorepo)
 
 | Script | Plataforma destino | Output | Ejemplo |
 |--------|-------------------|--------|---------|
@@ -55,18 +55,18 @@ El script de cowork acepta tambien `--gov-url <URL>`, `--gov-key <KEY>`, `--sql-
 | `.claude/settings.local.json` | ❌ | ❌ | ✅ | ❌ |
 
 ¹ Generado (no copia directa): referencias `skills-guides/` → `skills/stratio-semantic-layer/`, placeholder `{{TOOL_PREGUNTAS}}` resuelto.
-² Aplanadas en raiz: `build-semantic-layer.md`, `stratio-semantic-layer.md`, `generate-technical-terms.md`, etc.; guias prefijadas: `skills-guides_stratio-semantic-layer-tools.md`.
-³ Guias renombradas con prefijo: `skills-guides_stratio-semantic-layer-tools.md`.
+² Aplanadas en raíz: `build-semantic-layer.md`, `stratio-semantic-layer.md`, `generate-technical-terms.md`, etc.; guías prefijadas: `skills-guides_stratio-semantic-layer-tools.md`.
+³ Guías renombradas con prefijo: `skills-guides_stratio-semantic-layer-tools.md`.
 ⁴ Guides dentro de cada skill (autocontenida) + en `skills-guides/` para referencias desde `CLAUDE.md`/`AGENTS.md`.
 
 ### Empaquetado como Claude Cowork
 
 Genera un paquete para configurar el agente en Claude Cowork sin reemplazar al orquestador. El script construye el plugin internamente (skills + MCP, sin agente) y lo combina con las instrucciones del agente. Produce dos ficheros:
 
-| Fichero | Que es | Para que sirve |
+| Fichero | Qué es | Para que sirve |
 |---------|--------|----------------|
-| `CLAUDE.md` | Folder instructions (generado desde AGENTS.md) | Instrucciones del agente — Cowork las lee automaticamente del directorio de trabajo |
-| `<nombre>.zip` | Plugin ZIP (solo skills + MCP, sin agente) | Se instala como plugin en Cowork; aporta las skills y la conexion MCP |
+| `CLAUDE.md` | Folder instructions (generado desde AGENTS.md) | Instrucciones del agente — Cowork las lee automáticamente del directorio de trabajo |
+| `<nombre>.zip` | Plugin ZIP (solo skills + MCP, sin agente) | Se instala como plugin en Cowork; aporta las skills y la conexión MCP |
 
 > **Nota:** Los plugins de Claude no incluyen instrucciones de agente (CLAUDE.md) — solo skills, MCP y hooks. Por eso el `CLAUDE.md` va aparte, como fichero del directorio de trabajo.
 
@@ -76,15 +76,15 @@ bash pack_claude_cowork.sh --name semantic-layer --gov-url https://gov.ejemplo.c
 
 El resultado se encuentra en `dist/claude_cowork/semantic-layer/`.
 
-**Como usarlo en Cowork:**
+**Cómo usarlo en Cowork:**
 
-1. Copiar `CLAUDE.md` al directorio de trabajo del proyecto en Cowork — Cowork lo lee automaticamente como folder instructions
-3. Instalar `<nombre>.zip` como plugin en Cowork (aporta las skills `/build-semantic-layer`, `/stratio-semantic-layer`, `/generate-technical-terms`, `/create-ontology`, `/create-business-views`, `/create-sql-mappings`, `/create-semantic-terms`, `/manage-business-terms`, `/create-data-collection` y la conexion MCP)
+1. Copiar `CLAUDE.md` al directorio de trabajo del proyecto en Cowork — Cowork lo lee automáticamente como folder instructions
+3. Instalar `<nombre>.zip` como plugin en Cowork (aporta las skills `/build-semantic-layer`, `/stratio-semantic-layer`, `/generate-technical-terms`, `/create-ontology`, `/create-business-views`, `/create-sql-mappings`, `/create-semantic-terms`, `/manage-business-terms`, `/create-data-collection` y la conexión MCP)
 4. El orquestador de Cowork lee las instrucciones del `CLAUDE.md` y delega a las skills del plugin cuando corresponda
 
 ### Empaquetado como Claude AI Project (claude.ai)
 
-Genera los ficheros aplanados (skills, guias):
+Genera los ficheros aplanados (skills, guías):
 
 ```bash
 bash pack_claude_ai_project.sh --name semantic-layer
@@ -93,9 +93,9 @@ bash pack_claude_ai_project.sh --name semantic-layer
 Para configurarlo en claude.ai:
 
 1. Crear un nuevo **Project** en [claude.ai](https://claude.ai)
-2. Abrir `dist/claude_ai_projects/semantic-layer/` y subir **todos los ficheros** (excepto `CLAUDE.md`) a la seccion de archivos del proyecto
+2. Abrir `dist/claude_ai_projects/semantic-layer/` y subir **todos los ficheros** (excepto `CLAUDE.md`) a la sección de archivos del proyecto
 3. Abrir `CLAUDE.md` del paquete generado, copiar **todo su contenido** y pegarlo en el campo **Instructions** del proyecto
-4. Guardar el proyecto — el agente estara listo para usar
+4. Guardar el proyecto — el agente estará listo para usar
 
 ## Compatibilidad
 
@@ -108,18 +108,18 @@ Los pack scripts generan el formato correcto para cada plataforma (renombrando f
 
 ## Skills disponibles
 
-| Skill | Comando | Descripcion |
+| Skill | Comando | Descripción |
 |-------|---------|-------------|
-| Pipeline completo | `/build-semantic-layer` | Pipeline de 5 fases para construir la capa semantica de un dominio |
-| Referencia MCP semantica | `/stratio-semantic-layer` | Referencia de herramientas MCP de gobernanza: reglas, patrones y buenas practicas |
-| Terminos tecnicos | `/generate-technical-terms` | Generar descripciones tecnicas de tablas y columnas |
-| Ontologia | `/create-ontology` | Crear, ampliar o borrar clases de ontologia con planificacion interactiva |
-| Vistas de negocio | `/create-business-views` | Crear, regenerar o borrar vistas de negocio desde una ontologia |
+| Pipeline completo | `/build-semantic-layer` | Pipeline de 5 fases para construir la capa semántica de un dominio |
+| Referencia MCP semántica | `/stratio-semantic-layer` | Referencia de herramientas MCP de gobernanza: reglas, patrones y buenas prácticas |
+| Términos técnicos | `/generate-technical-terms` | Generar descripciones técnicas de tablas y columnas |
+| Ontología | `/create-ontology` | Crear, ampliar o borrar clases de ontología con planificación interactiva |
+| Vistas de negocio | `/create-business-views` | Crear, regenerar o borrar vistas de negocio desde una ontología |
 | SQL Mappings | `/create-sql-mappings` | Crear o actualizar SQL mappings para vistas existentes |
-| Terminos semanticos | `/create-semantic-terms` | Generar terminos semanticos de negocio para las vistas de un dominio |
+| Términos semánticos | `/create-semantic-terms` | Generar términos semánticos de negocio para las vistas de un dominio |
 | Business Terms | `/manage-business-terms` | Crear Business Terms con relaciones a activos de datos |
-| Coleccion de datos | `/create-data-collection` | Buscar tablas en el diccionario y crear una nueva coleccion de datos |
+| Colección de datos | `/create-data-collection` | Buscar tablas en el diccionario y crear una nueva colección de datos |
 
-Todas las skills viven en `shared-skills/` en la raiz del monorepo y se comparten con el agente governance-officer.
+Todas las skills viven en `shared-skills/` en la raíz del monorepo y se comparten con el agente governance-officer.
 
-**Nota**: Este agente no usa memoria persistente en ficheros ni genera ficheros en disco — el output principal es interaccion con tools MCP + resumenes en chat.
+**Nota**: Este agente no usa memoria persistente en ficheros ni genera ficheros en disco — el output principal es interacción con tools MCP + resúmenes en chat.

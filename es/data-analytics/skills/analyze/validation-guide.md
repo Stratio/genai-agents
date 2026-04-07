@@ -1,22 +1,22 @@
-# Guia de Validacion de Output Final
+# Guía de Validación de Output Final
 
-Checklist de validacion del producto terminado antes de reportar al usuario. La validacion se estructura en 4 bloques con criterios PASS/WARNING/FAIL por item.
+Checklist de validación del producto terminado antes de reportar al usuario. La validación se estructura en 4 bloques con criterios PASS/WARNING/FAIL por item.
 
-## Cuando generar
+## Cuándo generar
 
 | Profundidad | Bloques | Formato |
 |-------------|---------|---------|
-| Rapido | Solo Bloque A (integridad de archivos) | Solo chat (sin fichero) |
-| Estandar | Bloques A + B + C | Generar `validation/validation.md` + resumen en chat |
+| Rápido | Solo Bloque A (integridad de archivos) | Solo chat (sin fichero) |
+| Estándar | Bloques A + B + C | Generar `validation/validation.md` + resumen en chat |
 | Profundo | Bloques A + B + C + D | Generar `validation/validation.md` + resumen en chat |
 
-**Override del usuario**: Si el usuario pide explicitamente validacion en otros formatos (PDF, HTML, DOCX), generar el .md primero y luego convertir con:
+**Override del usuario**: Si el usuario pide explícitamente validación en otros formatos (PDF, HTML, DOCX), generar el .md primero y luego convertir con:
 ```bash
 bash -c "source .venv/bin/activate && python tools/md_to_report.py output/[ANALISIS_DIR]/validation/validation.md --style corporate"
 ```
-Anadir `--html` si solicito HTML. Anadir `--docx` si solicito DOCX.
+Añadir `--html` si solicitó HTML. Añadir `--docx` si solicitó DOCX.
 
-## Bloques de Validacion
+## Bloques de Validación
 
 ### Bloque A — Integridad de archivos
 
@@ -28,16 +28,16 @@ Revisar que cada fichero declarado en el plan aparece en el listado con tamaño 
 
 **Si un deliverable no aparece o tiene 0 bytes → FAIL bloqueante**: regenerar el fichero antes de continuar con la validación. No pasar al Bloque B hasta que el Bloque A sea PASS.
 
-| Item | Verificacion | Criterio |
+| Item | Verificación | Criterio |
 |------|-------------|----------|
 | report.md | Existe en `output/[ANALISIS_DIR]/` | PASS si existe, FAIL si no |
 | Deliverables solicitados | Cada formato pedido tiene su archivo | PASS si todos existen, FAIL si falta alguno |
-| Assets referenciados | Cada grafica referenciada en report.md existe en `assets/` | PASS si todos existen, WARNING si falta alguno |
+| Assets referenciados | Cada gráfica referenciada en report.md existe en `assets/` | PASS si todos existen, WARNING si falta alguno |
 | CSVs referenciados | Datos intermedios referenciados en scripts existen en `data/` | PASS si todos existen, WARNING si falta alguno |
-| Reasoning | reasoning.md existe en `reasoning/` | PASS si existe (solo verificar en Estandar/Profundo) |
-| Validation | validation.md existe en `validation/` | PASS si existe (solo verificar en Estandar/Profundo) |
+| Reasoning | reasoning.md existe en `reasoning/` | PASS si existe (solo verificar en Estándar/Profundo) |
+| Validation | validation.md existe en `validation/` | PASS si existe (solo verificar en Estándar/Profundo) |
 
-**Ajuste para Rapido**: En profundidad Rapido, solo verificar deliverables (report.md, formatos solicitados, assets). No verificar reasoning ni validation ya que no se generan como fichero.
+**Ajuste para Rápido**: En profundidad Rápido, solo verificar deliverables (report.md, formatos solicitados, assets). No verificar reasoning ni validation ya que no se generan como fichero.
 
 **Criterios:**
 - **PASS**: Todos los archivos esperados existen
@@ -46,47 +46,47 @@ Revisar que cada fichero declarado en el plan aparece en el listado con tamaño 
 
 ### Bloque B — Calidad de visualizaciones
 
-Para cada grafica en `output/[ANALISIS_DIR]/assets/`:
+Para cada gráfica en `output/[ANALISIS_DIR]/assets/`:
 
-| Item | Verificacion | Criterio |
+| Item | Verificación | Criterio |
 |------|-------------|----------|
-| Tamano minimo | Archivo > 1 KB | PASS si > 1KB, WARNING si ≤ 1KB |
+| Tamaño mínimo | Archivo > 1 KB | PASS si > 1KB, WARNING si ≤ 1KB |
 | Datos suficientes | > 5 valores no-nulos en columna principal | PASS si suficientes, WARNING si no |
 
-**Umbrales por tipo de grafica:**
+**Umbrales por tipo de gráfica:**
 
-| Tipo | Minimo de puntos de datos |
+| Tipo | Mínimo de puntos de datos |
 |------|--------------------------|
 | Tendencia (line chart) | > 6 puntos temporales |
-| Ranking (bar chart) | > 3 categorias |
-| Distribucion (histogram, box) | > 10 valores |
+| Ranking (bar chart) | > 3 categorías |
+| Distribución (histogram, box) | > 10 valores |
 | Scatter | > 10 puntos |
 | Heatmap | > 2 filas y > 2 columnas |
 
 **Criterios:**
-- **PASS**: Grafica cumple tamano y datos minimos
-- **WARNING**: Grafica existe pero no cumple umbrales → excluir del deliverable y documentar por que
-- **FAIL**: Grafica no se genero (cubierto en Bloque A)
+- **PASS**: Gráfica cumple tamaño y datos mínimos
+- **WARNING**: Gráfica existe pero no cumple umbrales → excluir del deliverable y documentar por que
+- **FAIL**: Gráfica no se generó (cubierto en Bloque A)
 
-### Bloque C — Completitud del analisis
+### Bloque C — Completitud del análisis
 
-| Item | Verificacion | Criterio |
+| Item | Verificación | Criterio |
 |------|-------------|----------|
-| Dimensiones cubiertas | Cada dimension pedida por el usuario aparece en al menos un analisis/grafica | PASS si todas cubiertas, WARNING si falta alguna |
+| Dimensiones cubiertas | Cada dimensión pedida por el usuario aparece en al menos un análisis/gráfica | PASS si todas cubiertas, WARNING si falta alguna |
 | Secciones de reasoning | Todas las secciones obligatorias presentes (ver reasoning-guide.md) | PASS si completo, WARNING si falta alguna |
-| Hipotesis validadas | Cada hipotesis formulada tiene resultado (CONFIRMADA/REFUTADA/PARCIAL) | PASS si todas tienen resultado, WARNING si alguna queda sin validar |
+| Hipótesis validadas | Cada hipótesis formulada tiene resultado (CONFIRMADA/REFUTADA/PARCIAL) | PASS si todas tienen resultado, WARNING si alguna queda sin validar |
 | So What test | Hallazgos del resumen ejecutivo pasan las 4 preguntas obligatorias | PASS si todos pasan, WARNING si alguno no |
 
 **Criterios:**
-- **PASS**: Analisis cubre todas las dimensiones y secciones esperadas
-- **WARNING**: Falta alguna dimension o seccion — documentar que falta y por que
+- **PASS**: Análisis cubre todas las dimensiones y secciones esperadas
+- **WARNING**: Falta alguna dimensión o sección — documentar que falta y por que
 - **FAIL**: No aplica (la completitud es siempre WARNING, nunca bloqueante)
 
 ### Bloque D — Consistencia de datos
 
-Para 1-2 KPIs clave del analisis:
+Para 1-2 KPIs clave del análisis:
 
-| Item | Verificacion | Criterio |
+| Item | Verificación | Criterio |
 |------|-------------|----------|
 | KPI en deliverable vs datos | Comparar valor reportado en deliverable con valor calculado desde `output/[ANALISIS_DIR]/data/` | PASS si discrepancia ≤ 1% |
 | Totales cruzados | Si hay subtotales, verificar que suman al total | PASS si cuadran, WARNING si discrepancia ≤ 5% |
@@ -99,7 +99,7 @@ Para 1-2 KPIs clave del analisis:
 ## Formato del fichero validation.md
 
 ```markdown
-# Validacion de Output
+# Validación de Output
 
 ## Resumen
 - **Estado general**: PASS / WARNING / FAIL
@@ -113,15 +113,15 @@ Para 1-2 KPIs clave del analisis:
 | ... | ... | ... |
 
 ## Bloque B — Calidad de visualizaciones
-| Grafica | Tamano | Datos | Estado | Detalle |
+| Gráfica | Tamaño | Datos | Estado | Detalle |
 |---------|--------|-------|--------|---------|
-| ventas_por_region.png | 45 KB | 12 categorias | PASS | — |
+| ventas_por_region.png | 45 KB | 12 categorías | PASS | — |
 | ... | ... | ... | ... | ... |
 
-## Bloque C — Completitud del analisis
+## Bloque C — Completitud del análisis
 | Item | Estado | Detalle |
 |------|--------|---------|
-| Dimensiones cubiertas | PASS | region, tiempo, producto |
+| Dimensiones cubiertas | PASS | región, tiempo, producto |
 | ... | ... | ... |
 
 ## Bloque D — Consistencia de datos
@@ -134,4 +134,4 @@ Para 1-2 KPIs clave del analisis:
 ## Regla general
 
 - **Bloque A (integridad de archivos)**: FAIL es **bloqueante** — regenerar los ficheros faltantes antes de continuar.
-- **Bloques B, C, D**: la validacion **no bloquea la entrega**. Si hay WARNINGs o FAILs, se reportan en el chat junto con el resumen de hallazgos, pero el analisis se entrega igualmente. El objetivo es transparencia, no bloqueo.
+- **Bloques B, C, D**: la validación **no bloquea la entrega**. Si hay WARNINGs o FAILs, se reportan en el chat junto con el resumen de hallazgos, pero el análisis se entrega igualmente. El objetivo es transparencia, no bloqueo.
