@@ -500,3 +500,87 @@ claude .
 > This variable disables TLS certificate validation on all Node.js connections in the process. Use it **only in trusted environments** — never in production.
 
 On startup, Claude Code loads `CLAUDE.md` as the agent instructions and the available skills in `.claude/skills/`. MCP servers are read from `.mcp.json`. Skills are invoked with `/skill-name` in the chat.
+
+#### 6c. Test in Claude Desktop / Claude Cowork
+
+Desktop applications (Claude Desktop, Claude Cowork) are not launched from a terminal, so `export` commands do not reach them.
+
+**Local MCP servers** (`command` + `args`): add the variable to the `env` block of each server in the configuration file:
+
+- macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- Windows: `%APPDATA%\Claude\claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "my-server": {
+      "command": "npx",
+      "args": ["-y", "@my-org/my-mcp-server"],
+      "env": {
+        "NODE_TLS_REJECT_UNAUTHORIZED": "0",
+        "MY_SERVER_URL": "https://my-server.example.com/mcp"
+      }
+    }
+  }
+}
+```
+
+**Remote MCP servers** (`url`): there is no child process to configure — the desktop app itself makes the TLS connection.
+
+##### macOS
+
+**Option A — Launch from terminal (quick, non-persistent):**
+
+```bash
+NODE_TLS_REJECT_UNAUTHORIZED=0 open -a "Claude"
+```
+
+The environment variable is inherited by the Electron process. This must be done every time the app is opened.
+
+**Option B — `launchctl setenv` (persistent for the GUI session):**
+
+```bash
+launchctl setenv NODE_TLS_REJECT_UNAUTHORIZED 0
+```
+
+Then restart Claude Desktop / Claude Cowork. The variable applies to **all** GUI applications in the session. To revert:
+
+```bash
+launchctl unsetenv NODE_TLS_REJECT_UNAUTHORIZED
+```
+
+##### Windows
+
+**Option A — Launch from terminal (quick, non-persistent):**
+
+CMD:
+
+```cmd
+set NODE_TLS_REJECT_UNAUTHORIZED=0 && start Claude
+```
+
+PowerShell:
+
+```powershell
+$env:NODE_TLS_REJECT_UNAUTHORIZED="0"; Start-Process Claude
+```
+
+This must be done every time the app is opened.
+
+**Option B — User environment variable (persistent):**
+
+PowerShell:
+
+```powershell
+[System.Environment]::SetEnvironmentVariable("NODE_TLS_REJECT_UNAUTHORIZED", "0", "User")
+```
+
+Or manually: **System Settings > Environment Variables > User variables > New** — name `NODE_TLS_REJECT_UNAUTHORIZED`, value `0`.
+
+Then restart Claude Desktop / Claude Cowork. To revert:
+
+```powershell
+[System.Environment]::SetEnvironmentVariable("NODE_TLS_REJECT_UNAUTHORIZED", $null, "User")
+```
+
+> Both options disable TLS certificate validation on all Node.js connections in the process. Use them **only in trusted environments** — never in production.
