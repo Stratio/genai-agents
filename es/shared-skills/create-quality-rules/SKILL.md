@@ -1,12 +1,12 @@
 ---
 name: create-quality-rules
-description: Disenar y crear reglas de calidad. Flujo A (gaps): cubrir gaps identificados en una evaluacion de cobertura previa. Flujo B (regla concreta): crear una regla especifica descrita por el usuario sin evaluacion previa. Ambos flujos requieren confirmacion humana obligatoria antes de ejecutar.
+description: "Diseñar y crear reglas de calidad. Flujo A (gaps): cubrir gaps identificados en una evaluacion de cobertura previa. Flujo B (regla concreta): crear una regla especifica descrita por el usuario sin evaluacion previa. Ambos flujos requieren confirmacion humana obligatoria antes de ejecutar."
 argument-hint: "[dominio] [tabla (opcional)]"
 ---
 
-# Skill: Creacion de Reglas de Calidad
+# Skill: Creación de Reglas de Calidad
 
-Workflow para disenar, proponer y crear reglas de calidad con aprobacion humana. Esta skill tiene un prerequisito obligatorio y una pausa de aprobacion critica.
+Workflow para diseñar, proponer y crear reglas de calidad con aprobacion humana. Esta skill tiene un prerequisito obligatorio y una pausa de aprobacion critica.
 
 ## PREREQUISITO
 
