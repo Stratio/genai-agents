@@ -178,7 +178,7 @@ if [ ${#_GUIDES_MAP[@]} -gt 0 ]; then
 fi
 
 # --- Placeholder substitution ---
-sed -i 's/{{TOOL_PREGUNTAS}}/ (`AskUserQuestion`)/g' "$PLUGIN_BUILD/skills/"*/SKILL.md 2>/dev/null || true
+sed -i 's/{{TOOL_QUESTIONS}}/ (`AskUserQuestion`)/g' "$PLUGIN_BUILD/skills/"*/SKILL.md 2>/dev/null || true
 
 # --- Plugin .mcp.json ---
 if [ -n "$ARG_URL" ] || [ -n "$ARG_KEY" ]; then
@@ -227,7 +227,7 @@ echo "Generating plugin ZIP..."
 # ============================================================
 echo "Generating CLAUDE.md from AGENTS.md..."
 sed 's|`skills-guides/stratio-data-tools\.md`|`skills/analyze/stratio-data-tools.md`|g' AGENTS.md > "$COWORK_DIR/CLAUDE.md"
-sed -i 's/{{TOOL_PREGUNTAS}}/ (`AskUserQuestion`)/g' "$COWORK_DIR/CLAUDE.md"
+sed -i 's/{{TOOL_QUESTIONS}}/ (`AskUserQuestion`)/g' "$COWORK_DIR/CLAUDE.md"
 
 # --- User README ---
 if [ -f "USER_README.md" ]; then

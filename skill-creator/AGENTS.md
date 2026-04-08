@@ -209,7 +209,7 @@ The complete reference for skill creation is in the `/skill-creator` skill. Alwa
 
 ## 5. User Interaction
 
-- **Question convention**: {{TOOL_PREGUNTAS}} — always with structured options, never open-ended questions without context
+- **Question convention**: {{TOOL_QUESTIONS}} — always with structured options, never open-ended questions without context
 - **Language**: ALWAYS respond in the user's language
 - **Transparency**: show the design plan before generating
 - **Progress**: report progress during generation (file by file)

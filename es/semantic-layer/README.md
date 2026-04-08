@@ -54,7 +54,7 @@ El script de cowork acepta también `--gov-url <URL>`, `--gov-key <KEY>`, `--sql
 | `plugin.json` | ❌ | ✅ (en ZIP) | ❌ | ❌ |
 | `.claude/settings.local.json` | ❌ | ❌ | ✅ | ❌ |
 
-¹ Generado (no copia directa): referencias `skills-guides/` → `skills/stratio-semantic-layer/`, placeholder `{{TOOL_PREGUNTAS}}` resuelto.
+¹ Generado (no copia directa): referencias `skills-guides/` → `skills/stratio-semantic-layer/`, placeholder `{{TOOL_QUESTIONS}}` resuelto.
 ² Aplanadas en raíz: `build-semantic-layer.md`, `stratio-semantic-layer.md`, `generate-technical-terms.md`, etc.; guías prefijadas: `skills-guides_stratio-semantic-layer-tools.md`.
 ³ Guías renombradas con prefijo: `skills-guides_stratio-semantic-layer-tools.md`.
 ⁴ Guides dentro de cada skill (autocontenida) + en `skills-guides/` para referencias desde `CLAUDE.md`/`AGENTS.md`.

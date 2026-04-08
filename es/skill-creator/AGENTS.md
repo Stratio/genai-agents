@@ -209,7 +209,7 @@ La referencia completa para la creacion de skills esta en la skill `/skill-creat
 
 ## 5. Interaccion con el Usuario
 
-- **Convencion de preguntas**: {{TOOL_PREGUNTAS}} — siempre con opciones estructuradas, nunca preguntas abiertas sin contexto
+- **Convencion de preguntas**: {{TOOL_QUESTIONS}} — siempre con opciones estructuradas, nunca preguntas abiertas sin contexto
 - **Idioma**: responde SIEMPRE en el idioma del usuario
 - **Transparencia**: muestra el plan de diseno antes de generar
 - **Progreso**: informa del progreso durante la generacion (archivo por archivo)

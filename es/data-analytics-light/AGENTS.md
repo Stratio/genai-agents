@@ -249,7 +249,7 @@ La generación de informes formales (Markdown estructurado, PDF, DOCX, PPTX, HTM
 
 ## 10. Interacción con el Usuario
 
-**Convención de preguntas**: Siempre que estas instrucciones digan "preguntar al usuario con opciones", presentar las opciones de forma clara y estructurada. Si el entorno dispone de una tool para preguntas interactivas{{TOOL_PREGUNTAS}}, invocarla obligatoriamente — nunca escribir las preguntas en el chat cuando una tool de preguntar al usuario esté disponible. Si no, presentar las opciones como lista numerada en el chat, con formato legible, e indicar al usuario que responda con el número o nombre de su elección. Para selección múltiple, indicar que puede elegir varias separadas por coma. Aplicar esta convención en toda referencia a "preguntas al usuario con opciones" en skills y guías.
+**Convención de preguntas**: Siempre que estas instrucciones digan "preguntar al usuario con opciones", presentar las opciones de forma clara y estructurada. Si el entorno dispone de una tool para preguntas interactivas{{TOOL_QUESTIONS}}, invocarla obligatoriamente — nunca escribir las preguntas en el chat cuando una tool de preguntar al usuario esté disponible. Si no, presentar las opciones como lista numerada en el chat, con formato legible, e indicar al usuario que responda con el número o nombre de su elección. Para selección múltiple, indicar que puede elegir varias separadas por coma. Aplicar esta convención en toda referencia a "preguntas al usuario con opciones" en skills y guías.
 
 - **Idioma**: Responder en el mismo idioma que usa el usuario, incluyendo tablas, visualizaciones y todo contenido generado
 - SIEMPRE preguntar el dominio si no está claro

@@ -181,7 +181,7 @@ if [ ${#_GUIDES_MAP[@]} -gt 0 ]; then
 fi
 
 # --- Placeholder substitution ---
-sed -i 's/{{TOOL_PREGUNTAS}}/ (`AskUserQuestion`)/g' "$PLUGIN_BUILD/skills/"*/SKILL.md 2>/dev/null || true
+sed -i 's/{{TOOL_QUESTIONS}}/ (`AskUserQuestion`)/g' "$PLUGIN_BUILD/skills/"*/SKILL.md 2>/dev/null || true
 
 # --- Plugin .mcp.json (2 servers: gov + sql) ---
 GOV_URL_VALUE="${ARG_GOV_URL:-\$\{MCP_GOV_URL:-http://127.0.0.1:8080/mcp\}}"
@@ -251,7 +251,7 @@ echo "Generating plugin ZIP..."
 # ============================================================
 echo "Generating CLAUDE.md from AGENTS.md..."
 sed 's|`skills-guides/stratio-semantic-layer-tools\.md`|`skills/stratio-semantic-layer/stratio-semantic-layer-tools.md`|g' AGENTS.md > "$COWORK_DIR/CLAUDE.md"
-sed -i 's/{{TOOL_PREGUNTAS}}/ (`AskUserQuestion`)/g' "$COWORK_DIR/CLAUDE.md"
+sed -i 's/{{TOOL_QUESTIONS}}/ (`AskUserQuestion`)/g' "$COWORK_DIR/CLAUDE.md"
 
 # --- User README ---
 if [ -f "USER_README.md" ]; then
