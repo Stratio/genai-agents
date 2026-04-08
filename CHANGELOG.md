@@ -39,3 +39,4 @@
 * [ROCK-14601] Add governance-officer agent combining semantic layer and data quality; promote data-quality and semantic-layer local skills to shared-skills; rename exploration.md to quality-exploration.md in shared-skill-guides
 * [ROCK-NA] Document NODE_TLS_REJECT_UNAUTHORIZED setup for Claude Desktop and Claude Cowork on macOS and Windows (local and remote MCP servers)
 * [ROCK-NA] Add skill-creator agent: interactive workflow for designing and generating AI agent skills (SKILL.md) with requirements gathering, design, generation, quality review and ZIP packaging; includes shared skill and full Spanish translation
+* [ROCK-NA] Rename placeholder {{TOOL_PREGUNTAS}} to {{TOOL_QUESTIONS}} across all AGENTS.md files, pack scripts and READMEs for consistency with the English-primary i18n convention
