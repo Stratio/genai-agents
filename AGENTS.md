@@ -23,6 +23,7 @@ genai-agents/
     create-quality-rules/
     create-quality-planification/
     quality-report/
+    skill-creator/
   shared-skill-guides/     # Shared guides (not skills; copied to skills-guides/ in the output)
     stratio-data-tools.md
     stratio-semantic-layer-tools.md
@@ -35,6 +36,7 @@ genai-agents/
     semantic-layer/
     data-quality/
     governance-officer/
+    skill-creator/
   data-analytics/          # Full agent (analysis + multi-format reports)
     shared-skills          # List of shared skills included by this agent
     shared-guides          # List of shared-skill-guides that AGENTS.md references directly
@@ -50,6 +52,8 @@ genai-agents/
   governance-officer/      # Governance officer: semantic layer + data quality combined
     shared-skills
     shared-guides
+  skill-creator/           # Skill creation agent
+    shared-skills
 ```
 
 ## Development instructions
@@ -80,6 +84,9 @@ Agent specialized in data governance and quality. Evaluates quality coverage by 
 
 ### governance-officer
 Combined governance agent with the full capabilities of both semantic-layer and data-quality. Builds and maintains semantic layers (ontologies, views, mappings, terms) AND manages data quality (assessment, rule creation, scheduling, reports). Has full access to all governance and data MCP tools with no restrictions.
+
+### skill-creator
+Agent for designing and generating AI agent skills (SKILL.md files). Interactive workflow: requirements gathering, skill design following proven principles, SKILL.md generation with supporting files, quality review with checklist, and ZIP packaging for download. No MCPs — works purely with conversation and file generation.
 
 ## Packaging scripts (root)
 

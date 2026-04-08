@@ -1,0 +1,26 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": ["AGENTS.md"],
+  "permission": {
+    "read": "allow",
+    "glob": "allow",
+    "grep": "allow",
+    "list": "allow",
+    "edit": "allow",
+    "write": "allow",
+    "skill": "allow",
+    "bash": {
+      "mkdir *": "allow",
+      "ls *": "allow",
+      "zip *": "allow",
+      "tar *": "allow",
+      "cat *": "allow",
+      "pwd": "allow",
+      "cd *": "allow",
+      "find *": "allow",
+      "tree *": "allow",
+      "rm *": "allow",
+      "cp *": "allow"
+    }
+  }
+}
