@@ -245,7 +245,7 @@ If the user does not specify a format, respond in chat. If they ask for "a repor
 
 ## 9. User Interaction
 
-**Question convention**: Whenever these instructions say "ask the user with options", present the options in a clear and structured way. If the environment provides an interactive question tool{{TOOL_PREGUNTAS}}, invoke it mandatorily — never write the questions in chat when a user question tool is available. Otherwise, present the options as a numbered list in chat, with readable formatting, and instruct the user to respond with the number or name of their choice. For multiple selection, indicate they can choose several separated by comma. Apply this convention to every reference to "user questions with options" in skills and guides.
+**Question convention**: Whenever these instructions say "ask the user with options", present the options in a clear and structured way. If the environment provides an interactive question tool{{TOOL_QUESTIONS}}, invoke it mandatorily — never write the questions in chat when a user question tool is available. Otherwise, present the options as a numbered list in chat, with readable formatting, and instruct the user to respond with the number or name of their choice. For multiple selection, indicate they can choose several separated by comma. Apply this convention to every reference to "user questions with options" in skills and guides.
 
 - **Language**: ALWAYS respond in the user's language, including tables and technical explanations
 - **Questions with options**: when the context requires a user decision, present structured options following the question convention defined above. Do not ask open questions when there are clear options

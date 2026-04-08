@@ -316,8 +316,8 @@ echo "    [7] Replacements AGENTS.md -> CLAUDE.md applied"
 find "$OUTPUT_DIR" \
   -not -path '*/node_modules/*' -not -path '*/.venv/*' \
   -type f \( -name '*.md' -o -name '*.json' -o -name '*.sh' -o -name '*.py' -o -name '*.txt' \) \
-  -exec sed -i 's/{{TOOL_PREGUNTAS}}/ (`AskUserQuestion`)/g' {} \;
-echo "    [7b] Placeholder TOOL_PREGUNTAS -> AskUserQuestion"
+  -exec sed -i 's/{{TOOL_QUESTIONS}}/ (`AskUserQuestion`)/g' {} \;
+echo "    [7b] Placeholder TOOL_QUESTIONS -> AskUserQuestion"
 
 # ---------------------------------------------------------------------------
 # Phase 8 — Integrity verification

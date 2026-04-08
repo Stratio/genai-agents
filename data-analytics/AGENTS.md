@@ -317,7 +317,7 @@ For mandatory content and template, see skill `/analyze` [reasoning-guide.md](re
 
 ## 10. User Interaction
 
-**Question convention**: Whenever these instructions say "ask the user with options", present the options clearly and in a structured manner. If the environment provides a tool for interactive questions{{TOOL_PREGUNTAS}}, invoke it mandatorily — never write the questions in chat when a user-questioning tool is available. If not, present the options as a numbered list in chat, in a readable format, and indicate to the user to respond with the number or name of their choice. For multiple selection, indicate they can choose several separated by comma. Apply this convention to every reference to "user questions with options" in skills and guides.
+**Question convention**: Whenever these instructions say "ask the user with options", present the options clearly and in a structured manner. If the environment provides a tool for interactive questions{{TOOL_QUESTIONS}}, invoke it mandatorily — never write the questions in chat when a user-questioning tool is available. If not, present the options as a numbered list in chat, in a readable format, and indicate to the user to respond with the number or name of their choice. For multiple selection, indicate they can choose several separated by comma. Apply this convention to every reference to "user questions with options" in skills and guides.
 
 - **Response and deliverable language**: Respond in the same language the user uses. Reports, reasoning, validations, and all generated deliverables must be written in the user's language, unless the user explicitly indicates a different language
 - ALWAYS ask about the domain if it is not clear

@@ -48,7 +48,7 @@ El script de cowork acepta también `--url <MCP_URL>` y `--key <API_KEY>`. Si se
 | `plugin.json` | ❌ | ✅ (en ZIP) | ❌ | ❌ |
 | `.claude/settings.local.json` | ❌ | ❌ | ✅ | ❌ |
 
-¹ Generado (no copia directa): referencias `skills-guides/` → `skills/analyze/`, placeholder `{{TOOL_PREGUNTAS}}` resuelto.
+¹ Generado (no copia directa): referencias `skills-guides/` → `skills/analyze/`, placeholder `{{TOOL_QUESTIONS}}` resuelto.
 ² Aplanadas en raíz: `analyze.md`, `analyze_*.md`, `explore-data.md`, `propose-knowledge.md`; guías prefijadas: `skills-guides_stratio-data-tools.md`.
 ³ Guías renombradas con prefijo: `skills-guides_stratio-data-tools.md`.
 ⁴ Guides dentro de cada skill (autocontenida) + en `skills-guides/` para referencias desde `CLAUDE.md`/`AGENTS.md`.

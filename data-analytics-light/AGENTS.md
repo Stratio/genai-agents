@@ -249,7 +249,7 @@ Formal report generation (structured Markdown, PDF, DOCX, PPTX, HTML) is delegat
 
 ## 10. User Interaction
 
-**Question convention**: Whenever these instructions say "ask the user with options", present the options clearly and in a structured manner. If the environment provides an interactive question tool{{TOOL_PREGUNTAS}}, invoke it mandatorily — never write the questions in chat when a user question tool is available. Otherwise, present the options as a numbered list in chat, with readable formatting, and tell the user to respond with the number or name of their choice. For multiple selection, indicate that they can choose several separated by commas. Apply this convention to every reference to "questions to the user with options" in skills and guides.
+**Question convention**: Whenever these instructions say "ask the user with options", present the options clearly and in a structured manner. If the environment provides an interactive question tool{{TOOL_QUESTIONS}}, invoke it mandatorily — never write the questions in chat when a user question tool is available. Otherwise, present the options as a numbered list in chat, with readable formatting, and tell the user to respond with the number or name of their choice. For multiple selection, indicate that they can choose several separated by commas. Apply this convention to every reference to "questions to the user with options" in skills and guides.
 
 - **Language**: Respond in the same language the user uses, including tables, visualizations, and all generated content
 - ALWAYS ask for the domain if it is not clear

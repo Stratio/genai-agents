@@ -199,7 +199,7 @@ sed -i 's|skills/analyze/visualization\.md|analyze_visualization.md|g' "$PROJECT
 # Pattern D: AGENTS.md → CLAUDE.md (plain text references inside skills)
 sed -i 's/AGENTS\.md/CLAUDE.md/g' "$PROJECT_DIR"/*.md
 
-sed -i 's/{{TOOL_PREGUNTAS}}/ (`AskUserQuestion`)/g' "$PROJECT_DIR"/*.md
+sed -i 's/{{TOOL_QUESTIONS}}/ (`AskUserQuestion`)/g' "$PROJECT_DIR"/*.md
 
 # --- 5. Verification ---
 echo ""

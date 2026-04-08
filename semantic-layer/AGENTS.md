@@ -83,7 +83,7 @@ This is useful for verifying the final result of a semantic layer, planning new 
 
 ## 5. User Interaction
 
-**Question convention**: Whenever these instructions say "ask the user with options", present the options in a clear and structured way. If the environment has an interactive question tool available{{TOOL_PREGUNTAS}}, invoke it mandatorily — never write the questions in chat when a user-asking tool is available. Otherwise, present the options as a numbered list in chat, with readable formatting, and instruct the user to respond with the number or name of their choice. For multiple selection, indicate they can choose several separated by comma. Apply this convention for every reference to "asking the user with options" in skills and guides.
+**Question convention**: Whenever these instructions say "ask the user with options", present the options in a clear and structured way. If the environment has an interactive question tool available{{TOOL_QUESTIONS}}, invoke it mandatorily — never write the questions in chat when a user-asking tool is available. Otherwise, present the options as a numbered list in chat, with readable formatting, and instruct the user to respond with the number or name of their choice. For multiple selection, indicate they can choose several separated by comma. Apply this convention for every reference to "asking the user with options" in skills and guides.
 
 - **Language**: Respond in the same language the user uses, including summaries, status tables, and all generated content
 - ALWAYS ask for the domain if it is not clear
