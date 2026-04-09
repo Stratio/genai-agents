@@ -25,23 +25,9 @@ Si la petición se resuelve con una sola llamada MCP (ver Fase 0 del workflow (A
 
 Si la petición requiere análisis (cruce de datos, hipótesis, visualizaciones, múltiples métricas), continuar con sección 2.
 
-### 1.2 Atajo de entregable rápido
-
-Si la petición trata principalmente de generar un entregable (informe, dashboard, presentación, PDF) y la conversación ya contiene contexto de dominio (dominio identificado, tablas exploradas, datos consultados en turnos anteriores):
-
-1. **Saltar descubrimiento** — usar el contexto de dominio y tablas de la conversación
-2. **EDA mínimo** — solo comprobación de completitud si los datos ya fueron explorados; omitir profiling completo
-3. **Auto-detectar parámetros** del mensaje del usuario en lugar de preguntar Block 1 y Block 2:
-   - Formato: "dashboard"/"web" → Web; "PDF"/"informe"/"report"/"documento"/"document" → Document; "presentación"/"presentation"/"pptx" → PowerPoint
-   - Audiencia: "executive"/"ejecutivo"/"dirección" → C-level/Executive; por defecto Mixed/General si no se especifica
-   - Profundidad: siempre Quick para el atajo
-   - Estilo: Corporate (por defecto); Estructura: On the fly (por defecto)
-4. **Presentar un plan breve** con los valores auto-detectados y las preguntas de datos a responder. Pedir confirmación al usuario. No hacer preguntas adicionales de Block 1/Block 2 a menos que un parámetro crítico sea verdaderamente ambiguo
-5. **Ejecutar**: consultar datos → procesar → generar visualizaciones → cargar skill `report` → generar entregable
-
-Si la conversación NO contiene contexto de dominio suficiente (sin dominio identificado, sin exploración previa), continuar con el workflow estándar (sección 2 en adelante).
-
 ## 2. Descubrimiento de Dominio
+
+Si el dominio ya es conocido de la conversación (identificado y explorado en turnos previos), saltar esta sección y continuar con la sección 3. Usar el contexto de dominio y tablas ya establecido.
 
 Leer y seguir `skills-guides/stratio-data-tools.md` sec 4 para los pasos de descubrimiento del dominio (buscar o listar dominios, seleccionar, explorar tablas, columnas y terminología).
 
@@ -95,6 +81,8 @@ Una sola interacción:
 | 2 | ¿Para que audiencia es el análisis? | **C-level/Direccion** · **Manager/Responsable** · **Equipo técnico/Data** · **Mixta/General** | Única | Siempre |
 | 3 | ¿En que formatos quieres los deliverables? | **Documento** (PDF + DOCX) · **Web** (HTML interactivo con Plotly) · **PowerPoint** (.pptx) | Múltiple | Siempre |
 | 4 | ¿Quieres que se generen y ejecuten tests unitarios sobre el código Python? | **Sí** (Recomendado): mejora precisión y calidad, pero consume más tiempo, coste y contexto · **No**: ejecución directa sin tests | Única | Solo Estándar/Profundo |
+
+**Regla adaptativa**: Si la petición del usuario ya especifica información que responde a alguna de estas preguntas, pre-rellenar esa respuesta y no volver a preguntarla. Por ejemplo: si el usuario dijo "dame un informe en PDF", pre-rellenar formato como Document; si dijo "análisis rápido", pre-rellenar profundidad como Quick; si dijo "dashboard ejecutivo", pre-rellenar audiencia como C-level/Executive y formato como Web. Solo preguntar aquello cuya respuesta no pueda inferirse de la petición.
 
 - Los tests validan transformaciones y cálculos antes de ejecutar con datos reales. Mejoran la precisión pero consumen más tokens, tiempo y coste. **En profundidad Rápido, testing se desactiva automáticamente sin preguntar al usuario.**
 - La pregunta de formato SIEMPRE permite selección múltiple

@@ -24,19 +24,9 @@ Si la petición se resuelve con una sola llamada MCP (ver Fase 0), responder dir
 
 Si la petición requiere análisis (cruce de datos, hipótesis, visualizaciones, múltiples métricas), continuar con sección 2.
 
-### 1.2 Atajo de entregable rápido
-
-Si la petición trata principalmente de producir un resumen con visualizaciones (resumen gráfico, overview de KPIs, análisis visual) y la conversación ya contiene contexto de dominio (dominio identificado, tablas exploradas, datos consultados en turnos anteriores):
-
-1. **Saltar descubrimiento** — usar el contexto de dominio y tablas de la conversación
-2. **EDA mínimo** — solo comprobación de completitud si los datos ya fueron explorados; omitir profiling completo
-3. **Auto-detectar parámetros**: profundidad siempre Quick; audiencia inferida del contexto (por defecto Mixed/General)
-4. **Presentar un plan breve** con las preguntas de datos y las visualizaciones planeadas. Pedir confirmación al usuario
-5. **Ejecutar**: consultar datos → procesar → generar visualizaciones → presentar hallazgos y visualizaciones en el chat
-
-Si la conversación NO contiene contexto de dominio suficiente (sin dominio identificado, sin exploración previa), continuar con el workflow estándar (sección 2 en adelante).
-
 ## 2. Descubrimiento de Dominio
+
+Si el dominio ya es conocido de la conversación (identificado y explorado en turnos previos), saltar esta sección y continuar con la sección 3. Usar el contexto de dominio y tablas ya establecido.
 
 Leer y seguir `skills-guides/stratio-data-tools.md` sec 4 para los pasos de descubrimiento del dominio (buscar o listar dominios, seleccionar, explorar tablas, columnas y terminología).
 
@@ -85,6 +75,8 @@ Una sola interacción:
 | 1 | ¿Qué profundidad de análisis prefieres? | **Rápido** · **Estándar** (Recomendado) · **Profundo** | Única | Siempre |
 | 2 | ¿Para que audiencia es el análisis? | **C-level/Direccion** · **Manager/Responsable** · **Equipo técnico/Data** · **Mixta/General** | Única | Siempre |
 | 3 | ¿Quieres que se generen y ejecuten tests unitarios sobre el código Python? | **Sí** (Recomendado): mejora precisión y calidad, pero consume más tiempo, coste y contexto · **No**: ejecución directa sin tests | Única | Solo Estándar/Profundo |
+
+**Regla adaptativa**: Si la petición del usuario ya especifica información que responde a alguna de estas preguntas, pre-rellenar esa respuesta y no volver a preguntarla. Por ejemplo: si el usuario dijo "análisis rápido", pre-rellenar profundidad como Quick; si dijo "resumen ejecutivo", pre-rellenar audiencia como C-level/Executive. Solo preguntar aquello cuya respuesta no pueda inferirse de la petición.
 
 - Los tests validan transformaciones y cálculos antes de ejecutar con datos reales. Mejoran la precisión pero consumen más tokens, tiempo y coste. **En profundidad Rápido, testing se desactiva automáticamente sin preguntar al usuario.**
 

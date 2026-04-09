@@ -31,7 +31,7 @@ When the user poses an analysis request, ALWAYS follow this flow. For the full o
 | Request pattern | Skill to load |
 |----------------|---------------|
 | Analysis: "analyze", "analysis", "study", "evaluate", "investigate", "calculate", "compute", "compare", "segment" + data/domain/business context | `analyze` |
-| Deliverable: "report", "dashboard", "PDF", "presentation", "document", "summary", "informe" | `analyze` (deliverable fast path) |
+| Deliverable: "report", "dashboard", "PDF", "presentation", "document", "summary", "informe" | `analyze` |
 | Visualization: "graphic summary", "chart of", "show visually", "KPI overview", "visual summary" | `analyze` |
 | Multiple KPIs with dimensions: "KPIs by area", "metrics by segment", "main indicators" | `analyze` |
 | Domain exploration or profiling: "explore domain", "what data is available", "discover domain", "data quality", "profile table" | `explore-data` |

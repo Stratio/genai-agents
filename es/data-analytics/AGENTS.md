@@ -31,7 +31,7 @@ Cuando el usuario plantea una petición de análisis, SIEMPRE seguir este flujo.
 | Patrón de petición | Skill a cargar |
 |-------------------|----------------|
 | Análisis: "analizar", "análisis", "estudiar", "evaluar", "investigar", "calcular", "computar", "comparar", "segmentar" + contexto de datos/dominio/negocio | `analyze` |
-| Entregable: "informe", "dashboard", "PDF", "presentación", "documento", "resumen" | `analyze` (fast path de entregable) |
+| Entregable: "informe", "dashboard", "PDF", "presentación", "documento", "resumen" | `analyze` |
 | Visualización: "resumen gráfico", "gráfica de", "mostrar visualmente", "resumen de KPIs", "resumen visual" | `analyze` |
 | Múltiples KPIs con dimensiones: "KPIs por área", "métricas por segmento", "indicadores principales" | `analyze` |
 | Exploración de dominio o perfilado: "explorar dominio", "qué datos hay disponibles", "descubrir dominio", "calidad de datos", "perfilar tabla" | `explore-data` |

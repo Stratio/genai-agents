@@ -25,23 +25,9 @@ If the request can be resolved with a single MCP call (see Phase 0 of the workfl
 
 If the request requires analysis (data crossing, hypotheses, visualizations, multiple metrics), continue with section 2.
 
-### 1.2 Deliverable fast path
-
-If the request is primarily about generating a deliverable (report, dashboard, presentation, PDF) and the conversation already contains domain context (domain identified, tables explored, data queried in prior turns):
-
-1. **Skip discovery** — use domain and table context from the conversation
-2. **Minimal EDA** — only completeness check if data was already explored; skip full profiling
-3. **Auto-detect parameters** from the user's message instead of asking Block 1 and Block 2:
-   - Format: "dashboard"/"web" → Web; "PDF"/"report"/"document" → Document; "presentation"/"pptx" → PowerPoint
-   - Audience: "executive"/"ejecutivo" → C-level/Executive; default to Mixed/General if unspecified
-   - Depth: always Quick for the fast path
-   - Style: Corporate (default); Structure: On the fly (default)
-4. **Present a brief plan** with the auto-detected values and the data questions to answer. Ask the user to confirm. Do not ask additional Block 1/Block 2 questions unless a critical parameter is truly ambiguous
-5. **Execute**: query data → process → generate visualizations → load `report` skill → generate deliverable
-
-If the conversation does NOT contain sufficient domain context (no domain identified, no prior exploration), fall through to the standard workflow (section 2 onwards).
-
 ## 2. Domain Discovery
+
+If the domain is already known from the conversation (identified and explored in prior turns), skip this section and proceed to section 3. Use the domain and table context already established.
 
 Read and follow `skills-guides/stratio-data-tools.md` sec 4 for the domain discovery steps (search or list domains, select, explore tables, columns, and terminology).
 
@@ -95,6 +81,8 @@ A single interaction:
 | 2 | What audience is the analysis for? | **C-level/Executive** · **Manager/Lead** · **Technical/Data team** · **Mixed/General** | Single | Always |
 | 3 | In what formats do you want the deliverables? | **Document** (PDF + DOCX) · **Web** (Interactive HTML with Plotly) · **PowerPoint** (.pptx) | Multiple | Always |
 | 4 | Do you want unit tests to be generated and run on the Python code? | **Yes** (Recommended): improves precision and quality, but consumes more time, cost, and context · **No**: direct execution without tests | Single | Standard/Deep only |
+
+**Adaptive rule**: If the user's request already specifies information that answers any of these questions, pre-fill that answer and do not ask it again. For example: if the user said "give me a PDF report", pre-fill format as Document; if the user said "quick analysis", pre-fill depth as Quick; if the user said "executive dashboard", pre-fill audience as C-level/Executive and format as Web. Only ask questions whose answers cannot be inferred from the request.
 
 - Tests validate transformations and calculations before running with real data. They improve precision but consume more tokens, time, and cost. **In Quick depth, testing is automatically disabled without asking the user.**
 - The format question ALWAYS allows multiple selection
