@@ -148,10 +148,10 @@ for lang in "${LANGUAGES[@]}"; do
     done
   }
 
-  _pack_agent_extras "data-analytics-light"
-  _pack_agent_extras "semantic-layer"
-  _pack_agent_extras "data-quality"
-  _pack_agent_extras "governance-officer"
+  while IFS= read -r module; do
+    [[ -z "$module" || "$module" =~ ^# ]] && continue
+    _pack_agent_extras "$module"
+  done < "$REPO_ROOT/release-modules"
 done
 
 # --- Summary ---
