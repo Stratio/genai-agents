@@ -14,6 +14,7 @@ The repository is primarily oriented towards **OpenCode**, the open-source tool 
 | **data-quality** | Data quality agent: coverage assessment, gap identification, quality rule creation with human-in-the-loop and coverage report generation | Claude Code, Claude Cowork, claude.ai, OpenCode, Stratio Cowork | `data-quality/` |
 | **governance-officer** | Combined governance agent: full semantic layer building + data quality management in a single agent with unrestricted access to all governance tools | Claude Code, Claude Cowork, claude.ai, OpenCode, Stratio Cowork | `governance-officer/` |
 | **skill-creator** | Agent for designing and generating AI agent skills (SKILL.md). Interactive requirements → design → generation → review → ZIP packaging | Claude Code, OpenCode, Stratio Cowork | `skill-creator/` |
+| **agent-creator** | Agent for designing and generating complete AI agents for Stratio Cowork. Interactive requirements → architecture design → AGENTS.md generation → skill creation → review → agents/v1 ZIP packaging | Claude Code, OpenCode, Stratio Cowork | `agent-creator/` |
 
 ## Packaging
 

@@ -37,6 +37,7 @@ genai-agents/
     data-quality/
     governance-officer/
     skill-creator/
+    agent-creator/
   data-analytics/          # Full agent (analysis + multi-format reports)
     shared-skills          # List of shared skills included by this agent
     shared-guides          # List of shared-skill-guides that AGENTS.md references directly
@@ -53,6 +54,8 @@ genai-agents/
     shared-skills
     shared-guides
   skill-creator/           # Skill creation agent
+    shared-skills
+  agent-creator/           # Agent creation agent
     shared-skills
 ```
 
@@ -87,6 +90,9 @@ Combined governance agent with the full capabilities of both semantic-layer and 
 
 ### skill-creator
 Agent for designing and generating AI agent skills (SKILL.md files). Interactive workflow: requirements gathering, skill design following proven principles, SKILL.md generation with supporting files, quality review with checklist, and ZIP packaging for download. No MCPs — works purely with conversation and file generation.
+
+### agent-creator
+Agent for designing and generating complete AI agents for Stratio Cowork. Interactive workflow: requirements gathering, architecture design (workflow phases, triage tables, skill decomposition), AGENTS.md generation following proven patterns, skill creation via shared skill-creator, supporting files (README.md, opencode.json), quality review with 26-point checklist, and agents/v1 ZIP packaging. No MCPs — works purely with conversation and file generation.
 
 ## Packaging scripts (root)
 
