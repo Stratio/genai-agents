@@ -44,3 +44,4 @@
 * [ROCK-NA] Exclude cowork-metadata.yaml from pack_claude_code.sh and pack_opencode.sh output
 * [ROCK-NA] Document MCP configuration for Claude Desktop and Cowork: clarify that claude_desktop_config.json requires mcp-remote proxy for remote HTTP servers and does not support ${VAR:-default} syntax; add packaging notes to agent READMEs
 * [ROCK-NA] Add agent-creator agent: interactive workflow for designing and generating complete AI agents for Stratio Cowork with requirements gathering, architecture design (workflow phases, triage tables, skill decomposition), AGENTS.md generation following proven patterns, skill creation via shared skill-creator, 26-point quality review and agents/v1 ZIP packaging; includes two internal skills (agent-designer with pattern catalog and skeleton template, agent-packager) and full Spanish translation
+* [ROCK-NNNNN] CI/CD: Update Jenkins builder Docker image to python-builder-3.12:1.3.0
