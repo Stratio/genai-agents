@@ -1,8 +1,7 @@
 ---
 name: generate-technical-terms
-description: Generar o regenerar términos técnicos (descripciones de tablas y columnas) en
-  Stratio Governance para un dominio técnico.
-argument-hint: [dominio técnico (opcional)]
+description: "Generar o regenerar términos técnicos (descripciones de tablas y columnas) en Stratio Governance para un dominio técnico."
+argument-hint: "[dominio técnico (opcional)]"
 ---
 
 # Skill: Generar Términos Técnicos

@@ -1,8 +1,7 @@
 ---
 name: manage-business-terms
-description: Create Business Terms in the Stratio Governance dictionary with relationships
-  to data assets. Guided planning — name, description, type and relationships.
-argument-hint: [domain (optional)]
+description: "Create Business Terms in the Stratio Governance dictionary with relationships to data assets. Guided planning — name, description, type and relationships."
+argument-hint: "[domain (optional)]"
 ---
 
 # Skill: Manage Business Terms

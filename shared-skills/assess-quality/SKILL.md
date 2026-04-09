@@ -1,6 +1,6 @@
 ---
 name: assess-quality
-description: Assess the current data quality coverage for a full domain, a specific table, or a particular column. Returns an analysis of which dimensions are covered, which are missing, and which columns are priorities for new rules. Use when the user wants to understand the quality status of their data.
+description: "Assess the current data quality coverage for a full domain, a specific table, or a particular column. Returns an analysis of which dimensions are covered, which are missing, and which columns are priorities for new rules. Use when the user wants to understand the quality status of their data."
 argument-hint: "[domain] [table (optional)] [column (optional)]"
 ---
 

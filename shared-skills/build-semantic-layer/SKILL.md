@@ -1,9 +1,7 @@
 ---
 name: build-semantic-layer
-description: Complete pipeline to build the semantic layer of a technical domain.
-  Orchestrates the 5 phases in sequence with state diagnosis, optional publication,
-  and progress tracking.
-argument-hint: [technical domain (optional)]
+description: "Complete pipeline to build the semantic layer of a technical domain. Orchestrates the 5 phases in sequence with state diagnosis, optional publication, and progress tracking."
+argument-hint: "[technical domain (optional)]"
 ---
 
 # Skill: Build Semantic Layer (Complete Pipeline)

@@ -1,7 +1,7 @@
 ---
 name: analyze
-description: Análisis completo de datos BI/BA — descubrimiento de dominio, EDA y calidad de datos, planificación de métricas y KPIs con framework analítico, queries de datos vía MCP, análisis Python con pandas, visualizaciones, generación de informes multi-formato y documentación del razonamiento. Usar cuando el usuario necesite analizar datos de negocio, calcular KPIs, obtener insights o responder preguntas analíticas sobre dominios gobernados.
-argument-hint: [pregunta o tema de análisis]
+description: "Análisis completo de datos BI/BA — descubrimiento de dominio, EDA y calidad de datos, planificación de métricas y KPIs con framework analítico, queries de datos vía MCP, análisis Python con pandas, visualizaciones, generación de informes multi-formato y documentación del razonamiento. Usar cuando el usuario necesite analizar datos de negocio, calcular KPIs, producir visualizaciones, generar resúmenes gráficos, obtener insights o responder preguntas analíticas sobre dominios gobernados. También se activa para comparaciones multi-métrica, resúmenes de KPIs, peticiones de entregables (informes, dashboards) o cualquier petición que requiera cruzar datos entre dimensiones."
+argument-hint: "[pregunta o tema de análisis]"
 ---
 
 # Skill: Análisis BI/BA Completo
@@ -24,6 +24,22 @@ Si la petición se resuelve con una sola llamada MCP (ver Fase 0 del workflow (A
 - En estos casos, NO continuar con el resto del workflow
 
 Si la petición requiere análisis (cruce de datos, hipótesis, visualizaciones, múltiples métricas), continuar con sección 2.
+
+### 1.2 Atajo de entregable rápido
+
+Si la petición trata principalmente de generar un entregable (informe, dashboard, presentación, PDF) y la conversación ya contiene contexto de dominio (dominio identificado, tablas exploradas, datos consultados en turnos anteriores):
+
+1. **Saltar descubrimiento** — usar el contexto de dominio y tablas de la conversación
+2. **EDA mínimo** — solo comprobación de completitud si los datos ya fueron explorados; omitir profiling completo
+3. **Auto-detectar parámetros** del mensaje del usuario en lugar de preguntar Block 1 y Block 2:
+   - Formato: "dashboard"/"web" → Web; "PDF"/"informe"/"report"/"documento"/"document" → Document; "presentación"/"presentation"/"pptx" → PowerPoint
+   - Audiencia: "executive"/"ejecutivo"/"dirección" → C-level/Executive; por defecto Mixed/General si no se especifica
+   - Profundidad: siempre Quick para el atajo
+   - Estilo: Corporate (por defecto); Estructura: On the fly (por defecto)
+4. **Presentar un plan breve** con los valores auto-detectados y las preguntas de datos a responder. Pedir confirmación al usuario. No hacer preguntas adicionales de Block 1/Block 2 a menos que un parámetro crítico sea verdaderamente ambiguo
+5. **Ejecutar**: consultar datos → procesar → generar visualizaciones → cargar skill `report` → generar entregable
+
+Si la conversación NO contiene contexto de dominio suficiente (sin dominio identificado, sin exploración previa), continuar con el workflow estándar (sección 2 en adelante).
 
 ## 2. Descubrimiento de Dominio
 

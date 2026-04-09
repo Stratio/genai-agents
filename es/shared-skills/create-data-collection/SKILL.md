@@ -1,7 +1,7 @@
 ---
 name: create-data-collection
-description: Buscar tablas y paths en el diccionario de datos técnico y crear una nueva colección de datos (dominio técnico) en Stratio Governance.
-argument-hint: [nombre de colección o términos de búsqueda (opcional)]
+description: "Buscar tablas y paths en el diccionario de datos técnico y crear una nueva colección de datos (dominio técnico) en Stratio Governance."
+argument-hint: "[nombre de colección o términos de búsqueda (opcional)]"
 ---
 
 # Skill: Crear Colección de Datos

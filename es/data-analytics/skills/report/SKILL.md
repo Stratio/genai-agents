@@ -1,7 +1,7 @@
 ---
 name: report
-description: Generación de informes profesionales en múltiples formatos (PDF, DOCX, web interactiva con Plotly, PowerPoint) a partir de análisis de datos. Usar cuando el usuario necesite generar informes, dashboards, presentaciones o documentación a partir de datos analizados.
-argument-hint: '[formato: pdf|web|pptx] [tema (opcional)]'
+description: "Generación de informes profesionales en múltiples formatos (PDF, DOCX, web interactiva con Plotly, PowerPoint). Usar cuando el usuario necesite generar informes, dashboards, resúmenes ejecutivos, presentaciones o cualquier entregable formal a partir de análisis de datos o exploración conversacional."
+argument-hint: "[formato: pdf|web|pptx] [tema (opcional)]"
 ---
 
 # Skill: Generación de Informes

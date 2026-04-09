@@ -1,7 +1,7 @@
 ---
 name: analyze
-description: Análisis completo de datos BI/BA — descubrimiento de dominio, EDA y calidad de datos, planificación de métricas y KPIs con framework analítico, queries de datos vía MCP, análisis Python con pandas, visualizaciones. Usar cuando el usuario necesite analizar datos de negocio, calcular KPIs, obtener insights o responder preguntas analíticas sobre dominios gobernados.
-argument-hint: [pregunta o tema de análisis]
+description: "Análisis completo de datos BI/BA — descubrimiento de dominio, EDA y calidad de datos, planificación de métricas y KPIs con framework analítico, queries de datos vía MCP, análisis Python con pandas, visualizaciones. Usar cuando el usuario necesite analizar datos de negocio, calcular KPIs, producir visualizaciones, generar resúmenes gráficos, obtener insights o responder preguntas analíticas sobre dominios gobernados. También se activa para comparaciones multi-métrica, resúmenes de KPIs o cualquier petición que requiera cruzar datos entre dimensiones."
+argument-hint: "[pregunta o tema de análisis]"
 ---
 
 # Skill: Análisis BI/BA Completo
@@ -23,6 +23,18 @@ Si la petición se resuelve con una sola llamada MCP (ver Fase 0), responder dir
 - En estos casos, NO continuar con el resto del workflow
 
 Si la petición requiere análisis (cruce de datos, hipótesis, visualizaciones, múltiples métricas), continuar con sección 2.
+
+### 1.2 Atajo de entregable rápido
+
+Si la petición trata principalmente de producir un resumen con visualizaciones (resumen gráfico, overview de KPIs, análisis visual) y la conversación ya contiene contexto de dominio (dominio identificado, tablas exploradas, datos consultados en turnos anteriores):
+
+1. **Saltar descubrimiento** — usar el contexto de dominio y tablas de la conversación
+2. **EDA mínimo** — solo comprobación de completitud si los datos ya fueron explorados; omitir profiling completo
+3. **Auto-detectar parámetros**: profundidad siempre Quick; audiencia inferida del contexto (por defecto Mixed/General)
+4. **Presentar un plan breve** con las preguntas de datos y las visualizaciones planeadas. Pedir confirmación al usuario
+5. **Ejecutar**: consultar datos → procesar → generar visualizaciones → presentar hallazgos y visualizaciones en el chat
+
+Si la conversación NO contiene contexto de dominio suficiente (sin dominio identificado, sin exploración previa), continuar con el workflow estándar (sección 2 en adelante).
 
 ## 2. Descubrimiento de Dominio
 

@@ -1,8 +1,7 @@
 ---
 name: create-sql-mappings
-description: Crear o actualizar SQL mappings para vistas de negocio existentes en Stratio
-  Governance. Para corregir, mejorar o crear mappings sin recrear vistas.
-argument-hint: [dominio técnico (opcional)]
+description: "Crear o actualizar SQL mappings para vistas de negocio existentes en Stratio Governance. Para corregir, mejorar o crear mappings sin recrear vistas."
+argument-hint: "[dominio técnico (opcional)]"
 ---
 
 # Skill: Crear SQL Mappings

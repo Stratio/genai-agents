@@ -1,7 +1,7 @@
 ---
 name: analyze
-description: Full BI/BA data analysis — domain discovery, EDA and data quality, metric and KPI planning with analytical framework, data queries via MCP, Python analysis with pandas, visualizations. Use when the user needs to analyze business data, calculate KPIs, obtain insights, or answer analytical questions about governed domains.
-argument-hint: [analysis question or topic]
+description: "Full BI/BA data analysis — domain discovery, EDA and data quality, metric and KPI planning with analytical framework, data queries via MCP, Python analysis with pandas, visualizations. Use when the user needs to analyze business data, calculate KPIs, produce visualizations, generate graphic summaries, obtain insights, or answer analytical questions about governed domains. Also activates for multi-metric comparisons, KPI overviews, or any request requiring data crossing across dimensions."
+argument-hint: "[analysis question or topic]"
 ---
 
 # Skill: Full BI/BA Analysis
@@ -23,6 +23,18 @@ If the request can be resolved with a single MCP call (see Phase 0), respond dir
 - In these cases, DO NOT continue with the rest of the workflow
 
 If the request requires analysis (data cross-referencing, hypotheses, visualizations, multiple metrics), continue with section 2.
+
+### 1.2 Deliverable fast path
+
+If the request is primarily about producing a summary with visualizations (graphic summary, KPI overview, visual analysis) and the conversation already contains domain context (domain identified, tables explored, data queried in prior turns):
+
+1. **Skip discovery** — use domain and table context from the conversation
+2. **Minimal EDA** — only completeness check if data was already explored; skip full profiling
+3. **Auto-detect parameters**: depth always Quick; audience inferred from context (default Mixed/General)
+4. **Present a brief plan** with the data questions and planned visualizations. Ask the user to confirm
+5. **Execute**: query data → process → generate visualizations → present findings and visualizations in chat
+
+If the conversation does NOT contain sufficient domain context (no domain identified, no prior exploration), fall through to the standard workflow (section 2 onwards).
 
 ## 2. Domain Discovery
 

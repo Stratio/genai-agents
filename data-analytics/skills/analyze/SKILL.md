@@ -1,7 +1,7 @@
 ---
 name: analyze
-description: Full BI/BA data analysis — domain discovery, EDA and data quality, metric and KPI planning with analytical framework, data queries via MCP, Python analysis with pandas, visualizations, multi-format report generation, and reasoning documentation. Use when the user needs to analyze business data, calculate KPIs, obtain insights, or answer analytical questions about governed domains.
-argument-hint: [analysis question or topic]
+description: "Full BI/BA data analysis — domain discovery, EDA and data quality, metric and KPI planning with analytical framework, data queries via MCP, Python analysis with pandas, visualizations, multi-format report generation, and reasoning documentation. Use when the user needs to analyze business data, calculate KPIs, produce visualizations, generate graphic summaries, obtain insights, or answer analytical questions about governed domains. Also activates for multi-metric comparisons, KPI overviews, deliverable requests (reports, dashboards), or any request requiring data crossing across dimensions."
+argument-hint: "[analysis question or topic]"
 ---
 
 # Skill: Full BI/BA Analysis
@@ -24,6 +24,22 @@ If the request can be resolved with a single MCP call (see Phase 0 of the workfl
 - In these cases, do NOT continue with the rest of the workflow
 
 If the request requires analysis (data crossing, hypotheses, visualizations, multiple metrics), continue with section 2.
+
+### 1.2 Deliverable fast path
+
+If the request is primarily about generating a deliverable (report, dashboard, presentation, PDF) and the conversation already contains domain context (domain identified, tables explored, data queried in prior turns):
+
+1. **Skip discovery** — use domain and table context from the conversation
+2. **Minimal EDA** — only completeness check if data was already explored; skip full profiling
+3. **Auto-detect parameters** from the user's message instead of asking Block 1 and Block 2:
+   - Format: "dashboard"/"web" → Web; "PDF"/"report"/"document" → Document; "presentation"/"pptx" → PowerPoint
+   - Audience: "executive"/"ejecutivo" → C-level/Executive; default to Mixed/General if unspecified
+   - Depth: always Quick for the fast path
+   - Style: Corporate (default); Structure: On the fly (default)
+4. **Present a brief plan** with the auto-detected values and the data questions to answer. Ask the user to confirm. Do not ask additional Block 1/Block 2 questions unless a critical parameter is truly ambiguous
+5. **Execute**: query data → process → generate visualizations → load `report` skill → generate deliverable
+
+If the conversation does NOT contain sufficient domain context (no domain identified, no prior exploration), fall through to the standard workflow (section 2 onwards).
 
 ## 2. Domain Discovery
 

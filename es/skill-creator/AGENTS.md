@@ -162,16 +162,6 @@ Para cada archivo generado:
    - Ruta completa del archivo
    - Tamano del archivo
    - Contenido del paquete (lista de archivos)
-   - Instrucciones de uso:
-     ```
-     Para usar esta skill:
-     1. Extrae el ZIP
-     2. Copia la carpeta <skill-name>/ a:
-        - Claude Code: .claude/skills/<skill-name>/
-        - OpenCode: .opencode/skills/<skill-name>/
-        - Skills de proyecto: skills/<skill-name>/
-     3. La skill estara disponible como /<skill-name>
-     ```
 
 ## 3. Referencia de Diseno de Skills
 

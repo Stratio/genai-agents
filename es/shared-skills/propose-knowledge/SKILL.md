@@ -1,7 +1,7 @@
 ---
 name: propose-knowledge
-description: Analizar la conversación para proponer términos de negocio y preferencias descubiertos a la capa de `Stratio Governance` del dominio. Usar cuando el usuario quiera enriquecer el semantic layer con definiciones, reglas o preferencias descubiertas durante un análisis.
-argument-hint: [dominio (opcional)]
+description: "Analizar la conversación para proponer términos de negocio y preferencias descubiertos a la capa de `Stratio Governance` del dominio. Usar cuando el usuario quiera enriquecer el semantic layer con definiciones, reglas o preferencias descubiertas durante un análisis."
+argument-hint: "[dominio (opcional)]"
 ---
 
 # Skill: Propuesta de Conocimiento a Gobernanza

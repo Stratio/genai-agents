@@ -1,8 +1,7 @@
 ---
 name: create-business-views
-description: Create, regenerate, delete or publish business views and SQL mappings in
-  Stratio Governance from an ontology.
-argument-hint: [technical domain (optional)]
+description: "Create, regenerate, delete or publish business views and SQL mappings in Stratio Governance from an ontology."
+argument-hint: "[technical domain (optional)]"
 ---
 
 # Skill: Create Business Views

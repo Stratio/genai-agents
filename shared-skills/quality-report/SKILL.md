@@ -1,6 +1,6 @@
 ---
 name: quality-report
-description: Generate a formal data quality coverage report in the format chosen by the user (chat, PDF, DOCX, or Markdown on disk). Use when the user wants a document or presentation with the current quality status, after assessing coverage or creating quality rules.
+description: "Generate a formal data quality coverage report in the format chosen by the user (chat, PDF, DOCX, or Markdown on disk). Use when the user wants a document or presentation with the current quality status, after assessing coverage or creating quality rules."
 argument-hint: "[format: chat|pdf|docx|md] [filename (optional)]"
 ---
 
