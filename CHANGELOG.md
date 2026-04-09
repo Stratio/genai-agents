@@ -41,3 +41,4 @@
 * [ROCK-NA] Add skill-creator agent: interactive workflow for designing and generating AI agent skills (SKILL.md) with requirements gathering, design, generation, quality review and ZIP packaging; includes shared skill and full Spanish translation
 * [ROCK-NA] Rename placeholder {{TOOL_PREGUNTAS}} to {{TOOL_QUESTIONS}} across all AGENTS.md files, pack scripts and READMEs for consistency with the English-primary i18n convention
 * [ROCK-NA] Exclude cowork-metadata.yaml from pack_claude_code.sh and pack_opencode.sh output
+* [ROCK-NA] Document MCP configuration for Claude Desktop and Cowork: clarify that claude_desktop_config.json requires mcp-remote proxy for remote HTTP servers and does not support ${VAR:-default} syntax; add packaging notes to agent READMEs
