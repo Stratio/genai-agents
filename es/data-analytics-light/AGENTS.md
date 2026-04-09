@@ -24,16 +24,16 @@ Cuando el usuario plantea una petición de análisis, SIEMPRE seguir este flujo.
 
 ### Fase 0 — Activación de Skills y Triage (antes de cualquier workflow)
 
-**Paso 1 — Comprobar activación de skill primero.** Si la petición del usuario encaja con alguno de estos patrones, cargar la skill INMEDIATAMENTE — no evaluar triage:
+**Paso 1 — Comprobar activación de skill primero.** Si la petición del usuario coincide con alguno de estos patrones, cargar la skill INMEDIATAMENTE — no evaluar triage:
 
 | Patrón de petición | Skill a cargar |
 |-------------------|----------------|
-| Análisis: "analiza", "análisis", "estudia", "evalúa", "investiga", "calcular", "computar", "comparar", "segmentar" + contexto de datos/dominio/negocio | `analyze` |
-| Visualización o resumen: "resumen gráfico", "gráfico de", "muestra visualmente", "resumen de KPIs", "resumen visual" | `analyze` |
+| Análisis: "analizar", "análisis", "estudiar", "evaluar", "investigar", "calcular", "computar", "comparar", "segmentar" + contexto de datos/dominio/negocio | `analyze` |
+| Visualización o resumen: "resumen gráfico", "gráfica de", "mostrar visualmente", "resumen de KPIs", "resumen visual" | `analyze` |
 | Múltiples KPIs con dimensiones: "KPIs por área", "métricas por segmento", "indicadores principales" | `analyze` |
 | Exploración de dominio o perfilado: "explorar dominio", "qué datos hay disponibles", "descubrir dominio", "calidad de datos", "perfilar tabla" | `explore-data` |
 
-**Paso 2 — Si ningún patrón de skill encajó**, evaluar si la pregunta es triage. Las preguntas de triage se resuelven con datos puntuales, sin necesidad de formular hipótesis, cruzar datos entre dimensiones, ni generar visualizaciones:
+**Paso 2 — Si no coincidió ningún patrón de skill**, evaluar si la pregunta es triage. Las preguntas de triage se resuelven con datos puntuales, sin necesidad de formular hipótesis, cruzar datos entre dimensiones, ni generar visualizaciones:
 
 | Tipo de pregunta | Tool MCP directa | Ejemplo |
 |-----------------|-----------------|---------|
@@ -46,7 +46,7 @@ Cuando el usuario plantea una petición de análisis, SIEMPRE seguir este flujo.
 **Si encaja en triage** → Resolver directamente: descubrir dominio si es necesario (buscar o listar dominios, explorar tablas, buscar knowledge), obtener el dato vía MCP, responder en chat con contexto mínimo (vs periodo anterior si disponible). FIN. Sin plan, sin hipótesis, sin artefactos.
 **Si NO encaja en triage** → Cargar skill `analyze` y continuar con Fase 1.
 
-**Criterio de triage**: La pregunta se responde con datos puntuales (1-2 métricas, como máximo una dimensión de agrupación simple) sin necesidad de cruzar datos entre múltiples dimensiones, formular hipótesis, ni generar visualizaciones. Una métrica agrupada por una sola dimensión (ej., "clientes por región", "ventas por mes") sigue siendo triage si se puede resolver con una única llamada a `query_data` y presentarse como tabla en el chat. Las llamadas MCP de descubrimiento (buscar/listar dominios, explorar tablas, buscar knowledge) son infraestructura y no cuentan como análisis. Si hay duda, tratar como análisis y cargar `analyze`.
+**Criterio de triage**: La pregunta se responde con datos puntuales (1-2 métricas, como máximo una dimensión de agrupación simple) sin necesidad de cruzar datos entre múltiples dimensiones, formular hipótesis, ni generar visualizaciones. Una métrica agrupada por una dimensión (p. ej., "clientes por región", "ventas por mes") sigue siendo triage si se resuelve con una sola llamada `query_data` y se presenta como tabla en el chat. Las llamadas MCP de descubrimiento (buscar/listar dominios, explorar tablas, buscar knowledge) son infraestructura y no cuentan como análisis. Si hay duda, tratar como análisis y cargar `analyze`.
 
 **Paso 3 — Regla de escalamiento**: Evaluar cada mensaje del usuario de forma independiente. Que mensajes anteriores sean triage NO implica que el actual lo sea. Si el mensaje actual requiere análisis o un entregable, cargar la skill correspondiente independientemente del historial previo de conversación.
 

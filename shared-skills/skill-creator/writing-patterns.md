@@ -378,16 +378,12 @@ The bad version exceeds the 500-line guideline and forces the agent to load all 
 
 **Good:**
 ```yaml
-description: >-
-  Assess the current data quality coverage for a domain, table, or column.
-  Returns analysis of covered dimensions, missing gaps, and priority columns.
-  Use when the user wants to understand quality status, identify gaps,
-  check coverage, or find columns without quality rules.
+description: "Assess the current data quality coverage for a domain, table, or column. Returns analysis of covered dimensions, missing gaps, and priority columns. Use when the user wants to understand quality status, identify gaps, check coverage, or find columns without quality rules."
 ```
 
 **Bad:**
 ```yaml
-description: Quality assessment tool for data governance
+description: "Quality assessment tool for data governance"
 ```
 
 The good description includes keywords users naturally say: "quality status", "gaps", "coverage", "columns without rules". The bad description uses abstract terms that don't match user language.
@@ -396,10 +392,7 @@ The good description includes keywords users naturally say: "quality status", "g
 
 **Good:**
 ```yaml
-description: >-
-  Generate formal coverage reports in PDF, DOCX, or Markdown.
-  Use when the user explicitly asks for a report file or document.
-  Do NOT use for in-chat quality summaries — those are handled by assess-quality.
+description: "Generate formal coverage reports in PDF, DOCX, or Markdown. Use when the user explicitly asks for a report file or document. Do NOT use for in-chat quality summaries — those are handled by assess-quality."
 ```
 
 The explicit exclusion prevents the skill from triggering when the user just wants a chat-based summary.
