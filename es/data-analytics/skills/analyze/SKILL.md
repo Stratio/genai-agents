@@ -1,7 +1,7 @@
 ---
 name: analyze
-description: Análisis completo de datos BI/BA — descubrimiento de dominio, EDA y calidad de datos, planificación de métricas y KPIs con framework analítico, queries de datos vía MCP, análisis Python con pandas, visualizaciones, generación de informes multi-formato y documentación del razonamiento. Usar cuando el usuario necesite analizar datos de negocio, calcular KPIs, obtener insights o responder preguntas analíticas sobre dominios gobernados.
-argument-hint: [pregunta o tema de análisis]
+description: "Análisis completo de datos BI/BA — descubrimiento de dominio, EDA y calidad de datos, planificación de métricas y KPIs con framework analítico, queries de datos vía MCP, análisis Python con pandas, visualizaciones, generación de informes multi-formato y documentación del razonamiento. Usar cuando el usuario necesite analizar datos de negocio, calcular KPIs, producir visualizaciones, generar resúmenes gráficos, obtener insights o responder preguntas analíticas sobre dominios gobernados. También se activa para comparaciones multi-métrica, resúmenes de KPIs, peticiones de entregables (informes, dashboards) o cualquier petición que requiera cruzar datos entre dimensiones."
+argument-hint: "[pregunta o tema de análisis]"
 ---
 
 # Skill: Análisis BI/BA Completo
@@ -26,6 +26,8 @@ Si la petición se resuelve con una sola llamada MCP (ver Fase 0 del workflow (A
 Si la petición requiere análisis (cruce de datos, hipótesis, visualizaciones, múltiples métricas), continuar con sección 2.
 
 ## 2. Descubrimiento de Dominio
+
+Si el dominio ya es conocido de la conversación (identificado y explorado en turnos previos), saltar esta sección y continuar con la sección 3. Usar el contexto de dominio y tablas ya establecido.
 
 Leer y seguir `skills-guides/stratio-data-tools.md` sec 4 para los pasos de descubrimiento del dominio (buscar o listar dominios, seleccionar, explorar tablas, columnas y terminología).
 
@@ -79,6 +81,8 @@ Una sola interacción:
 | 2 | ¿Para que audiencia es el análisis? | **C-level/Direccion** · **Manager/Responsable** · **Equipo técnico/Data** · **Mixta/General** | Única | Siempre |
 | 3 | ¿En que formatos quieres los deliverables? | **Documento** (PDF + DOCX) · **Web** (HTML interactivo con Plotly) · **PowerPoint** (.pptx) | Múltiple | Siempre |
 | 4 | ¿Quieres que se generen y ejecuten tests unitarios sobre el código Python? | **Sí** (Recomendado): mejora precisión y calidad, pero consume más tiempo, coste y contexto · **No**: ejecución directa sin tests | Única | Solo Estándar/Profundo |
+
+**Regla adaptativa**: Si la petición del usuario ya especifica información que responde a alguna de estas preguntas, pre-rellenar esa respuesta y no volver a preguntarla. Por ejemplo: si el usuario dijo "dame un informe en PDF", pre-rellenar formato como Document; si dijo "análisis rápido", pre-rellenar profundidad como Quick; si dijo "dashboard ejecutivo", pre-rellenar audiencia como C-level/Executive y formato como Web. Solo preguntar aquello cuya respuesta no pueda inferirse de la petición.
 
 - Los tests validan transformaciones y cálculos antes de ejecutar con datos reales. Mejoran la precisión pero consumen más tokens, tiempo y coste. **En profundidad Rápido, testing se desactiva automáticamente sin preguntar al usuario.**
 - La pregunta de formato SIEMPRE permite selección múltiple

@@ -1,6 +1,6 @@
 ---
 name: quality-report
-description: Generar un informe formal de cobertura de calidad del dato en el formato que elija el usuario (chat, PDF, DOCX o Markdown en disco). Usar cuando el usuario quiera un documento o presentación con el estado actual de la calidad, después de evaluar la cobertura o crear reglas de calidad.
+description: "Generar un informe formal de cobertura de calidad del dato en el formato que elija el usuario (chat, PDF, DOCX o Markdown en disco). Usar cuando el usuario quiera un documento o presentación con el estado actual de la calidad, después de evaluar la cobertura o crear reglas de calidad."
 argument-hint: "[formato: chat|pdf|docx|md] [nombre-fichero (opcional)]"
 ---
 

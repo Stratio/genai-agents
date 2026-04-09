@@ -1,10 +1,6 @@
 ---
 name: skill-creator
-description: >-
-  Comprehensive guide for creating high-quality AI agent skills (SKILL.md files).
-  Use when designing, drafting, reviewing, or improving skills.
-  Covers anatomy, frontmatter, progressive disclosure, writing patterns,
-  description optimization, supporting files, and quality checklist.
+description: "Comprehensive guide for creating high-quality AI agent skills (SKILL.md files). Use when designing, drafting, reviewing, or improving skills. Covers anatomy, frontmatter, progressive disclosure, writing patterns, description optimization, supporting files, and quality checklist."
 argument-hint: "[skill topic or name (optional)]"
 ---
 
@@ -44,7 +40,7 @@ A **skill** is a set of instructions packaged as Markdown files that extend an A
 ```yaml
 ---
 name: api-conventions
-description: REST API design patterns for this codebase. Use when writing or reviewing API endpoints.
+description: "REST API design patterns for this codebase. Use when writing or reviewing API endpoints."
 ---
 
 When writing API endpoints:
@@ -58,8 +54,7 @@ When writing API endpoints:
 ```yaml
 ---
 name: deploy
-description: Deploy the application to production. Use when the user wants to deploy or release.
-disable-model-invocation: true
+description: "Deploy the application to production. Use when the user wants to deploy or release."
 ---
 
 Deploy the application:
@@ -92,6 +87,8 @@ Every SKILL.md starts with YAML frontmatter between `---` markers. The frontmatt
 | `description` | Yes (strongly recommended) | What the skill does and when to use it. This is the **primary triggering mechanism** |
 | `argument-hint` | No | Placeholder shown in autocomplete: `[domain] [table (optional)]` |
 
+**Formatting rule**: Always wrap `description` and `argument-hint` values in double quotes on a single line. This prevents YAML parsing issues with special characters (colons, brackets) and ensures portable frontmatter across platforms.
+
 ### 2.2 Description — the most important field
 
 The `description` determines when the agent loads your skill. Agents tend to **under-activate** skills, so descriptions should be proactive.
@@ -100,15 +97,12 @@ The `description` determines when the agent loads your skill. Agents tend to **u
 
 **Good description:**
 ```yaml
-description: >-
-  Assess the current data quality coverage for a domain, table, or column.
-  Use when the user wants to understand quality status, identify gaps,
-  find uncovered dimensions, or check which columns need quality rules.
+description: "Assess the current data quality coverage for a domain, table, or column. Use when the user wants to understand quality status, identify gaps, find uncovered dimensions, or check which columns need quality rules."
 ```
 
 **Bad description:**
 ```yaml
-description: Quality assessment tool
+description: "Quality assessment tool"
 ```
 
 The bad description is too vague — it will rarely trigger. The good description includes specific keywords ("gaps", "uncovered dimensions", "quality rules") that match what users actually say.
@@ -264,3 +258,4 @@ Run this checklist before finalizing any skill:
 12. ✅ Name in kebab-case (lowercase, hyphens)
 13. ✅ All necessary knowledge is embedded — skill does not depend on unverifiable external knowledge
 14. ✅ Description is proactive enough to activate when relevant
+15. ✅ `description` and `argument-hint` values are double-quoted on a single line

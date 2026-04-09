@@ -24,53 +24,35 @@ Referencia completa de todos los campos YAML de frontmatter disponibles en los f
 
 ```yaml
 # Example 1: Quality assessment skill
-description: >-
-  Assess the current data quality coverage for a domain, table, or column.
-  Returns analysis of covered dimensions, missing gaps, and priority columns.
-  Use when the user wants to understand quality status or identify gaps.
+description: "Assess the current data quality coverage for a domain, table, or column. Returns analysis of covered dimensions, missing gaps, and priority columns. Use when the user wants to understand quality status or identify gaps."
 
 # Example 2: Data exploration skill
-description: >-
-  Quick exploration of a governed data domain: list tables, show columns,
-  preview sample data, and display basic statistics.
-  Use when the user wants to browse or understand available data before analysis.
+description: "Quick exploration of a governed data domain: list tables, show columns, preview sample data, and display basic statistics. Use when the user wants to browse or understand available data before analysis."
 
 # Example 3: Code review skill
-description: >-
-  Review code changes for bugs, security issues, and style violations.
-  Use when the user submits a PR, asks for a code review, or wants
-  feedback on their changes. Also triggers on "check my code" or "review this".
+description: "Review code changes for bugs, security issues, and style violations. Use when the user submits a PR, asks for a code review, or wants feedback on their changes. Also triggers on \"check my code\" or \"review this\"."
 
 # Example 4: Deployment skill
-description: >-
-  Deploy the application to staging or production environments.
-  Use when the user says deploy, release, push to prod, or ship it.
+description: "Deploy the application to staging or production environments. Use when the user says deploy, release, push to prod, or ship it."
 
 # Example 5: Semantic term generator
-description: >-
-  Generate business semantic terms for published views in a governed domain.
-  Use when the user wants to create or update semantic terms, or asks about
-  the meaning of columns in business views.
+description: "Generate business semantic terms for published views in a governed domain. Use when the user wants to create or update semantic terms, or asks about the meaning of columns in business views."
 ```
 
 **Malos ejemplos:**
 
 ```yaml
 # Demasiado vago — raramente se activará
-description: Quality tool
+description: "Quality tool"
 
 # Demasiado largo y disperso — entierra el caso de uso principal
-description: >-
-  This is a comprehensive tool that can be used for many purposes related to
-  data quality including but not limited to assessment of coverage, identification
-  of potential gaps in quality rules, analysis of dimensions, and more.
+description: "This is a comprehensive tool that can be used for many purposes related to data quality including but not limited to assessment of coverage, identification of potential gaps in quality rules, analysis of dimensions, and more."
 
 # Falta "Use when" — el agente no sabe cuándo activarla
-description: Generates reports in PDF format
+description: "Generates reports in PDF format"
 
 # Solapa con todo — se activará demasiado a menudo
-description: >-
-  Use this skill whenever the user asks anything about data.
+description: "Use this skill whenever the user asks anything about data."
 ```
 
 ### argument-hint
@@ -81,19 +63,6 @@ description: >-
 - **Correcto**: `argument-hint: "[domain] [table (optional)]"`
 - **Correcto**: `argument-hint: "[issue-number]"`
 - **Incorrecto**: `argument-hint: "enter your arguments here"` (demasiado vago)
-
-### disable-model-invocation
-
-- **Tipo**: boolean
-- **Valor por defecto**: `false`
-- **Descripción**: Cuando es `true`, solo el usuario puede invocar esta skill (mediante `/slash-command`). El agente nunca la activará automáticamente. La descripción de la skill NO se carga en el contexto.
-- **Cuándo usarlo**: Para skills con efectos secundarios que solo deben ejecutarse bajo petición explícita del usuario: `/deploy`, `/commit`, `/send-message`, `/publish`.
-- **Ejemplo**:
-  ```yaml
-  name: deploy
-  description: Deploy to production
-  disable-model-invocation: true
-  ```
 
 ### user-invocable
 
@@ -113,7 +82,6 @@ description: >-
 | Frontmatter | Usuario invoca | Agente invoca | Descripción en contexto |
 |-------------|:--------------:|:-------------:|:-----------------------:|
 | Por defecto (ambos true) | ✅ | ✅ | ✅ |
-| `disable-model-invocation: true` | ✅ | ❌ | ❌ |
 | `user-invocable: false` | ❌ | ✅ | ✅ |
 
 ### allowed-tools
@@ -227,27 +195,22 @@ If a second argument was provided, focus on table `$ARGUMENTS[1]`.
 
 **Paso 1 — Empieza con la intención:**
 ```yaml
-description: Creates reports
+description: "Creates reports"
 ```
 
 **Paso 2 — Añade especificidad:**
 ```yaml
-description: Generate data quality coverage reports in PDF, DOCX, or Markdown format
+description: "Generate data quality coverage reports in PDF, DOCX, or Markdown format"
 ```
 
 **Paso 3 — Añade el disparador "Use when...":**
 ```yaml
-description: >-
-  Generate data quality coverage reports in PDF, DOCX, or Markdown.
-  Use when the user wants a formal report of quality status.
+description: "Generate data quality coverage reports in PDF, DOCX, or Markdown. Use when the user wants a formal report of quality status."
 ```
 
 **Paso 4 — Añade palabras clave de activación:**
 ```yaml
-description: >-
-  Generate data quality coverage reports in PDF, DOCX, or Markdown.
-  Use when the user wants a formal report, coverage summary, quality document,
-  or asks to export/download quality results.
+description: "Generate data quality coverage reports in PDF, DOCX, or Markdown. Use when the user wants a formal report, coverage summary, quality document, or asks to export/download quality results."
 ```
 
 Esta versión final se activará con: "generate a report", "I need a PDF of the quality status", "export the coverage results", "create a quality document".

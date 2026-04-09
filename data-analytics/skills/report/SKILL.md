@@ -1,7 +1,7 @@
 ---
 name: report
-description: Professional report generation in multiple formats (PDF, DOCX, interactive web with Plotly, PowerPoint) from data analysis. Use when the user needs to generate reports, dashboards, presentations, or documentation from analyzed data.
-argument-hint: '[format: pdf|web|pptx] [topic (optional)]'
+description: "Professional report generation in multiple formats (PDF, DOCX, interactive web with Plotly, PowerPoint). Use when the user needs to generate reports, dashboards, executive summaries, presentations, or any formal deliverable from data analysis or conversation exploration."
+argument-hint: "[format: pdf|web|pptx] [topic (optional)]"
 ---
 
 # Skill: Report Generation

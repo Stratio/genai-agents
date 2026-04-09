@@ -1,7 +1,7 @@
 ---
 name: propose-knowledge
-description: Analyze the conversation to propose business terms and preferences discovered to the `Stratio Governance` layer of the domain. Use when the user wants to enrich the semantic layer with definitions, rules or preferences discovered during an analysis.
-argument-hint: [domain (optional)]
+description: "Analyze the conversation to propose business terms and preferences discovered to the `Stratio Governance` layer of the domain. Use when the user wants to enrich the semantic layer with definitions, rules or preferences discovered during an analysis."
+argument-hint: "[domain (optional)]"
 ---
 
 # Skill: Knowledge Proposal to Governance

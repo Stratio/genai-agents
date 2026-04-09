@@ -378,16 +378,12 @@ La versión incorrecta supera la recomendación de 500 líneas y obliga al agent
 
 **Bien:**
 ```yaml
-description: >-
-  Assess the current data quality coverage for a domain, table, or column.
-  Returns analysis of covered dimensions, missing gaps, and priority columns.
-  Use when the user wants to understand quality status, identify gaps,
-  check coverage, or find columns without quality rules.
+description: "Assess the current data quality coverage for a domain, table, or column. Returns analysis of covered dimensions, missing gaps, and priority columns. Use when the user wants to understand quality status, identify gaps, check coverage, or find columns without quality rules."
 ```
 
 **Mal:**
 ```yaml
-description: Quality assessment tool for data governance
+description: "Quality assessment tool for data governance"
 ```
 
 La descripción buena incluye palabras clave que los usuarios usan naturalmente: "quality status", "gaps", "coverage", "columns without rules". La descripción mala usa términos abstractos que no coinciden con el lenguaje del usuario.
@@ -396,10 +392,7 @@ La descripción buena incluye palabras clave que los usuarios usan naturalmente:
 
 **Bien:**
 ```yaml
-description: >-
-  Generate formal coverage reports in PDF, DOCX, or Markdown.
-  Use when the user explicitly asks for a report file or document.
-  Do NOT use for in-chat quality summaries — those are handled by assess-quality.
+description: "Generate formal coverage reports in PDF, DOCX, or Markdown. Use when the user explicitly asks for a report file or document. Do NOT use for in-chat quality summaries — those are handled by assess-quality."
 ```
 
 La exclusión explícita evita que la skill se active cuando el usuario solo quiere un resumen en el chat.

@@ -1,7 +1,7 @@
 ---
 name: analyze
-description: Full BI/BA data analysis — domain discovery, EDA and data quality, metric and KPI planning with analytical framework, data queries via MCP, Python analysis with pandas, visualizations. Use when the user needs to analyze business data, calculate KPIs, obtain insights, or answer analytical questions about governed domains.
-argument-hint: [analysis question or topic]
+description: "Full BI/BA data analysis — domain discovery, EDA and data quality, metric and KPI planning with analytical framework, data queries via MCP, Python analysis with pandas, visualizations. Use when the user needs to analyze business data, calculate KPIs, produce visualizations, generate graphic summaries, obtain insights, or answer analytical questions about governed domains. Also activates for multi-metric comparisons, KPI overviews, or any request requiring data crossing across dimensions."
+argument-hint: "[analysis question or topic]"
 ---
 
 # Skill: Full BI/BA Analysis
@@ -25,6 +25,8 @@ If the request can be resolved with a single MCP call (see Phase 0), respond dir
 If the request requires analysis (data cross-referencing, hypotheses, visualizations, multiple metrics), continue with section 2.
 
 ## 2. Domain Discovery
+
+If the domain is already known from the conversation (identified and explored in prior turns), skip this section and proceed to section 3. Use the domain and table context already established.
 
 Read and follow `skills-guides/stratio-data-tools.md` sec 4 for domain discovery steps (search or list domains, select, explore tables, columns, and terminology).
 
@@ -73,6 +75,8 @@ A single interaction:
 | 1 | What analysis depth do you prefer? | **Quick** · **Standard** (Recommended) · **Deep** | Single | Always |
 | 2 | What audience is the analysis for? | **C-level/Executive** · **Manager/Lead** · **Technical/Data team** · **Mixed/General** | Single | Always |
 | 3 | Do you want unit tests to be generated and run on the Python code? | **Yes** (Recommended): improves precision and quality, but consumes more time, cost, and context · **No**: direct execution without tests | Single | Standard/Deep only |
+
+**Adaptive rule**: If the user's request already specifies information that answers any of these questions, pre-fill that answer and do not ask it again. For example: if the user said "quick analysis", pre-fill depth as Quick; if the user said "executive summary", pre-fill audience as C-level/Executive. Only ask questions whose answers cannot be inferred from the request.
 
 - Tests validate transformations and calculations before running with real data. They improve precision but consume more tokens, time, and cost. **In Quick depth, testing is automatically disabled without asking the user.**
 

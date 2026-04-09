@@ -1,7 +1,7 @@
 ---
 name: update-memory
-description: Actualizar la memoria persistente del agente con preferencias del usuario, patrones de datos y heurísticas descubiertas. Se invoca automáticamente al final de cada análisis o manualmente cuando el usuario quiera registrar preferencias.
-argument-hint: [preferencia o patrón a recordar (opcional)]
+description: "Actualizar la memoria persistente del agente con preferencias del usuario, patrones de datos y heurísticas descubiertas. Se invoca automáticamente al final de cada análisis o manualmente cuando el usuario quiera registrar preferencias."
+argument-hint: "[preferencia o patrón a recordar (opcional)]"
 ---
 
 # Skill: Actualizacion de Memoria Persistente

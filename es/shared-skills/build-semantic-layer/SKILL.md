@@ -1,9 +1,7 @@
 ---
 name: build-semantic-layer
-description: Pipeline completo para construir la capa semántica de un dominio técnico.
-  Orquesta las 5 fases en secuencia con diagnóstico de estado, publicación opcional
-  y seguimiento de progreso.
-argument-hint: [dominio técnico (opcional)]
+description: "Pipeline completo para construir la capa semántica de un dominio técnico. Orquesta las 5 fases en secuencia con diagnóstico de estado, publicación opcional y seguimiento de progreso."
+argument-hint: "[dominio técnico (opcional)]"
 ---
 
 # Skill: Construir Capa Semántica (Pipeline Completo)

@@ -1,6 +1,6 @@
 ---
 name: assess-quality
-description: Evaluar la cobertura actual de calidad del dato para un dominio completo, una tabla específica o una columna concreta. Devuelve un análisis de que dimensiones están cubiertas, cuales faltan y cuales columnas son prioritarias para nuevas reglas. Usar cuando el usuario quiera conocer el estado de la calidad de sus datos.
+description: "Evaluar la cobertura actual de calidad del dato para un dominio completo, una tabla específica o una columna concreta. Devuelve un análisis de que dimensiones están cubiertas, cuales faltan y cuales columnas son prioritarias para nuevas reglas. Usar cuando el usuario quiera conocer el estado de la calidad de sus datos."
 argument-hint: "[dominio] [tabla (opcional)] [columna (opcional)]"
 ---
 

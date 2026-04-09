@@ -1,7 +1,7 @@
 ---
 name: update-memory
-description: Update the agent's persistent memory with user preferences, data patterns, and discovered heuristics. Invoked automatically at the end of each analysis or manually when the user wants to record preferences.
-argument-hint: [preference or pattern to remember (optional)]
+description: "Update the agent's persistent memory with user preferences, data patterns, and discovered heuristics. Invoked automatically at the end of each analysis or manually when the user wants to record preferences."
+argument-hint: "[preference or pattern to remember (optional)]"
 ---
 
 # Skill: Persistent Memory Update

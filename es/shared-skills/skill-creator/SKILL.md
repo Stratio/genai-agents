@@ -1,10 +1,6 @@
 ---
 name: skill-creator
-description: >-
-  Comprehensive guide for creating high-quality AI agent skills (SKILL.md files).
-  Use when designing, drafting, reviewing, or improving skills.
-  Covers anatomy, frontmatter, progressive disclosure, writing patterns,
-  description optimization, supporting files, and quality checklist.
+description: "Comprehensive guide for creating high-quality AI agent skills (SKILL.md files). Use when designing, drafting, reviewing, or improving skills. Covers anatomy, frontmatter, progressive disclosure, writing patterns, description optimization, supporting files, and quality checklist."
 argument-hint: "[skill topic or name (optional)]"
 ---
 
@@ -44,7 +40,7 @@ Una **skill** es un conjunto de instrucciones empaquetadas como archivos Markdow
 ```yaml
 ---
 name: api-conventions
-description: REST API design patterns for this codebase. Use when writing or reviewing API endpoints.
+description: "REST API design patterns for this codebase. Use when writing or reviewing API endpoints."
 ---
 
 When writing API endpoints:
@@ -58,8 +54,7 @@ When writing API endpoints:
 ```yaml
 ---
 name: deploy
-description: Deploy the application to production. Use when the user wants to deploy or release.
-disable-model-invocation: true
+description: "Deploy the application to production. Use when the user wants to deploy or release."
 ---
 
 Deploy the application:
@@ -92,6 +87,8 @@ Todo SKILL.md comienza con un frontmatter YAML entre marcadores `---`. El frontm
 | `description` | Sí (muy recomendado) | Qué hace la skill y cuándo usarla. Es el **mecanismo principal de activación** |
 | `argument-hint` | No | Texto de ejemplo mostrado en el autocompletado: `[domain] [table (optional)]` |
 
+**Regla de formato**: Envuelve siempre los valores de `description` y `argument-hint` entre comillas dobles en una sola línea. Esto previene problemas de parseo YAML con caracteres especiales (dos puntos, corchetes) y asegura un frontmatter portable entre plataformas.
+
 ### 2.2 Descripción — el campo más importante
 
 La `description` determina cuándo el agente carga tu skill. Los agentes tienden a **sub-activar** las skills, por lo que las descripciones deben ser proactivas.
@@ -100,15 +97,12 @@ La `description` determina cuándo el agente carga tu skill. Los agentes tienden
 
 **Buena descripción:**
 ```yaml
-description: >-
-  Assess the current data quality coverage for a domain, table, or column.
-  Use when the user wants to understand quality status, identify gaps,
-  find uncovered dimensions, or check which columns need quality rules.
+description: "Assess the current data quality coverage for a domain, table, or column. Use when the user wants to understand quality status, identify gaps, find uncovered dimensions, or check which columns need quality rules."
 ```
 
 **Mala descripción:**
 ```yaml
-description: Quality assessment tool
+description: "Quality assessment tool"
 ```
 
 La mala descripción es demasiado vaga — rara vez se activará. La buena descripción incluye palabras clave específicas ("gaps", "uncovered dimensions", "quality rules") que coinciden con lo que los usuarios realmente dicen.
@@ -264,3 +258,4 @@ Ejecuta esta lista de verificación antes de finalizar cualquier skill:
 12. Nombre en kebab-case (minúsculas, guiones)
 13. Todo el conocimiento necesario está integrado — la skill no depende de conocimiento externo no verificable
 14. La descripción es lo suficientemente proactiva para activarse cuando sea relevante
+15. Los valores de `description` y `argument-hint` están entre comillas dobles en una sola línea

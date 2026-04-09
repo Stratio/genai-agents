@@ -1,7 +1,7 @@
 ---
 name: explore-data
-description: Quick exploration of data domains, tables, columns, statistical profiling and business terminology using the governed data MCPs. Use when the user wants to discover what data is available, understand a domain's structure, or explore tables and columns before an analysis.
-argument-hint: [domain (optional)]
+description: "Quick exploration of data domains, tables, columns, statistical profiling and business terminology using the governed data MCPs. Use when the user wants to discover what data is available, understand a domain's structure, or explore tables and columns before an analysis."
+argument-hint: "[domain (optional)]"
 ---
 
 # Skill: Domain and Data Exploration

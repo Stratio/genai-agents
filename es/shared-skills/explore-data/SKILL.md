@@ -1,7 +1,7 @@
 ---
 name: explore-data
-description: Exploración rápida de dominios de datos, tablas, columnas, perfilado estadístico y terminología de negocio usando los MCPs de datos gobernados. Usar cuando el usuario quiera descubrir que datos hay disponibles, entender la estructura de un dominio o explorar tablas y columnas antes de un análisis.
-argument-hint: [dominio (opcional)]
+description: "Exploración rápida de dominios de datos, tablas, columnas, perfilado estadístico y terminología de negocio usando los MCPs de datos gobernados. Usar cuando el usuario quiera descubrir que datos hay disponibles, entender la estructura de un dominio o explorar tablas y columnas antes de un análisis."
+argument-hint: "[dominio (opcional)]"
 ---
 
 # Skill: Exploración de Dominios y Datos

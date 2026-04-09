@@ -1,6 +1,6 @@
 ---
 name: create-quality-planification
-description: Create a schedule to automatically execute all quality rules in one or more folders/collections. Operates at the folder level (domain/collection), not individual rules. Requires mandatory human confirmation before execution.
+description: "Create a schedule to automatically execute all quality rules in one or more folders/collections. Operates at the folder level (domain/collection), not individual rules. Requires mandatory human confirmation before execution."
 argument-hint: "[domain/collection] [frequency (optional)]"
 ---
 

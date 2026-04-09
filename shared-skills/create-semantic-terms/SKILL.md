@@ -1,8 +1,7 @@
 ---
 name: create-semantic-terms
-description: Generate or regenerate business semantic terms in the Stratio
-  Governance glossary for the business views of a domain.
-argument-hint: [technical domain (optional)]
+description: "Generate or regenerate business semantic terms in the Stratio Governance glossary for the business views of a domain."
+argument-hint: "[technical domain (optional)]"
 ---
 
 # Skill: Create Semantic Terms

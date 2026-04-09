@@ -1,8 +1,7 @@
 ---
 name: manage-business-terms
-description: Crear Business Terms en el diccionario de Stratio Governance con relaciones
-  a activos de datos. Planificación guiada — nombre, descripción, tipo y relaciones.
-argument-hint: [dominio (opcional)]
+description: "Crear Business Terms en el diccionario de Stratio Governance con relaciones a activos de datos. Planificación guiada — nombre, descripción, tipo y relaciones."
+argument-hint: "[dominio (opcional)]"
 ---
 
 # Skill: Gestionar Business Terms
