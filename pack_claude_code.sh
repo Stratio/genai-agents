@@ -278,6 +278,7 @@ rsync -a \
   --exclude=.opencode/ \
   --exclude=.agents/ \
   --exclude=opencode.json \
+  --exclude=cowork-metadata.yaml \
   --exclude=skills/ \
   --exclude=shared-skills \
   --exclude=shared-guides \
