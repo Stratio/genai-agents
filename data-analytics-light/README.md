@@ -76,6 +76,8 @@ The result is located in `dist/claude_cowork/data-analytics-light/`.
 3. Install `<name>.zip` as a plugin in Cowork (provides the skills `/analyze`, `/explore-data`, `/propose-knowledge` and the MCP connection)
 4. The Cowork orchestrator reads the instructions from `CLAUDE.md` and delegates to the plugin skills when appropriate
 
+> **MCP configuration:** The plugin ZIP includes a `.mcp.json` that registers the MCP servers automatically when installed in Cowork. Always package with `--url` and `--key` to hardcode credentials — Cowork (which runs inside Claude Desktop) does **not** expand `${VAR:-default}` templates; that syntax only works in Claude Code CLI. If you need to use the agent in Claude Desktop without Cowork (no plugin support), configure the MCP servers manually in `claude_desktop_config.json` using the `mcp-remote` proxy — see section [6c of the root README](../README.md#6c-test-in-claude-desktop--claude-cowork) for the format.
+
 ### Packaging as Claude AI Project (claude.ai)
 
 Generates the flattened files (skills, guides, requirements, setup):

@@ -82,6 +82,8 @@ El resultado se encuentra en `dist/claude_cowork/semantic-layer/`.
 3. Instalar `<nombre>.zip` como plugin en Cowork (aporta las skills `/build-semantic-layer`, `/stratio-semantic-layer`, `/generate-technical-terms`, `/create-ontology`, `/create-business-views`, `/create-sql-mappings`, `/create-semantic-terms`, `/manage-business-terms`, `/create-data-collection` y la conexión MCP)
 4. El orquestador de Cowork lee las instrucciones del `CLAUDE.md` y delega a las skills del plugin cuando corresponda
 
+> **Configuración MCP:** El plugin ZIP incluye un `.mcp.json` que registra los servidores MCP automáticamente al instalarlo en Cowork. Empaqueta siempre con `--gov-url`, `--sql-url` y `--key` para que las credenciales queden fijas — Cowork (que corre dentro de Claude Desktop) **no expande** las plantillas `${VAR:-default}`; esa sintaxis solo funciona en Claude Code CLI. Si necesitas usar el agente en Claude Desktop sin Cowork (sin soporte de plugins), configura los servidores MCP manualmente en `claude_desktop_config.json` usando el proxy `mcp-remote` — consulta la sección [6c del README raíz](../README.md#6c-test-in-claude-desktop--claude-cowork) para el formato.
+
 ### Empaquetado como Claude AI Project (claude.ai)
 
 Genera los ficheros aplanados (skills, guías):
