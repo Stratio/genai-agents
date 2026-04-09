@@ -2,6 +2,7 @@
 
 ## 0.1.0 (upcoming)
 
+* [ROCK-NA] bin/package.sh: replace hard-coded _pack_agent_extras calls with a dynamic loop over release-modules so new agents are picked up automatically
 * Initial version: monorepo with data-analytics and data-analytics-light agents
 * Unify packaging artifacts under dist/, add CLI args to pack scripts, make MCP config optional in plugin scripts, add CI/CD scaffolding (Jenkinsfile, Makefile, bin/)
 * Document build output structure in README, update pack script output paths in table
