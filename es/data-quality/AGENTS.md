@@ -136,7 +136,7 @@ Si el usuario rechaza o modifica el plan: ajustar las reglas propuestas y volver
 
 Si el usuario aprueba parcialmente: crear solo las reglas aprobadas.
 
-Si el usuario pide configurar la medición de las reglas: seguir el flujo de iteración de la sección 3.4 de la skill `create-quality-rules` para recoger `measurement_type`, `threshold_mode` y `exact_threshold` o `threshold_breakpoints`. Si el usuario no menciona medición, aplicar siempre los defaults: `measurement_type=percentage`, `threshold_mode=exact`, umbrales `=100% OK / !=100% KO`.
+Si el usuario pide configurar la medición de las reglas: seguir el flujo de iteración de la sección 3.4 de la skill `create-quality-rules` para recoger `measurement_type`, `threshold_mode` y `exact_threshold` o `threshold_breakpoints`. Si el usuario no menciona medición, aplicar siempre los defaults: `measurement_type=percentage`, `threshold_mode=range`, umbrales `[0%-80%] KO, (80%-95%] WARNING, (95%-100%] OK`.
 
 ---
 
@@ -211,19 +211,19 @@ Además de las herramientas listadas en `skills-guides/stratio-data-tools.md`, e
 | `get_tables_quality_details` | stratio_data | Reglas de calidad existentes + estado OK/KO/Warning |
 | `get_quality_rule_dimensions` | stratio_gov | Definiciones de dimensiones de calidad del dominio |
 | `create_quality_rule` | stratio_gov | **SOLO con aprobación humana** — crear reglas |
-| `create_quality_rule_planification` | stratio_gov | **SOLO con aprobación humana** — crear planificación de ejecución de carpetas de reglas |
+| `create_quality_rule_scheduler` | stratio_gov | **SOLO con aprobación humana** — crear planificación de ejecución de carpetas de reglas |
 | `quality_rules_metadata` | stratio_gov | Generar metadata AI (descripción, dimensión) para reglas de calidad |
 | `get_critical_data_elements` | stratio_gov | Listar tablas y columnas tagueadas como Elementos de Dato Críticos en una colección |
 | `set_critical_data_elements` | stratio_gov | **SOLO con aprobación humana** — taggear tablas/columnas como Elementos de Dato Críticos |
 
 ### Reglas específicas de calidad
 
-- **NUNCA** llamar `create_quality_rule`, `create_quality_rule_planification` ni `set_critical_data_elements` sin confirmación explícita del usuario
+- **NUNCA** llamar `create_quality_rule`, `create_quality_rule_scheduler` ni `set_critical_data_elements` sin confirmación explícita del usuario
 - **`set_critical_data_elements`**: las respuestas HTTP 409 significan que el asset ya estaba tagueado como CDE — esto NO es un error. Contabilizarlos como "ya tagueado" y no tratarlos como fallos
 - **Validación de SQL (OBLIGATORIO)**: Antes de proponer o crear una regla, se debe verificar que tanto la `query` como la `query_reference` son válidas. Para ello, ejecutar cada SQL usando `execute_sql`. Es necesario resolver los placeholders `${tabla}` por el nombre real de la tabla antes de esta verificación.
 - **Uso OBLIGATORIO de `get_quality_rule_dimensions`**: Debe ejecutarse siempre al inicio de cualquier evaluación para conocer las dimensiones soportadas por el dominio y sus definiciones. No asumir dimensiones por defecto.
 - **EDA (Análisis Exploratorio)**: Usar siempre `profile_data`. Requiere generar primero la SQL con `generate_sql(data_question="todos los campos de la tabla X", domain_name="Y")` y pasar el resultado al parámetro `query`.
-- **`create_quality_rule`**: requiere `collection_name`, `rule_name`, `primary_table`, `table_names` (lista), `description`, `query`, `query_reference`, y opcionalmente `dimension`, `folder_id`, `cron_expression` (expresión Quartz cron para ejecución automática), `cron_timezone` (timezone del cron, default `Europe/Madrid`), `cron_start_datetime` (ISO 8601, fecha/hora de la primera ejecución programada), `measurement_type` (default `percentage`), `threshold_mode` (default `exact`), `exact_threshold` (para modo exact: `{value, equal_status, not_equal_status}`; default `{value: "100", equal_status: "OK", not_equal_status: "KO"}`), `threshold_breakpoints` (para modo range: lista de `{value, status}` donde el último elemento no tiene `value`). Estos parámetros se pasan siempre con sus valores por defecto salvo que el usuario pida otra configuración de medición (ver sección 3.4 de la skill `create-quality-rules` para el flujo de iteración con el usuario y ejemplos completos)
+- **`create_quality_rule`**: requiere `collection_name`, `rule_name`, `primary_table`, `table_names` (lista), `description`, `query`, `query_reference`, y opcionalmente `dimension`, `folder_id`, `cron_expression` (expresión Quartz cron para ejecución automática), `cron_timezone` (timezone del cron, default `Europe/Madrid`), `cron_start_datetime` (ISO 8601, fecha/hora de la primera ejecución programada), `active` (default `False` — las reglas se crean inactivas; pasar `True` solo si el usuario lo solicita explícitamente), `measurement_type` (default `percentage`), `threshold_mode` (default `range`), `exact_threshold` (para modo exact: `{value, equal_status, not_equal_status}`), `threshold_breakpoints` (para modo range: lista de `{value, status}` donde el último elemento no tiene `value`; default `[{value: "80", status: "KO"}, {value: "95", status: "WARNING"}, {status: "OK"}]`). Estos parámetros se pasan siempre con sus valores por defecto salvo que el usuario pida otra configuración de medición (ver sección 3.4 de la skill `create-quality-rules` para el flujo de iteración con el usuario y ejemplos completos)
 - **`quality_rules_metadata`**: genera metadata AI (descripción y clasificación de dimensión) para reglas de calidad. Tres modos de uso:
   - **Automático — antes de evaluar** (`assess-quality`): `quality_rules_metadata(domain_name=X)` sin `force_update` — solo procesa reglas sin metadata o modificadas desde la última generación
   - **Automático — después de crear reglas** (`create-quality-rules`): `quality_rules_metadata(domain_name=X)` sin `force_update` — las reglas recién creadas no tendrán metadata y se procesarán automáticamente
@@ -232,7 +232,7 @@ Además de las herramientas listadas en `skills-guides/stratio-data-tools.md`, e
     - "regenera/fuerza toda la metadata" / "reprocesa aunque ya tengan metadata" → `quality_rules_metadata(domain_name=X, quality_rules_metadata_force_update=True)`
     - "genera la metadata de la regla [ID]" → `quality_rules_metadata(domain_name=X, quality_rule_id=ID)` — si el usuario no conoce el ID numérico, obtenerlo primero con `get_tables_quality_details`
   - No requiere aprobación humana (no es destructiva, solo enriquece metadata). Si falla, continuar sin bloquear el workflow
-- **`create_quality_rule_planification`**: crea una planificación (schedule) que ejecuta automáticamente todas las reglas de calidad de una o varias carpetas. Requiere `name`, `description`, `collection_names` (lista de dominios/colecciones), `cron_expression` (Quartz cron 6-7 campos; nunca frecuencias muy bajas como `* * * * * *`). Opcionales: `table_names` (filtro de tablas dentro de las colecciones), `cron_timezone` (default `Europe/Madrid`), `cron_start_datetime` (ISO 8601, primera ejecución), `execution_size` (default `XS`, opciones: XS/S/M/L/XL). Ver skill `create-quality-schedule` para el workflow completo
+- **`create_quality_rule_scheduler`**: crea una planificación (schedule) que ejecuta automáticamente todas las reglas de calidad de una o varias carpetas. Requiere `name`, `description`, `collection_names` (lista de dominios/colecciones), `cron_expression` (Quartz cron 6-7 campos; nunca frecuencias muy bajas como `* * * * * *`). Opcionales: `table_names` (filtro de tablas dentro de las colecciones), `cron_timezone` (default `Europe/Madrid`), `cron_start_datetime` (ISO 8601, primera ejecución), `execution_size` (default `XS`, opciones: XS/S/M/L/XL). Ver skill `create-quality-scheduler` para el workflow completo
 - Si una llamada MCP falla o devuelve error: informar al usuario, no reintentar más de 2 veces con la misma formulación
 
 ---

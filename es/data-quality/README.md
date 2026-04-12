@@ -9,6 +9,7 @@ Agente experto en Gobernanza y Calidad del Dato. Evalua la cobertura de calidad 
 - Propuesta razonada de reglas de calidad basada en contexto semántico y datos reales
 - Creación de reglas de calidad con aprobación humana obligatoria
 - Planificación de ejecución automática de reglas de calidad
+- Consulta y definición de Critical Data Elements (CDEs): identificar los assets más críticos del dominio, recomendarlos y tagearlos con aprobación humana obligatoria
 - Generación de informes de cobertura (chat, PDF, DOCX, PPTX, Dashboard web, Informe web / Artículo web, Póster/Infografía, XLSX, Markdown)
 
 ## Requisitos

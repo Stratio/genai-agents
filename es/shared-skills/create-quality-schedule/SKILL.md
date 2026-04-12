@@ -10,7 +10,7 @@ Workflow para crear una planificación que ejecute automáticamente todas las re
 
 ## PAUSA DE APROBACION CRITICA
 
-**NUNCA llamar `create_quality_rule_planification` sin que el usuario haya confirmado explícitamente el plan.**
+**NUNCA llamar `create_quality_rule_scheduler` sin que el usuario haya confirmado explícitamente el plan.**
 
 Si hay dudas sobre si el usuario ha aprobado, preguntar de nuevo. No interpretar silencio ni respuestas ambiguas como aprobación.
 
@@ -23,7 +23,7 @@ Si hay dudas sobre si el usuario ha aprobado, preguntar de nuevo. No interpretar
 A partir de la petición del usuario, determinar que colecciones (dominios) incluir en la planificación.
 
 - Si el usuario específica nombres de dominio: validarlos usando `search_domains` o `list_domains` con el `domain_type` correspondiente (semántico o técnico). Si no específica el tipo, preguntar al usuario con opciones siguiendo la convención de preguntas al usuario.
-- **Regla CRITICA**: los nombres de colección usados en la llamada a `create_quality_rule_planification` deben ser **exactamente** los valores devueltos por las herramientas de listado. NUNCA traducirlos, interpretarlos ni parafrasearlos.
+- **Regla CRITICA**: los nombres de colección usados en la llamada a `create_quality_rule_scheduler` deben ser **exactamente** los valores devueltos por las herramientas de listado. NUNCA traducirlos, interpretarlos ni parafrasearlos.
 - Si el usuario no específica dominios concretos: listar los disponibles y preguntar cuales incluir.
 - La planificación soporta **múltiples colecciones** en una sola llamada (`collection_names` es una lista).
 
@@ -78,10 +78,13 @@ Recopilar los parámetros necesarios para crear la planificación. Algunos se pr
 
 ### 3.1 Nombre (`name`) — obligatorio
 
-Sugerir un nombre siguiendo la convención `plan-[dominio]-[frecuencia]`:
-- `plan-financial-daily`
-- `plan-payments-weekly`
-- `plan-financial-payments-monthly`
+Sugerir un nombre siguiendo la convención `plan-[dominio]-[alcance]`, donde `alcance` describe QUÉ se valida (tablas, dominio, ámbito de cobertura), no CUÁNDO:
+- `plan-financial`
+- `plan-financial-accounts`
+- `plan-payments-transactions`
+- `plan-financial-payments`
+
+El nombre no debe incluir información de scheduling (frecuencia, cron), configuración de medición ni estado activo/inactivo — debe reflejar únicamente el ámbito de lo que se valida.
 
 El usuario puede aceptar la sugerencia o proponer otro nombre. Si hay múltiples colecciones, combinar los nombres relevantes o usar un nombre genérico descriptivo.
 
@@ -91,9 +94,11 @@ Generar una descripción en lenguaje de negocio que explique el propósito de la
 1. NO incluir detalles técnicos de scheduling (frecuencia, cron, horarios) — esa información ya está en los campos de planificación
 2. NO usar nombres técnicos de tablas o columnas
 3. Describir el propósito de negocio de la planificación
+4. NO incluir información de medición (tipo de medición, valores de umbral) — esa configuración pertenece a las reglas individuales
+5. NO indicar el estado activo/inactivo — es un parámetro operativo separado
 
-Ejemplo correcto: "Ejecución periodica de las validaciones de calidad del dominio financiero para garantizar la integridad de los datos de cuentas y transacciones"
-Ejemplo incorrecto: "Cron diario a las 9:00 que ejecuta las reglas de la colección financial_domain sobre las tablas account y transaction"
+Ejemplo correcto: "Ejecución periódica de las validaciones de calidad del dominio financiero para garantizar la integridad de los datos de cuentas y transacciones"
+Ejemplo incorrecto: "Cron diario a las 9:00 que ejecuta las reglas de la colección financial_domain sobre las tablas account y transaction, con umbral 95%, activa."
 
 Presentar la descripción propuesta al usuario para su validación.
 
@@ -135,7 +140,7 @@ Si el usuario pregunta o la planificación abarca un volumen grande de reglas/ta
 
 ## 4. PAUSA: Presentar Plan y Esperar Aprobación
 
-Antes de ejecutar la llamada a `create_quality_rule_planification`, presentar el plan completo al usuario.
+Antes de ejecutar la llamada a `create_quality_rule_scheduler`, presentar el plan completo al usuario.
 
 ### Formato del plan
 
@@ -147,7 +152,7 @@ Antes de ejecutar la llamada a `create_quality_rule_planification`, presentar el
 **Colecciones**: financial_domain
 **Tablas filtradas**: todas (o lista de tablas si se filtro)
 **Reglas que se ejecutaran**: 23 reglas en 5 tablas
-**Programacion**: `0 0 9 * * ?` — diariamente a las 9:00 (Europe/Madrid)
+**Planificación**: `0 0 9 * * ?` — diariamente a las 9:00 (Europe/Madrid)
 **Primera ejecución**: inmediatamente (o fecha ISO 8601 si se indicó)
 **Tamaño de ejecución**: XS
 
@@ -180,7 +185,7 @@ Si el usuario modifica algún parámetro: actualizar el plan y volver a presenta
 
 Solo tras aprobación explícita del usuario:
 
-1. Llamar `create_quality_rule_planification` con todos los parámetros configurados:
+1. Llamar `create_quality_rule_scheduler` con todos los parámetros configurados:
    - `name`: nombre de la planificación
    - `description`: descripción de negocio
    - `collection_names`: lista de colecciones/dominios
@@ -210,7 +215,7 @@ Tras la creación exitosa, presentar confirmación:
 - **Estado**: Creada correctamente
 - **Colecciones**: financial_domain
 - **Reglas programadas**: 23 reglas en 5 tablas
-- **Programacion**: diariamente a las 9:00 (Europe/Madrid)
+- **Planificación**: diariamente a las 9:00 (Europe/Madrid)
 - **Primera ejecución**: inmediatamente
 - **Tamaño**: XS
 ```

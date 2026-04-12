@@ -19,6 +19,7 @@ The agent evaluates quality across 11 dimensions (completeness, uniqueness, vali
 - Read and extract content from PDF, Word, PowerPoint and Excel files (policies, rule specs, reference catalogs)
 - Author compliance briefs, executive decks, rule-spec workbooks and standalone visuals (posters, dashboards)
 - Apply consistent visual identity across every report via the centralized theming catalog (10 curated themes, extensible per client)
+- Consult and define Critical Data Elements (CDEs): identify, recommend, and tag the most critical assets in a domain with mandatory human approval
 - Diagnose quality issues with real data profiling
 
 ## Output formats
@@ -71,6 +72,12 @@ Every visual format applies the theme you choose at the start (or the default co
 - "Schedule the automatic execution of rules for the customers domain"
 - "Create a daily schedule for the quality rules"
 
+### Critical Data Elements
+- "What are the CDEs of the customers domain?"
+- "Define the critical data elements for domain X"
+- "Recommend which columns should be CDEs in domain Y"
+- "Tag table Z as a critical data element"
+
 ### Direct queries
 - "What quality dimensions exist?"
 - "What quality rules does table X have?"
@@ -85,6 +92,7 @@ Every visual format applies the theme you choose at the start (or the default co
 | `/create-quality-rules` | Design and create quality rules to cover gaps, with mandatory human approval |
 | `/create-quality-schedule` | Create automatic execution schedules for quality rules |
 | `/quality-report` | Generate a formal coverage report in Chat, PDF, DOCX, PPTX, Dashboard web, Web article / Narrative report, Poster/Infographic, XLSX or Markdown |
+| `/manage-critical-data-elements` | Consult or define Critical Data Elements (CDEs) for a governed domain, with mandatory human approval before tagging |
 
 ### Content readers
 | Command | Description |

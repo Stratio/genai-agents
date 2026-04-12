@@ -28,7 +28,8 @@ If `$ARGUMENTS` provides a domain name, search with `search_domains($ARGUMENTS)`
 
 If the user's request already makes the intent clear, proceed directly:
 - "Show me the CDEs" / "What are the critical data elements of [domain]?" → **Flow A**
-- "Define CDEs" / "Tag [table/column] as critical" / "Recommend CDEs" → **Flow B**
+- "Recommend CDEs" / "Define CDEs" (no specific asset mentioned) → **Flow B** (ask method in B.2)
+- "Tag [specific table/column] as critical" (user names exact tables or columns) → **Flow B, skip B.2, go directly to B1** with those assets pre-filled. Do NOT ask the user to choose a method — they already specified what to tag.
 
 Otherwise, ask the user with options following the user question convention:
 1. **View current CDEs** — consult what is currently marked as critical in this domain
@@ -117,7 +118,11 @@ Collect from the user:
 - Which **entire tables** to tag as critical (all columns in those tables become CDEs)
 - Which **specific columns** in which tables to tag as CDEs
 
-Validate that all mentioned tables and columns exist in the domain before proceeding. Assets already in the baseline (current CDEs) may be included — they will result in a 409 "already tagged", handled gracefully.
+Validate that all mentioned tables and columns exist in the domain before proceeding. Compare the user's specified assets against the baseline from B.1:
+- Assets **not** in the baseline → include in the tagging payload (truly new)
+- Assets already in the baseline → **exclude** from the payload; note them as "Already tagged" in the plan
+
+**Payload rule**: the tagging payload must contain ONLY the assets that are not in the baseline. If the user requested N assets but all N are already tagged, the payload is empty — skip the API call entirely and present the result as "all requested assets were already tagged as CDEs".
 
 Proceed to **B.4 Approval Pause**.
 
@@ -212,13 +217,16 @@ Collect the final agreed list, then proceed to the approval pause.
 
 Before calling `set_critical_data_elements`, present the complete tagging plan:
 
+- **Assets to tag as critical** = only assets NOT present in the baseline (truly new tagging operations).
+- **Already tagged** = assets from the user's specification that were already in the baseline — shown for transparency, excluded from the API call.
+
 ```markdown
 ## CDE Tagging Plan — [domain_name]
 
 **Domain**: [collection_name]
 **Source**: [Manual specification | Agent recommendation | Combined]
 
-### Assets to tag as critical
+### Assets to tag as critical (new — not yet in the baseline)
 
 **Full critical tables** (all columns will be CDEs):
 - account
@@ -245,7 +253,13 @@ Shall I proceed with tagging these assets as Critical Data Elements?
 
 ### B.5 Execution
 
-Only after explicit approval, call `set_critical_data_elements` with the complete payload:
+Only after explicit approval, call `set_critical_data_elements` with **only the assets that are new** (not present in the baseline from B.1).
+
+**CRITICAL — payload must contain ONLY new assets:**
+- Cross-check the payload against the baseline obtained in B.1 (`get_critical_data_elements` result).
+- Remove from the payload ANY asset (table or column) that already appears in the baseline.
+- DO NOT include currently-tagged CDEs. The API is additive, not a full replace: re-sending an existing CDE causes a 409 error and is never necessary.
+- If the user's specification matches only 1 new asset, the payload contains exactly 1 asset. If it matches 0 new assets, skip the API call entirely.
 
 ```json
 {

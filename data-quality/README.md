@@ -9,6 +9,7 @@ Expert agent in Data Governance and Data Quality. Assesses quality coverage of g
 - Reasoned quality rule proposals based on semantic context and real data
 - Quality rule creation with mandatory human approval
 - Automatic execution scheduling for quality rules
+- Critical Data Elements (CDEs) consultation and definition: identify the most critical assets in a domain, recommend them, and tag them with mandatory human approval
 - Coverage report generation (chat, PDF, DOCX, PPTX, Dashboard web, Web article / Narrative report, Poster/Infographic, XLSX, Markdown)
 
 ## Requirements
