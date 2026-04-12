@@ -28,7 +28,8 @@ Si `$ARGUMENTS` proporciona un nombre de dominio, buscar con `search_domains($AR
 
 Si la petición del usuario ya deja clara la intención, proceder directamente:
 - "Muéstrame los CDEs" / "¿Cuáles son los elementos de dato críticos de [dominio]?" → **Flujo A**
-- "Define los CDEs" / "Taggea [tabla/columna] como crítica" / "Recomienda CDEs" → **Flujo B**
+- "Recomienda CDEs" / "Define los CDEs" (sin asset concreto mencionado) → **Flujo B** (preguntar método en B.2)
+- "Taggea [tabla/columna concreta] como crítica" / "Marca [tabla/columna] como CDE" (el usuario nombra assets exactos) → **Flujo B, saltar B.2, ir directamente a B1** con esos assets pre-cargados. NO preguntar al usuario que elija un método — ya especificó qué taggear.
 
 Si no está claro, preguntar al usuario con opciones siguiendo la convención de preguntas al usuario:
 1. **Ver CDEs actuales** — consultar qué está actualmente marcado como crítico en este dominio
@@ -117,7 +118,11 @@ Recopilar del usuario:
 - Qué **tablas completas** taggear como críticas (todas las columnas de esas tablas pasan a ser CDEs)
 - Qué **columnas específicas** de qué tablas taggear como CDEs
 
-Validar que todas las tablas y columnas mencionadas existen en el dominio antes de continuar. Los assets ya presentes en el baseline (CDEs actuales) pueden incluirse — darán un 409 "ya tagueado", que se gestiona de forma no bloqueante.
+Validar que todas las tablas y columnas mencionadas existen en el dominio antes de continuar. Comparar los assets especificados por el usuario con el baseline de B.1:
+- Assets que **no** están en el baseline → incluir en el payload de tagueado (verdaderamente nuevos)
+- Assets que ya están en el baseline → **excluir** del payload; anotarlos como "Ya tagueados" en el plan
+
+**Regla del payload**: el payload de tagueado debe contener ÚNICAMENTE los assets que no están en el baseline. Si el usuario solicitó N assets pero todos N ya están tagueados, el payload está vacío — omitir la llamada a la API por completo y presentar el resultado como "todos los assets solicitados ya estaban marcados como CDEs".
 
 Continuar en la **Pausa de Aprobación B.4**.
 
@@ -212,13 +217,16 @@ Recopilar la lista final acordada y continuar con la pausa de aprobación.
 
 Antes de llamar a `set_critical_data_elements`, presentar el plan completo de tagueado:
 
+- **Assets a taggear como críticos** = solo los assets que NO están en el baseline (operaciones de tagueado verdaderamente nuevas).
+- **Ya tagueados** = assets de la especificación del usuario que ya estaban en el baseline — se muestran por transparencia, pero se excluyen de la llamada a la API.
+
 ```markdown
 ## Plan de Tagueado de CDEs — [domain_name]
 
 **Dominio**: [collection_name]
 **Origen**: [Especificación manual | Recomendación del agente | Combinado]
 
-### Assets a taggear como críticos
+### Assets a taggear como críticos (nuevos — no presentes en el baseline)
 
 **Tablas completamente críticas** (todas las columnas pasarán a ser CDEs):
 - account
@@ -245,7 +253,13 @@ Antes de llamar a `set_critical_data_elements`, presentar el plan completo de ta
 
 ### B.5 Ejecución
 
-Solo tras aprobación explícita, llamar a `set_critical_data_elements` con el payload completo:
+Solo tras aprobación explícita, llamar a `set_critical_data_elements` con **únicamente los assets que son nuevos** (no presentes en el baseline de B.1).
+
+**CRÍTICO — el payload debe contener ÚNICAMENTE assets nuevos:**
+- Cruzar el payload con el baseline obtenido en B.1 (resultado de `get_critical_data_elements`).
+- Eliminar del payload CUALQUIER asset (tabla o columna) que ya aparezca en el baseline.
+- NO incluir CDEs ya tagueados. La API es aditiva, no reemplaza todo: re-enviar un CDE existente provoca un error 409 y nunca es necesario.
+- Si la especificación del usuario coincide con solo 1 asset nuevo, el payload contiene exactamente 1 asset. Si coincide con 0 assets nuevos, omitir la llamada a la API por completo.
 
 ```json
 {

@@ -24,6 +24,7 @@ El agente trabaja con Stratio Data Governance vía herramientas MCP, orquestando
 - Proponer reglas de calidad razonadas basadas en contexto semántico y profiling real
 - Crear reglas de calidad con aprobación humana obligatoria (human-in-the-loop)
 - Programar la ejecución automática de reglas de calidad
+- Consultar y definir Critical Data Elements (CDEs): identificar, recomendar y etiquetar los activos más críticos de un dominio con aprobación humana obligatoria
 - Generar informes de cobertura en 8 formatos (ver [Formatos de salida](#formatos-de-salida))
 
 ### Manejo de contenido y branding
@@ -67,6 +68,12 @@ Cada formato visual aplica el tema que elijas al inicio del entregable (o el tem
 - "Crea una regla que verifique que el campo email tiene formato válido"
 - "Programa la ejecución automática de las reglas del dominio de clientes"
 
+### Elementos de Datos Críticos
+- "Cuáles son los CDEs del dominio de clientes?"
+- "Define los elementos de datos críticos del dominio X"
+- "Recomienda qué columnas deberían ser CDEs en el dominio Y"
+- "Etiqueta la tabla Z como elemento de dato crítico"
+
 ### Informes y entregables
 - "Genera un informe PDF de cobertura del dominio de ventas"
 - "Crea un resumen ejecutivo PowerPoint de los hallazgos de calidad"
@@ -102,6 +109,7 @@ Cada formato visual aplica el tema que elijas al inicio del entregable (o el tem
 | `/assess-quality` | Evaluar cobertura de calidad por dominio o tabla: dimensiones cubiertas, gaps y prioridades |
 | `/create-quality-rules` | Diseñar y crear reglas de calidad con aprobación humana obligatoria |
 | `/create-quality-schedule` | Crear planificaciones de ejecución automática de reglas de calidad |
+| `/manage-critical-data-elements` | Consultar o definir Critical Data Elements (CDEs) para un dominio gobernado, con aprobación humana obligatoria antes de etiquetar |
 | `/quality-report` | Generar informe formal de cobertura en Chat, PDF, DOCX, PPTX, Dashboard web, Póster/Infografía, XLSX o Markdown |
 
 ### Lectores de contenido

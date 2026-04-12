@@ -15,6 +15,7 @@ El agente evalúa la calidad en 11 dimensiones (completitud, unicidad, validez, 
 - Proponer reglas de calidad razonadas basadas en contexto semántico y profiling real
 - Crear reglas de calidad con aprobación humana obligatoria (human-in-the-loop)
 - Planificar la ejecución automática de reglas de calidad
+- Consulta y definición de Critical Data Elements (CDEs): identificar, recomendar y etiquetar los assets más críticos del dominio con aprobación humana obligatoria
 - Generar informes de cobertura en 8 formatos (ver [Formatos de salida](#formatos-de-salida))
 - Leer y extraer contenido de ficheros PDF, Word, PowerPoint y Excel (políticas, specs de reglas, catálogos de referencia)
 - Autorar compliance briefs, decks ejecutivos, workbooks de specs de reglas y visuales standalone (pósters, dashboards)
@@ -70,6 +71,12 @@ Cada formato visual aplica el tema que elijas al inicio (o el tema corporativo p
 - "Planifica la ejecución automática de las reglas del dominio clientes"
 - "Crea una planificación diaria para las reglas de calidad"
 
+### Elementos Críticos del Dato
+- "¿Cuáles son los CDEs del dominio clientes?"
+- "Define los Critical Data Elements del dominio X"
+- "Recomiéndame qué columnas deberían ser CDEs en el dominio Y"
+- "Etiqueta la tabla Z como elemento crítico del dato"
+
 ### Consultas directas
 - "¿Qué dimensiones de calidad existen?"
 - "¿Qué reglas de calidad tiene la tabla X?"
@@ -84,6 +91,7 @@ Cada formato visual aplica el tema que elijas al inicio (o el tema corporativo p
 | `/create-quality-rules` | Diseñar y crear reglas de calidad para cubrir gaps, con aprobación humana obligatoria |
 | `/create-quality-schedule` | Crear planificaciones de ejecución automática de reglas de calidad |
 | `/quality-report` | Generar informe formal de cobertura en Chat, PDF, DOCX, PPTX, Dashboard web, Póster/Infografía, XLSX o Markdown |
+| `/manage-critical-data-elements` | Consultar o definir Critical Data Elements (CDEs) de un dominio gobernado, con aprobación humana obligatoria antes de etiquetar |
 
 ### Lectores de contenido
 | Comando | Descripción |
