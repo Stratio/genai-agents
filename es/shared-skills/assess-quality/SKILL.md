@@ -20,6 +20,28 @@ Antes de ejecutar ninguna llamada MCP, determinar exactamente que se va a evalua
 - **Múltiples tablas**: evaluar el subconjunto indicado
 - **Columna específica**: evaluar una sola columna dentro de una tabla (requiere dominio + tabla + columna)
 
+## 1.5 Comprobación de CDEs
+
+Antes de lanzar la recopilación de datos, comprobar si el dominio tiene Elementos de Dato Críticos definidos. Esto determina el scope efectivo del assessment.
+
+Llamar a `get_critical_data_elements(collection_name=domain_name)`.
+
+**Si hay CDEs** (`critical_tables` o `columns_by_table` no están vacíos):
+- Informar al usuario: "Este dominio tiene Elementos de Dato Críticos definidos. El assessment se focalizará en los assets marcados como críticos."
+- Construir el scope efectivo:
+  - Tablas en `critical_tables` → evaluar todas sus columnas (la tabla entera es crítica)
+  - Tablas en `columns_by_table` → incluir en el assessment, pero en la sección 3.2 (análisis de gaps) restringir a las columnas listadas para esa tabla; mencionar al usuario qué columnas son CDEs
+  - Tablas que no aparecen en ninguna lista → excluir del assessment a menos que el usuario las haya pedido explícitamente
+- Guardar en el contexto de trabajo: `cde_mode=true`, `cde_full_tables` (lista de `critical_tables`), `cde_partial_tables` (dict de `columns_by_table`)
+
+**Si no hay CDEs** (tanto `critical_tables` como `columns_by_table` están vacíos o ausentes):
+- Informar al usuario: "No hay Elementos de Dato Críticos definidos para este dominio. El assessment cubrirá todos los assets del dominio."
+- Continuar con el workflow estándar (`cde_mode=false`).
+
+**Casos especiales:**
+- **Tabla o columna específica pedida explícitamente por el usuario**: si el asset pedido no aparece en ninguna lista CDE, evaluarlo igualmente según lo solicitado (la petición del usuario prevalece sobre el filtro CDE). Siempre mencionar si el asset es o no un CDE.
+- **Scope de columna específica**: la comprobación CDE es solo informativa — evaluar la columna pedida con normalidad y mencionar si está o no marcada como Elemento de Dato Crítico.
+
 ## 2. Recopilacion de Datos (en paralelo)
 
 Una vez determinado el scope, lanzar en paralelo. Es **OBLIGATORIO** incluir `get_quality_rule_dimensions` para entender que dimensiones soporta el dominio y sus definiciones.
@@ -129,6 +151,8 @@ Consistency  → cruzar columnas relacionadas para detectar incoherencias
 
 **El EDA nunca es el motivo para NO proponer una regla** que la semántica justifica. Si el EDA muestra 0 nulos en un ID, la regla de `completeness` sigue siendo necesaria: protege frente a futuros nulos. Si muestra el 100% de nulos en un campo supuestamente obligatorio, proponer la regla informando al usuario del estado actual.
 
+**Elevación de prioridad por CDEs**: Si `cde_mode=true` y una tabla o columna es un Elemento de Dato Crítico, elevar la prioridad de su gap un nivel: MEDIO → ALTO, ALTO → CRÍTICO. Los assets CDE representan datos críticos para el negocio — cualquier dimensión desprotegida conlleva un riesgo de negocio mayor por definición.
+
 **Dominios técnicos — ajuste del análisis de gaps:**
 
 Cuando el dominio es técnico (descubierto vía `list_domains(domain_type="technical")`), las descripciones de negocio, contexto de tablas y terminología pueden estar ausentes o muy limitadas. En este caso:
@@ -154,6 +178,7 @@ Estructurar el output en el chat con las siguientes secciones:
 ```
 Dominio/Tabla: [nombre]
 Fecha evaluación: [hoy]
+Modo de evaluación: CDEs activos — N tablas completamente críticas, M tablas con columnas CDE específicas | Evaluación completa del dominio (sin CDEs definidos)
 Tablas analizadas: N
 Reglas existentes: N
 Cobertura estimada: XX% (razonamiento resumido)
@@ -164,18 +189,23 @@ Gaps identificados: N criticos, N moderados
 
 Para scope de **dominio o tabla**:
 ```markdown
-| Tabla | Completeness | Uniqueness | Validity | Consistency | Cobertura |
-|-------|-------------|------------|----------|-------------|-----------|
-| account | Parcial (2/4) | OK | Gap | No aplica | ~50% |
-| card | OK | OK | Parcial | Gap | ~70% |
+| Tabla | CDE | Completeness | Uniqueness | Validity | Consistency | Cobertura |
+|-------|-----|-------------|------------|----------|-------------|-----------|
+| account | CDE | Parcial (2/4) | OK | Gap | No aplica | ~50% |
+| card | CDE* | OK | OK | Parcial | Gap | ~70% |
+| order | — | Gap | No aplica | No aplica | No aplica | ~10% |
 ```
+
+`CDE` = la tabla entera es un Elemento de Dato Crítico; `CDE*` = solo algunas columnas de la tabla son CDEs; `—` = no es CDE. Omitir la columna CDE cuando `cde_mode=false` (no hay CDEs definidos en el dominio).
 
 Para scope de **columna específica**:
 ```markdown
-| Columna | Tipo | Completeness | Uniqueness | Validity | Consistency | Cobertura |
-|---------|------|-------------|------------|----------|-------------|-----------|
-| customer_id | INTEGER | OK | Gap | No aplica | No aplica | ~50% |
+| Columna | Tipo | CDE | Completeness | Uniqueness | Validity | Consistency | Cobertura |
+|---------|------|-----|-------------|------------|----------|-------------|-----------|
+| customer_id | INTEGER | CDE | OK | Gap | No aplica | No aplica | ~50% |
 ```
+
+Omitir la columna CDE cuando `cde_mode=false`.
 
 Usar iconos para mayor legibilidad:
 - OK / cubierta: indicar que hay regla y pasa

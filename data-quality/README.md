@@ -1,4 +1,4 @@
-# data-quality
+# data-quality/
 
 Expert agent in Data Governance and Data Quality. Assesses quality coverage of governed data, identifies gaps, proposes and creates quality rules with human approval, and generates coverage reports.
 
@@ -37,6 +37,7 @@ MCP configuration is in `.mcp.json` (Claude Code / claude.ai) and in `opencode.j
 | Rule creation | `/create-quality-rules` | Design and create quality rules to cover gaps, with mandatory human approval |
 | Quality scheduling | `/create-quality-schedule` | Create automatic execution schedules for quality rules by domain/collection |
 | Quality report | `/quality-report` | Generate a formal coverage report in chat, PDF, DOCX, PPTX, Dashboard web, Poster/Infographic, XLSX or Markdown |
+| Critical Data Elements | `/manage-critical-data-elements` | Consult or define Critical Data Elements (CDEs) for a governed domain, with mandatory human approval before tagging |
 | PDF reading | `/pdf-reader` | Extract text, tables and data from user-provided PDF files |
 | PDF writing | `/pdf-writer` | Create custom PDFs, merge/split, watermark, encrypt, fill forms |
 | DOCX reading | `/docx-reader` | Extract text, tables, images, metadata and tracked changes from `.docx` (or legacy `.doc`) files |
