@@ -255,18 +255,11 @@ if [[ ${#SHARED_GUIDES_NEEDED[@]} -gt 0 ]]; then
 fi
 
 # ---------------------------------------------------------------------------
-# Phase 5.5 — Output templates (optional)
-# ---------------------------------------------------------------------------
-if [[ -d "$AGENT_ABS/output-templates" ]]; then
-  mkdir -p "$OUTPUT_DIR/output"
-  cp -r "$AGENT_ABS/output-templates/." "$OUTPUT_DIR/output/"
-  N_TEMPLATES=$(find "$OUTPUT_DIR/output" -type f | wc -l)
-  echo "    [5.5] $N_TEMPLATES template(s) copied from output-templates/"
-fi
-
-# ---------------------------------------------------------------------------
 # Phase 6 — rsync remaining files
 # ---------------------------------------------------------------------------
+# Memory templates live under templates/memory/ and are copied as-is via rsync
+# (alongside templates/pdf/ and others). The agent skills initialize output/
+# from these templates on first write.
 rsync -a \
   --exclude=README.md \
   --exclude=USER_README.md \
@@ -284,7 +277,6 @@ rsync -a \
   --exclude=shared-guides \
   --exclude='pack_*.sh' \
   --exclude=output/ \
-  --exclude=output-templates/ \
   --exclude=dist/ \
   --exclude=.venv/ \
   --exclude='__pycache__/' \

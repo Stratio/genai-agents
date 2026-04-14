@@ -402,7 +402,14 @@ Añadir entrada al final de `output/ANALYSIS_MEMORY.md` con solo los campos de t
 ---
 ```
 
-Si `output/ANALYSIS_MEMORY.md` no existe, crearlo con el header `# Memoria de Analisis`. Las entradas se añaden al final (cronológicas).
+Si `output/ANALYSIS_MEMORY.md` no existe, inicialízalo a partir del template antes de añadir la entrada:
+
+```bash
+mkdir -p output
+cp templates/memory/ANALYSIS_MEMORY.md output/ANALYSIS_MEMORY.md
+```
+
+Luego añade la entrada al final (cronológicas).
 
 ### 8.3 Memoria de Conocimiento
 

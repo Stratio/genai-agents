@@ -10,23 +10,11 @@ Manages writing to `output/MEMORY.md` — the agent's curated knowledge file (pr
 
 ## 1. Read Current State
 
-Read `output/MEMORY.md`. If it does not exist, create it with this template:
+Read `output/MEMORY.md`.
 
-```markdown
-# BI/BA Agent Memory
-
-## User Preferences
-
-(No preferences recorded)
-
-## Known Data Patterns
-
-(No patterns recorded)
-
-## Learned Heuristics
-
-(No heuristics recorded)
-```
+If the file does not yet exist, do **not** create it here — section 3 will
+initialize it from the template (`templates/memory/MEMORY.md`) before the first
+write. Just continue with section 2 treating the memory as empty.
 
 ## 2. Determine Source and Detect Updates
 
@@ -59,6 +47,12 @@ Parse the user's request and write in the corresponding section:
 - If it is a general finding → Heuristics sec
 
 ## 3. Write Updates
+
+- If `output/MEMORY.md` does not exist, initialize it by copying the template
+  before writing:
+
+      mkdir -p output
+      cp templates/memory/MEMORY.md output/MEMORY.md
 
 - Edit `output/MEMORY.md` in the corresponding section
 - Do not duplicate entries — update counters or existing values
