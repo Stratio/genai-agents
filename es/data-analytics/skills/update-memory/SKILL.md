@@ -58,6 +58,7 @@ Parsear la petición del usuario y escribir en la sección correspondiente:
 - No duplicar entradas — actualizar contadores o valores existentes
 - Mantener las secciones ordenadas: Preferencias primero, Patrones por dominio, Heurísticas cronológicas
 - Si una sección tenía el placeholder "(Sin ... registradas)", eliminarlo al añadir la primera entrada
+- Redactar todas las entradas en el idioma del usuario (el idioma usado en la conversación)
 
 ## 4. Confirmar
 

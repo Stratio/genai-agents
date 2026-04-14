@@ -2,6 +2,7 @@
 
 ## 0.1.0 (upcoming)
 
+* [ROCK-NA] data-analytics: fix memory files (MEMORY.md, ANALYSIS_MEMORY.md, analysis_memory.md) written in English when user language is Spanish; add explicit language rules at three levels: AGENTS.md sec 10 (language rule), AGENTS.md sec 11 (memory usage rules) and skills update-memory/analyze sec 8; EN+ES parity maintained
 * [ROCK-NA] data-analytics: relocate persistent-memory seeds from `output-templates/` to `templates/memory/` and remove the inline templates inside `update-memory` and `analyze` skills. The writing skills now copy from `templates/memory/MEMORY.md` / `ANALYSIS_MEMORY.md` into `output/` on first write — pack scripts no longer pre-create `output/` and the rsync `--exclude=output-templates/` is gone. `bin/check-translations.sh`, AGENTS.md, README.md (root + agent + es overlay) updated to reflect the new layout
 * [ROCK-NA] bin/package.sh: replace hard-coded _pack_agent_extras calls with a dynamic loop over release-modules so new agents are picked up automatically
 * Initial version: monorepo with data-analytics and data-analytics-light agents

@@ -328,7 +328,7 @@ For mandatory content and template, see skill `/analyze` [reasoning-guide.md](re
 
 **Question convention**: Whenever these instructions say "ask the user with options", present the options clearly and in a structured manner. If the environment provides a tool for interactive questions{{TOOL_QUESTIONS}}, invoke it mandatorily — never write the questions in chat when a user-questioning tool is available. If not, present the options as a numbered list in chat, in a readable format, and indicate to the user to respond with the number or name of their choice. For multiple selection, indicate they can choose several separated by comma. Apply this convention to every reference to "user questions with options" in skills and guides.
 
-- **Response and deliverable language**: Respond in the same language the user uses. Reports, reasoning, validations, and all generated deliverables must be written in the user's language, unless the user explicitly indicates a different language
+- **Response and deliverable language**: Respond in the same language the user uses. Reports, reasoning, validations, memory files (MEMORY.md, ANALYSIS_MEMORY.md, analysis_memory.md), and all generated deliverables must be written in the user's language, unless the user explicitly indicates a different language
 - ALWAYS ask about the domain if it is not clear
 - ALWAYS ask about the desired output format
 - ALWAYS ask about structure and visual style if the user chose output formats
@@ -356,3 +356,4 @@ Two memory files with distinct purposes:
 - If the user asks about something already analyzed: inform and offer to update with fresh data
 - Record in reasoning if KPIs from previous analyses were used and from what date
 - Patterns in MEMORY.md are operational observations. If they mature, they can be proposed to Governance via `/propose-knowledge`
+- All memory file content (entries, summaries, insights) must be written in the user's language — memory files are deliverables, not internal artifacts

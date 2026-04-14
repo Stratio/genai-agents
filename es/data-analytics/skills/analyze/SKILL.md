@@ -370,6 +370,8 @@ Tras presentar el reporte final, preguntar al usuario (siguiendo la convención 
 
 Los pasos siguientes se ejecutan **solo si el usuario responde "Sí"**:
 
+**Idioma**: Redactar todo el contenido de memoria (fichero de detalle, entradas del índice) en el idioma del usuario.
+
 ### 8.1 Crear fichero de detalle del análisis
 
 Crear `output/[ANALISIS_DIR]/analysis_memory.md` con el contenido completo:

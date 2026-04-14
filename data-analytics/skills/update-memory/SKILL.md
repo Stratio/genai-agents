@@ -58,6 +58,7 @@ Parse the user's request and write in the corresponding section:
 - Do not duplicate entries — update counters or existing values
 - Keep sections ordered: Preferences first, Patterns by domain, Heuristics chronological
 - If a section had the placeholder "(No ... recorded)", remove it when adding the first entry
+- Write all entries in the user's language (the language used in the conversation)
 
 ## 4. Confirm
 
