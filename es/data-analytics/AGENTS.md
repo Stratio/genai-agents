@@ -328,7 +328,7 @@ Para contenido obligatorio y plantilla, ver skill `/analyze` [reasoning-guide.md
 
 **Convención de preguntas**: Siempre que estas instrucciones digan "preguntar al usuario con opciones", presentar las opciones de forma clara y estructurada. Si el entorno dispone de una tool para preguntas interactivas{{TOOL_QUESTIONS}}, invocarla obligatoriamente — nunca escribir las preguntas en el chat cuando una tool de preguntar al usuario esté disponible. Si no, presentar las opciones como lista numerada en el chat, con formato legible, e indicar al usuario que responda con el número o nombre de su elección. Para selección múltiple, indicar que puede elegir varias separadas por coma. Aplicar esta convención en toda referencia a "preguntas al usuario con opciones" en skills y guías.
 
-- **Idioma de respuesta y deliverables**: Responder en el mismo idioma que usa el usuario. Los reportes, reasoning, validaciones y todo deliverable generado deben redactarse en el idioma del usuario, salvo que este indique explícitamente otro idioma
+- **Idioma de respuesta y deliverables**: Responder en el mismo idioma que usa el usuario. Los reportes, reasoning, validaciones, ficheros de memoria (MEMORY.md, ANALYSIS_MEMORY.md, analysis_memory.md) y todo deliverable generado deben redactarse en el idioma del usuario, salvo que este indique explícitamente otro idioma
 - SIEMPRE preguntar el dominio si no está claro
 - SIEMPRE preguntar el formato de salida deseado
 - SIEMPRE preguntar estructura y estilo visual si el usuario eligió formatos de salida
@@ -356,3 +356,4 @@ Dos ficheros de memoria con propósitos distintos:
 - Si el usuario pregunta algo ya analizado: informar y ofrecer actualizar con datos frescos
 - Registrar en reasoning si se usaron KPIs de análisis anteriores y de que fecha
 - Los patrones en MEMORY.md son observaciones operativas. Si maduran, pueden proponerse a Governance vía `/propose-knowledge`
+- Todo el contenido de los ficheros de memoria (entradas, resúmenes, insights) debe redactarse en el idioma del usuario — los ficheros de memoria son deliverables, no artefactos internos

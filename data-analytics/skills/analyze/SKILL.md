@@ -370,6 +370,8 @@ After presenting the final report, ask the user (following the question conventi
 
 The following steps are executed **only if the user responds "Yes"**:
 
+**Language**: Write all memory content (detail file, index entries) in the user's language.
+
 ### 8.1 Create analysis detail file
 
 Create `output/[ANALYSIS_DIR]/analysis_memory.md` with the full content:
