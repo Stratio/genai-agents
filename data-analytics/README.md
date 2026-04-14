@@ -71,4 +71,4 @@ The agent maintains memory between sessions in two files:
 - `output/MEMORY.md` — User preferences, known data patterns, learned heuristics
 - `output/ANALYSIS_MEMORY.md` — Chronological index of completed analyses with domain, summary, and path to detail
 
-Initial templates (seed) are versioned in `output-templates/`. Pack scripts copy them to `output/` when packaging. In direct use, the agent creates them in `output/` automatically.
+Initial seed templates live under `templates/memory/` (versioned and translated). The agent's writing skills (`/update-memory` and `/analyze`) copy them into `output/` the first time they need to write, so the runtime `output/` stays out of git (`**/output/` is in `.gitignore`).

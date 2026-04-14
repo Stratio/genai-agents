@@ -105,9 +105,9 @@ The flat format is automatically normalized to canonical when packaging (`<name>
 
 Search locations (by priority order): `skills/` → `.claude/skills/` → `.opencode/skills/` → `.agents/skills/`.
 
-### Output templates
+### Memory templates
 
-If an agent has an `output-templates/` directory, the pack scripts create `output/` in the package with that content. This allows versioning seed templates (initial memory files, etc.) in git without versioning the runtime — `**/output/` remains in `.gitignore`.
+If an agent persists memory between sessions, its seed files live under `templates/memory/` (e.g. `templates/memory/MEMORY.md`). The agent's writing skills are responsible for copying the template into `output/` the first time they need to write — `**/output/` stays in `.gitignore` and pack scripts never create `output/` in the package. This keeps a single source of truth for the initial structure and avoids duplicating templates inline inside SKILL.md files.
 
 ## Shared skills
 
@@ -230,7 +230,7 @@ All content files that the agent presents to the user or uses as instructions:
 | User READMEs | `USER_README.md` | `es/.../USER_README.md` | Yes |
 | Developer READMEs | `README.md` (agents) | `es/.../README.md` | Yes |
 | Cowork metadata | `cowork-metadata.yaml` | `es/.../cowork-metadata.yaml` | Yes |
-| Output templates | `output-templates/*.md` | `es/.../output-templates/*.md` | Yes |
+| Memory templates | `templates/memory/*.md` | `es/.../templates/memory/*.md` | Yes |
 | Python code, HTML, CSS | `tools/*.py`, `templates/` | — | No |
 | Config files | `.mcp.json`, `opencode.json` | — | No |
 | Manifests | `shared-skills`, `skill-guides` | — | No |
@@ -307,10 +307,11 @@ my-agent/
 ├── skills-guides/         # (Optional) Local technical guides shared between skills
 ├── shared-skills          # (Optional) List of shared skills from the monorepo to include
 ├── shared-guides          # (Optional) List of shared-skill-guides that AGENTS.md uses directly
-└── output-templates/      # (Optional) Persistent memory seeds
+└── templates/             # (Optional) Static templates used by the agent
+    └── memory/            # (Optional) Persistent memory seed files (MEMORY.md, etc.)
 ```
 
-The `skills-guides/` and `output-templates/` directories are optional: use `skills-guides/` when multiple skills in the agent share extensive technical documentation; use `output-templates/` only if the agent needs to persist memory between sessions.
+The `skills-guides/` and `templates/memory/` directories are optional: use `skills-guides/` when multiple skills in the agent share extensive technical documentation; use `templates/memory/` only if the agent needs to persist memory between sessions (the writing skill copies the seed into `output/` on first write).
 
 The `shared-skills` and `shared-guides` files (plain text, one entry per line) allow including skills and guides from the monorepo without duplicating them. See [Shared skills](#shared-skills) for details.
 

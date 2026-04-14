@@ -71,4 +71,4 @@ El agente mantiene memoria entre sesiones en dos ficheros:
 - `output/MEMORY.md` — Preferencias del usuario, patrones de datos conocidos, heurísticas aprendidas
 - `output/ANALYSIS_MEMORY.md` — Índice cronológico de análisis realizados con dominio, resumen y ruta al detalle
 
-Las plantillas iniciales (semilla) están versionadas en `output-templates/`. Los pack scripts las copian a `output/` al empaquetar. En uso directo, el agente las crea en `output/` automáticamente.
+Las plantillas iniciales (semilla) viven en `templates/memory/` (versionadas y traducidas). Las skills de escritura del agente (`/update-memory` y `/analyze`) las copian a `output/` la primera vez que necesitan escribir, así el `output/` de runtime queda fuera de git (`**/output/` está en `.gitignore`).

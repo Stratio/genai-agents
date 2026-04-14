@@ -402,7 +402,14 @@ Add an entry at the end of `output/ANALYSIS_MEMORY.md` with only the triage fiel
 ---
 ```
 
-If `output/ANALYSIS_MEMORY.md` does not exist, create it with the header `# Analysis Memory`. Entries are added at the end (chronological).
+If `output/ANALYSIS_MEMORY.md` does not exist, initialize it from the template before adding the entry:
+
+```bash
+mkdir -p output
+cp templates/memory/ANALYSIS_MEMORY.md output/ANALYSIS_MEMORY.md
+```
+
+Then append the entry at the end (chronological).
 
 ### 8.3 Knowledge Memory
 

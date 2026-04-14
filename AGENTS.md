@@ -144,7 +144,7 @@ genai-agents/
 
 Supported languages are listed in the `languages` file at the monorepo root.
 
-**What gets translated:** `AGENTS.md`, `SKILL.md`, sub-guides (`*.md` inside `skills/`), `skills-guides/*.md`, `shared-skill-guides/*.md`, `USER_README.md`, `README.md`, `cowork-metadata.yaml`, `output-templates/*.md`.
+**What gets translated:** `AGENTS.md`, `SKILL.md`, sub-guides (`*.md` inside `skills/`), `skills-guides/*.md`, `shared-skill-guides/*.md`, `USER_README.md`, `README.md`, `cowork-metadata.yaml`, `templates/memory/*.md`.
 
 **What stays language-neutral (not translated):** Python code, HTML templates, CSS, shell scripts, JSON configs (`.mcp.json`, `opencode.json`), manifests (`shared-skills`, `shared-guides`, `skill-guides`), `Makefile`, `Jenkinsfile`, `VERSION`.
 

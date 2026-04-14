@@ -10,23 +10,11 @@ Gestiona la escritura en `output/MEMORY.md` — el fichero de conocimiento curad
 
 ## 1. Leer Estado Actual
 
-Leer `output/MEMORY.md`. Si no existe, crearlo con este template:
+Leer `output/MEMORY.md`.
 
-```markdown
-# Memoria del Agente BI/BA
-
-## Preferencias del Usuario
-
-(Sin preferencias registradas)
-
-## Patrones de Datos Conocidos
-
-(Sin patrones registrados)
-
-## Heurísticas Aprendidas
-
-(Sin heurísticas registradas)
-```
+Si el fichero aún no existe, **no** crearlo aquí — la sección 3 lo inicializará
+a partir del template (`templates/memory/MEMORY.md`) antes de la primera escritura.
+Continúa con la sección 2 tratando la memoria como vacía.
 
 ## 2. Determinar Origen y Detectar Actualizaciones
 
@@ -59,6 +47,12 @@ Parsear la petición del usuario y escribir en la sección correspondiente:
 - Si es un hallazgo general → sec Heurísticas
 
 ## 3. Escribir Actualizaciones
+
+- Si `output/MEMORY.md` no existe, inicialízalo copiando el template antes de
+  escribir:
+
+      mkdir -p output
+      cp templates/memory/MEMORY.md output/MEMORY.md
 
 - Editar `output/MEMORY.md` en la sección correspondiente
 - No duplicar entradas — actualizar contadores o valores existentes
