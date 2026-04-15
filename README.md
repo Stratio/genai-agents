@@ -8,8 +8,8 @@ The repository is primarily oriented towards **OpenCode**, the open-source tool 
 
 | Agent | Description | Platforms | Folder |
 |-------|-------------|-----------|--------|
-| **data-analytics** | Full BI/BA agent with advanced analysis, clustering, multi-format reports (PDF, DOCX, web, PowerPoint) and reasoning documentation | Claude Code, OpenCode, Stratio Cowork | `data-analytics/` |
-| **data-analytics-light** | Lightweight BI/BA agent oriented to chat-based analysis, without formal report generation. Includes packaging scripts for multiple platforms | Claude Code, Claude Cowork, claude.ai, OpenCode | `data-analytics-light/` |
+| **data-analytics** | Full BI/BA agent with advanced analysis, clustering, multi-format reports (PDF, DOCX, web, PowerPoint), read-only data quality coverage assessment and reporting, and reasoning documentation | Claude Code, OpenCode, Stratio Cowork | `data-analytics/` |
+| **data-analytics-light** | Lightweight BI/BA agent oriented to chat-based analysis, with read-only data quality coverage assessment (chat-only summaries, no file generation). No formal report generation. Includes packaging scripts for multiple platforms | Claude Code, Claude Cowork, claude.ai, OpenCode | `data-analytics-light/` |
 | **semantic-layer** | Agent specialized in building and maintaining semantic layers in Stratio Governance: creation of data collections (technical domains), technical terms, ontologies, business views, SQL mappings, view publishing, semantic terms and business terms | Claude Code, Claude Cowork, claude.ai, OpenCode, Stratio Cowork | `semantic-layer/` |
 | **data-quality** | Data quality agent: coverage assessment, gap identification, quality rule creation with human-in-the-loop and coverage report generation | Claude Code, Claude Cowork, claude.ai, OpenCode, Stratio Cowork | `data-quality/` |
 | **governance-officer** | Combined governance agent: full semantic layer building + data quality management in a single agent with unrestricted access to all governance tools | Claude Code, Claude Cowork, claude.ai, OpenCode, Stratio Cowork | `governance-officer/` |
@@ -129,10 +129,10 @@ If an agent persists memory between sessions, its seed files live under `templat
 | `manage-business-terms` | Create Business Terms in the dictionary with relationships to data assets | semantic-layer, governance-officer |
 | `create-data-collection` | Search for tables and paths in the technical data dictionary and create a new collection (technical domain) | semantic-layer, governance-officer |
 | `build-semantic-layer` | Full semantic layer pipeline: orchestrates technical terms, ontology, views, mappings and semantic terms creation | semantic-layer, governance-officer |
-| `assess-quality` | Assess quality coverage by domain, table or column: dimensions covered, gaps and priorities | data-quality, governance-officer |
+| `assess-quality` | Assess quality coverage by domain, table or column: dimensions covered, gaps and priorities | data-analytics, data-analytics-light, data-quality, governance-officer |
 | `create-quality-rules` | Design and create quality rules to cover gaps, with mandatory human approval | data-quality, governance-officer |
 | `create-quality-planification` | Create automatic execution schedules for quality rule folders | data-quality, governance-officer |
-| `quality-report` | Generate a formal quality coverage report in PDF, DOCX or Markdown | data-quality, governance-officer |
+| `quality-report` | Generate a formal quality coverage report in PDF, DOCX or Markdown (in `data-analytics-light` only the Chat format is used) | data-analytics, data-analytics-light, data-quality, governance-officer |
 
 Shared guides (technical documentation that skills reference) live in `shared-skill-guides/`:
 
@@ -140,7 +140,7 @@ Shared guides (technical documentation that skills reference) live in `shared-sk
 |-------|---------|
 | `stratio-data-tools.md` | `explore-data`, `assess-quality`, `AGENTS.md` (data-analytics, data-analytics-light, data-quality, governance-officer) |
 | `stratio-semantic-layer-tools.md` | `stratio-semantic-layer`, `build-semantic-layer`, `AGENTS.md` (semantic-layer, governance-officer) |
-| `quality-exploration.md` | `assess-quality`, `create-quality-rules` (data-quality, governance-officer) |
+| `quality-exploration.md` | `assess-quality`, `create-quality-rules` (data-analytics, data-analytics-light, data-quality, governance-officer) |
 
 ### Using a shared skill in an agent
 

@@ -2,6 +2,8 @@
 
 Operational reference for the web dashboard pipeline within `/report`.
 
+> **Language**: All code snippets below omit `lang=` and `labels=` for brevity. In real invocations, **always pass `lang="<user_language_code>"` to `DashboardBuilder(...)`** so the UI chrome (Filters / All / Clear filters / KPIs / footer, HTML `lang` attribute) matches the user's language. See sec 3.1 of `SKILL.md` for the resolution rules and catalogue keys.
+
 ## Principle
 
 Self-contained HTML (a single file, no server). Inline CSS with `build_css(style, "web")`. Plotly via CDN. Data embedded in JSON for offline operation.

@@ -10,6 +10,15 @@
         "Authorization": "Bearer {env:MCP_SQL_API_KEY}",
         "X-API-Key": "{env:MCP_SQL_API_KEY}"
       }
+    },
+    "stratio_gov": {
+      "type": "remote",
+      "url": "{env:MCP_GOV_URL}",
+      "timeout": 300000,
+      "headers": {
+        "Authorization": "Bearer {env:MCP_GOV_API_KEY}",
+        "X-API-Key": "{env:MCP_GOV_API_KEY}"
+      }
     }
   },
   "permission": {
@@ -26,6 +35,8 @@
     "skill": "allow",
     "webfetch": "allow",
     "stratio_data_*": "allow",
+    "stratio_gov_*": "deny",
+    "stratio_gov_get_quality_rule_dimensions": "allow",
     "bash": {
       "git *": "allow",
       "gh *": "allow",

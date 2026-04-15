@@ -49,6 +49,17 @@ bash setup_env.sh
 ```
 Verificar que las dependencias del formato están disponibles (weasyprint para PDF, python-pptx para PowerPoint, etc.).
 
+## 3.1 Idioma de los Deliverables Generados
+
+Todos los generadores (`DOCXGenerator`, `PDFGenerator`, `DashboardBuilder`, `md_to_report.py`) usan un catálogo i18n compartido en `tools/i18n.py` para sus labels estáticos (títulos del scaffold "Resumen Ejecutivo" / "Metodología" / …, labels de cover "Autor:" / "Dominio:" / "Fecha:", chrome del dashboard "Filtros" / "Limpiar filtros" / "KPIs", el atributo HTML `lang`, el título por defecto del informe, etc.).
+
+**Pasar el idioma del usuario explícitamente al invocar cualquier generador** para que el chrome estático coincida con el idioma del chat:
+
+- API Python (`DOCXGenerator`, `PDFGenerator`, `DashboardBuilder`): pasar `lang="<código>"` a `render_scaffold` / `render_from_markdown` / `render_from_html` / el constructor (según aplique). Opcionalmente pasar `labels={...}` para sobrescribir claves concretas.
+- CLI (`md_to_report.py`): pasar `--lang <código>` (y opcionalmente `--labels-json '{...}'`).
+
+Orden de resolución cuando no se pasa `lang`: fichero `.agent_lang` escrito al empaquetar → `"en"`. Así un paquete hecho con `--lang es` usa español por defecto aunque no se pase `lang` explícito. Idiomas del catálogo hoy: `en`, `es`. Códigos desconocidos hacen fallback a inglés por clave; pasar `labels={...}` para inyectar traducciones a otros idiomas.
+
 ## 4. Herramientas de Estilo
 
 Todos los formatos comparten la misma fuente de verdad para colores y fuentes:
@@ -87,7 +98,7 @@ Se genera automáticamente en todos los análisis, sin necesidad de que el usuar
 Generar reasoning según la profundidad seleccionada (ver sec "Reasoning" de AGENTS.md):
 
 - **Rápido**: No generar fichero. Notas clave en el chat.
-- **Estándar/Profundo**: Generar `output/[ANALISIS_DIR]/reasoning/reasoning.md`. Si el usuario solicitó override a otros formatos (PDF, HTML, DOCX), convertir con `tools/md_to_report.py --style corporate` (añadir `--docx` si aplica).
+- **Estándar/Profundo**: Generar `output/[ANALISIS_DIR]/reasoning/reasoning.md`. Si el usuario solicitó override a otros formatos (PDF, HTML, DOCX), convertir con `tools/md_to_report.py --style corporate --lang <idioma_usuario>` (añadir `--docx` si aplica).
 
 Documentando:
 - Formato(s) generado(s) y justificación

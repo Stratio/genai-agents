@@ -16,6 +16,7 @@ The agent maintains memory between sessions, remembering your analysis preferenc
 - Automatic data segmentation and clustering (RFM, KMeans, DBSCAN)
 - Generate professional visualizations (charts, graphs, dashboards)
 - Create reports in multiple formats: PDF, DOCX, PowerPoint, interactive web
+- **Assess data quality coverage** and generate quality reports (Chat / PDF / DOCX / Markdown) — read-only, does not create or schedule rules
 - Remember preferences and previous analyses between sessions (persistent memory)
 - Propose business terms to the governance dictionary
 
@@ -44,6 +45,14 @@ The agent maintains memory between sessions, remembering your analysis preferenc
 - "Describe the tables in the customer domain"
 - "What does the 'churn_score' field mean in the customer table?"
 
+### Quality coverage
+- "Assess the quality coverage of the sales domain"
+- "What quality rules does the customers table have?"
+- "Generate a quality PDF report for the logistics domain"
+- "Which dimensions are not covered in the billing table?"
+
+> Note: this agent evaluates and reports. To create rules or schedule executions, use the Data Quality or Governance Officer agents.
+
 ## Available skills
 
 | Command | Description |
@@ -51,12 +60,15 @@ The agent maintains memory between sessions, remembering your analysis preferenc
 | `/analyze` | Full analysis: domain discovery, planning, queries, statistical analysis, visualizations, and reports |
 | `/report` | Professional report generation in PDF, DOCX, interactive web, or PowerPoint |
 | `/explore-data` | Quick exploration of domains, tables, columns, and business terminology |
+| `/assess-quality` | Quality coverage assessment (dimensions, existing rules, gaps) |
+| `/quality-report` | Generate a formal quality coverage report (Chat / PDF / DOCX / Markdown) |
 | `/update-memory` | Update persistent memory with preferences and learned patterns |
 | `/propose-knowledge` | Propose discovered business terms to the governance dictionary |
 
 ## Required connections
 
-- **Data MCP**: SQL queries, domain exploration, table and column profiling
+- **Data MCP** (`stratio_data`): SQL queries, domain exploration, table and column profiling — configured via `MCP_SQL_URL` / `MCP_SQL_API_KEY`
+- **Governance MCP** (`stratio_gov`, read-only): quality dimensions and rule metadata for coverage assessment — configured via `MCP_GOV_URL` / `MCP_GOV_API_KEY`
 
 ## Getting started
 

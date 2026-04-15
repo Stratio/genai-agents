@@ -34,7 +34,9 @@ When the user poses an analysis request, ALWAYS follow this flow. For the full o
 | Deliverable: "report", "dashboard", "PDF", "presentation", "document", "summary", "informe" | `analyze` |
 | Visualization: "graphic summary", "chart of", "show visually", "KPI overview", "visual summary" | `analyze` |
 | Multiple KPIs with dimensions: "KPIs by area", "metrics by segment", "main indicators" | `analyze` |
-| Domain exploration or profiling: "explore domain", "what data is available", "discover domain", "data quality", "profile table" | `explore-data` |
+| Quality assessment: "data quality", "quality coverage", "quality assessment", "quality rules", "quality dimensions", "coverage gaps", "assess quality", "evaluate quality", "quality status" + domain/table context | `assess-quality` |
+| Quality report: "quality report", "quality coverage report", "quality PDF", "quality DOCX", "quality document" | `assess-quality` → `quality-report` |
+| Domain exploration or profiling: "explore domain", "what data is available", "discover domain", "profile data", "profile table", "data profiling", "data distribution", "null analysis", "statistical profile", "column statistics" | `explore-data` |
 | Report from existing analysis: "generate PDF from the last analysis", "export the report" | `report` |
 
 **Step 2 — If no skill pattern matched**, evaluate whether the question is triage. Triage questions can be resolved with point data, without needing to formulate hypotheses, cross data across dimensions, or generate visualizations:
@@ -46,6 +48,8 @@ When the user poses an analysis request, ALWAYS follow this flow. For the full o
 | Table detail or rules | `get_tables_details` | "What business rules does table Y have?" |
 | Table columns | `get_table_columns_details` | "What fields does table Z have?" |
 | Point data without analysis | `query_data` | "How many customers are there?", "Total sales for the month" |
+| Existing quality rules for a table | `get_tables_quality_details` | "What quality rules does table X have?", "Show me the rules for table Y" |
+| Quality dimension definitions | `get_quality_rule_dimensions` | "What quality dimensions exist for domain X?" |
 
 **If it fits triage** → Resolve directly: discover domain if needed (search or list domains, explore tables, search knowledge), get the data via MCP, respond in chat with minimal context (vs previous period if available). END. No plan, no hypotheses, no artifacts.
 **If it does NOT fit triage** → Load skill `analyze` and continue with Phase 1.
@@ -53,6 +57,14 @@ When the user poses an analysis request, ALWAYS follow this flow. For the full o
 **Triage criteria**: The question can be answered with point data (1-2 metrics, at most one simple grouping dimension) without needing to cross data across multiple dimensions, formulate hypotheses, or generate visualizations. A single metric grouped by one dimension (e.g., "customers by region", "sales per month") is still triage if it can be resolved with a single `query_data` call and presented as a table in chat. Discovery MCP calls (search/list domains, explore tables, search knowledge) are infrastructure and do not count as analysis. When in doubt, treat as analysis and load `analyze`.
 
 **Step 3 — Escalation rule**: Evaluate each user message independently. Previous messages being triage does NOT mean the current one is. If the current message requires analysis or a deliverable, load the corresponding skill regardless of prior conversation history.
+
+**Step 4 — Disambiguation between statistical profiling and quality governance**: The terms "data quality" / "calidad del dato" are ambiguous. In this agent, we distinguish:
+
+- **Statistical data profiling (EDA)**: concerned with actual data state — nulls, distributions, outliers, ranges, cardinality. Route to `explore-data` (or to `analyze`'s Phase 1.1 during an analytical flow).
+- **Quality governance coverage**: concerned with governance rules — which dimensions are covered, which rules exist, OK/KO/WARNING status, coverage gaps. Route to `assess-quality`.
+
+When the user's phrasing is genuinely ambiguous (e.g., "¿cómo está la calidad del dominio X?" with no further context), ask before choosing a skill, using the standard user-question convention:
+> "¿Quieres un análisis estadístico de los datos (nulls, distribuciones, outliers) o una evaluación de cobertura de reglas de calidad (dimensiones cubiertas, gaps)?"
 
 **Critical rule**: NEVER proceed to Phases 1-4 without having the corresponding skill loaded. Without the skill, the agent lacks the operational detail, tool references, and workflow steps needed to produce quality output.
 
@@ -65,9 +77,18 @@ For quick domain exploration without a full analysis, see the `/explore-data` sk
 3. Get relevant column details (`get_table_columns_details`) and search business terminology (`search_domain_knowledge`) — launch in parallel, they are independent
 4. If you need clarification, ask the user
 
-### Phase 1.1 — EDA and Data Quality (during planning phase, read-only)
+### Phase 1.1 — EDA and Data Profiling (during planning phase, read-only)
 
-Before planning metrics, understand the reality of the data. Run profiling following the mechanics in `skills-guides/stratio-data-tools.md` sec 5, then evaluate quality, generate a mini-summary, and inform the user of limitations. For full operational detail (sufficiency checklist, Data Quality Score, what to evaluate), see skill `/analyze` sec 3.
+Before planning metrics, understand the reality of the data on two dimensions:
+
+1. **Statistical profile (EDA)**: Run `profile_data` per `skills-guides/stratio-data-tools.md` sec 5 → **Data Profiling Score** (HIGH/MEDIUM/LOW).
+2. **Existing governance rules (lightweight check)**: In parallel with profiling, call `get_tables_quality_details(domain_name, tables)` for the tables you plan to analyse → **Governance Quality Status**: rule count, OK/KO/WARNING breakdown, and whether any KO rule affects columns relevant to the analysis.
+
+Present both signals in a single mini-summary before asking the user about formats or depth. If a KO rule affects a column you intend to use, flag it explicitly and ask whether to continue, exclude the column, or switch to `/assess-quality` for a full coverage evaluation.
+
+For full operational detail (sufficiency checklist, scoring, mini-summary format, examples), see skill `/analyze` sec 3.
+
+> **Note**: This is a *lightweight* check that surfaces already-defined rules. A complete governance coverage evaluation (dimension catalog, gap identification by column, prioritisation) is the job of the `/assess-quality` skill — redirect there when the user asks for coverage assessment rather than analysis. See Phase 0 Step 4 for disambiguation.
 
 ### Phase 1.2 — Defaults
 
@@ -92,7 +113,7 @@ If no format is selected in Block 1 → Block 2 is skipped. Result: from 6 down 
 | Capability | Quick | Standard | Deep |
 |-----------|-------|----------|------|
 | Domain discovery (Phase 1) | YES | YES | YES |
-| EDA and data quality (Phase 1.1) | Basic (completeness and time range only) | Full | Full + extended profiling |
+| EDA and data profiling (Phase 1.1) | Basic (completeness and time range only) | Full | Full + extended profiling |
 | Prior hypotheses (sec 3.1) | Optional | YES | YES |
 | Benchmark Discovery (Phase 3) | Do not actively search; use natural comparison if available | Silent best-effort (steps 1-3, without asking) | Full protocol (5 steps) |
 | Analytical patterns (sec 3.2) | Only temporal comparison if dates exist | Auto-activate based on data | All relevant |
@@ -237,7 +258,49 @@ For detailed implementation of each technique, see skill `/analyze` [advanced-an
 
 All rules for using Stratio MCPs (available tools, strict rules, MCP-first, immutable domain_name, output_format, profiling, parallel execution, clarification cascade, post-query validation, timeouts, and best practices) are in `skills-guides/stratio-data-tools.md`. Follow ALL rules defined there.
 
-Data sufficiency checklist and Data Quality Score: see skill `/analyze` sec 3.
+Data sufficiency checklist and Data Profiling Score: see skill `/analyze` sec 3.
+
+---
+
+## 4.1 Quality Coverage Assessment
+
+This agent can assess data quality governance coverage and generate quality reports, complementing its analytical capabilities. The quality workflow is a **separate path** from the analytical workflow — it does NOT go through the `/analyze` skill.
+
+### Available quality tools
+
+| Tool | Server | Purpose |
+|------|--------|---------|
+| `get_tables_quality_details` | stratio_data | Existing quality rules + OK/KO/WARNING status per table |
+| `get_quality_rule_dimensions` | stratio_gov | Quality dimension definitions for the domain |
+
+### Quality workflow
+
+1. **Assessment**: Load skill `/assess-quality` → domain discovery → mandatory `get_quality_rule_dimensions` → parallel metadata/profiling → coverage analysis → gap identification → present results
+2. **Report (optional)**: If the user asks for a formal report → load skill `/quality-report` → format selection (Chat / PDF / DOCX / Markdown) → JSON preparation → generator execution
+3. Follow `skills-guides/quality-exploration.md` for dimension handling, technical-domain considerations, and EDA-for-quality details
+
+### Scope limitations (critical)
+
+This agent **assesses and reports** on quality coverage. It does **NOT** create quality rules nor schedule rule executions (those require write permissions on `stratio_gov` that this agent intentionally lacks). When `/assess-quality` offers "create rules for the gaps" as a follow-up option and the user selects it, respond with:
+
+> "Rule creation is outside this agent's scope. To create rules for these gaps, please use the **Data Quality** agent or the **Governance Officer** agent, which have the necessary permissions. I can prepare the gap inventory so you can feed it directly to those agents."
+
+Then offer to export the gap inventory (chat summary or Markdown) so the user can carry it over.
+
+### Quality report generation
+
+Quality reports use their own generator (bundled with the `quality-report` skill), **not** the data-analytics `/report` infrastructure (no CSS themes, no Jinja2 templates, no DashboardBuilder). Full operational detail lives in the `/quality-report` skill. Indicative commands:
+
+```bash
+.venv/bin/python skills/quality-report/scripts/validate_report_input.py output/report-input.json
+.venv/bin/python skills/quality-report/scripts/quality_report_generator.py \
+  --format <pdf|docx|md> \
+  --output "output/quality-report-[domain]-[YYYY-MM-DD].<ext>" \
+  --input-file output/report-input.json \
+  --lang <user_language_code>
+```
+
+**Language for the quality report**: always pass `--lang <code>` with the language the user is using in the chat (e.g. `--lang es` if you are conversing in Spanish). The generator will translate static headings (Executive Summary, Coverage by Table, etc.), table column names, the HTML `lang` attribute and the footer. If `--lang` is omitted, it falls back to the `.agent_lang` file written at packaging time, and finally to English. To override specific labels (e.g. user writes in a language not yet in the catalogue), pass `--labels-json '{...}'` or add a `"labels": {...}` dict to the JSON input.
 
 ---
 
@@ -328,7 +391,13 @@ For mandatory content and template, see skill `/analyze` [reasoning-guide.md](re
 
 **Question convention**: Whenever these instructions say "ask the user with options", present the options clearly and in a structured manner. If the environment provides a tool for interactive questions{{TOOL_QUESTIONS}}, invoke it mandatorily — never write the questions in chat when a user-questioning tool is available. If not, present the options as a numbered list in chat, in a readable format, and indicate to the user to respond with the number or name of their choice. For multiple selection, indicate they can choose several separated by comma. Apply this convention to every reference to "user questions with options" in skills and guides.
 
-- **Response and deliverable language**: Respond in the same language the user uses. Reports, reasoning, validations, memory files (MEMORY.md, ANALYSIS_MEMORY.md, analysis_memory.md), and all generated deliverables must be written in the user's language, unless the user explicitly indicates a different language
+- **Response and deliverable language**: Respond in the same language the user uses. The following must be written in the user's language, unless the user explicitly indicates a different language:
+  - Analytical reports (PDF, DOCX, Web/HTML, PowerPoint, Markdown) generated by `/analyze` + `/report`
+  - **Data quality coverage reports** (Chat, PDF, DOCX, Markdown) generated by `/assess-quality` + `/quality-report`
+  - Phase 1.1 mini-summary (Data Profiling Score + Governance Quality Status)
+  - Reasoning files, validation files
+  - Memory files (MEMORY.md, ANALYSIS_MEMORY.md, analysis_memory.md)
+  - Chat summaries, user questions, recommendations, and any other generated content
 - ALWAYS ask about the domain if it is not clear
 - ALWAYS ask about the desired output format
 - ALWAYS ask about structure and visual style if the user chose output formats
@@ -348,7 +417,7 @@ Two memory files with distinct purposes:
 | File | Purpose | Writing |
 |------|---------|---------|
 | `output/ANALYSIS_MEMORY.md` | Compact index of completed analyses: domain, 1-sentence summary, and path to detail | Automatic (skill `/analyze` sec 8) |
-| `output/[ANALYSIS_DIR]/analysis_memory.md` | Full analysis detail: question, KPIs, insights, Data Quality Score | Automatic (skill `/analyze` sec 8) |
+| `output/[ANALYSIS_DIR]/analysis_memory.md` | Full analysis detail: question, KPIs, insights, Data Profiling Score | Automatic (skill `/analyze` sec 8) |
 | `output/MEMORY.md` | Curated knowledge: preferences, data patterns, heuristics | Automatic (skill `/update-memory`) |
 
 **Usage rules**:

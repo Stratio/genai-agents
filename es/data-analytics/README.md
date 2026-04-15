@@ -9,13 +9,16 @@ Agente completo de Business Intelligence y Business Analytics para Claude Code y
 - Segmentación y clustering (scikit-learn)
 - Visualizaciones profesionales (matplotlib, seaborn, plotly)
 - Generación de informes multi-formato: PDF, DOCX, web interactiva, PowerPoint
+- **Evaluación y reporte de cobertura de calidad de datos** (solo lectura) — evaluar reglas de calidad existentes, identificar gaps de cobertura, generar informes de calidad en Chat/PDF/DOCX/Markdown. La creación y planificación de reglas queda reservada a los agentes Data Quality / Governance Officer.
 - Documentación del razonamiento y validación de output
 - Memoria persistente de análisis y preferencias
 
 ## Requisitos
 
 - Python 3.10+ (dependencias en `requirements.txt`; instalar con `bash setup_env.sh`)
-- Acceso a un servidor MCP de Stratio. La configuración está en `.mcp.json` (Claude Code / claude.ai) y en `opencode.json` (OpenCode), ambos preconfigurados para leer la URL y credenciales desde variables de entorno
+- Acceso a dos servidores MCP de Stratio (configurados en `.mcp.json` para Claude Code / claude.ai y en `opencode.json` para OpenCode):
+  - **MCP de datos** (`stratio_data`): vía variables de entorno `MCP_SQL_URL` y `MCP_SQL_API_KEY` — obligatorio para flujos analíticos
+  - **MCP de gobernanza** (`stratio_gov`): vía variables de entorno `MCP_GOV_URL` y `MCP_GOV_API_KEY` — necesario para la evaluación e informes de cobertura de calidad. Solo se permite la tool de lectura `get_quality_rule_dimensions`; las operaciones de escritura (creación/planificación de reglas, regeneración de metadata IA vía `quality_rules_metadata`) están intencionadamente denegadas
 
 ## Scripts de empaquetado
 
@@ -43,6 +46,8 @@ Los pack scripts solo son necesarios para distribuir el agente fuera del reposit
 |-------|---------|--------|-------------|
 | Análisis | `/analyze` | local | Análisis completo de datos BI/BA: descubrimiento de dominio, EDA, planificación de KPIs, queries MCP, análisis Python, visualizaciones e informes |
 | Exploración | `/explore-data` | **shared** | Exploración rápida de dominios, tablas, columnas y terminología de negocio |
+| Evaluación de calidad | `/assess-quality` | **shared** | Evaluación de cobertura de calidad para un dominio, tabla o columna; identifica dimensiones cubiertas, gaps y prioridades |
+| Informe de calidad | `/quality-report` | **shared** | Generar un informe formal de cobertura de calidad de datos (Chat / PDF / DOCX / Markdown) |
 | Informe | `/report` | local | Generación de informes profesionales multi-formato (PDF, DOCX, web, PowerPoint) |
 | Memoria | `/update-memory` | local | Actualizar memoria persistente con preferencias, patrones y heurísticas |
 | Conocimiento | `/propose-knowledge` | **shared** | Proponer términos de negocio descubiertos a Stratio Governance |

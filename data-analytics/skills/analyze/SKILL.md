@@ -31,19 +31,30 @@ If the domain is already known from the conversation (identified and explored in
 
 Read and follow `skills-guides/stratio-data-tools.md` sec 4 for the domain discovery steps (search or list domains, select, explore tables, columns, and terminology).
 
-## 3. EDA and Data Quality
+## 3. EDA and Data Profiling
 
-Before asking the user about formats and planning metrics, understand the reality of the data:
+Before asking the user about formats and planning metrics, understand the reality of the data on two complementary dimensions: the **statistical profile** (EDA) and the **governance quality coverage** already defined for those tables. Both run in parallel.
 
-1. **Profiling**: Run `profile_data` on the key tables identified in step 2. Follow the mechanics and adaptive thresholds from `skills-guides/stratio-data-tools.md` sec 5
-2. **Evaluate quality**:
+1. **Parallel launch** — For the key tables identified in step 2, launch together:
+   - `profile_data` per table (statistical profiling — follow mechanics and adaptive thresholds from `skills-guides/stratio-data-tools.md` sec 5)
+   - `get_tables_quality_details(domain_name, [tables])` (existing governance rules and their OK/KO/WARNING status)
+
+2. **Evaluate statistical profile (from `profile_data`)**:
    - **Completeness**: % of nulls per column. Flag columns with >50% nulls as a limitation
    - **Time range**: Verify that the data covers the period the user needs
    - **Outliers**: Identify extreme values (IQR) that could bias averages or totals
    - **Distributions**: Skew in numerics, imbalance in categoricals
    - **Correlations**: Strong relationships between variables (|r| > 0.7) — may indicate multicollinearity or redundancy
    - **Cardinality**: Categoricals with >100 unique values are difficult to visualize or group
-3. **Sufficiency checklist** — Apply BEFORE asking about formats:
+
+3. **Evaluate governance quality coverage (from `get_tables_quality_details`)**:
+   - Count rules per table and overall
+   - Classify by status: OK, KO, WARNING, not-executed
+   - For each KO/WARNING rule, note the dimension and affected column
+   - Identify whether any KO/WARNING rule affects a column the user plans to use for metrics, dimensions, or filters in their request
+   - This is a **lightweight check**: a full coverage evaluation (dimension catalog, gap identification, prioritisation) is outside the scope of this skill. If the user explicitly asks for a full coverage assessment instead of an analysis, stop here and inform them that a dedicated coverage workflow is required — the agent will route accordingly per its instructions
+
+4. **Sufficiency checklist** — Apply BEFORE asking about formats:
 
    | Criterion | Minimum threshold | If it fails |
    |-----------|-------------------|-------------|
@@ -55,10 +66,20 @@ Before asking the user about formats and planning metrics, understand the realit
    | Variability | std > 0 in key numerics | Exclude constant variable |
    | Granularity | Requested level available | Offer aggregation to available level |
 
-4. **Data Quality Score**: HIGH (80-100%), MEDIUM (60-79%), LOW (<60%). If LOW, recommend improving data or reformulating
-5. **Inform the user**: Generate a quality mini-summary + Data Quality Score before asking about format and style. Example:
-   - "**Quality: HIGH (85%)**. Data covers January 2023 to December 2025. The `descuento` column has 35% nulls. 12 outliers detected in `importe_total` (>3 IQR). The `categoria_producto` distribution is concentrated: 3 of 15 categories represent 80% of records."
-6. **Adjust expectations**: If there are serious limitations, warn the user that certain metrics or visualizations may not be reliable
+5. **Data Profiling Score**: HIGH (80-100%), MEDIUM (60-79%), LOW (<60%) — derived from the statistical profile. If LOW, recommend improving data or reformulating.
+
+6. **Governance Quality Status**: Summary derived from `get_tables_quality_details`. Format: `<N rules defined, X OK, Y KO, Z WARNING>` or `no governance rules defined for these tables`. If any KO/WARNING rule affects a relevant column, flag it with a ⚠️ marker.
+
+7. **Inform the user**: Generate a combined mini-summary with both signals before asking about format and style. Examples:
+   - "**Profiling: HIGH (85%)** · Data covers January 2023 to December 2025. The `descuento` column has 35% nulls. 12 outliers in `importe_total` (>3 IQR). The `categoria_producto` distribution is concentrated: 3 of 15 categories represent 80% of records.
+     **Governance: 8 rules defined (6 OK, 1 KO, 1 WARNING)**. ⚠️ KO rule `validity-fecha_factura` affects a column you'll use for temporal aggregation — results for that dimension should be taken with care."
+   - "**Profiling: MEDIUM (72%)** · 30% nulls in `importe`, 3-month data gap in Q2 2024. **Governance: no quality rules defined for these tables** — statistical profile is your only quality signal."
+   - "**Profiling: HIGH (90%)** · no significant issues. **Governance: 5 rules defined, all OK**."
+
+8. **Adjust expectations**: If there are serious limitations (LOW Profiling Score, KO rules on key columns, missing temporal coverage), warn the user that certain metrics or visualizations may not be reliable. When a KO rule affects a column central to the request, ask the user whether to:
+   - Continue the analysis acknowledging the caveat in the deliverable
+   - Exclude that column/dimension
+   - Stop analysing and request a full coverage evaluation instead (a dedicated workflow outside the scope of this skill)
 
 ## 4. Classification and User Questions
 
@@ -385,7 +406,7 @@ Create `output/[ANALYSIS_DIR]/analysis_memory.md` with the full content:
 - **Report**: `output/YYYY-MM-DD_HHMM_name/report.md`
 - **KPIs**: KPI1: value (period), KPI2: value (period)
 - **Insights**: Finding 1 (confidence), Finding 2 (confidence)
-- **Data Quality Score**: HIGH/MEDIUM/LOW (N%)
+- **Data Profiling Score**: HIGH/MEDIUM/LOW (N%)
 ```
 
 ### 8.2 Add compact entry to the index

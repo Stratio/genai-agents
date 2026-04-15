@@ -8,11 +8,14 @@ Lightweight Business Intelligence and Business Analytics agent. Same analytical 
 - Advanced analysis with Python (pandas, numpy, scipy)
 - Professional visualizations (matplotlib, seaborn, plotly)
 - Direct chat output with actionable insights
+- **Data quality coverage assessment** and quality summaries in chat (read-only, no file generation, no rule creation). For quality reports as PDF/DOCX/Markdown files, use the full `data-analytics` agent.
 
 ## Requirements
 
 - Python 3.10+ (dependencies in `requirements.txt`; install with `bash setup_env.sh`)
-- Access to a Stratio MCP server. Configuration is in `.mcp.json` (Claude Code / claude.ai) and in `opencode.json` (OpenCode), both preconfigured to read the URL and credentials from environment variables
+- Access to two Stratio MCP servers (configured in `.mcp.json` for Claude Code / claude.ai and in `opencode.json` for OpenCode):
+  - **Data MCP** (`stratio_data`): via `MCP_SQL_URL` and `MCP_SQL_API_KEY` env vars — mandatory for analytical workflows
+  - **Governance MCP** (`stratio_gov`): via `MCP_GOV_URL` and `MCP_GOV_API_KEY` env vars — needed for quality coverage assessment (chat only). Only the read tool `get_quality_rule_dimensions` is allowed; write operations (rule creation/scheduling, AI metadata regeneration via `quality_rules_metadata`) are intentionally denied
 
 ## Packaging scripts
 
@@ -108,6 +111,8 @@ The pack scripts generate the correct format for each platform (renaming files, 
 |-------|---------|--------|-------------|
 | Analysis | `/analyze` | local | BI/BA data analysis: domain discovery, EDA, KPI planning, MCP queries, Python analysis, and visualizations |
 | Exploration | `/explore-data` | **shared** | Quick exploration of domains, tables, columns, and business terminology |
+| Quality assessment | `/assess-quality` | **shared** | Assess quality coverage for a domain, table, or column; identify dimensions covered, gaps, and priorities |
+| Quality report | `/quality-report` | **shared** | Generate a quality coverage report. In this lightweight agent, **only the `Chat` format** is used (no file generation) |
 | Knowledge | `/propose-knowledge` | **shared** | Propose discovered business terms to Stratio Governance |
 
 Skills marked as **shared** live in `shared-skills/` at the monorepo root and are shared with `data-analytics`. Local skills live in this agent's `skills/`.

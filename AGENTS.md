@@ -74,10 +74,10 @@ genai-agents/
 ## Agent summary
 
 ### data-analytics
-Full BI/BA agent: queries governed data via MCP, analysis with Python (pandas, scipy, scikit-learn), visualizations (matplotlib, seaborn, plotly), report generation (PDF, DOCX, web, PowerPoint), reasoning documentation, validation, cross-session memory management.
+Full BI/BA agent: queries governed data via MCP, analysis with Python (pandas, scipy, scikit-learn), visualizations (matplotlib, seaborn, plotly), report generation (PDF, DOCX, web, PowerPoint), read-only data quality coverage assessment and reporting (uses shared skills `assess-quality` and `quality-report`; does not create rules), reasoning documentation, validation, cross-session memory management.
 
 ### data-analytics-light
-Lightweight BI/BA agent: same analytical engine but chat-oriented. No formal report generation — the primary output is the chat. Includes packaging scripts for Claude AI Projects and Claude Cowork.
+Lightweight BI/BA agent: same analytical engine but chat-oriented. Includes read-only data quality coverage assessment with chat-only summaries (uses `assess-quality` and `quality-report` forcing the Chat format; no file generation, no rule creation). No formal report generation — the primary output is the chat. Includes packaging scripts for Claude AI Projects and Claude Cowork.
 
 ### semantic-layer
 Agent specialized in building and maintaining semantic layers in Stratio Governance. Orchestrates the creation of data collections (technical domains), technical terms, ontologies, business views, SQL mappings, view publishing, semantic terms and business terms via governance MCPs. Does not execute data queries or generate files — its output is MCP tool interaction + chat summaries. Can read local user files to enrich planning.
