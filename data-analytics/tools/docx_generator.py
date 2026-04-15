@@ -42,6 +42,7 @@ from docx.oxml.ns import qn, nsdecls
 from docx.oxml import parse_xml
 
 from css_builder import get_palette
+from i18n import get_labels
 
 # A4 margins in cm
 _MARGIN_CM = 2.5
@@ -95,27 +96,37 @@ class DOCXGenerator:
         subtitle: str | None = None,
         author: str | None = None,
         show_cover: bool = True,
+        lang: str | None = None,
+        labels: dict[str, str] | None = None,
     ) -> "DOCXGenerator":
-        """Render using scaffold structure (same signature as PDFGenerator)."""
+        """Render using scaffold structure (same signature as PDFGenerator).
+
+        `lang` picks a language from the i18n catalogue (fallbacks to
+        `.agent_lang` file, then English). `labels` is an override dict whose
+        keys take precedence over the catalogue.
+        """
+        resolved_labels = get_labels(lang=lang, overrides=labels)
+
         doc = self._setup_document()
         self._apply_styles(doc)
 
         if show_cover:
             self._add_cover_page(doc, title, subtitle=subtitle,
                                  author=author or self._author,
-                                 domain=domain)
+                                 domain=domain,
+                                 labels=resolved_labels)
 
         # KPIs
         if kpis:
             self._add_kpi_table(doc, kpis)
 
-        # Sections
+        # Sections — localised headings
         sections = [
-            ("Executive Summary", executive_summary),
-            ("Methodology", methodology),
-            ("Data and Sources", data_section),
-            ("Analysis", analysis),
-            ("Conclusions", conclusions),
+            (resolved_labels["report.executive_summary"], executive_summary),
+            (resolved_labels["report.methodology"], methodology),
+            (resolved_labels["report.data_sources"], data_section),
+            (resolved_labels["report.analysis"], analysis),
+            (resolved_labels["report.conclusions"], conclusions),
         ]
         first_section_rendered = False
         for heading, content in sections:
@@ -147,20 +158,31 @@ class DOCXGenerator:
     def render_from_markdown(
         self,
         md_content: str,
-        title: str = "Report",
+        title: str | None = None,
         domain: str | None = None,
         subtitle: str | None = None,
         author: str | None = None,
         show_cover: bool = True,
+        lang: str | None = None,
+        labels: dict[str, str] | None = None,
     ) -> "DOCXGenerator":
-        """Render from markdown content."""
+        """Render from markdown content.
+
+        If `title` is not provided, falls back to the localised default
+        ("Report" / "Informe" / ...). `lang` and `labels` behave like in
+        `render_scaffold`.
+        """
+        resolved_labels = get_labels(lang=lang, overrides=labels)
+        effective_title = title or resolved_labels["report.default_title"]
+
         doc = self._setup_document()
         self._apply_styles(doc)
 
         if show_cover:
-            self._add_cover_page(doc, title, subtitle=subtitle,
+            self._add_cover_page(doc, effective_title, subtitle=subtitle,
                                  author=author or self._author,
-                                 domain=domain)
+                                 domain=domain,
+                                 labels=resolved_labels)
 
         elements = self._parse_markdown_to_elements(md_content)
         self._render_elements(doc, elements)
@@ -243,8 +265,11 @@ class DOCXGenerator:
     def _add_cover_page(self, doc: Document, title: str,
                         subtitle: str | None = None,
                         author: str | None = None,
-                        domain: str | None = None) -> None:
+                        domain: str | None = None,
+                        labels: dict[str, str] | None = None) -> None:
         """Add a cover page with title, metadata, and page break."""
+        if labels is None:
+            labels = get_labels()
         p = self._palette
         primary = p.get("primary", (26, 54, 93))
 
@@ -271,13 +296,13 @@ class DOCXGenerator:
 
         doc.add_paragraph("")
 
-        # Metadata
+        # Metadata — localised labels
         meta_lines = []
         if author:
-            meta_lines.append(f"Author: {author}")
+            meta_lines.append(f"{labels['cover.author']}: {author}")
         if domain:
-            meta_lines.append(f"Domain: {domain}")
-        meta_lines.append(f"Date: {date.today().strftime('%d/%m/%Y')}")
+            meta_lines.append(f"{labels['cover.domain']}: {domain}")
+        meta_lines.append(f"{labels['cover.date']}: {date.today().strftime('%d/%m/%Y')}")
 
         for line in meta_lines:
             meta_para = doc.add_paragraph()

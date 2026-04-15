@@ -34,6 +34,7 @@ from pathlib import Path
 import markdown
 
 from css_builder import build_css
+from i18n import get_labels
 from image_utils import embed_images_in_html
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -63,14 +64,17 @@ def resolve_css(style: str) -> str:
 
 
 def _build_cover_html(title: str, author: str | None = None,
-                      domain: str | None = None) -> str:
-    """Build HTML for a cover page."""
+                      domain: str | None = None,
+                      labels: dict[str, str] | None = None) -> str:
+    """Build HTML for a cover page with localised labels."""
+    if labels is None:
+        labels = get_labels()
     meta_lines = []
     if author:
-        meta_lines.append(f"<strong>Author:</strong> {author}")
+        meta_lines.append(f"<strong>{labels['cover.author']}:</strong> {author}")
     if domain:
-        meta_lines.append(f"<strong>Domain:</strong> {domain}")
-    meta_lines.append(f"<strong>Date:</strong> {date.today().strftime('%d/%m/%Y')}")
+        meta_lines.append(f"<strong>{labels['cover.domain']}:</strong> {domain}")
+    meta_lines.append(f"<strong>{labels['cover.date']}:</strong> {date.today().strftime('%d/%m/%Y')}")
 
     meta_html = "<br>".join(meta_lines)
 
@@ -81,10 +85,22 @@ def _build_cover_html(title: str, author: str | None = None,
 """
 
 
-def md_to_html(md_content: str, css: str, title: str = "Report",
+def md_to_html(md_content: str, css: str, title: str | None = None,
                author: str | None = None, cover: bool = False,
-               domain: str | None = None) -> str:
-    """Convert markdown content to a standalone HTML document."""
+               domain: str | None = None,
+               lang: str | None = None,
+               labels: dict[str, str] | None = None) -> str:
+    """Convert markdown content to a standalone HTML document.
+
+    `lang` selects the language from the i18n catalogue (fallbacks to
+    `.agent_lang`, then English). `labels` overrides specific keys.
+    Both are used for the cover labels, the HTML `lang` attribute, and the
+    default title.
+    """
+    resolved_labels = get_labels(lang=lang, overrides=labels)
+    effective_title = title or resolved_labels["report.default_title"]
+    html_lang_attr = resolved_labels["html.lang_attr"]
+
     body = markdown.markdown(md_content, extensions=EXTRA_MD_EXTENSIONS)
 
     meta_tags = f'    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">'
@@ -93,15 +109,15 @@ def md_to_html(md_content: str, css: str, title: str = "Report",
 
     cover_html = ""
     if cover:
-        cover_html = _build_cover_html(title, author, domain)
+        cover_html = _build_cover_html(effective_title, author, domain, labels=resolved_labels)
 
-    running_header = f'<div class="running-header">{title}</div>\n' if not cover else f'<div class="running-header">{title}</div>\n<div class="running-title">{title}</div>\n'
+    running_header = f'<div class="running-header">{effective_title}</div>\n' if not cover else f'<div class="running-header">{effective_title}</div>\n<div class="running-title">{effective_title}</div>\n'
 
     return f"""<!DOCTYPE html>
-<html lang="en">
+<html lang="{html_lang_attr}">
 <head>
 {meta_tags}
-    <title>{title}</title>
+    <title>{effective_title}</title>
     <style>
 {css}
     </style>
@@ -117,8 +133,14 @@ def convert(input_path: Path, output_dir: Path, style: str,
             cover: bool = False, domain: str | None = None,
             title: str | None = None,
             generate_docx: bool = False,
-            also_save_html: bool = False) -> tuple[Path | None, Path, Path | None]:
+            also_save_html: bool = False,
+            lang: str | None = None,
+            labels: dict[str, str] | None = None) -> tuple[Path | None, Path, Path | None]:
     """Convert a markdown file to PDF, and optionally HTML and DOCX.
+
+    `lang` / `labels` flow through to `md_to_html` and to the DOCX generator
+    so that cover labels and the HTML `lang` attribute match the user's
+    language. See `i18n.get_labels` for resolution rules.
 
     Returns (html_path_or_None, pdf_path, docx_path_or_None).
     """
@@ -128,7 +150,8 @@ def convert(input_path: Path, output_dir: Path, style: str,
         title = _extract_h1(md_content) or input_path.stem.replace("_", " ").replace("-", " ").title()
 
     html_content = md_to_html(md_content, css, title, author=author,
-                              cover=cover, domain=domain)
+                              cover=cover, domain=domain,
+                              lang=lang, labels=labels)
 
     if embed_images:
         html_content = embed_images_in_html(html_content, base_dir=PROJECT_ROOT)
@@ -153,6 +176,7 @@ def convert(input_path: Path, output_dir: Path, style: str,
         docx_gen.render_from_markdown(
             md_content, title=title, domain=domain,
             author=author, show_cover=cover,
+            lang=lang, labels=labels,
         )
         docx_path = output_dir / f"{stem}.docx"
         docx_gen.save(docx_path)
@@ -209,7 +233,26 @@ def main():
         action="store_true",
         help="Also save the intermediate HTML file alongside PDF",
     )
+    parser.add_argument(
+        "--lang",
+        default=None,
+        help="Language code (e.g. en, es). Falls back to .agent_lang file, then 'en'",
+    )
+    parser.add_argument(
+        "--labels-json",
+        default=None,
+        help='JSON dict of label overrides (e.g. \'{"cover.author":"Autor"}\'). Overrides the --lang catalogue',
+    )
     args = parser.parse_args()
+
+    labels_override = None
+    if args.labels_json:
+        import json
+        try:
+            labels_override = json.loads(args.labels_json)
+        except json.JSONDecodeError as e:
+            print(f"ERROR: invalid --labels-json: {e}", file=sys.stderr)
+            sys.exit(1)
 
     if not args.input.is_file():
         print(f"ERROR: File not found: {args.input}", file=sys.stderr)
@@ -226,6 +269,8 @@ def main():
         title=args.title,
         generate_docx=args.docx,
         also_save_html=args.html,
+        lang=args.lang,
+        labels=labels_override,
     )
     if html_path:
         print(f"HTML: {html_path}")

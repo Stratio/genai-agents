@@ -10,6 +10,17 @@
       "allowedTools": [
         "*"
       ]
+    },
+    "stratio_gov": {
+      "type": "http",
+      "url": "${MCP_GOV_URL:-http://127.0.0.1:8080/mcp}",
+      "headers": {
+        "X-API-Key": "${MCP_GOV_API_KEY:-}",
+        "Authorization": "Bearer ${MCP_GOV_API_KEY:-}"
+      },
+      "allowedTools": [
+        "get_quality_rule_dimensions"
+      ]
     }
   }
 }

@@ -262,6 +262,10 @@ if [ -f "USER_README.md" ]; then
   echo "  README.md copied from USER_README.md"
 fi
 
+# Write .agent_lang marker next to CLAUDE.md so Python tools (if the user
+# runs them from the folder) pick the packaging language as default.
+echo "${LANG_CODE:-en}" > "$COWORK_DIR/.agent_lang"
+
 # ============================================================
 # Step 3: Clean up temporary build
 # ============================================================

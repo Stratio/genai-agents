@@ -3,7 +3,7 @@
 {% block content %}
 
 {# --- Executive Summary --- #}
-<h2>Resumen Ejecutivo</h2>
+<h2>{{ labels['report.executive_summary'] }}</h2>
 {{ executive_summary }}
 
 {% if kpis %}
@@ -14,13 +14,13 @@
 
 {# --- Methodology --- #}
 {% if methodology %}
-<h2>Metodologia</h2>
+<h2>{{ labels['report.methodology'] }}</h2>
 {{ methodology }}
 {% endif %}
 
 {# --- Data & Sources --- #}
 {% if data_section %}
-<h2>Datos y Fuentes</h2>
+<h2>{{ labels['report.data_sources'] }}</h2>
 {{ data_section }}
 {% endif %}
 
@@ -31,7 +31,7 @@
 {% endfor %}
 
 {# --- Analysis --- #}
-<h2>Analisis</h2>
+<h2>{{ labels['report.analysis'] }}</h2>
 {{ analysis }}
 
 {% for fig in figures %}
@@ -41,7 +41,7 @@
 {% endfor %}
 
 {# --- Conclusions --- #}
-<h2>Conclusiones y Recomendaciones</h2>
+<h2>{{ labels['report.conclusions'] }}</h2>
 {{ conclusions }}
 
 {% if callouts %}

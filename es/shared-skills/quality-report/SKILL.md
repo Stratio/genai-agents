@@ -228,8 +228,20 @@ Escribir `<ruta-absoluta>/report-input.json` con el schema exacto que sigue. **L
 .venv/bin/python scripts/quality_report_generator.py \
   --format <pdf|docx|md> \
   --output "output/quality-report-[dominio]-[fecha].<ext>" \
-  --input-file output/report-input.json
+  --input-file output/report-input.json \
+  --lang <código_idioma_usuario>
 ```
+
+**Idioma de los labels estáticos** (títulos de sección, nombres de columnas de tabla, footer, atributo HTML `lang`). Orden de resolución (mayor prioridad primero):
+
+1. `--labels-json '{...}'` en la línea de comandos — override por clave.
+2. `"labels": {...}` dentro del JSON input — override por clave.
+3. `--lang <código>` en la línea de comandos — selecciona del catálogo.
+4. `"lang": "<código>"` dentro del JSON input — selecciona del catálogo.
+5. Fichero `.agent_lang` en la raíz del agente (escrito al empaquetar) — idioma por defecto del paquete.
+6. `"en"` como fallback final.
+
+**Regla práctica**: pasar `--lang <código>` con el idioma del usuario actual (el mismo que estás usando en el chat). Los idiomas del catálogo hoy son `en` y `es`; códigos desconocidos hacen fallback a inglés por clave. Si necesitas un label que el catálogo no trae en el idioma del usuario (p. ej. usuario en francés), pasa las traducciones vía `--labels-json` o el campo `"labels"` del JSON.
 
 Si el usuario pide PDF y DOCX en la misma sesión, el `report-input.json` puede reutilizarse — ejecutar el generador dos veces con distinto `--format` y `--output`.
 

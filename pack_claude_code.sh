@@ -371,6 +371,11 @@ for FORBIDDEN in .opencode .agents opencode dist; do
   fi
 done
 
+# [Final step] Write .agent_lang marker so Python tools can pick up the
+# default language when the agent invokes them without passing --lang.
+# Falls back to "en" when no --lang was supplied at packaging time.
+echo "${LANG_CODE:-en}" > "$OUTPUT_DIR/.agent_lang"
+
 # Total files
 TOTAL=$(find "$OUTPUT_DIR" -type f | wc -l)
 

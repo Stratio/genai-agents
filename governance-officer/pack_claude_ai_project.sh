@@ -198,5 +198,9 @@ else
   echo "  OK: No broken references found"
 fi
 
+# Write .agent_lang marker so Python tools pick the packaging language as
+# default when invoked without --lang. Falls back to "en".
+echo "${LANG_CODE:-en}" > "$PROJECT_DIR/.agent_lang"
+
 echo ""
 echo "=== Project packaged in $PROJECT_DIR ==="

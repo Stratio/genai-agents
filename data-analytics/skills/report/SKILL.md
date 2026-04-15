@@ -49,6 +49,17 @@ bash setup_env.sh
 ```
 Verify that format dependencies are available (weasyprint for PDF, python-pptx for PowerPoint, etc.).
 
+## 3.1 Language of Generated Deliverables
+
+All generators (`DOCXGenerator`, `PDFGenerator`, `DashboardBuilder`, `md_to_report.py`) use a shared i18n catalogue in `tools/i18n.py` for their static labels (scaffold headings "Executive Summary" / "Methodology" / …, cover labels "Author:" / "Domain:" / "Date:", dashboard chrome "Filters" / "Clear filters" / "KPIs", the HTML `lang` attribute, the default report title, etc.).
+
+**Pass the user's language explicitly when invoking any generator** so the static chrome matches the chat language:
+
+- Python API (`DOCXGenerator`, `PDFGenerator`, `DashboardBuilder`): pass `lang="<code>"` to `render_scaffold` / `render_from_markdown` / `render_from_html` / the constructor (whichever applies). Optionally pass `labels={...}` to override specific keys.
+- CLI (`md_to_report.py`): pass `--lang <code>` (and optionally `--labels-json '{...}'`).
+
+Resolution order when you don't pass `lang`: the `.agent_lang` file written at packaging time → `"en"`. So a package built with `--lang es` defaults to Spanish labels even without explicit `lang`. Supported catalogue languages today: `en`, `es`. Unknown codes fall back to English per key; pass `labels={...}` to inject translations for other languages.
+
 ## 4. Style Tools
 
 All formats share the same source of truth for colors and fonts:
@@ -87,7 +98,7 @@ Generated automatically in all analyses, without the user needing to select it.
 Generate reasoning according to the selected depth (see sec "Reasoning" of AGENTS.md):
 
 - **Quick**: Do not generate file. Key notes in chat.
-- **Standard/Deep**: Generate `output/[ANALYSIS_DIR]/reasoning/reasoning.md`. If the user requested override to other formats (PDF, HTML, DOCX), convert with `tools/md_to_report.py --style corporate` (add `--docx` if applicable).
+- **Standard/Deep**: Generate `output/[ANALYSIS_DIR]/reasoning/reasoning.md`. If the user requested override to other formats (PDF, HTML, DOCX), convert with `tools/md_to_report.py --style corporate --lang <user_lang>` (add `--docx` if applicable).
 
 Documenting:
 - Format(s) generated and justification

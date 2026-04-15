@@ -12,6 +12,7 @@ Data Analytics Light es una versión conversacional del agente de BI/BA. Conecta
 - Responder preguntas de negocio con datos reales (KPIs, métricas, tendencias)
 - Realizar análisis estadísticos (correlaciones, distribuciones, tests de hipótesis)
 - Generar visualizaciones profesionales directamente en el chat
+- **Evaluar la cobertura de calidad del dato** y producir resúmenes de calidad en chat (solo lectura, sin salida a fichero). Para informes en fichero (PDF/DOCX/Markdown) usa el agente Data Analytics completo.
 - Proponer términos de negocio al diccionario de gobernanza
 
 ## Qué puedes preguntarle
@@ -33,17 +34,27 @@ Data Analytics Light es una versión conversacional del agente de BI/BA. Conecta
 - "Describe las tablas del dominio de clientes"
 - "Qué significa el campo 'lifetime_value'?"
 
+### Cobertura de calidad (solo chat)
+- "Evalúa la cobertura de calidad del dominio ventas"
+- "¿Qué reglas de calidad tiene la tabla clientes?"
+- "¿Qué dimensiones no están cubiertas en la tabla facturación?"
+
+> Nota: Este agente solo entrega resúmenes de calidad en chat. Para ficheros PDF/DOCX/Markdown, o para crear reglas, usa el agente **Data Analytics** completo (ficheros) o los agentes **Data Quality** / **Governance Officer** (creación de reglas).
+
 ## Skills disponibles
 
 | Comando | Descripción |
 |---------|-------------|
 | `/analyze` | Análisis de datos: descubrimiento de dominio, planificación, queries, análisis estadístico y visualizaciones |
 | `/explore-data` | Exploración rápida de dominios, tablas, columnas y terminología de negocio |
+| `/assess-quality` | Evaluación de cobertura de calidad (dimensiones, reglas existentes, gaps) |
+| `/quality-report` | Resumen de cobertura de calidad **solo en chat** (sin salida a fichero en este agente) |
 | `/propose-knowledge` | Proponer términos de negocio descubiertos al diccionario de gobernanza |
 
 ## Conexiones necesarias
 
-- **MCP de datos**: consultas SQL, exploración de dominios, profiling de tablas y columnas
+- **MCP de datos** (`stratio_data`): consultas SQL, exploración de dominios, profiling de tablas y columnas — configurado vía `MCP_SQL_URL` / `MCP_SQL_API_KEY`
+- **MCP de gobernanza** (`stratio_gov`, solo lectura): dimensiones de calidad y metadata de reglas para la evaluación de cobertura — configurado vía `MCP_GOV_URL` / `MCP_GOV_API_KEY`
 
 ## Primeros pasos
 

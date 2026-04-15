@@ -35,6 +35,7 @@ from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
 
 from css_builder import build_css
+from i18n import get_labels
 from image_utils import embed_images_in_html
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -76,6 +77,8 @@ class PDFGenerator:
         subtitle: str | None = None,
         author: str | None = None,
         show_cover: bool = True,
+        lang: str | None = None,
+        labels: dict[str, str] | None = None,
     ) -> "PDFGenerator":
         """Render using the scaffold template (predefined structure).
 
@@ -94,10 +97,15 @@ class PDFGenerator:
             subtitle: Optional subtitle for the cover page.
             author: Author override (uses instance default if not set).
             show_cover: Whether to show the cover page.
+            lang: Language code. Resolves via i18n catalogue, falling back
+                to `.agent_lang` file and finally English.
+            labels: Override dict for specific label keys. Takes precedence
+                over the catalogue.
 
         Returns:
             self, for method chaining.
         """
+        resolved_labels = get_labels(lang=lang, overrides=labels)
         template = self._env.get_template("reports/scaffold.html")
         self._html = template.render(
             title=title,
@@ -117,17 +125,20 @@ class PDFGenerator:
             figures=figures or [],
             data_tables=data_tables or [],
             callouts=callouts or [],
+            labels=resolved_labels,
         )
         return self
 
     def render_from_html(
         self,
         html_body: str,
-        title: str = "Report",
+        title: str | None = None,
         domain: str | None = None,
         subtitle: str | None = None,
         author: str | None = None,
         show_cover: bool = True,
+        lang: str | None = None,
+        labels: dict[str, str] | None = None,
     ) -> "PDFGenerator":
         """Render free-form HTML with base infrastructure (CSS, cover, footer).
 
@@ -136,15 +147,21 @@ class PDFGenerator:
 
         Args:
             html_body: Free-form HTML content for the report body.
-            title: Report title.
+            title: Report title. If omitted, uses the localised default
+                ("Report" / "Informe" / ...).
             domain: Data domain name for the cover page.
             subtitle: Optional subtitle for the cover page.
             author: Author override (uses instance default if not set).
             show_cover: Whether to show the cover page.
+            lang: Language code. See `render_scaffold` for resolution rules.
+            labels: Override dict for specific label keys.
 
         Returns:
             self, for method chaining.
         """
+        resolved_labels = get_labels(lang=lang, overrides=labels)
+        effective_title = title or resolved_labels["report.default_title"]
+
         # Inject html_body into a simple content block extending base.html
         content_template = self._env.from_string(
             '{% extends "base.html" %}\n{% block content %}\n'
@@ -152,7 +169,7 @@ class PDFGenerator:
             + "\n{% endblock %}"
         )
         self._html = content_template.render(
-            title=title,
+            title=effective_title,
             css=self._css,
             style_name=self._style_name,
             author=author or self._author,
@@ -160,6 +177,7 @@ class PDFGenerator:
             domain=domain,
             subtitle=subtitle,
             show_cover=show_cover,
+            labels=resolved_labels,
         )
         return self
 

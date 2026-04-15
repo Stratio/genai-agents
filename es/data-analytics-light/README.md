@@ -8,11 +8,14 @@ Agente ligero de Business Intelligence y Business Analytics. Mismo motor analít
 - Análisis avanzado con Python (pandas, numpy, scipy)
 - Visualizaciones profesionales (matplotlib, seaborn, plotly)
 - Output directo en chat con insights accionables
+- **Evaluación de cobertura de calidad de datos** y resúmenes de calidad en chat (solo lectura, sin generación de ficheros, sin creación de reglas). Para informes de calidad como ficheros PDF/DOCX/Markdown, usa el agente `data-analytics` completo.
 
 ## Requisitos
 
 - Python 3.10+ (dependencias en `requirements.txt`; instalar con `bash setup_env.sh`)
-- Acceso a un servidor MCP de Stratio. La configuración está en `.mcp.json` (Claude Code / claude.ai) y en `opencode.json` (OpenCode), ambos preconfigurados para leer la URL y credenciales desde variables de entorno
+- Acceso a dos servidores MCP de Stratio (configurados en `.mcp.json` para Claude Code / claude.ai y en `opencode.json` para OpenCode):
+  - **MCP de datos** (`stratio_data`): vía variables de entorno `MCP_SQL_URL` y `MCP_SQL_API_KEY` — obligatorio para flujos analíticos
+  - **MCP de gobernanza** (`stratio_gov`): vía variables de entorno `MCP_GOV_URL` y `MCP_GOV_API_KEY` — necesario para la evaluación de cobertura de calidad (solo chat). Solo se permite la tool de lectura `get_quality_rule_dimensions`; las operaciones de escritura (creación/planificación de reglas, regeneración de metadata IA vía `quality_rules_metadata`) están intencionadamente denegadas
 
 ## Scripts de empaquetado
 
@@ -108,6 +111,8 @@ Los pack scripts generan el formato correcto para cada plataforma (renombrando f
 |-------|---------|--------|-------------|
 | Análisis | `/analyze` | local | Análisis de datos BI/BA: descubrimiento de dominio, EDA, planificación de KPIs, queries MCP, análisis Python y visualizaciones |
 | Exploración | `/explore-data` | **shared** | Exploración rápida de dominios, tablas, columnas y terminología de negocio |
+| Evaluación de calidad | `/assess-quality` | **shared** | Evaluación de cobertura de calidad para un dominio, tabla o columna; identifica dimensiones cubiertas, gaps y prioridades |
+| Informe de calidad | `/quality-report` | **shared** | Genera un informe de cobertura de calidad. En este agente ligero se usa **solo el formato `Chat`** (sin generación de ficheros) |
 | Conocimiento | `/propose-knowledge` | **shared** | Proponer términos de negocio descubiertos a Stratio Governance |
 
 Las skills marcadas como **shared** viven en `shared-skills/` en la raíz del monorepo y se comparten con `data-analytics`. Las locales viven en `skills/` de este agente.

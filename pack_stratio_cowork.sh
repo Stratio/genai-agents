@@ -104,6 +104,12 @@ echo "    [1] ${#SHARED_SKILLS[@]} shared skill(s) detected: ${SHARED_SKILLS[*]:
 # Phase 2 — Package full agent with pack_opencode.sh
 # ---------------------------------------------------------------------------
 echo "    [2] Running pack_opencode.sh..."
+# Note: we invoke pack_opencode.sh WITHOUT --lang because this script has
+# already resolved the overlay into a tmpdir (lines 68-74). pack_opencode.sh
+# operates on that already-translated tree, so passing --lang would trigger
+# a redundant second resolve. However, pack_opencode.sh will then write
+# `.agent_lang=en` to the staging output; we overwrite it below with the
+# real LANG_CODE so the packaged tools pick up the correct default language.
 bash "$MONOREPO_ROOT/pack_opencode.sh" --agent "$AGENT_ABS" --name "$AGENT_NAME"
 
 STAGING_FULL="$AGENT_ABS/dist/opencode/$AGENT_NAME"
@@ -112,6 +118,12 @@ if [[ ! -d "$STAGING_FULL" ]]; then
   echo "ERROR: pack_opencode.sh staging not found at $STAGING_FULL" >&2
   exit 1
 fi
+
+# Overwrite .agent_lang so the packaged tools see the real language this
+# stratio-cowork bundle was built for (pack_opencode.sh wrote "en" because
+# it didn't receive --lang — see note above).
+echo "${LANG_CODE:-en}" > "$STAGING_FULL/.agent_lang"
+
 echo "    [2] Full staging ready at $STAGING_FULL"
 
 # ---------------------------------------------------------------------------

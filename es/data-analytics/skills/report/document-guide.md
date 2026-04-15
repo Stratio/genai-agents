@@ -2,6 +2,8 @@
 
 Referencia operativa para el pipeline de documento dentro de `/report`.
 
+> **Idioma**: Todos los ejemplos de código omiten los argumentos `lang=` y `labels=` por brevedad. En invocaciones reales, **pasar siempre `lang="<código_idioma_usuario>"` a cada generador** (`PDFGenerator.render_scaffold`, `PDFGenerator.render_from_html`, `DOCXGenerator.render_scaffold`, `DOCXGenerator.render_from_markdown`). Ver sec 3.1 de `SKILL.md` para las reglas de resolución y las claves del catálogo disponibles.
+
 ## Pipeline
 
 1. Usar `tools/pdf_generator.py` (`PDFGenerator`) con el estilo visual elegido por el usuario

@@ -75,6 +75,13 @@ import sys
 import os
 from datetime import date
 
+# Local import — scripts/ is on sys.path when invoked directly, and the file
+# sits alongside this module once packaged inside the agent.
+_HERE = os.path.dirname(os.path.abspath(__file__))
+if _HERE not in sys.path:
+    sys.path.insert(0, _HERE)
+from i18n import get_labels  # noqa: E402
+
 
 # ---------------------------------------------------------------------------
 # Common helpers
@@ -107,6 +114,30 @@ def load_input(input_json: str | None, input_file: str | None) -> dict:
     raise ValueError("No input data provided (--input-json, --input-file or stdin)")
 
 
+def resolve_labels_for_data(
+    data: dict,
+    cli_lang: str | None = None,
+    cli_labels: dict | None = None,
+) -> dict[str, str]:
+    """Resolve the effective label dict for a report invocation.
+
+    Priority (highest wins):
+      1. `cli_labels` (from `--labels-json`)
+      2. `data["labels"]` embedded in the JSON input
+      3. `cli_lang` (from `--lang`)
+      4. `data["lang"]` embedded in the JSON input
+      5. `.agent_lang` file at the packaged agent root
+      6. English fallback
+    """
+    effective_lang = cli_lang or data.get("lang")
+    merged_overrides: dict[str, str] = {}
+    if isinstance(data.get("labels"), dict):
+        merged_overrides.update(data["labels"])
+    if cli_labels:
+        merged_overrides.update(cli_labels)
+    return get_labels(lang=effective_lang, overrides=merged_overrides or None)
+
+
 def ensure_output_dir(output_path: str) -> None:
     output_dir = os.path.dirname(output_path)
     if output_dir:
@@ -117,45 +148,54 @@ def ensure_output_dir(output_path: str) -> None:
 # Markdown generation
 # ---------------------------------------------------------------------------
 
-def build_markdown(data: dict) -> str:
+def build_markdown(data: dict, labels: dict[str, str] | None = None) -> str:
+    if labels is None:
+        labels = resolve_labels_for_data(data)
     s = data.get("summary", {})
     lines = []
 
     # Header
-    lines.append(f"# {data.get('title', 'Data Quality Coverage Report')}")
+    lines.append(f"# {data.get('title', labels['quality.default_title'])}")
     lines.append("")
-    lines.append(f"**Domain / Collection**: {data.get('domain', '-')}")
-    lines.append(f"**Scope**: {data.get('scope', '-')}")
-    lines.append(f"**Generation date**: {data.get('generated_at', str(date.today()))}")
+    lines.append(f"**{labels['quality.meta.collection']}**: {data.get('domain', '-')}")
+    lines.append(f"**{labels['quality.meta.scope']}**: {data.get('scope', '-')}")
+    lines.append(f"**{labels['quality.meta.generation_date']}**: {data.get('generated_at', str(date.today()))}")
     lines.append("")
     lines.append("---")
     lines.append("")
 
     # Executive summary
-    lines.append("## Executive Summary")
+    lines.append(f"## {labels['quality.executive_summary']}")
     lines.append("")
-    lines.append(f"| Metric | Value |")
+    lines.append(f"| {labels['quality.col.metric']} | {labels['quality.col.value']} |")
     lines.append(f"|--------|-------|")
-    lines.append(f"| Tables analyzed | {s.get('tables_analyzed', '-')} |")
-    lines.append(f"| Existing rules | {s.get('rules_total', '-')} |")
-    lines.append(f"| Status OK | {s.get('rules_ok', '-')} |")
-    lines.append(f"| Status KO | {s.get('rules_ko', '-')} |")
-    lines.append(f"| Status WARNING | {s.get('rules_warning', '-')} |")
-    lines.append(f"| Not executed | {s.get('rules_not_executed', '-')} |")
-    lines.append(f"| Estimated coverage | **{s.get('coverage_estimate', '-')}** |")
-    lines.append(f"| Critical gaps | {s.get('gaps_critical', '-')} |")
-    lines.append(f"| Moderate gaps | {s.get('gaps_moderate', '-')} |")
-    lines.append(f"| Low gaps | {s.get('gaps_low', '-')} |")
+    lines.append(f"| {labels['quality.summary.tables_analyzed']} | {s.get('tables_analyzed', '-')} |")
+    lines.append(f"| {labels['quality.summary.existing_rules']} | {s.get('rules_total', '-')} |")
+    lines.append(f"| {labels['quality.summary.status_ok']} | {s.get('rules_ok', '-')} |")
+    lines.append(f"| {labels['quality.summary.status_ko']} | {s.get('rules_ko', '-')} |")
+    lines.append(f"| {labels['quality.summary.status_warning']} | {s.get('rules_warning', '-')} |")
+    lines.append(f"| {labels['quality.summary.not_executed']} | {s.get('rules_not_executed', '-')} |")
+    lines.append(f"| {labels['quality.summary.estimated_coverage']} | **{s.get('coverage_estimate', '-')}** |")
+    lines.append(f"| {labels['quality.summary.gaps_critical']} | {s.get('gaps_critical', '-')} |")
+    lines.append(f"| {labels['quality.summary.gaps_moderate']} | {s.get('gaps_moderate', '-')} |")
+    lines.append(f"| {labels['quality.summary.gaps_low']} | {s.get('gaps_low', '-')} |")
     if s.get("rules_created_this_session"):
-        lines.append(f"| Rules created this session | {s['rules_created_this_session']} |")
+        lines.append(f"| {labels['quality.summary.rules_created_this_session']} | {s['rules_created_this_session']} |")
     lines.append("")
 
     # Coverage by table
     tables = data.get("tables", [])
     if tables:
-        lines.append("## Coverage by Table")
+        lines.append(f"## {labels['quality.coverage_by_table']}")
         lines.append("")
-        lines.append("| Table | Completeness | Uniqueness | Validity | Consistency | Coverage |")
+        lines.append(
+            f"| {labels['quality.col.table']} "
+            f"| {labels['quality.col.completeness']} "
+            f"| {labels['quality.col.uniqueness']} "
+            f"| {labels['quality.col.validity']} "
+            f"| {labels['quality.col.consistency']} "
+            f"| {labels['quality.col.coverage']} |"
+        )
         lines.append("|-------|-------------|------------|----------|-------------|----------|")
         for t in tables:
             lines.append(
@@ -169,7 +209,7 @@ def build_markdown(data: dict) -> str:
         lines.append("")
 
         # Existing rules detail
-        lines.append("## Existing Rules Detail")
+        lines.append(f"## {labels['quality.existing_rules_detail']}")
         lines.append("")
         for t in tables:
             rules = t.get("rules", [])
@@ -177,7 +217,13 @@ def build_markdown(data: dict) -> str:
                 continue
             lines.append(f"### {t['name']}")
             lines.append("")
-            lines.append("| Rule | Dimension | Status | % Pass | Description |")
+            lines.append(
+                f"| {labels['quality.col.rule']} "
+                f"| {labels['quality.col.dimension']} "
+                f"| {labels['quality.col.status']} "
+                f"| {labels['quality.col.pass_pct']} "
+                f"| {labels['quality.col.description']} |"
+            )
             lines.append("|------|-----------|--------|--------|-------------|")
             for r in rules:
                 pass_pct = f"{r['pass_pct']:.1f}%" if r.get("pass_pct") is not None else "-"
@@ -199,12 +245,18 @@ def build_markdown(data: dict) -> str:
                 all_gaps.append({**g, "table": t["name"]})
 
         if all_gaps:
-            lines.append("## Identified Gaps")
+            lines.append(f"## {labels['quality.identified_gaps']}")
             lines.append("")
             # Order: CRITICO > ALTO > MEDIO > BAJO
             priority_order = {"CRITICO": 0, "ALTO": 1, "MEDIO": 2, "BAJO": 3}
             all_gaps.sort(key=lambda x: priority_order.get(x.get("priority", "BAJO"), 99))
-            lines.append("| Priority | Table | Column | Dimension | Description |")
+            lines.append(
+                f"| {labels['quality.col.priority']} "
+                f"| {labels['quality.col.table']} "
+                f"| {labels['quality.col.column']} "
+                f"| {labels['quality.col.dimension']} "
+                f"| {labels['quality.col.description']} |"
+            )
             lines.append("|----------|-------|--------|-----------|-------------|")
             for g in all_gaps:
                 lines.append(
@@ -219,9 +271,14 @@ def build_markdown(data: dict) -> str:
     # Rules created this session
     rules_created = data.get("rules_created", [])
     if rules_created:
-        lines.append("## Rules Created This Session")
+        lines.append(f"## {labels['quality.rules_created_session']}")
         lines.append("")
-        lines.append("| Rule | Table | Dimension | Status |")
+        lines.append(
+            f"| {labels['quality.col.rule']} "
+            f"| {labels['quality.col.table']} "
+            f"| {labels['quality.col.dimension']} "
+            f"| {labels['quality.col.status']} |"
+        )
         lines.append("|------|-------|-----------|--------|")
         for r in rules_created:
             lines.append(
@@ -235,21 +292,22 @@ def build_markdown(data: dict) -> str:
     # Recommendations
     recommendations = data.get("recommendations", [])
     if recommendations:
-        lines.append("## Recommendations and Next Steps")
+        lines.append(f"## {labels['quality.recommendations']}")
         lines.append("")
         for i, rec in enumerate(recommendations, 1):
             lines.append(f"{i}. {rec}")
         lines.append("")
 
     lines.append("---")
-    lines.append("*Generated by Data Quality Agent*")
+    lines.append(f"*{labels['quality.footer']}*")
     lines.append("")
 
     return "\n".join(lines)
 
 
-def generate_markdown(data: dict, output_path: str) -> None:
-    content = build_markdown(data)
+def generate_markdown(data: dict, output_path: str,
+                      labels: dict[str, str] | None = None) -> None:
+    content = build_markdown(data, labels=labels)
     ensure_output_dir(output_path)
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(content)
@@ -261,7 +319,7 @@ def generate_markdown(data: dict, output_path: str) -> None:
 # ---------------------------------------------------------------------------
 
 HTML_TEMPLATE = """<!DOCTYPE html>
-<html lang="en">
+<html lang="{{ lang }}">
 <head>
 <meta charset="UTF-8">
 <style>
@@ -296,7 +354,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 </head>
 <body>
 {{ content_html }}
-<div class="footer">Generated by Data Quality Agent | {{ generated_at }}</div>
+<div class="footer">{{ footer_text }} | {{ generated_at }}</div>
 </body>
 </html>
 """
@@ -314,35 +372,37 @@ def _priority_class(priority: str) -> str:
     return mapping.get(priority, "")
 
 
-def build_html_body(data: dict) -> str:
+def build_html_body(data: dict, labels: dict[str, str] | None = None) -> str:
+    if labels is None:
+        labels = resolve_labels_for_data(data)
     s = data.get("summary", {})
     parts = []
 
     # Header
-    parts.append(f"<h1>{data.get('title', 'Data Quality Coverage Report')}</h1>")
+    parts.append(f"<h1>{data.get('title', labels['quality.default_title'])}</h1>")
     parts.append(
         f"<div class='meta'>"
-        f"<span><b>Domain:</b> {data.get('domain', '-')}</span>"
-        f"<span><b>Scope:</b> {data.get('scope', '-')}</span>"
-        f"<span><b>Date:</b> {data.get('generated_at', str(date.today()))}</span>"
+        f"<span><b>{labels['quality.meta.domain']}:</b> {data.get('domain', '-')}</span>"
+        f"<span><b>{labels['quality.meta.scope']}:</b> {data.get('scope', '-')}</span>"
+        f"<span><b>{labels['quality.meta.date']}:</b> {data.get('generated_at', str(date.today()))}</span>"
         f"</div>"
     )
 
     # Executive summary
-    parts.append("<h2>Executive Summary</h2>")
+    parts.append(f"<h2>{labels['quality.executive_summary']}</h2>")
     parts.append("<div class='summary-box'>")
-    parts.append("<table><tr><th>Metric</th><th>Value</th></tr>")
+    parts.append(f"<table><tr><th>{labels['quality.col.metric']}</th><th>{labels['quality.col.value']}</th></tr>")
     summary_rows = [
-        ("Tables analyzed", s.get("tables_analyzed", "-")),
-        ("Existing rules", s.get("rules_total", "-")),
-        ("Status OK / KO / WARNING", f"{s.get('rules_ok',0)} / {s.get('rules_ko',0)} / {s.get('rules_warning',0)}"),
-        ("Not executed", s.get("rules_not_executed", "-")),
-        ("Estimated coverage", f"<b>{s.get('coverage_estimate', '-')}</b>"),
-        ("Critical / moderate / low gaps",
+        (labels['quality.summary.tables_analyzed'], s.get("tables_analyzed", "-")),
+        (labels['quality.summary.existing_rules'], s.get("rules_total", "-")),
+        (labels['quality.summary.status_breakdown'], f"{s.get('rules_ok',0)} / {s.get('rules_ko',0)} / {s.get('rules_warning',0)}"),
+        (labels['quality.summary.not_executed'], s.get("rules_not_executed", "-")),
+        (labels['quality.summary.estimated_coverage'], f"<b>{s.get('coverage_estimate', '-')}</b>"),
+        (labels['quality.summary.gaps_breakdown'],
          f"{s.get('gaps_critical',0)} / {s.get('gaps_moderate',0)} / {s.get('gaps_low',0)}"),
     ]
     if s.get("rules_created_this_session"):
-        summary_rows.append(("Rules created this session", s["rules_created_this_session"]))
+        summary_rows.append((labels['quality.summary.rules_created_this_session'], s["rules_created_this_session"]))
     for label, value in summary_rows:
         parts.append(f"<tr><td>{label}</td><td>{value}</td></tr>")
     parts.append("</table></div>")
@@ -350,9 +410,16 @@ def build_html_body(data: dict) -> str:
     # Coverage by table
     tables = data.get("tables", [])
     if tables:
-        parts.append("<h2>Coverage by Table</h2>")
-        parts.append("<table><tr><th>Table</th><th>Completeness</th><th>Uniqueness</th>"
-                     "<th>Validity</th><th>Consistency</th><th>Coverage</th></tr>")
+        parts.append(f"<h2>{labels['quality.coverage_by_table']}</h2>")
+        parts.append(
+            f"<table><tr>"
+            f"<th>{labels['quality.col.table']}</th>"
+            f"<th>{labels['quality.col.completeness']}</th>"
+            f"<th>{labels['quality.col.uniqueness']}</th>"
+            f"<th>{labels['quality.col.validity']}</th>"
+            f"<th>{labels['quality.col.consistency']}</th>"
+            f"<th>{labels['quality.col.coverage']}</th></tr>"
+        )
         for t in tables:
             def cell(val):
                 cls = _status_class(val or "-")
@@ -368,14 +435,20 @@ def build_html_body(data: dict) -> str:
         parts.append("</table>")
 
         # Rules detail
-        parts.append("<h2>Existing Rules Detail</h2>")
+        parts.append(f"<h2>{labels['quality.existing_rules_detail']}</h2>")
         for t in tables:
             rules = t.get("rules", [])
             if not rules:
                 continue
             parts.append(f"<h3>{t['name']}</h3>")
-            parts.append("<table><tr><th>Rule</th><th>Dimension</th><th>Status</th>"
-                         "<th>% Pass</th><th>Description</th></tr>")
+            parts.append(
+                f"<table><tr>"
+                f"<th>{labels['quality.col.rule']}</th>"
+                f"<th>{labels['quality.col.dimension']}</th>"
+                f"<th>{labels['quality.col.status']}</th>"
+                f"<th>{labels['quality.col.pass_pct']}</th>"
+                f"<th>{labels['quality.col.description']}</th></tr>"
+            )
             for r in rules:
                 status = r.get("status", "-")
                 cls = _status_class(status)
@@ -396,9 +469,15 @@ def build_html_body(data: dict) -> str:
         if all_gaps:
             priority_order = {"CRITICO": 0, "ALTO": 1, "MEDIO": 2, "BAJO": 3}
             all_gaps.sort(key=lambda x: priority_order.get(x.get("priority", "BAJO"), 99))
-            parts.append("<h2>Identified Gaps</h2>")
-            parts.append("<table><tr><th>Priority</th><th>Table</th><th>Column</th>"
-                         "<th>Dimension</th><th>Description</th></tr>")
+            parts.append(f"<h2>{labels['quality.identified_gaps']}</h2>")
+            parts.append(
+                f"<table><tr>"
+                f"<th>{labels['quality.col.priority']}</th>"
+                f"<th>{labels['quality.col.table']}</th>"
+                f"<th>{labels['quality.col.column']}</th>"
+                f"<th>{labels['quality.col.dimension']}</th>"
+                f"<th>{labels['quality.col.description']}</th></tr>"
+            )
             for g in all_gaps:
                 pri = g.get("priority", "-")
                 cls = _priority_class(pri)
@@ -412,8 +491,14 @@ def build_html_body(data: dict) -> str:
     # Rules created
     rules_created = data.get("rules_created", [])
     if rules_created:
-        parts.append("<h2>Rules Created This Session</h2>")
-        parts.append("<table><tr><th>Rule</th><th>Table</th><th>Dimension</th><th>Status</th></tr>")
+        parts.append(f"<h2>{labels['quality.rules_created_session']}</h2>")
+        parts.append(
+            f"<table><tr>"
+            f"<th>{labels['quality.col.rule']}</th>"
+            f"<th>{labels['quality.col.table']}</th>"
+            f"<th>{labels['quality.col.dimension']}</th>"
+            f"<th>{labels['quality.col.status']}</th></tr>"
+        )
         for r in rules_created:
             status = r.get("status", "-")
             cls = "status-ok" if status == "created" else "status-ko"
@@ -426,7 +511,7 @@ def build_html_body(data: dict) -> str:
     # Recommendations
     recommendations = data.get("recommendations", [])
     if recommendations:
-        parts.append("<h2>Recommendations and Next Steps</h2>")
+        parts.append(f"<h2>{labels['quality.recommendations']}</h2>")
         parts.append("<ol class='rec-list'>")
         for rec in recommendations:
             parts.append(f"<li>{rec}</li>")
@@ -435,17 +520,25 @@ def build_html_body(data: dict) -> str:
     return "\n".join(parts)
 
 
-def generate_pdf(data: dict, output_path: str) -> None:
+def generate_pdf(data: dict, output_path: str,
+                 labels: dict[str, str] | None = None) -> None:
     try:
         from weasyprint import HTML as WeasyprintHTML
     except ImportError:
         print("[ERROR] weasyprint is not installed. Run: pip install weasyprint", file=sys.stderr)
         sys.exit(1)
 
-    html_body = build_html_body(data)
+    if labels is None:
+        labels = resolve_labels_for_data(data)
+
+    html_body = build_html_body(data, labels=labels)
     generated_at = data.get("generated_at", str(date.today()))
-    html_full = HTML_TEMPLATE.replace("{{ content_html }}", html_body).replace(
-        "{{ generated_at }}", generated_at
+    html_full = (
+        HTML_TEMPLATE
+        .replace("{{ content_html }}", html_body)
+        .replace("{{ generated_at }}", generated_at)
+        .replace("{{ lang }}", labels["html.lang_attr"])
+        .replace("{{ footer_text }}", labels["quality.footer"])
     )
 
     ensure_output_dir(output_path)
@@ -458,7 +551,8 @@ def generate_pdf(data: dict, output_path: str) -> None:
 # DOCX generation via python-docx
 # ---------------------------------------------------------------------------
 
-def generate_docx(data: dict, output_path: str) -> None:
+def generate_docx(data: dict, output_path: str,
+                  labels: dict[str, str] | None = None) -> None:
     try:
         from docx import Document
         from docx.shared import Pt, RGBColor, Inches
@@ -466,6 +560,9 @@ def generate_docx(data: dict, output_path: str) -> None:
     except ImportError:
         print("[ERROR] python-docx is not installed. Run: pip install python-docx", file=sys.stderr)
         sys.exit(1)
+
+    if labels is None:
+        labels = resolve_labels_for_data(data)
 
     doc = Document()
 
@@ -479,39 +576,39 @@ def generate_docx(data: dict, output_path: str) -> None:
     s = data.get("summary", {})
 
     # Title
-    title = doc.add_heading(data.get("title", "Data Quality Coverage Report"), level=0)
+    title = doc.add_heading(data.get("title", labels["quality.default_title"]), level=0)
     title.runs[0].font.color.rgb = BLUE
 
     # Meta
     meta = doc.add_paragraph()
-    meta.add_run(f"Domain: ").bold = True
+    meta.add_run(f"{labels['quality.meta.domain']}: ").bold = True
     meta.add_run(f"{data.get('domain', '-')}   ")
-    meta.add_run(f"Scope: ").bold = True
+    meta.add_run(f"{labels['quality.meta.scope']}: ").bold = True
     meta.add_run(f"{data.get('scope', '-')}   ")
-    meta.add_run(f"Date: ").bold = True
+    meta.add_run(f"{labels['quality.meta.date']}: ").bold = True
     meta.add_run(data.get("generated_at", str(date.today())))
 
-    doc.add_heading("Executive Summary", level=1)
+    doc.add_heading(labels['quality.executive_summary'], level=1)
 
     # Summary table
     summary_rows = [
-        ("Tables analyzed", str(s.get("tables_analyzed", "-"))),
-        ("Existing rules", str(s.get("rules_total", "-"))),
-        ("Status OK / KO / WARNING",
+        (labels['quality.summary.tables_analyzed'], str(s.get("tables_analyzed", "-"))),
+        (labels['quality.summary.existing_rules'], str(s.get("rules_total", "-"))),
+        (labels['quality.summary.status_breakdown'],
          f"{s.get('rules_ok',0)} / {s.get('rules_ko',0)} / {s.get('rules_warning',0)}"),
-        ("Not executed", str(s.get("rules_not_executed", "-"))),
-        ("Estimated coverage", str(s.get("coverage_estimate", "-"))),
-        ("Critical / moderate / low gaps",
+        (labels['quality.summary.not_executed'], str(s.get("rules_not_executed", "-"))),
+        (labels['quality.summary.estimated_coverage'], str(s.get("coverage_estimate", "-"))),
+        (labels['quality.summary.gaps_breakdown'],
          f"{s.get('gaps_critical',0)} / {s.get('gaps_moderate',0)} / {s.get('gaps_low',0)}"),
     ]
     if s.get("rules_created_this_session"):
-        summary_rows.append(("Rules created this session", str(s["rules_created_this_session"])))
+        summary_rows.append((labels['quality.summary.rules_created_this_session'], str(s["rules_created_this_session"])))
 
     tbl = doc.add_table(rows=1, cols=2)
     tbl.style = "Table Grid"
     hdr = tbl.rows[0].cells
-    hdr[0].text = "Metric"
-    hdr[1].text = "Value"
+    hdr[0].text = labels['quality.col.metric']
+    hdr[1].text = labels['quality.col.value']
     for cell in hdr:
         cell.paragraphs[0].runs[0].bold = True
     for label, value in summary_rows:
@@ -522,10 +619,17 @@ def generate_docx(data: dict, output_path: str) -> None:
     # Coverage by table
     tables = data.get("tables", [])
     if tables:
-        doc.add_heading("Coverage by Table", level=1)
+        doc.add_heading(labels['quality.coverage_by_table'], level=1)
         tbl2 = doc.add_table(rows=1, cols=6)
         tbl2.style = "Table Grid"
-        headers = ["Table", "Completeness", "Uniqueness", "Validity", "Consistency", "Coverage"]
+        headers = [
+            labels['quality.col.table'],
+            labels['quality.col.completeness'],
+            labels['quality.col.uniqueness'],
+            labels['quality.col.validity'],
+            labels['quality.col.consistency'],
+            labels['quality.col.coverage'],
+        ]
         for i, h in enumerate(headers):
             tbl2.rows[0].cells[i].text = h
             tbl2.rows[0].cells[i].paragraphs[0].runs[0].bold = True
@@ -544,10 +648,17 @@ def generate_docx(data: dict, output_path: str) -> None:
         if all_gaps:
             priority_order = {"CRITICO": 0, "ALTO": 1, "MEDIO": 2, "BAJO": 3}
             all_gaps.sort(key=lambda x: priority_order.get(x.get("priority", "BAJO"), 99))
-            doc.add_heading("Identified Gaps", level=1)
+            doc.add_heading(labels['quality.identified_gaps'], level=1)
             tbl3 = doc.add_table(rows=1, cols=5)
             tbl3.style = "Table Grid"
-            for i, h in enumerate(["Priority", "Table", "Column", "Dimension", "Description"]):
+            gap_headers = [
+                labels['quality.col.priority'],
+                labels['quality.col.table'],
+                labels['quality.col.column'],
+                labels['quality.col.dimension'],
+                labels['quality.col.description'],
+            ]
+            for i, h in enumerate(gap_headers):
                 tbl3.rows[0].cells[i].text = h
                 tbl3.rows[0].cells[i].paragraphs[0].runs[0].bold = True
             for g in all_gaps:
@@ -560,10 +671,16 @@ def generate_docx(data: dict, output_path: str) -> None:
     # Rules created
     rules_created = data.get("rules_created", [])
     if rules_created:
-        doc.add_heading("Rules Created This Session", level=1)
+        doc.add_heading(labels['quality.rules_created_session'], level=1)
         tbl4 = doc.add_table(rows=1, cols=4)
         tbl4.style = "Table Grid"
-        for i, h in enumerate(["Rule", "Table", "Dimension", "Status"]):
+        created_headers = [
+            labels['quality.col.rule'],
+            labels['quality.col.table'],
+            labels['quality.col.dimension'],
+            labels['quality.col.status'],
+        ]
+        for i, h in enumerate(created_headers):
             tbl4.rows[0].cells[i].text = h
             tbl4.rows[0].cells[i].paragraphs[0].runs[0].bold = True
         for r in rules_created:
@@ -574,13 +691,13 @@ def generate_docx(data: dict, output_path: str) -> None:
     # Recommendations
     recommendations = data.get("recommendations", [])
     if recommendations:
-        doc.add_heading("Recommendations and Next Steps", level=1)
+        doc.add_heading(labels['quality.recommendations'], level=1)
         for i, rec in enumerate(recommendations, 1):
             doc.add_paragraph(f"{i}. {rec}")
 
     # Footer
     doc.add_paragraph("")
-    footer_p = doc.add_paragraph("Generated by Data Quality Agent")
+    footer_p = doc.add_paragraph(labels['quality.footer'])
     footer_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     footer_p.runs[0].font.size = Pt(9)
     footer_p.runs[0].font.color.rgb = GRAY
@@ -604,6 +721,12 @@ def main():
                         help="JSON with the report data (string)")
     parser.add_argument("--input-file", dest="input_file", default=None,
                         help="Path to a JSON file with the report data")
+    parser.add_argument("--lang", default=None,
+                        help="Language code (e.g. en, es). Overrides `lang` in the "
+                             "JSON input. Falls back to .agent_lang file, then 'en'.")
+    parser.add_argument("--labels-json", dest="labels_json", default=None,
+                        help='Label overrides as JSON string (e.g. '
+                             "'{\"quality.executive_summary\":\"...\"}'). Highest priority.")
     args = parser.parse_args()
 
     try:
@@ -612,12 +735,24 @@ def main():
         print(f"[ERROR] Could not load input data: {e}", file=sys.stderr)
         sys.exit(1)
 
+    cli_label_overrides: dict | None = None
+    if args.labels_json:
+        try:
+            cli_label_overrides = json.loads(args.labels_json)
+        except json.JSONDecodeError as e:
+            print(f"[ERROR] Invalid --labels-json: {e}", file=sys.stderr)
+            sys.exit(1)
+
+    labels = resolve_labels_for_data(
+        data, cli_lang=args.lang, cli_labels=cli_label_overrides,
+    )
+
     if args.format == "md":
-        generate_markdown(data, args.output)
+        generate_markdown(data, args.output, labels=labels)
     elif args.format == "pdf":
-        generate_pdf(data, args.output)
+        generate_pdf(data, args.output, labels=labels)
     elif args.format == "docx":
-        generate_docx(data, args.output)
+        generate_docx(data, args.output, labels=labels)
 
 
 if __name__ == "__main__":

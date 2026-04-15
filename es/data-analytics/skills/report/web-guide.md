@@ -2,6 +2,8 @@
 
 Referencia operativa para el pipeline de dashboard web dentro de `/report`.
 
+> **Idioma**: Todos los ejemplos de código omiten `lang=` y `labels=` por brevedad. En invocaciones reales, **pasar siempre `lang="<código_idioma_usuario>"` a `DashboardBuilder(...)`** para que el chrome UI (Filters/All/Clear filters/KPIs/footer, atributo HTML `lang`) coincida con el idioma del usuario. Ver sec 3.1 de `SKILL.md` para las reglas de resolución y claves del catálogo.
+
 ## Principio
 
 HTML autónomo (un solo archivo, sin servidor). CSS inline con `build_css(style, "web")`. Plotly con CDN. Datos embebidos en JSON para funcionamiento offline.

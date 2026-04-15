@@ -26,7 +26,7 @@ The reasoning must include all of the following sections:
    | ID | Hypothesis | Result | Expected | Actual | So What |
    ```
 3. **Domain and tables used** — Exact domain name and list of tables queried
-4. **Data quality summary** — Data Quality Score from Phase 1.1 (HIGH/MEDIUM/LOW with %)
+4. **Data quality summary** — Both signals from Phase 1.1: Data Profiling Score (HIGH/MEDIUM/LOW with %) AND Governance Quality Status (rule counts OK/KO/WARNING, with any KO rule affecting analysed columns called out explicitly)
 5. **Decisions made and justification** — Methodological choices, applied filters, exclusions
 6. **Questions asked to the MCP and summary of data obtained** — Each query with result description
 7. **Analyses performed and key findings** — Techniques applied and main insights

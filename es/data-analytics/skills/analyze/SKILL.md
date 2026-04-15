@@ -31,19 +31,30 @@ Si el dominio ya es conocido de la conversación (identificado y explorado en tu
 
 Leer y seguir `skills-guides/stratio-data-tools.md` sec 4 para los pasos de descubrimiento del dominio (buscar o listar dominios, seleccionar, explorar tablas, columnas y terminología).
 
-## 3. EDA y Calidad de Datos
+## 3. EDA y Perfilado de Datos
 
-Antes de preguntar al usuario sobre formatos y planificar métricas, entender la realidad de los datos:
+Antes de preguntar al usuario sobre formatos y planificar métricas, entender la realidad de los datos en dos dimensiones complementarias: el **perfil estadístico** (EDA) y la **cobertura de calidad de gobernanza** ya definida para esas tablas. Ambas se lanzan en paralelo.
 
-1. **Profiling**: Ejecutar `profile_data` sobre las tablas clave identificadas en el paso 2. Seguir la mecánica y umbrales adaptativos de `skills-guides/stratio-data-tools.md` sec 5
-2. **Evaluar calidad**:
+1. **Lanzamiento en paralelo** — Para las tablas clave identificadas en el paso 2, lanzar a la vez:
+   - `profile_data` por tabla (perfilado estadístico — seguir la mecánica y umbrales adaptativos de `skills-guides/stratio-data-tools.md` sec 5)
+   - `get_tables_quality_details(domain_name, [tablas])` (reglas de gobernanza existentes y su estado OK/KO/WARNING)
+
+2. **Evaluar perfil estadístico (de `profile_data`)**:
    - **Completitud**: % de nulos por columna. Marcar columnas con >50% nulos como limitación
    - **Rango temporal**: Verificar que los datos cubren el periodo que el usuario necesita
    - **Outliers**: Identificar valores extremos (IQR) que podrían sesgar promedios o totales
    - **Distribuciones**: Sesgo en numéricas, desbalanceo en categóricas
    - **Correlaciones**: Relaciones fuertes entre variables (|r| > 0.7) — pueden indicar multicolinealidad o redundancia
    - **Cardinalidad**: Categóricas con >100 valores únicos son difíciles de visualizar o agrupar
-3. **Checklist de suficiencia** — Aplicar ANTES de preguntar formatos:
+
+3. **Evaluar cobertura de calidad de gobernanza (de `get_tables_quality_details`)**:
+   - Contar reglas por tabla y en total
+   - Clasificar por estado: OK, KO, WARNING, sin ejecutar
+   - Para cada regla KO/WARNING, anotar la dimensión y la columna afectada
+   - Identificar si alguna regla KO/WARNING afecta a una columna que el usuario va a usar para métricas, dimensiones o filtros en su petición
+   - Este es un **chequeo ligero**: una evaluación completa de cobertura (catálogo de dimensiones, identificación de gaps, priorización) está fuera del alcance de esta skill. Si el usuario pide explícitamente una evaluación completa de cobertura en lugar de un análisis, parar aquí e indicarle que se requiere un flujo dedicado — el agente hará el routing según sus instrucciones
+
+4. **Checklist de suficiencia** — Aplicar ANTES de preguntar formatos:
 
    | Criterio | Umbral mínimo | Si falla |
    |----------|---------------|----------|
@@ -55,10 +66,20 @@ Antes de preguntar al usuario sobre formatos y planificar métricas, entender la
    | Variabilidad | std > 0 en numéricas clave | Excluir variable constante |
    | Granularidad | Nivel pedido disponible | Ofrecer agregacion al disponible |
 
-4. **Data Quality Score**: ALTO (80-100%), MEDIO (60-79%), BAJO (<60%). Si BAJO, recomendar mejorar datos o reformular
-5. **Informar al usuario**: Generar mini-resumen de calidad + Data Quality Score antes de preguntarle sobre formato y estilo. Ejemplo:
-   - "**Calidad: ALTO (85%)**. Los datos cubren de enero 2023 a diciembre 2025. La columna `descuento` tiene un 35% de nulos. Se detectaron 12 outliers en `importe_total` (>3 IQR). La distribución de `categoria_producto` está concentrada: 3 de 15 categorías representan el 80% de registros."
-6. **Ajustar expectativas**: Si hay limitaciones serias, advertir al usuario de que ciertas métricas o visualizaciones podrían no ser fiables
+5. **Data Profiling Score**: ALTO (80-100%), MEDIO (60-79%), BAJO (<60%) — derivado del perfil estadístico. Si BAJO, recomendar mejorar datos o reformular.
+
+6. **Governance Quality Status**: Resumen derivado de `get_tables_quality_details`. Formato: `<N reglas definidas, X OK, Y KO, Z WARNING>` o `sin reglas de calidad definidas para estas tablas`. Si alguna regla KO/WARNING afecta a una columna relevante, marcarla con un ⚠️.
+
+7. **Informar al usuario**: Generar mini-resumen combinado con ambas señales antes de preguntar sobre formato y estilo. Ejemplos:
+   - "**Perfilado: ALTO (85%)** · Los datos cubren de enero 2023 a diciembre 2025. La columna `descuento` tiene 35% de nulos. 12 outliers en `importe_total` (>3 IQR). La distribución de `categoria_producto` está concentrada: 3 de 15 categorías representan el 80% de registros.
+     **Gobernanza: 8 reglas definidas (6 OK, 1 KO, 1 WARNING)**. ⚠️ La regla KO `validez-fecha_factura` afecta a una columna que vas a usar para agregación temporal — tomar los resultados de esa dimensión con cautela."
+   - "**Perfilado: MEDIO (72%)** · 30% nulos en `importe`, hueco de 3 meses en Q2 2024. **Gobernanza: sin reglas de calidad definidas para estas tablas** — el perfil estadístico es tu única señal de calidad."
+   - "**Perfilado: ALTO (90%)** · sin issues significativos. **Gobernanza: 5 reglas definidas, todas OK**."
+
+8. **Ajustar expectativas**: Si hay limitaciones serias (Data Profiling Score BAJO, reglas KO sobre columnas clave, cobertura temporal incompleta), advertir al usuario. Cuando una regla KO afecte a una columna central a la petición, preguntar si quiere:
+   - Continuar el análisis dejando constancia de la limitación en el deliverable
+   - Excluir esa columna/dimensión
+   - Parar el análisis y solicitar una evaluación completa de cobertura (flujo dedicado fuera del alcance de esta skill)
 
 ## 4. Clasificación y Preguntas al Usuario
 
@@ -385,7 +406,7 @@ Crear `output/[ANALISIS_DIR]/analysis_memory.md` con el contenido completo:
 - **Reporte**: `output/YYYY-MM-DD_HHMM_nombre/report.md`
 - **KPIs**: KPI1: valor (periodo), KPI2: valor (periodo)
 - **Insights**: Hallazgo 1 (confianza), Hallazgo 2 (confianza)
-- **Data Quality Score**: ALTO/MEDIO/BAJO (N%)
+- **Data Profiling Score**: ALTO/MEDIO/BAJO (N%)
 ```
 
 ### 8.2 Añadir entrada compacta al índice

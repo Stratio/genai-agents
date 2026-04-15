@@ -50,6 +50,7 @@ import re
 from pathlib import Path
 
 from css_builder import build_css
+from i18n import get_labels
 
 
 def _detect_plotlyjs_cdn() -> str:
@@ -92,8 +93,16 @@ class DashboardBuilder:
         date: str = "",
         show_cover: bool = True,
         footer: str = "",
-        lang: str = "en",
+        lang: str | None = None,
+        labels: dict[str, str] | None = None,
     ) -> None:
+        """Create a dashboard builder.
+
+        `lang` picks a language from the i18n catalogue (fallbacks to
+        `.agent_lang` then English). `labels` is an override dict whose
+        keys take precedence. The HTML `lang` attribute uses the resolved
+        language unless overridden via `labels["html.lang_attr"]`.
+        """
         self.title = title
         self.style = style
         self.subtitle = subtitle
@@ -102,7 +111,9 @@ class DashboardBuilder:
         self.date = date
         self.show_cover = show_cover
         self.footer = footer
-        self.lang = lang
+        self._labels = get_labels(lang=lang, overrides=labels)
+        # HTML `lang` attribute: taken from the resolved catalogue
+        self.lang = self._labels["html.lang_attr"]
 
         self._filters: list[dict] = []
         self._kpis: list[dict] = []
@@ -337,7 +348,7 @@ class DashboardBuilder:
             nav=nav_html,
             kpis=kpis_html,
             sections=sections_html,
-            footer=_escape_html(self.footer or "Dashboard generated automatically"),
+            footer=_escape_html(self.footer or self._labels["dashboard.footer_default"]),
             data_json=data_json,
             custom_js=self._custom_js,
             author_meta=f'<meta name="author" content="{_escape_html(self.author)}">' if self.author else "",
@@ -370,11 +381,11 @@ class DashboardBuilder:
             parts.append(f'  <div class="cover-subtitle">{_escape_html(self.subtitle)}</div>')
         meta_lines = []
         if self.author:
-            meta_lines.append(f"<strong>Author:</strong> {_escape_html(self.author)}")
+            meta_lines.append(f"<strong>{_escape_html(self._labels['cover.author'])}:</strong> {_escape_html(self.author)}")
         if self.domain:
-            meta_lines.append(f"<strong>Domain:</strong> {_escape_html(self.domain)}")
+            meta_lines.append(f"<strong>{_escape_html(self._labels['cover.domain'])}:</strong> {_escape_html(self.domain)}")
         if self.date:
-            meta_lines.append(f"<strong>Date:</strong> {_escape_html(self.date)}")
+            meta_lines.append(f"<strong>{_escape_html(self._labels['cover.date'])}:</strong> {_escape_html(self.date)}")
         if meta_lines:
             parts.append('  <div class="cover-meta">')
             for line in meta_lines:
@@ -385,14 +396,15 @@ class DashboardBuilder:
 
     def _render_filters(self) -> str:
         parts = ['<div class="filter-bar" id="filter-bar">']
-        parts.append('  <div class="filter-bar-title">Filters</div>')
+        parts.append(f'  <div class="filter-bar-title">{_escape_html(self._labels["dashboard.filters"])}</div>')
         parts.append('  <div class="filter-controls">')
+        all_option_label = _escape_html(self._labels["dashboard.all"])
         for f in self._filters:
             parts.append(f'    <div class="filter-group">')
             parts.append(f'      <label for="filter-{f["id"]}">{_escape_html(f["label"])}</label>')
             if f["type"] == "select":
                 parts.append(f'      <select id="filter-{f["id"]}" class="filter-input" data-filter-id="{f["id"]}" onchange="applyFilters()">')
-                parts.append('        <option value="__all__">All</option>')
+                parts.append(f'        <option value="__all__">{all_option_label}</option>')
                 for opt in f["options"]:
                     parts.append(f'        <option value="{_escape_html(str(opt))}">{_escape_html(str(opt))}</option>')
                 parts.append("      </select>")
@@ -401,7 +413,7 @@ class DashboardBuilder:
                 parts.append(f'      <span class="filter-date-sep">&mdash;</span>')
                 parts.append(f'      <input type="date" id="filter-{f["id"]}-end" class="filter-input filter-date" data-filter-id="{f["id"]}" data-filter-role="end" onchange="applyFilters()">')
             parts.append("    </div>")
-        parts.append('    <button class="filter-reset" onclick="resetFilters()">Clear filters</button>')
+        parts.append(f'    <button class="filter-reset" onclick="resetFilters()">{_escape_html(self._labels["dashboard.clear_filters"])}</button>')
         parts.append("  </div>")
         parts.append("</div>")
         return "\n".join(parts)
@@ -411,7 +423,7 @@ class DashboardBuilder:
             return ""
         parts = ['<nav class="nav" id="nav">']
         if self._kpis:
-            parts.append('  <a href="#kpis">KPIs</a>')
+            parts.append(f'  <a href="#kpis">{_escape_html(self._labels["dashboard.kpis_nav"])}</a>')
         for s in self._sections:
             parts.append(f'  <a href="#{s["id"]}">{_escape_html(s["nav_label"])}</a>')
         parts.append("</nav>")

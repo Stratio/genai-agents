@@ -9,13 +9,16 @@ Complete Business Intelligence and Business Analytics agent for Claude Code and 
 - Segmentation and clustering (scikit-learn)
 - Professional visualizations (matplotlib, seaborn, plotly)
 - Multi-format report generation: PDF, DOCX, interactive web, PowerPoint
+- **Data quality coverage assessment and reporting** (read-only) — evaluate existing quality rules, identify coverage gaps, generate quality reports in Chat/PDF/DOCX/Markdown. Rule creation and scheduling remain in the Data Quality / Governance Officer agents.
 - Reasoning documentation and output validation
 - Persistent memory for analyses and preferences
 
 ## Requirements
 
 - Python 3.10+ (dependencies in `requirements.txt`; install with `bash setup_env.sh`)
-- Access to a Stratio MCP server. Configuration is in `.mcp.json` (Claude Code / claude.ai) and in `opencode.json` (OpenCode), both preconfigured to read the URL and credentials from environment variables
+- Access to two Stratio MCP servers (configured in `.mcp.json` for Claude Code / claude.ai and in `opencode.json` for OpenCode):
+  - **Data MCP** (`stratio_data`): via `MCP_SQL_URL` and `MCP_SQL_API_KEY` env vars — mandatory for analytical workflows
+  - **Governance MCP** (`stratio_gov`): via `MCP_GOV_URL` and `MCP_GOV_API_KEY` env vars — needed for quality coverage assessment and reports. Only the read tool `get_quality_rule_dimensions` is allowed; write operations (rule creation/scheduling, AI metadata regeneration via `quality_rules_metadata`) are intentionally denied
 
 ## Packaging scripts
 
@@ -43,6 +46,8 @@ Pack scripts are only needed to distribute the agent outside the repository.
 |-------|---------|--------|-------------|
 | Analysis | `/analyze` | local | Full BI/BA data analysis: domain discovery, EDA, KPI planning, MCP queries, Python analysis, visualizations, and reports |
 | Exploration | `/explore-data` | **shared** | Quick exploration of domains, tables, columns, and business terminology |
+| Quality assessment | `/assess-quality` | **shared** | Assess quality coverage for a domain, table, or column; identify dimensions covered, gaps, and priorities |
+| Quality report | `/quality-report` | **shared** | Generate a formal data quality coverage report (Chat / PDF / DOCX / Markdown) |
 | Report | `/report` | local | Professional multi-format report generation (PDF, DOCX, web, PowerPoint) |
 | Memory | `/update-memory` | local | Update persistent memory with preferences, patterns, and heuristics |
 | Knowledge | `/propose-knowledge` | **shared** | Propose discovered business terms to Stratio Governance |

@@ -34,7 +34,9 @@ Cuando el usuario plantea una petición de análisis, SIEMPRE seguir este flujo.
 | Entregable: "informe", "dashboard", "PDF", "presentación", "documento", "resumen" | `analyze` |
 | Visualización: "resumen gráfico", "gráfica de", "mostrar visualmente", "resumen de KPIs", "resumen visual" | `analyze` |
 | Múltiples KPIs con dimensiones: "KPIs por área", "métricas por segmento", "indicadores principales" | `analyze` |
-| Exploración de dominio o perfilado: "explorar dominio", "qué datos hay disponibles", "descubrir dominio", "calidad de datos", "perfilar tabla" | `explore-data` |
+| Evaluación de calidad: "calidad de datos", "cobertura de calidad", "evaluación de calidad", "reglas de calidad", "dimensiones de calidad", "gaps de cobertura", "evaluar calidad", "estado de calidad" + contexto dominio/tabla | `assess-quality` |
+| Informe de calidad: "informe de calidad", "informe de cobertura de calidad", "PDF de calidad", "DOCX de calidad", "documento de calidad" | `assess-quality` → `quality-report` |
+| Exploración de dominio o perfilado: "explorar dominio", "qué datos hay disponibles", "descubrir dominio", "perfilar datos", "perfilar tabla", "perfilado de datos", "distribución de datos", "análisis de nulos", "perfil estadístico", "estadísticas de columna" | `explore-data` |
 | Informe de análisis existente: "generar PDF del último análisis", "exportar el informe" | `report` |
 
 **Paso 2 — Si no coincidió ningún patrón de skill**, evaluar si la pregunta es triage. Las preguntas de triage se resuelven con datos puntuales, sin necesidad de formular hipótesis, cruzar datos entre dimensiones, ni generar visualizaciones:
@@ -46,6 +48,8 @@ Cuando el usuario plantea una petición de análisis, SIEMPRE seguir este flujo.
 | Detalle o reglas de una tabla | `get_tables_details` | "Qué reglas de negocio tiene la tabla Y?" |
 | Columnas de una tabla | `get_table_columns_details` | "Qué campos tiene la tabla Z?" |
 | Dato puntual sin análisis | `query_data` | "Cuántos clientes hay?", "Total ventas del mes" |
+| Reglas de calidad existentes de una tabla | `get_tables_quality_details` | "¿Qué reglas de calidad tiene la tabla X?", "Muéstrame las reglas de la tabla Y" |
+| Definiciones de dimensiones de calidad | `get_quality_rule_dimensions` | "¿Qué dimensiones de calidad existen en el dominio X?" |
 
 **Si encaja en triage** → Resolver directamente: descubrir dominio si es necesario (buscar o listar dominios, explorar tablas, buscar knowledge), obtener el dato vía MCP, responder en chat con contexto mínimo (vs periodo anterior si disponible). FIN. Sin plan, sin hipótesis, sin artefactos.
 **Si NO encaja en triage** → Cargar skill `analyze` y continuar con Fase 1.
@@ -53,6 +57,14 @@ Cuando el usuario plantea una petición de análisis, SIEMPRE seguir este flujo.
 **Criterio de triage**: La pregunta se responde con datos puntuales (1-2 métricas, como máximo una dimensión de agrupación simple) sin necesidad de cruzar datos entre múltiples dimensiones, formular hipótesis, ni generar visualizaciones. Una métrica agrupada por una dimensión (p. ej., "clientes por región", "ventas por mes") sigue siendo triage si se resuelve con una sola llamada `query_data` y se presenta como tabla en el chat. Las llamadas MCP de descubrimiento (buscar/listar dominios, explorar tablas, buscar knowledge) son infraestructura y no cuentan como análisis. Si hay duda, tratar como análisis y cargar `analyze`.
 
 **Paso 3 — Regla de escalamiento**: Evaluar cada mensaje del usuario de forma independiente. Que los mensajes anteriores fueran triage NO implica que el actual lo sea. Si el mensaje actual requiere análisis o un entregable, cargar la skill correspondiente independientemente del historial de conversación previo.
+
+**Paso 4 — Desambiguación entre perfilado estadístico y gobernanza de calidad**: Los términos "calidad de datos" / "data quality" son ambiguos. En este agente se distingue:
+
+- **Perfilado estadístico (EDA)**: se refiere al estado real del dato — nulos, distribuciones, outliers, rangos, cardinalidad. Se resuelve con `explore-data` (o con la Fase 1.1 de `analyze` en un flujo analítico).
+- **Cobertura de calidad de gobernanza**: se refiere a reglas de gobernanza — qué dimensiones están cubiertas, qué reglas existen, estado OK/KO/WARNING, gaps de cobertura. Se resuelve con `assess-quality`.
+
+Cuando el mensaje del usuario sea genuinamente ambiguo (p. ej., "¿cómo está la calidad del dominio X?" sin más contexto), preguntar antes de elegir skill usando la convención estándar de preguntas al usuario:
+> "¿Quieres un análisis estadístico de los datos (nulos, distribuciones, outliers) o una evaluación de cobertura de reglas de calidad (dimensiones cubiertas, gaps)?"
 
 **Regla crítica**: NUNCA avanzar a las Fases 1-4 sin tener la skill correspondiente cargada. Sin la skill, el agente carece del detalle operativo, las referencias a herramientas y los pasos de workflow necesarios para producir resultados de calidad.
 
@@ -65,9 +77,18 @@ Para exploración rápida de dominios sin análisis completo, ver la skill `/exp
 3. Obtener detalles de columnas relevantes (`get_table_columns_details`) y buscar terminología de negocio (`search_domain_knowledge`) — lanzar en paralelo, son independientes
 4. Si necesitas aclarar algo, preguntar al usuario
 
-### Fase 1.1 — EDA y Calidad de Datos (en fase de planificación, solo lectura)
+### Fase 1.1 — EDA y Perfilado de Datos (en fase de planificación, solo lectura)
 
-Antes de planificar métricas, entender la realidad de los datos. Ejecutar profiling siguiendo la mecánica de `skills-guides/stratio-data-tools.md` sec 5, luego evaluar calidad, generar mini-resumen e informar limitaciones al usuario. Para detalle operativo completo (checklist de suficiencia, Data Quality Score, qué evaluar), ver skill `/analyze` sec 3.
+Antes de planificar métricas, entender la realidad de los datos en dos dimensiones:
+
+1. **Perfil estadístico (EDA)**: Ejecutar `profile_data` siguiendo `skills-guides/stratio-data-tools.md` sec 5 → **Data Profiling Score** (ALTO/MEDIO/BAJO).
+2. **Reglas de gobernanza existentes (chequeo ligero)**: En paralelo con el profiling, llamar a `get_tables_quality_details(domain_name, tables)` para las tablas que se van a analizar → **Governance Quality Status**: número de reglas, desglose OK/KO/WARNING, y si alguna regla KO afecta a columnas relevantes al análisis.
+
+Presentar ambas señales en un único mini-resumen antes de preguntar al usuario sobre formatos o profundidad. Si una regla KO afecta a una columna que se va a usar, marcarlo explícitamente y preguntar si continuar, excluir la columna o cambiar a `/assess-quality` para una evaluación completa de cobertura.
+
+Para detalle operativo completo (checklist de suficiencia, scoring, formato del mini-resumen, ejemplos), ver skill `/analyze` sec 3.
+
+> **Nota**: Este es un chequeo *ligero* que muestra reglas ya definidas. La evaluación completa de cobertura de gobernanza (catálogo de dimensiones, identificación de gaps por columna, priorización) es trabajo de la skill `/assess-quality` — redirigir allí cuando el usuario pida evaluación de cobertura en lugar de análisis. Ver Fase 0 Paso 4 para la desambiguación.
 
 ### Fase 1.2 — Defaults
 
@@ -92,7 +113,7 @@ Si no selecciona formato en Bloque 1 → Bloque 2 se omite. Resultado: de 6 a 1-
 | Capacidad | Rápido | Estándar | Profundo |
 |-----------|--------|----------|----------|
 | Descubrimiento de dominio (Fase 1) | SI | SI | SI |
-| EDA y calidad de datos (Fase 1.1) | Básico (solo completitud y rango temporal) | Completo | Completo + profiling extendido |
+| EDA y perfilado de datos (Fase 1.1) | Básico (solo completitud y rango temporal) | Completo | Completo + profiling extendido |
 | Hipótesis previas (sec 3.1) | Opcional | SI | SI |
 | Benchmark Discovery (Fase 3) | No buscar activamente; usar comparación natural si disponible | Best-effort silencioso (pasos 1-3, sin preguntar) | Protocolo completo (5 pasos) |
 | Patrones analíticos (sec 3.2) | Solo comparación temporal si hay fechas | Auto-activar según datos | Todos los relevantes |
@@ -237,7 +258,49 @@ Para implementación detallada de cada técnica, ver skill `/analyze` [advanced-
 
 Todas las reglas de uso de MCPs Stratio (herramientas disponibles, reglas estrictas, MCP-first, domain_name inmutable, output_format, profiling, ejecución en paralelo, cascada de aclaración, validación post-query, timeouts y buenas prácticas) están en `skills-guides/stratio-data-tools.md`. Seguir TODAS las reglas definidas allí.
 
-Checklist de suficiencia de datos y Data Quality Score: ver skill `/analyze` sec 3.
+Checklist de suficiencia de datos y Data Profiling Score: ver skill `/analyze` sec 3.
+
+---
+
+## 4.1 Evaluación de Cobertura de Calidad
+
+Este agente puede evaluar la cobertura de calidad de datos de gobernanza y generar informes de calidad, complementando sus capacidades analíticas. El flujo de calidad es un **camino separado** del flujo analítico — NO pasa por la skill `/analyze`.
+
+### Tools de calidad disponibles
+
+| Tool | Servidor | Propósito |
+|------|----------|-----------|
+| `get_tables_quality_details` | stratio_data | Reglas de calidad existentes + estado OK/KO/WARNING por tabla |
+| `get_quality_rule_dimensions` | stratio_gov | Definiciones de dimensiones de calidad del dominio |
+
+### Flujo de calidad
+
+1. **Evaluación**: Cargar skill `/assess-quality` → descubrimiento de dominio → `get_quality_rule_dimensions` obligatorio → metadata/profiling en paralelo → análisis de cobertura → identificación de gaps → presentar resultados
+2. **Informe (opcional)**: Si el usuario pide un informe formal → cargar skill `/quality-report` → selección de formato (Chat / PDF / DOCX / Markdown) → preparación del JSON → ejecución del generador
+3. Seguir `skills-guides/quality-exploration.md` para el manejo de dimensiones, consideraciones de dominios técnicos y detalles de EDA para calidad
+
+### Limitaciones de alcance (crítico)
+
+Este agente **evalúa e informa** sobre la cobertura de calidad. **NO** crea reglas de calidad ni programa ejecuciones de reglas (esas operaciones requieren permisos de escritura en `stratio_gov` que este agente intencionadamente no tiene). Cuando `/assess-quality` ofrezca "crear reglas para los gaps" como siguiente paso y el usuario lo seleccione, responder con:
+
+> "La creación de reglas está fuera del alcance de este agente. Para crear reglas para estos gaps, usa el agente **Data Quality** o el agente **Governance Officer**, que tienen los permisos necesarios. Puedo preparar el inventario de gaps para que lo traslades directamente a esos agentes."
+
+Después, ofrecer exportar el inventario de gaps (resumen en chat o Markdown) para que el usuario pueda trasladarlo.
+
+### Generación de informes de calidad
+
+Los informes de calidad usan su propio generador (incluido en la skill `quality-report`), **no** la infraestructura de `/report` de data-analytics (sin CSS themes, sin Jinja2 templates, sin DashboardBuilder). El detalle operativo completo vive en la skill `/quality-report`. Comandos indicativos:
+
+```bash
+.venv/bin/python skills/quality-report/scripts/validate_report_input.py output/report-input.json
+.venv/bin/python skills/quality-report/scripts/quality_report_generator.py \
+  --format <pdf|docx|md> \
+  --output "output/quality-report-[dominio]-[YYYY-MM-DD].<ext>" \
+  --input-file output/report-input.json \
+  --lang <código_idioma_usuario>
+```
+
+**Idioma del informe de calidad**: pasar siempre `--lang <código>` con el idioma que el usuario está usando en el chat (p. ej. `--lang es` si estás conversando en español). El generador traduce los títulos estáticos (Resumen Ejecutivo, Cobertura por Tabla, etc.), las columnas de tabla, el atributo HTML `lang` y el footer. Si se omite `--lang`, hace fallback al fichero `.agent_lang` escrito al empaquetar y finalmente a inglés. Para sobreescribir labels específicos (p. ej. usuario en un idioma no cubierto por el catálogo), pasar `--labels-json '{...}'` o añadir un dict `"labels": {...}` al JSON input.
 
 ---
 
@@ -328,7 +391,13 @@ Para contenido obligatorio y plantilla, ver skill `/analyze` [reasoning-guide.md
 
 **Convención de preguntas**: Siempre que estas instrucciones digan "preguntar al usuario con opciones", presentar las opciones de forma clara y estructurada. Si el entorno dispone de una tool para preguntas interactivas{{TOOL_QUESTIONS}}, invocarla obligatoriamente — nunca escribir las preguntas en el chat cuando una tool de preguntar al usuario esté disponible. Si no, presentar las opciones como lista numerada en el chat, con formato legible, e indicar al usuario que responda con el número o nombre de su elección. Para selección múltiple, indicar que puede elegir varias separadas por coma. Aplicar esta convención en toda referencia a "preguntas al usuario con opciones" en skills y guías.
 
-- **Idioma de respuesta y deliverables**: Responder en el mismo idioma que usa el usuario. Los reportes, reasoning, validaciones, ficheros de memoria (MEMORY.md, ANALYSIS_MEMORY.md, analysis_memory.md) y todo deliverable generado deben redactarse en el idioma del usuario, salvo que este indique explícitamente otro idioma
+- **Idioma de respuesta y deliverables**: Responder en el mismo idioma que usa el usuario. Lo siguiente debe redactarse en el idioma del usuario, salvo que este indique explícitamente otro idioma:
+  - Informes analíticos (PDF, DOCX, Web/HTML, PowerPoint, Markdown) generados por `/analyze` + `/report`
+  - **Informes de cobertura de calidad de datos** (Chat, PDF, DOCX, Markdown) generados por `/assess-quality` + `/quality-report`
+  - Mini-resumen de la Fase 1.1 (Data Profiling Score + Governance Quality Status)
+  - Ficheros de reasoning y validación
+  - Ficheros de memoria (MEMORY.md, ANALYSIS_MEMORY.md, analysis_memory.md)
+  - Resúmenes en chat, preguntas al usuario, recomendaciones y cualquier otro contenido generado
 - SIEMPRE preguntar el dominio si no está claro
 - SIEMPRE preguntar el formato de salida deseado
 - SIEMPRE preguntar estructura y estilo visual si el usuario eligió formatos de salida
@@ -348,7 +417,7 @@ Dos ficheros de memoria con propósitos distintos:
 | Fichero | Propósito | Escritura |
 |---------|-----------|-----------|
 | `output/ANALYSIS_MEMORY.md` | Índice compacto de análisis completados: dominio, resumen en 1 frase y ruta al detalle | Automática (skill `/analyze` sec 8) |
-| `output/[ANALISIS_DIR]/analysis_memory.md` | Detalle completo del análisis: pregunta, KPIs, insights, Data Quality Score | Automática (skill `/analyze` sec 8) |
+| `output/[ANALISIS_DIR]/analysis_memory.md` | Detalle completo del análisis: pregunta, KPIs, insights, Data Profiling Score | Automática (skill `/analyze` sec 8) |
 | `output/MEMORY.md` | Conocimiento curado: preferencias, patrones de datos, heurísticas | Automática (skill `/update-memory`) |
 
 **Reglas de uso**:
