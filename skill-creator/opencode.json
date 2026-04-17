@@ -6,21 +6,16 @@
     "glob": "allow",
     "grep": "allow",
     "list": "allow",
+    "lsp": "allow",
     "edit": "allow",
     "write": "allow",
+    "todoread": "allow",
+    "todowrite": "allow",
+    "task": "allow",
     "skill": "allow",
+    "webfetch": "allow",
     "bash": {
-      "mkdir *": "allow",
-      "ls *": "allow",
-      "zip *": "allow",
-      "tar *": "allow",
-      "cat *": "allow",
-      "pwd": "allow",
-      "cd *": "allow",
-      "find *": "allow",
-      "tree *": "allow",
-      "rm *": "allow",
-      "cp *": "allow"
+      "*": "allow"
     }
   }
 }

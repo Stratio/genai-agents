@@ -45,20 +45,7 @@
     "*get_quality_rule_dimensions": "deny",
     "*create_quality_rule_planification": "deny",
     "bash": {
-      "ls *": "allow",
-      "cat *": "allow",
-      "head *": "allow",
-      "tail *": "allow",
-      "find *": "allow",
-      "grep *": "allow",
-      "tree *": "allow",
-      "file *": "allow",
-      "test *": "allow",
-      "pwd": "allow",
-      "which *": "allow",
-      "git *": "allow",
-      "gh *": "allow",
-      "echo *": "allow"
+      "*": "allow"
     }
   }
 }
