@@ -14,6 +14,10 @@
     "task": "allow",
     "skill": "allow",
     "webfetch": "allow",
+    "websearch": "allow",
+    "codesearch": "allow",
+    "question": "allow",
+    "external_directory": "allow",
     "bash": {
       "*": "allow"
     }
