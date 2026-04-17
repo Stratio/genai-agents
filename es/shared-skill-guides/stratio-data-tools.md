@@ -19,6 +19,7 @@
 | 8 | `execute_sql` | Re-ejecutar SQL generado por el MCP (nunca SQL manual) |
 | 9 | `profile_data` | EDA estadístico rápido |
 | 10 | `propose_knowledge` | Proponer términos de negocio descubiertos |
+| — | `get_mcp_task_result(task_id)` | Obtener el resultado de una tool de larga duración que sigue ejecutándose en segundo plano. Se llama cuando cualquier tool devuelve solo un `task_id` (ver sección 8.1) |
 
 ## 3. Reglas Estrictas
 
@@ -138,6 +139,23 @@ Cada resultado de `query_data` debe pasar estas 7 validaciones antes de usarse e
 Si alguna validación falla: reformular la pregunta al MCP, informar al usuario de la limitación, y ajustar el plan si es necesario.
 
 ## 8. Timeouts y Reintentos
+
+### 8.1. Polling de Tareas de Larga Duración
+
+Cualquier tool MCP puede tardar más de lo esperado en completarse. Cuando esto ocurre, en lugar de la respuesta normal, la tool devuelve una respuesta que contiene únicamente un campo `task_id`. Esto no es un error — la operación sigue ejecutándose en segundo plano en el servidor y el resultado se puede obtener después.
+
+**Protocolo — seguir estrictamente cuando una respuesta contenga un `task_id`:**
+1. Esperar **5 segundos**
+2. Llamar a `get_mcp_task_result(task_id=<el task_id recibido>)`
+3. Inspeccionar el campo `status` en la respuesta:
+   - `"pending"` — la tarea sigue ejecutándose. Esperar **10 segundos** y llamar a `get_mcp_task_result` de nuevo. Repetir hasta que el estado cambie
+   - `"done"` — el campo `result` contiene la respuesta original de la tool. Parsear y usar como si la tool la hubiera devuelto directamente
+   - `"error"` — la tarea falló. Leer el campo `error` para detalles. Aplicar la estrategia de reintento de la sección 8.2 o informar al usuario
+   - `"not_found"` — el task_id ha expirado o es desconocido. Reintentar la llamada original a la tool desde cero
+
+Esto aplica a TODAS las tools MCP — `query_data`, `profile_data`, `generate_sql`, `execute_sql` y cualquier otra tool. Comprobar siempre si la respuesta contiene un campo `task_id` antes de procesar el resultado normalmente.
+
+### 8.2. Optimización de Queries
 
 Si el MCP tarda demasiado o devuelve error:
 1. **Simplificar la pregunta**: Reducir dimensiones o periodo temporal
