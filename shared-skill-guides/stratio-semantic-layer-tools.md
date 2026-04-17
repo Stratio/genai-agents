@@ -27,6 +27,7 @@
 | **Collections** | `create_data_collection(collection_name, description, table_metadata_paths?, path_metadata_paths?)` | Create a data collection (technical domain) with tables and paths. `collection_name` without spaces (use underscores). Automatically refreshes the technical view |
 | **Utility** | `list_technical_domain_concepts(domain)` | List existing business views with governance status (Draft/Pending Publish/Published), mappings, and semantic terms |
 | | `create_collection_description(domain, user_instructions?)` | Generate ONLY the domain/collection description (without touching tables) |
+| | `get_mcp_task_result(task_id)` | Retrieve the result of a long-running tool that continues executing in the background on the `gov` server (see section 9) |
 
 ### `sql` Server (domain exploration)
 
@@ -39,6 +40,7 @@
 | `get_table_columns_details(domain, table)` | Table columns: names, types, business descriptions |
 | `search_domain_knowledge(question, domain)` | Search knowledge in technical and semantic domains |
 | `search_data_dictionary(search_text, search_type?)` | Search tables and paths in the technical data dictionary. `search_type`: `'tables'`, `'paths'`, or `'both'` (default). Results sorted by relevance, with `metadata_path`, `name`, `subtype` (Table/Path), `alias`, `data_store`, `description` |
+| `get_mcp_task_result(task_id)` | Retrieve the result of a long-running tool that continues executing in the background on the `sql` server (see section 9) |
 
 ## 3. Strict Rules
 
@@ -126,3 +128,18 @@ Before any operation, verify it does not already exist:
 - **Read tools** (`list_*`, `get_*`, `search_*`): Launch in parallel whenever they are independent
 - **Creation**: Sequential within the same phase
 - **Between phases**: Strict mandatory sequence: technical terms -> ontology -> business views -> SQL mappings -> (optional publishing) -> semantic terms. Each phase depends on the artifacts from the previous one. Publishing can be done after completing mappings or at any later point
+
+## 9. Long-Running Task Polling
+
+Any MCP tool may take longer than expected to complete. When this happens, instead of the normal response, the tool returns a response containing only a `task_id` field. This is not an error — the operation continues running in the background on the server and the result can be retrieved later.
+
+**Protocol — follow strictly when a response contains a `task_id`:**
+1. Wait **5 seconds**
+2. Call `get_mcp_task_result(task_id=<the received task_id>)` — **use the same server** where the original tool was called (`gov` server tools → `gov` server's `get_mcp_task_result`, `sql` server tools → `sql` server's `get_mcp_task_result`)
+3. Inspect the `status` field in the response:
+   - `"pending"` — the task is still running. Wait **10 seconds** and call `get_mcp_task_result` again. Repeat until the status changes
+   - `"done"` — the `result` field contains the original tool response. Parse and use it as if the tool had returned it directly
+   - `"error"` — the task failed. Read the `error` field for details. Apply the error handling strategy from section 7 or inform the user
+   - `"not_found"` — the task_id expired or is unknown. Retry the original tool call from scratch
+
+This applies to ALL MCP tools on both servers. Always check the response for a `task_id` field before processing the result normally.

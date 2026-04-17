@@ -27,6 +27,7 @@
 | **Colecciones** | `create_data_collection(collection_name, description, table_metadata_paths?, path_metadata_paths?)` | Crear colección de datos (dominio técnico) con tablas y paths. `collection_name` sin espacios (usar underscores). Refresca vista técnica automáticamente |
 | **Utilidad** | `list_technical_domain_concepts(domain)` | Listar vistas de negocio existentes con estado de gobernanza (Draft/Pending Publish/Published), mappings y términos semánticos |
 | | `create_collection_description(domain, user_instructions?)` | Generar SOLO la descripción del dominio/colección (sin tocar tablas) |
+| | `get_mcp_task_result(task_id)` | Obtener el resultado de una tool de larga duración que sigue ejecutándose en segundo plano en el servidor `gov` (ver sección 9) |
 
 ### Servidor `sql` (exploración de dominios)
 
@@ -39,6 +40,7 @@
 | `get_table_columns_details(domain, table)` | Columnas de una tabla: nombres, tipos, descripciones de negocio |
 | `search_domain_knowledge(question, domain)` | Buscar conocimiento en dominios técnicos y semánticos |
 | `search_data_dictionary(search_text, search_type?)` | Buscar tablas y paths en el diccionario de datos técnico. `search_type`: `'tables'`, `'paths'` o `'both'` (defecto). Resultados ordenados por relevancia, con `metadata_path`, `name`, `subtype` (Table/Path), `alias`, `data_store`, `description` |
+| `get_mcp_task_result(task_id)` | Obtener el resultado de una tool de larga duración que sigue ejecutándose en segundo plano en el servidor `sql` (ver sección 9) |
 
 ## 3. Reglas Estrictas
 
@@ -126,3 +128,18 @@ Antes de cualquier operación, verificar que no exista ya:
 - **Tools de lectura** (`list_*`, `get_*`, `search_*`): Lanzar en paralelo siempre que sean independientes
 - **Creación**: Secuencial dentro de una misma fase
 - **Entre fases**: Secuencia estricta obligatoria: términos técnicos → ontología → vistas de negocio → mappings SQL → (publicación opcional) → términos semánticos. Cada fase depende de los artefactos de la anterior. La publicación puede hacerse tras completar mappings o en cualquier momento posterior
+
+## 9. Polling de Tareas de Larga Duración
+
+Cualquier tool MCP puede tardar más de lo esperado en completarse. Cuando esto ocurre, en lugar de la respuesta normal, la tool devuelve una respuesta que contiene únicamente un campo `task_id`. Esto no es un error — la operación sigue ejecutándose en segundo plano en el servidor y el resultado se puede obtener después.
+
+**Protocolo — seguir estrictamente cuando una respuesta contenga un `task_id`:**
+1. Esperar **5 segundos**
+2. Llamar a `get_mcp_task_result(task_id=<el task_id recibido>)` — **usar el mismo servidor** donde se llamó a la tool original (tools del servidor `gov` → `get_mcp_task_result` del servidor `gov`, tools del servidor `sql` → `get_mcp_task_result` del servidor `sql`)
+3. Inspeccionar el campo `status` en la respuesta:
+   - `"pending"` — la tarea sigue ejecutándose. Esperar **10 segundos** y llamar a `get_mcp_task_result` de nuevo. Repetir hasta que el estado cambie
+   - `"done"` — el campo `result` contiene la respuesta original de la tool. Parsear y usar como si la tool la hubiera devuelto directamente
+   - `"error"` — la tarea falló. Leer el campo `error` para detalles. Aplicar la estrategia de manejo de errores de la sección 7 o informar al usuario
+   - `"not_found"` — el task_id ha expirado o es desconocido. Reintentar la llamada original a la tool desde cero
+
+Esto aplica a TODAS las tools MCP de ambos servidores. Comprobar siempre si la respuesta contiene un campo `task_id` antes de procesar el resultado normalmente.
