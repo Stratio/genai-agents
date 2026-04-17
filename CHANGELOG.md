@@ -2,6 +2,7 @@
 
 ## 0.1.0 (upcoming)
 
+* [ROCK-NA] opencode: simplify bash permissions with wildcard catch-all ("*": "allow") across all agents; add missing tool permissions (lsp, todoread, todowrite, task, webfetch) to skill-creator and agent-creator
 * [ROCK-NA] shared-skill-guides: document long-running task polling protocol (get_mcp_task_result) in stratio-data-tools and stratio-semantic-layer-tools (EN + ES); when any MCP tool exceeds its timeout it returns a task_id and the agent polls for the result; includes server-routing note for gov vs sql servers
 * [ROCK-NA] data-analytics: fix memory files (MEMORY.md, ANALYSIS_MEMORY.md, analysis_memory.md) written in English when user language is Spanish; add explicit language rules at three levels: AGENTS.md sec 10 (language rule), AGENTS.md sec 11 (memory usage rules) and skills update-memory/analyze sec 8; EN+ES parity maintained
 * [ROCK-NA] data-analytics: relocate persistent-memory seeds from `output-templates/` to `templates/memory/` and remove the inline templates inside `update-memory` and `analyze` skills. The writing skills now copy from `templates/memory/MEMORY.md` / `ANALYSIS_MEMORY.md` into `output/` on first write — pack scripts no longer pre-create `output/` and the rsync `--exclude=output-templates/` is gone. `bin/check-translations.sh`, AGENTS.md, README.md (root + agent + es overlay) updated to reflect the new layout
