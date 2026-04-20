@@ -211,6 +211,7 @@ def build(output_path, story):
         title="Annual Report 2026",
         author="Acme Analytics",
     )
+    doc._pdfVersion = (1, 4)  # reportlab usa 1.3 por defecto; subimos para que alpha/ExtGState renderice
     frame = Frame(
         doc.leftMargin, doc.bottomMargin,
         doc.width, doc.height,
