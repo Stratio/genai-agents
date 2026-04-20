@@ -2,6 +2,7 @@
 
 ## 0.1.0 (upcoming)
 
+* [ROCK-NA] pdf-reader and pdf-writer: add as shared skills (SKILL.md, REFERENCE.md, FORMS.md, 14-family OFL font bundle, quick_extract.py) with EN+ES translations; integrate into data-analytics, data-quality and governance-officer agents (manifests, triage rules with PDF precedence + multi-skill detection, expanded keywords, Output Formats table); fix routing conflict caused by bare "PDF" keyword in Deliverable triage row; update CLAUDE.md, root README and all agent README/USER_README (EN+ES)
 * [ROCK-NA] opencode: simplify bash permissions with wildcard catch-all ("*": "allow") across all agents; add missing tool permissions (lsp, todoread, todowrite, task, webfetch) to skill-creator and agent-creator
 * [ROCK-NA] shared-skill-guides: document long-running task polling protocol (get_mcp_task_result) in stratio-data-tools and stratio-semantic-layer-tools (EN + ES); when any MCP tool exceeds its timeout it returns a task_id and the agent polls for the result; includes server-routing note for gov vs sql servers
 * [ROCK-NA] data-analytics: fix memory files (MEMORY.md, ANALYSIS_MEMORY.md, analysis_memory.md) written in English when user language is Spanish; add explicit language rules at three levels: AGENTS.md sec 10 (language rule), AGENTS.md sec 11 (memory usage rules) and skills update-memory/analyze sec 8; EN+ES parity maintained
