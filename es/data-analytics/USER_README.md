@@ -64,6 +64,8 @@ El agente mantiene memoria entre sesiones, recordando tus preferencias de análi
 | `/quality-report` | Generar un informe formal de cobertura de calidad (Chat / PDF / DOCX / Markdown) |
 | `/update-memory` | Actualizar la memoria persistente con preferencias y patrones aprendidos |
 | `/propose-knowledge` | Proponer términos de negocio descubiertos al diccionario de gobernanza |
+| `/pdf-reader` | Leer y extraer contenido de archivos PDF (texto, tablas, imágenes, formularios, adjuntos) |
+| `/pdf-writer` | Crear documentos PDF personalizados, combinar/dividir/rotar PDFs, añadir marcas de agua, cifrar, rellenar formularios |
 
 ## Conexiones necesarias
 

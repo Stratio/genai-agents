@@ -11,3 +11,5 @@ assess-quality
 create-quality-rules
 create-quality-planification
 quality-report
+pdf-reader
+pdf-writer

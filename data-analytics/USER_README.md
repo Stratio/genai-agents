@@ -64,6 +64,8 @@ The agent maintains memory between sessions, remembering your analysis preferenc
 | `/quality-report` | Generate a formal quality coverage report (Chat / PDF / DOCX / Markdown) |
 | `/update-memory` | Update persistent memory with preferences and learned patterns |
 | `/propose-knowledge` | Propose discovered business terms to the governance dictionary |
+| `/pdf-reader` | Read and extract content from PDF files (text, tables, images, forms, attachments) |
+| `/pdf-writer` | Create custom PDF documents, merge/split/rotate PDFs, add watermarks, encrypt, fill forms |
 
 ## Required connections
 

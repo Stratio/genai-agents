@@ -37,6 +37,8 @@ La configuración de MCPs está en `.mcp.json` (Claude Code / claude.ai) y en `o
 | Creación de reglas | `/create-quality-rules` | Diseñar y crear reglas de calidad para cubrir gaps, con aprobación humana obligatoria |
 | Planificación de calidad | `/create-quality-planification` | Crear planificaciones de ejecución automática de reglas de calidad por dominio/colección |
 | Informe de calidad | `/quality-report` | Generar informe formal de cobertura en chat, PDF, DOCX o Markdown |
+| Lectura de PDF | `/pdf-reader` | Extraer texto, tablas y datos de archivos PDF proporcionados por el usuario |
+| Escritura de PDF | `/pdf-writer` | Crear PDFs personalizados, combinar/dividir, marca de agua, cifrar, rellenar formularios |
 
 ## Scripts de empaquetado
 

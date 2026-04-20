@@ -64,6 +64,8 @@ The agent works with Stratio Data Governance via MCP tools, orchestrating the fu
 | `/create-quality-rules` | Design and create quality rules with mandatory human approval |
 | `/create-quality-planification` | Create automatic execution schedules for quality rules |
 | `/quality-report` | Generate a formal coverage report in PDF, DOCX, or Markdown |
+| `/pdf-reader` | Read and extract content from PDF files (text, tables, images, forms) |
+| `/pdf-writer` | Create custom PDF documents, merge/split PDFs, add watermarks, encrypt, fill forms |
 
 ## Required connections
 

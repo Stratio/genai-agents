@@ -54,6 +54,8 @@ The agent evaluates quality across 11 dimensions (completeness, uniqueness, vali
 | `/create-quality-rules` | Design and create quality rules to cover gaps, with mandatory human approval |
 | `/create-quality-planification` | Create automatic execution schedules for quality rules |
 | `/quality-report` | Generate a formal coverage report in PDF, DOCX, or Markdown |
+| `/pdf-reader` | Read and extract content from PDF files (text, tables, images, forms) |
+| `/pdf-writer` | Create custom PDF documents, merge/split PDFs, add watermarks, encrypt, fill forms |
 
 ## Required connections
 

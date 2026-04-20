@@ -28,16 +28,22 @@ Cuando el usuario plantea una petición de análisis, SIEMPRE seguir este flujo.
 
 **Paso 1 — Comprobar activación de skill primero.** Si la petición del usuario coincide con alguno de estos patrones, cargar la skill INMEDIATAMENTE — no evaluar triage:
 
+**Regla de precedencia PDF**: Cuando la petición menciona "PDF" y podría coincidir con múltiples filas, aplicar esta prioridad: (1) **leer/extraer** contenido de un PDF existente → `pdf-reader`; (2) **manipular** un PDF existente (combinar, dividir, rotar, marca de agua, cifrar, rellenar formulario, aplanar) o **crear** un documento independiente (factura, certificado, carta, newsletter) → `pdf-writer`; (3) **exportar** un análisis previo a PDF → `report`; (4) **informe de calidad** en formato PDF → `quality-report`; (5) solo si ninguno de los anteriores aplica → `analyze`.
+
+**Detección multi-skill**: Si la petición involucra múltiples acciones que abarcan diferentes skills (ej: "lee este PDF y analiza los datos", "combina estos PDFs y añade marca de agua"), identificar las skills necesarias y ejecutarlas en orden lógico: skills de entrada primero (`pdf-reader`) → skills de proceso (`analyze`, `assess-quality`) → skills de salida (`report`, `pdf-writer`, `quality-report`). Cargar la primera skill de la secuencia; al completar, reevaluar para la siguiente.
+
 | Patrón de petición | Skill a cargar |
 |-------------------|----------------|
 | Análisis: "analizar", "análisis", "estudiar", "evaluar", "investigar", "calcular", "computar", "comparar", "segmentar" + contexto de datos/dominio/negocio | `analyze` |
-| Entregable: "informe", "dashboard", "PDF", "presentación", "documento", "resumen" | `analyze` |
+| Entregable: "informe", "dashboard", "presentación", "resumen" + contexto analítico/de datos (solicitud de un nuevo entregable analítico, NO lectura o manipulación de PDFs existentes) | `analyze` |
 | Visualización: "resumen gráfico", "gráfica de", "mostrar visualmente", "resumen de KPIs", "resumen visual" | `analyze` |
 | Múltiples KPIs con dimensiones: "KPIs por área", "métricas por segmento", "indicadores principales" | `analyze` |
 | Evaluación de calidad: "calidad de datos", "cobertura de calidad", "evaluación de calidad", "reglas de calidad", "dimensiones de calidad", "gaps de cobertura", "evaluar calidad", "estado de calidad" + contexto dominio/tabla | `assess-quality` |
 | Informe de calidad: "informe de calidad", "informe de cobertura de calidad", "PDF de calidad", "DOCX de calidad", "documento de calidad" | `assess-quality` → `quality-report` |
 | Exploración de dominio o perfilado: "explorar dominio", "qué datos hay disponibles", "descubrir dominio", "perfilar datos", "perfilar tabla", "perfilado de datos", "distribución de datos", "análisis de nulos", "perfil estadístico", "estadísticas de columna" | `explore-data` |
-| Informe de análisis existente: "generar PDF del último análisis", "exportar el informe" | `report` |
+| Informe de análisis existente: "generar PDF del último análisis", "exportar el informe", "exportar a PDF" | `report` |
+| Leer/extraer contenido de PDF: "lee este PDF", "extrae el texto de este PDF", "qué dice este PDF", "extrae las tablas de este PDF", "OCR de este documento", "dame el contenido de este PDF", "parsea este PDF" | `pdf-reader` |
+| Creación y manipulación de PDF: "combinar PDFs", "dividir PDF", "rotar páginas", "añadir marca de agua", "cifrar PDF", "rellenar formulario PDF", "aplanar formulario", "crear factura/certificado/carta/newsletter/recibo", "añadir portada", "adjuntar archivo al PDF", "OCR a PDF buscable", "generar PDFs en lote" — cualquier tarea PDF no cubierta por `/report` o `/quality-report` | `pdf-writer` |
 
 **Paso 2 — Si no coincidió ningún patrón de skill**, evaluar si la pregunta es triage. Las preguntas de triage se resuelven con datos puntuales, sin necesidad de formular hipótesis, cruzar datos entre dimensiones, ni generar visualizaciones:
 
@@ -352,6 +358,8 @@ Para instrucciones detalladas de generación por formato, ver la skill `/report`
 | **Documento (PDF + DOCX)** | `tools/pdf_generator.py` + `tools/docx_generator.py` | Informes profesionales. Genera report.pdf y report.docx |
 | **Web** | `tools/dashboard_builder.py` (`DashboardBuilder`) — HTML autónomo con filtros globales, KPI cards dinámicos, tablas ordenables, gráficas Plotly interactivas, datos JSON embebidos y CSS del estilo elegido | Dashboards interactivos, informes con filtros, compartir por navegador |
 | **PowerPoint** | `tools/pptx_layout.py` (helpers de layout) + `tools/css_builder.py` (colores) | Presentaciones ejecutivas, reuniones con stakeholders |
+| **Lectura de PDF** | Skill `pdf-reader` — extracción diagnóstico-primero con cadena de fallback (pdfplumber → pdfminer → pypdf → pdftotext), OCR para escaneos, lectura de campos de formulario, extracción de imágenes | Leer PDFs proporcionados por el usuario, extraer datos de fuentes PDF, ingerir contenido PDF para análisis |
+| **PDF ad-hoc** | Skill `pdf-writer` — generación basada en reportlab con tipografía personalizada, workflow design-first. También maneja combinar, dividir, rotar, marca de agua, cifrar, rellenar formularios | Documentos fuera del pipeline de informes estándar: facturas, certificados, cartas, newsletters. También post-procesamiento de PDFs existentes |
 
 **Formato automático:** Además de los formatos seleccionados, siempre se genera `output/[ANALISIS_DIR]/report.md` (Markdown con tablas y bloques mermaid) como documentación interna del análisis.
 
