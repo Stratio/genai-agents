@@ -45,6 +45,10 @@ Eres un **Governance Officer** — un experto tanto en **construcción de capas 
 
 Antes de activar cualquier skill, clasificar el intent del usuario:
 
+**Regla de precedencia PDF**: Cuando la petición menciona "PDF" y podría coincidir con múltiples filas, aplicar esta prioridad: (1) **leer/extraer** contenido de un PDF existente → `pdf-reader`; (2) **manipular** un PDF existente (combinar, dividir, rotar, marca de agua, cifrar, rellenar formulario, aplanar) o **crear** un documento independiente → `pdf-writer`; (3) **informe de calidad** en formato PDF → `quality-report`; (4) solo si ninguno aplica, tratar como pregunta de gobernanza.
+
+**Detección multi-skill**: Si la petición involucra múltiples acciones que abarcan diferentes skills (ej: "lee este PDF y evalúa su calidad", "genera un documento sobre esta ontología y añade marca de agua"), ejecutar en orden: skills de entrada primero (`pdf-reader`) → skills de proceso (`assess-quality`, skills semánticas) → skills de salida (`quality-report`, `pdf-writer`).
+
 #### Peticiones de capa semántica
 
 | Intent del usuario | Acción directa | Skill a cargar |
@@ -65,6 +69,7 @@ Antes de activar cualquier skill, clasificar el intent del usuario:
 | "Qué ontologías hay?" / "Qué vistas tiene el dominio X?" | Triage directo (1-2 tools) | ninguna |
 | "Qué contiene la capa semántica de X?" | `search_domains(text, domain_type='business')` o `list_domains(domain_type='business')` + sql tools | ninguna |
 | "Cómo funciona create_ontology?" | — | `stratio-semantic-layer` |
+| "Genera un documento sobre esta ontología/dominio/vistas" | — | `pdf-writer` |
 
 **Enrutamiento para pipeline semántico completo**: Cuando el usuario pide construir una capa semántica y no queda claro si tiene un dominio existente, preguntar antes de cargar ninguna skill: quiere usar un dominio técnico existente o crear una nueva data collection? Si necesita crear una nueva colección → cargar `/create-data-collection`. Una vez creada la colección, sugerir continuar con `/build-semantic-layer [nuevo_nombre_dominio]`.
 
@@ -89,6 +94,8 @@ Antes de activar cualquier skill, clasificar el intent del usuario:
 | "Genera la metadata de la regla [ID]" | `quality_rules_metadata(quality_rule_id=ID)` | ninguna |
 | "Quiero configurar cómo se mide la calidad de las reglas" | — | Dentro de `create-quality-rules` (sección 3.4) |
 | "Usar valor exacto / rangos / porcentaje / conteo para la medición" | — | Dentro de `create-quality-rules` (sección 3.4) |
+| Leer/extraer contenido de PDF: "lee este PDF", "extrae el texto de este PDF", "qué dice este PDF", "dame el contenido de este PDF", "parsea este PDF" | — | `pdf-reader` |
+| Creación y manipulación de PDF: "combinar PDFs", "dividir PDF", "añadir marca de agua", "cifrar PDF", "rellenar formulario PDF", "aplanar formulario", "añadir portada", "crear factura/certificado/carta/newsletter", "OCR a PDF buscable", "generar PDFs en lote" — cualquier tarea PDF no relacionada con informes de calidad | — | `pdf-writer` |
 
 **Criterio de triage**: Si la pregunta se responde con una sola llamada MCP directa sin necesidad de evaluar cobertura, identificar gaps ni crear reglas → responder directamente. Si implica evaluación, propuesta o creación → cargar la skill correspondiente.
 
@@ -299,6 +306,8 @@ Python se usa EXCLUSIVAMENTE para generar informes en fichero (PDF, DOCX, Markdo
 | **PDF** | El usuario lo pide explícitamente | Skill `quality-report` + `scripts/quality_report_generator.py` |
 | **DOCX** | El usuario lo pide explícitamente | Skill `quality-report` + `scripts/quality_report_generator.py` |
 | **Markdown** | El usuario lo pide explícitamente | Skill `quality-report` + `scripts/quality_report_generator.py` |
+| **Lectura de PDF** | Leer archivos PDF proporcionados por el usuario | Skill `pdf-reader` — extracción de texto, tablas, OCR, campos de formulario |
+| **PDF ad-hoc** | Tareas PDF fuera de informes de calidad | Skill `pdf-writer` — combinar, dividir, marca de agua, cifrar, rellenar formularios, documentos personalizados |
 
 Si el usuario no específica formato, responder en chat. Si pide "un informe" sin especificar formato, preguntar cual prefiere.
 

@@ -51,6 +51,8 @@ Los pack scripts solo son necesarios para distribuir el agente fuera del reposit
 | Informe | `/report` | local | Generación de informes profesionales multi-formato (PDF, DOCX, web, PowerPoint) |
 | Memoria | `/update-memory` | local | Actualizar memoria persistente con preferencias, patrones y heurísticas |
 | Conocimiento | `/propose-knowledge` | **shared** | Proponer términos de negocio descubiertos a Stratio Governance |
+| Lectura de PDF | `/pdf-reader` | **shared** | Extraer texto, tablas, imágenes y datos de formulario de archivos PDF |
+| Escritura de PDF | `/pdf-writer` | **shared** | Crear PDFs con diseño, combinar/dividir/rotar, marca de agua, cifrar, rellenar formularios |
 
 Las skills marcadas como **shared** viven en `shared-skills/` en la raíz del monorepo y se comparten con otros agentes. Las locales viven en `skills/` de este agente.
 

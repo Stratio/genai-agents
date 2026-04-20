@@ -133,6 +133,8 @@ If an agent persists memory between sessions, its seed files live under `templat
 | `create-quality-rules` | Design and create quality rules to cover gaps, with mandatory human approval | data-quality, governance-officer |
 | `create-quality-planification` | Create automatic execution schedules for quality rule folders | data-quality, governance-officer |
 | `quality-report` | Generate a formal quality coverage report in PDF, DOCX or Markdown (in `data-analytics-light` only the Chat format is used) | data-analytics, data-analytics-light, data-quality, governance-officer |
+| `pdf-reader` | Inspect, extract text, tables, images, form values and attachments from PDF files with diagnose-first strategy | data-analytics, data-quality, governance-officer |
+| `pdf-writer` | Create designed PDFs, transform existing ones (merge, split, rotate, watermark, encrypt) and fill forms. Design-first workflow with custom typography | data-analytics, data-quality, governance-officer |
 
 Shared guides (technical documentation that skills reference) live in `shared-skill-guides/`:
 

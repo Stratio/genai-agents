@@ -37,6 +37,8 @@ MCP configuration is in `.mcp.json` (Claude Code / claude.ai) and in `opencode.j
 | Rule creation | `/create-quality-rules` | Design and create quality rules to cover gaps, with mandatory human approval |
 | Quality scheduling | `/create-quality-planification` | Create automatic execution schedules for quality rules by domain/collection |
 | Quality report | `/quality-report` | Generate a formal coverage report in chat, PDF, DOCX, or Markdown |
+| PDF reading | `/pdf-reader` | Extract text, tables and data from user-provided PDF files |
+| PDF writing | `/pdf-writer` | Create custom PDFs, merge/split, watermark, encrypt, fill forms |
 
 ## Packaging scripts
 
