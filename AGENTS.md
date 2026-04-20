@@ -25,9 +25,12 @@ genai-agents/
     quality-report/
     pdf-reader/
     pdf-writer/
+    web-craft/
+    canvas-craft/
     skill-creator/
   shared-skill-guides/     # Shared guides (not skills; copied to skills-guides/ in the output)
     stratio-data-tools.md
+    visual-craftsmanship.md
     stratio-semantic-layer-tools.md
     quality-exploration.md
   es/                      # Spanish translations (overlay directory, mirrors main tree)
@@ -111,6 +114,16 @@ Usage: `bash pack_claude_code.sh --agent <agent-path> [--name <kebab-case-name>]
 All pack scripts accept `--lang <code>` to generate output in a specific language. Without `--lang` (or with `--lang en`), English is used. With `--lang es`, the script resolves Spanish content from the `es/` overlay and generates the output in `dist/es/...` for traceability.
 
 ## Shared skills
+
+### Visual-craftsmanship family
+
+Three shared skills cover the visual output of the monorepo. They share the guide `shared-skill-guides/visual-craftsmanship.md` but do not reference each other in runtime. The disambiguation table in that guide is the only place where the three names live together.
+
+- `web-craft` — interactive frontend (HTML/CSS/JS, React, Vue). Components, pages, dashboards.
+- `canvas-craft` — single-page static artifacts (PDF/PNG). Posters, covers, certificates, marketing one-pagers, infographics. Ships a small set of OFL display fonts.
+- `pdf-writer` — multi-page typographic documents or prose-dominated single pages. Analytical reports, invoices, contracts, zines.
+
+Agents that produce visual output declare the family members they need in `<agent>/shared-skills` and add `visual-craftsmanship.md` to `<agent>/shared-guides`. `data-analytics` and `governance-officer` declare all three; `data-quality` declares `web-craft` only (its reports are multi-page tabular, already served by `pdf-writer`/`quality-report`).
 
 ### Creating a shared skill
 

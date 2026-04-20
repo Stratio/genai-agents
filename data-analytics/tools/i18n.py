@@ -52,6 +52,10 @@ CATALOG: dict[str, dict[str, str]] = {
         # Default titles used when the caller does not provide one
         "report.default_title": "Report",
 
+        # PDF paged media footer — used by styles/pdf/base.css via CSS variables
+        "pdf.page_label": "Page",
+        "pdf.of_label": "of",
+
         # HTML lang attribute (used by dashboard_builder and md_to_report)
         "html.lang_attr": "en",
     },
@@ -73,6 +77,9 @@ CATALOG: dict[str, dict[str, str]] = {
         "dashboard.footer_default": "Dashboard generado automáticamente",
 
         "report.default_title": "Informe",
+
+        "pdf.page_label": "Página",
+        "pdf.of_label": "de",
 
         "html.lang_attr": "es",
     },

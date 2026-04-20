@@ -1,0 +1,42 @@
+# Canonical list of non-runtime files that must never appear in a packaged
+# artifact. Consumed by the pack scripts (rsync --exclude-from=... and
+# equivalent find sweeps). Comments and empty lines are ignored.
+
+# Python unit tests — convention across this monorepo
+test_*.py
+*_test.py
+tests/
+conftest.py
+
+# Python caches and build artifacts
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.tox/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+build/
+
+# Coverage
+.coverage
+.coverage.*
+htmlcov/
+
+# Editor and OS junk
+.DS_Store
+Thumbs.db
+*.bak
+*~
+*.swp
+.idea/
+.vscode/
+
+# Node / JS
+node_modules/
+
+# Temporary directories
+_tmp/
+.tmp/
+*.tmp

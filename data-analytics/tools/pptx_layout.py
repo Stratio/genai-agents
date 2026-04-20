@@ -30,7 +30,7 @@ from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
 from pptx.enum.text import PP_ALIGN
 
-from css_builder import get_palette
+from css_builder import get_palette, aesthetic_to_override_tokens
 
 # ---------------------------------------------------------------------------
 # A. Constants — slide safe area (all values in inches)
@@ -154,11 +154,16 @@ def fit_content(top: float, desired_height: float, has_footer: bool = False,
     return min(desired_height, available)
 
 
-def create_presentation(style: str = "corporate") -> tuple:
+def create_presentation(style: str = "corporate",
+                        aesthetic_direction: dict | None = None) -> tuple:
     """Create a new Presentation with standard dimensions and return (prs, palette).
 
     Args:
         style: Visual style name for palette lookup.
+        aesthetic_direction: Optional dict with ``palette_override`` /
+            ``font_pair`` keys to apply a deliberate visual direction on
+            top of the base style. See ``DashboardBuilder.__init__`` for
+            the schema.
 
     Returns:
         Tuple of (Presentation, palette_dict).
@@ -166,7 +171,8 @@ def create_presentation(style: str = "corporate") -> tuple:
     prs = Presentation()
     prs.slide_width = Inches(SLIDE_WIDTH)
     prs.slide_height = Inches(SLIDE_HEIGHT)
-    palette = get_palette(style)
+    override_tokens = aesthetic_to_override_tokens(aesthetic_direction)
+    palette = get_palette(style, override_tokens=override_tokens or None)
     return prs, palette
 
 

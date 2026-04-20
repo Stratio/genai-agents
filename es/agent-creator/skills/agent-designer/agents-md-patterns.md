@@ -266,7 +266,7 @@ porque el usuario necesita contexto para tomar decisiones informadas.
 **Formato** (texto exacto — colocar en la subsección de Estilo de comunicación de Descripción y Rol):
 
 ```markdown
-**Idioma**: Responder SIEMPRE en el mismo idioma que el usuario usa para formular su pregunta
+**Idioma**: Responder SIEMPRE en el mismo idioma que el usuario usa para formular su pregunta. Esto aplica a **todo** texto que emita el agente: respuestas en chat, preguntas, resúmenes, explicaciones, borradores de plan, actualizaciones de progreso, Y cualquier traza de thinking / reasoning / planificación que el runtime muestre al usuario (p. ej. el canal "thinking" de OpenCode, notas de estado internas). Ninguna traza debe salir en un idioma distinto al de la conversación. Si tu runtime expone razonamiento intermedio, escríbelo en el idioma del usuario desde el primer token
 ```
 
 Versión expandida (para la sección de Interacción con el Usuario):

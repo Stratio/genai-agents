@@ -41,7 +41,7 @@ from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.oxml.ns import qn, nsdecls
 from docx.oxml import parse_xml
 
-from css_builder import get_palette
+from css_builder import get_palette, aesthetic_to_override_tokens
 from i18n import get_labels
 
 # A4 margins in cm
@@ -70,10 +70,13 @@ def _strip_html(html: str) -> str:
 class DOCXGenerator:
     """Generate professional DOCX reports with templates or markdown."""
 
-    def __init__(self, style: str = "corporate", author: str | None = None):
-        self._palette = get_palette(style)
+    def __init__(self, style: str = "corporate", author: str | None = None,
+                 aesthetic_direction: dict | None = None):
+        override_tokens = aesthetic_to_override_tokens(aesthetic_direction)
+        self._palette = get_palette(style, override_tokens=override_tokens or None)
         self._style_name = style
         self._author = author
+        self._aesthetic = aesthetic_direction or {}
         self._doc: Document | None = None
 
     # ------------------------------------------------------------------
@@ -222,6 +225,15 @@ class DOCXGenerator:
         """Configure document styles using palette colors and fonts."""
         p = self._palette
         font_main = p.get("font_main", "Arial")
+        # When ``aesthetic_direction`` supplied a font_pair, the first
+        # element is the display face — use it for headings so the document
+        # honours the design-first decision.
+        fp = self._aesthetic.get("font_pair")
+        if (fp and isinstance(fp, list) and len(fp) == 2
+                and isinstance(fp[0], str) and fp[0]):
+            heading_font = fp[0]
+        else:
+            heading_font = font_main
         primary = p.get("primary", (26, 54, 93))
         primary_light = p.get("primary_light", (70, 130, 180))
         text_color = p.get("text", (33, 33, 33))
@@ -244,7 +256,7 @@ class DOCXGenerator:
             style_name = f"Heading {level}"
             if style_name in doc.styles:
                 style = doc.styles[style_name]
-                style.font.name = font_main
+                style.font.name = heading_font
                 style.font.size = Pt(size)
                 style.font.bold = True
                 style.font.color.rgb = RGBColor(*color)

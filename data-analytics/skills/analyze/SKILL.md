@@ -83,7 +83,7 @@ Before asking the user about formats and planning metrics, understand the realit
 
 ## 4. Classification and User Questions
 
-> **Note**: All questions with options in this section follow the question convention (sec "User Interaction" of AGENTS.md).
+> **Note**: All questions with options in this section follow the question convention.
 
 ### 4.0 Triage vs Analysis
 
@@ -313,7 +313,7 @@ If during execution a finding is detected that exceeds the scope of the current 
 
 **Action:**
 1. Pause normal execution
-2. Inform the user following the question convention (sec "User Interaction" of AGENTS.md): "I detected [description of finding]. This requires additional investigation. Would you like me to dig deeper?" with options:
+2. Inform the user following the question convention: "I detected [description of finding]. This requires additional investigation. Would you like me to dig deeper?" with options:
    - "Yes, dig deeper" → Escalate complexity, activate additional phases (full EDA, hypotheses about the finding, drill-down visualizations)
    - "No, just document it" → Record finding in chat and in reasoning as "area for future investigation"
 3. The upgrade does NOT restart the analysis — it extends the current analysis with additional phases
@@ -383,7 +383,7 @@ For data storytelling principles and mapping findings → narrative, read `skill
 
 ## 8. Analysis Memory (Confirmation required)
 
-After presenting the final report, ask the user (following the question convention (sec "User Interaction" of AGENTS.md)):
+After presenting the final report, ask the user (following the question convention):
 
 "Would you like to save this analysis to persistent memory? The analysis registry (`ANALYSIS_MEMORY.md`) and the knowledge memory (`MEMORY.md`) will be updated."
 - **Yes** → Continue with steps 8.1, 8.2, and 8.3
@@ -440,7 +440,7 @@ After writing to ANALYSIS_MEMORY.md, invoke the skill `/update-memory` to update
 
 ## 9. Knowledge Proposal (Optional)
 
-After presenting the final report, ask the user following the question convention (sec "User Interaction" of AGENTS.md):
+After presenting the final report, ask the user following the question convention:
 - **Yes**: Analyze conversation and propose knowledge to the domain
 - **No**: Finish without proposing
 

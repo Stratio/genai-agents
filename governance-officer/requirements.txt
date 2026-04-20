@@ -1,13 +1,30 @@
-# Generacion de informes de calidad
-weasyprint>=62.0
-python-docx>=1.1
-
-# Templating HTML para PDF
-Jinja2>=3.1
-
-# Markdown
+# === Report generation (HTML -> PDF, DOCX, Markdown, templating) ===
+jinja2>=3.1
 markdown>=3.6
+weasyprint>=65
+python-docx>=1.1
+beautifulsoup4>=4.12
 
-# Testing
+# === PDF reading (shared-skill pdf-reader): diagnose then extract ===
+pypdf>=5.0
+pdfplumber>=0.11
+pdfminer.six>=20250000
+pypdfium2>=5.0
+# pdf2image requires the system Poppler package (poppler-utils on Debian/Ubuntu, poppler on Homebrew)
+pdf2image>=1.17
+# pytesseract requires the Tesseract binary (tesseract-ocr + language packs)
+pytesseract>=0.3.10
+# ocrmypdf requires Ghostscript + Tesseract + Poppler system-side
+ocrmypdf>=17.0
+
+# === PDF writing (shared-skills pdf-writer and canvas-craft) ===
+reportlab>=4.4
+svglib>=1.5
+pillow>=11.0
+
+# === Testing ===
 pytest>=8.0
 pytest-mock>=3.14
+
+# Note: shared-skill web-craft emits HTML/CSS/JS only; it adds no Python runtime deps.
+# Note: pyhanko (digital signature inspection) is a niche, install-on-demand dep for pdf-reader.

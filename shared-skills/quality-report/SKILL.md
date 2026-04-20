@@ -117,14 +117,17 @@ All three file formats (PDF, DOCX, MD) use the same Python generator and the sam
 bash setup_env.sh
 ```
 
-#### Step 2 — Prepare report-input.json
+#### Step 2 — Determine the report folder
 
-Get the absolute path of the output directory:
-```bash
-mkdir -p output/ && readlink -f output/
-```
+Mirror the folder convention used by analysis reports so every quality report lives in its own self-contained directory alongside its input JSON and generated artefacts.
 
-Write `<absolute-path>/report-input.json` with the exact schema that follows. **Field names are literal — the generator reads them with `data.get("field")` and returns `-` if they don't exist.**
+1. Build the folder name: `YYYY-MM-DD_HHMM_quality_<slug>` where `<slug>` is the domain or scope normalised (lowercase ASCII, accents stripped, spaces replaced by underscores, max 30 chars). Example: `2026-04-20_1530_quality_semantic_analiticabanca`.
+2. Create the directory: `mkdir -p "output/<folder>/"` and then `readlink -f "output/<folder>/"` to get the absolute path. All files produced by this skill (input JSON, PDF, DOCX, Markdown) go inside this folder — never directly under `output/`.
+3. If the user already has an active analysis folder in this session and explicitly asks to store the quality report alongside the analysis, reuse that folder instead of creating a new one.
+
+#### Step 3 — Prepare report-input.json
+
+Write `<absolute-path>/<folder>/report-input.json` with the exact schema that follows. **Field names are literal — the generator reads them with `data.get("field")` and returns `-` if they don't exist.**
 
 **Common errors to avoid (produce blank report):**
 - NOT `report_title` → `title`
@@ -205,32 +208,56 @@ Write `<absolute-path>/report-input.json` with the exact schema that follows. **
 - `tables[].gaps[].priority` ← `CRITICO` for PK/FK without rule, `ALTO` for key columns, `MEDIO` for the rest, `BAJO` for optional dimensions
 - `rules_created[].status` ← use `"created"` for rules newly created this session without validation; `OK|KO|WARNING|SIN_DATOS` if SQL validation was executed
 
-#### Step 3 — Determine output path
+#### Step 4 — Determine the artefact filenames
 
-- If the user indicated a name: use that (with the correct extension)
+All artefacts live **inside** the folder from Step 2. The filenames below are the canonical names — do not put anything directly under `output/`.
+
+- If the user indicated a name: use that (with the correct extension), still inside the folder.
 - If not:
-  - PDF: `output/quality-report-[domain]-[YYYY-MM-DD].pdf`
-  - DOCX: `output/quality-report-[domain]-[YYYY-MM-DD].docx`
-  - MD: `output/quality-report-[domain]-[YYYY-MM-DD].md`
+  - PDF: `output/<folder>/quality-report.pdf`
+  - DOCX: `output/<folder>/quality-report.docx`
+  - MD: `output/<folder>/quality-report.md`
 
-#### Step 4 — Validate the JSON (MANDATORY before running the generator)
+#### Step 5 — Validate the JSON (MANDATORY before running the generator)
 
 ```bash
-.venv/bin/python scripts/validate_report_input.py output/report-input.json
+.venv/bin/python scripts/validate_report_input.py output/<folder>/report-input.json
 ```
 
-- If it ends with `[OK]`: continue to step 5.
+- If it ends with `[OK]`: continue to step 6.
 - If it ends with `[VALIDATION FAILED]`: read each error, correct the `report-input.json`, and re-run validation until it passes without errors. **Do not run the generator with an invalid JSON** — it will produce a blank report without warning.
 
-#### Step 5 — Run the generator
+#### Step 6 — Run the generator
 
 ```bash
 .venv/bin/python scripts/quality_report_generator.py \
   --format <pdf|docx|md> \
-  --output "output/quality-report-[domain]-[date].<ext>" \
-  --input-file output/report-input.json \
+  --output "output/<folder>/quality-report.<ext>" \
+  --input-file "output/<folder>/report-input.json" \
   --lang <user_language_code>
 ```
+
+**Optional — visual tone** (affects PDF and DOCX only; the Markdown format is language-neutral and ignores this flag):
+
+```bash
+.venv/bin/python scripts/quality_report_generator.py \
+  --format pdf \
+  --output "output/<folder>/quality-report.pdf" \
+  --input-file "output/<folder>/report-input.json" \
+  --lang <user_language_code> \
+  --tone <default|technical-minimal|executive-editorial|forensic>
+```
+
+Tones change the accent palette and type pairing of the generated document:
+
+- `default` — preserves the legacy palette (Arial body, navy accent). Used when `--tone` is omitted.
+- `technical-minimal` — IBM Plex Serif body with IBM Plex Sans display and IBM Plex Mono for tabular data; cold blue accent. Good for engineering audiences or incident reviews.
+- `executive-editorial` — Crimson Pro body with Instrument Serif display; warm oxblood accent on cream. Good for board-level summaries or quarterly reports.
+- `forensic` — IBM Plex Mono body with Plex Serif display; deep red accent on bone. Good for audit-style documentation where every figure is meant to be scrutinised.
+
+See `skills-guides/visual-craftsmanship.md` for the shared aesthetic principles (palette roles, type pairing, anti-patterns, craftsmanship checklist).
+
+**Font availability note**: the non-default tones reference families (IBM Plex Serif/Sans/Mono, Crimson Pro, Instrument Serif, JetBrains Mono). They must be installed system-wide or delivered by the environment; if WeasyPrint cannot resolve a family it falls back silently and the visible tone will not change. When in doubt, keep `--tone default` (Arial) or install the family via the agent's environment setup.
 
 **Language of the static labels** (section headings, table column names, footer, HTML `lang` attribute). Resolution order (highest wins):
 
@@ -248,8 +275,8 @@ If the user requests PDF and DOCX in the same session, the `report-input.json` c
 ## 5. Post-Generation Verification
 
 For file formats (PDF, DOCX, MD on disk):
-1. Verify the file exists: `ls -lh output/[filename]`
-2. Inform the user: filename, full path, size
+1. Verify the file exists: `ls -lh output/<folder>/`
+2. Inform the user: folder path, filenames, size of each artefact
 3. If generation failed: show the error and offer a chat alternative
 
 ## 6. Final Message to the User

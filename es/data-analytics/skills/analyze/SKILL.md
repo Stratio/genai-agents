@@ -83,7 +83,7 @@ Antes de preguntar al usuario sobre formatos y planificar métricas, entender la
 
 ## 4. Clasificación y Preguntas al Usuario
 
-> **Nota**: Todas las preguntas con opciones de esta sección siguen la convención de preguntas (sec "Interacción con el Usuario" de AGENTS.md).
+> **Nota**: Todas las preguntas con opciones de esta sección siguen la convención de preguntas.
 
 ### 4.0 Triage vs Análisis
 
@@ -313,7 +313,7 @@ Si durante la ejecución se detecta un hallazgo que excede el alcance del nivel 
 
 **Acción:**
 1. Pausar la ejecución normal
-2. Informar al usuario siguiendo la convención de preguntas (sec "Interacción con el Usuario" de AGENTS.md): "He detectado [descripción del hallazgo]. Esto requiere investigación adicional. ¿Quieres que profundice?" con opciones:
+2. Informar al usuario siguiendo la convención de preguntas: "He detectado [descripción del hallazgo]. Esto requiere investigación adicional. ¿Quieres que profundice?" con opciones:
    - "Sí, profundizar" → Escalar complejidad, activar fases adicionales (EDA completo, hipótesis sobre el hallazgo, visualizaciones de drill-down)
    - "No, solo documentar" → Registrar hallazgo en el chat y en reasoning como "área de investigación futura"
 3. El upgrade NO reinicia el análisis — extiende el análisis actual con fases adicionales
@@ -383,7 +383,7 @@ Para principios de data storytelling y mapping hallazgos → narrativa, leer `sk
 
 ## 8. Memoria de Análisis (Confirmación requerida)
 
-Tras presentar el reporte final, preguntar al usuario (siguiendo la convención de preguntas (sec "Interacción con el Usuario" de AGENTS.md)):
+Tras presentar el reporte final, preguntar al usuario (siguiendo la convención de preguntas):
 
 "¿Deseas guardar este análisis en la memoria persistente? Se actualizarán el registro de análisis (`ANALYSIS_MEMORY.md`) y la memoria de conocimiento (`MEMORY.md`)."
 - **Si** → Continuar con los pasos 8.1, 8.2 y 8.3
@@ -440,7 +440,7 @@ Tras escribir en ANALYSIS_MEMORY.md, invocar la skill `/update-memory` para actu
 
 ## 9. Propuesta de Conocimiento (Opcional)
 
-Tras presentar el reporte final, preguntar al usuario siguiendo la convención de preguntas (sec "Interacción con el Usuario" de AGENTS.md):
+Tras presentar el reporte final, preguntar al usuario siguiendo la convención de preguntas:
 - **Si**: Analizar conversación y proponer conocimiento al dominio
 - **No**: Finalizar sin proponer
 

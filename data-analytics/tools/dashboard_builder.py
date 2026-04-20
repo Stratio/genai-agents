@@ -49,7 +49,7 @@ import json
 import re
 from pathlib import Path
 
-from css_builder import build_css
+from css_builder import build_css, aesthetic_to_override_tokens
 from i18n import get_labels
 
 
@@ -95,6 +95,7 @@ class DashboardBuilder:
         footer: str = "",
         lang: str | None = None,
         labels: dict[str, str] | None = None,
+        aesthetic_direction: dict | None = None,
     ) -> None:
         """Create a dashboard builder.
 
@@ -102,6 +103,28 @@ class DashboardBuilder:
         `.agent_lang` then English). `labels` is an override dict whose
         keys take precedence. The HTML `lang` attribute uses the resolved
         language unless overridden via `labels["html.lang_attr"]`.
+
+        `aesthetic_direction` is an optional dict that applies a
+        deliberate visual direction on top of the base style. Accepted
+        keys:
+
+        - ``tone``: string label ("editorial-serious", "technical-minimal",
+          "forensic", etc.) — purely informational today; used by skills
+          to trace the decision.
+        - ``palette_override``: dict of CSS token overrides, for example
+          ``{"--primary": "#0a2540", "--accent": "#d9472b"}``. Keys must
+          match the tokens of the chosen style.
+        - ``font_pair``: two-item list ``[display, body]``. ``body`` is
+          applied as ``--font-main`` override; ``display`` is emitted as
+          a ``font-family`` rule on ``h1, h2, .kpi-value``.
+        - ``motion_budget``: one of ``"none"``, ``"minimal"``,
+          ``"expressive"``. Injects CSS-only animations with prefixed
+          keyframes and ``prefers-reduced-motion`` guard.
+        - ``background_style``: one of ``"solid"``, ``"gradient-mesh"``,
+          ``"noise"``, ``"grain"``. Injects background rules on ``body``.
+
+        When ``aesthetic_direction`` is ``None`` (the default), behaviour
+        is identical to before: no overrides, no extra CSS injected.
         """
         self.title = title
         self.style = style
@@ -114,6 +137,10 @@ class DashboardBuilder:
         self._labels = get_labels(lang=lang, overrides=labels)
         # HTML `lang` attribute: taken from the resolved catalogue
         self.lang = self._labels["html.lang_attr"]
+        # Defensive copy — we stash ``_display_font`` internally; sharing the
+        # caller's dict would leak that private key across generators and
+        # re-serialisation of the aesthetic would fail schema validation.
+        self._aesthetic = dict(aesthetic_direction) if aesthetic_direction else {}
 
         self._filters: list[dict] = []
         self._kpis: list[dict] = []
@@ -318,9 +345,142 @@ class DashboardBuilder:
     # Build
     # ------------------------------------------------------------------
 
+    # ------------------------------------------------------------------
+    # Aesthetic direction
+    # ------------------------------------------------------------------
+
+    def _compute_override_tokens(self) -> dict:
+        """Translate aesthetic_direction into CSS custom property overrides.
+
+        Stashes the display font from ``font_pair`` on ``self._aesthetic``
+        so ``_render_aesthetic_css`` can emit a direct selector rule (no
+        theme declares ``--font-display`` today).
+        """
+        override = aesthetic_to_override_tokens(self._aesthetic)
+        font_pair = self._aesthetic.get("font_pair")
+        if (font_pair and len(font_pair) == 2
+                and isinstance(font_pair[0], str) and font_pair[0]):
+            self._aesthetic["_display_font"] = font_pair[0]
+        return override
+
+    def _render_aesthetic_css(self) -> str:
+        """Produce a CSS block with motion, background and display-font rules.
+
+        The block is appended to the CSS after tokens/theme/target layers,
+        so it wins via cascade without modifying the base stylesheets.
+        Motion uses prefixed ``dashboard-*`` keyframes to avoid collision
+        with any host page, and honours ``prefers-reduced-motion``.
+        """
+        parts: list[str] = []
+
+        display_font = self._aesthetic.get("_display_font")
+        if display_font:
+            parts.append(
+                "/* === aesthetic: display font === */\n"
+                f"h1, h2, .kpi-value {{ font-family: '{display_font}'; }}"
+            )
+
+        background_style = self._aesthetic.get("background_style")
+        if background_style and background_style != "solid":
+            parts.append(self._background_css(background_style))
+
+        motion_budget = self._aesthetic.get("motion_budget")
+        if motion_budget and motion_budget != "none":
+            parts.append(self._motion_css(motion_budget))
+
+        return "\n".join(p for p in parts if p)
+
+    @staticmethod
+    def _background_css(style: str) -> str:
+        """Background rules injected on body, no external assets."""
+        if style == "gradient-mesh":
+            return (
+                "/* === aesthetic: background gradient-mesh === */\n"
+                "body {\n"
+                "  background:\n"
+                "    radial-gradient(at 20% 10%, rgba(10, 37, 64, 0.08), transparent 60%),\n"
+                "    radial-gradient(at 80% 20%, rgba(217, 71, 43, 0.06), transparent 55%),\n"
+                "    radial-gradient(at 50% 90%, rgba(26, 54, 93, 0.05), transparent 60%);\n"
+                "  background-attachment: fixed;\n"
+                "}"
+            )
+        if style == "noise":
+            # body > *:not(.nav) preserves position:sticky on the nav set by
+            # the base themes; forcing position:relative on it would break
+            # stickiness.
+            return (
+                "/* === aesthetic: background noise === */\n"
+                "body::before {\n"
+                "  content: '';\n"
+                "  position: fixed; inset: 0; pointer-events: none; z-index: 0;\n"
+                "  opacity: 0.04;\n"
+                "  background-image: url(\"data:image/svg+xml;charset=utf-8,"
+                "<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'>"
+                "<filter id='n'><feTurbulence baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter>"
+                "<rect width='200' height='200' filter='url(%23n)'/></svg>\");\n"
+                "}\n"
+                "body > *:not(.nav) { position: relative; z-index: 1; }"
+            )
+        if style == "grain":
+            return (
+                "/* === aesthetic: background grain === */\n"
+                "body {\n"
+                "  background-image: radial-gradient(circle at 1px 1px, rgba(0,0,0,0.04) 1px, transparent 1px);\n"
+                "  background-size: 3px 3px;\n"
+                "}"
+            )
+        return ""
+
+    @staticmethod
+    def _motion_css(budget: str) -> str:
+        """Motion rules with prefixed keyframes and reduced-motion guard."""
+        common_guard = (
+            "@media (prefers-reduced-motion: reduce) {\n"
+            "  * { animation: none !important; transition: none !important; }\n"
+            "}"
+        )
+        if budget == "minimal":
+            return (
+                "/* === aesthetic: motion minimal === */\n"
+                "@keyframes dashboard-fade-in {\n"
+                "  from { opacity: 0; } to { opacity: 1; }\n"
+                "}\n"
+                ".kpi-card, section[id] {\n"
+                "  animation: dashboard-fade-in 320ms ease-out both;\n"
+                "}\n"
+                + common_guard
+            )
+        if budget == "expressive":
+            return (
+                "/* === aesthetic: motion expressive === */\n"
+                "@keyframes dashboard-rise {\n"
+                "  from { opacity: 0; transform: translateY(8px); }\n"
+                "  to { opacity: 1; transform: translateY(0); }\n"
+                "}\n"
+                ".kpi-card { animation: dashboard-rise 380ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }\n"
+                ".kpi-card:nth-child(1) { animation-delay: 80ms; }\n"
+                ".kpi-card:nth-child(2) { animation-delay: 160ms; }\n"
+                ".kpi-card:nth-child(3) { animation-delay: 240ms; }\n"
+                ".kpi-card:nth-child(4) { animation-delay: 320ms; }\n"
+                ".kpi-card:nth-child(5) { animation-delay: 400ms; }\n"
+                ".kpi-card:nth-child(n+6) { animation-delay: 480ms; }\n"
+                "section[id] { animation: dashboard-rise 420ms ease-out both; animation-delay: 120ms; }\n"
+                ".kpi-card { transition: transform 180ms ease-out, box-shadow 180ms ease-out; }\n"
+                ".kpi-card:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08); }\n"
+                + common_guard
+            )
+        return ""
+
     def build(self) -> str:
         """Build the complete HTML dashboard string."""
-        css, style_name = build_css(self.style, "web")
+        override_tokens = self._compute_override_tokens()
+        css, style_name = build_css(
+            self.style, "web",
+            override_tokens=override_tokens or None,
+        )
+        aesthetic_css = self._render_aesthetic_css()
+        if aesthetic_css:
+            css = css + "\n" + aesthetic_css
         data_json = json.dumps(self._data, default=str, ensure_ascii=False)
 
         # Build sections HTML

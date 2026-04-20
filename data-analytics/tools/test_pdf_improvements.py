@@ -323,3 +323,88 @@ class TestPDFGenerator:
         html = gen.get_html()
         assert "callout-warning" in html
         assert "Watch out!" in html
+
+
+# ---------------------------------------------------------------------------
+# Markdown tolerance in render_scaffold
+# ---------------------------------------------------------------------------
+
+class TestMarkdownCoercion:
+    """LLM-generated scaffolds frequently pass markdown where HTML is expected.
+    The generator must convert it so readers never see raw ``###`` or ``**``."""
+
+    def test_looks_like_markdown_detects_heading(self):
+        from pdf_generator import _looks_like_markdown
+        assert _looks_like_markdown("### Heading\n- item")
+
+    def test_looks_like_markdown_detects_bullet_list(self):
+        from pdf_generator import _looks_like_markdown
+        assert _looks_like_markdown("- first\n- second")
+
+    def test_looks_like_markdown_leaves_html_alone(self):
+        from pdf_generator import _looks_like_markdown
+        assert not _looks_like_markdown("<p>texto</p>")
+        assert not _looks_like_markdown("<h2>Título</h2><p>cuerpo</p>")
+
+    def test_looks_like_markdown_ignores_plain_text(self):
+        from pdf_generator import _looks_like_markdown
+        assert not _looks_like_markdown("Un párrafo normal sin formato.")
+
+    def test_coerce_converts_markdown_to_html(self):
+        from pdf_generator import _coerce_to_html
+        html = _coerce_to_html("### Hallazgos\n- **Liderazgo:** texto\n- **Foco:** otro")
+        assert "<h3>Hallazgos</h3>" in html
+        assert "<ul>" in html and "<li>" in html
+        assert "<strong>Liderazgo:</strong>" in html
+
+    def test_coerce_preserves_already_html(self):
+        from pdf_generator import _coerce_to_html
+        original = "<h2>Title</h2><p>body</p>"
+        assert _coerce_to_html(original) == original
+
+    def test_coerce_preserves_empty(self):
+        from pdf_generator import _coerce_to_html
+        assert _coerce_to_html("") == ""
+
+    def test_render_scaffold_converts_markdown_in_analysis(self):
+        from pdf_generator import PDFGenerator
+        gen = PDFGenerator(style="corporate", author="X")
+        gen.render_scaffold(
+            title="MD Test",
+            analysis="### Findings\n- **Bold thing**\n- item two",
+        )
+        html = gen.get_html()
+        assert "<h3>Findings</h3>" in html
+        assert "<strong>Bold thing</strong>" in html
+        # The raw markdown tokens should NOT leak into the output.
+        assert "### Findings" not in html
+        assert "**Bold thing**" not in html
+
+
+class TestFooterI18n:
+    """The paged-media footer must reflect the resolved language."""
+
+    def test_english_footer(self):
+        from pdf_generator import _footer_override_css
+        from i18n import get_labels
+        css = _footer_override_css(get_labels(lang="en"))
+        assert '"Page "' in css
+        assert '" of "' in css
+        assert "Pagina" not in css
+
+    def test_spanish_footer_has_tilde(self):
+        from pdf_generator import _footer_override_css
+        from i18n import get_labels
+        css = _footer_override_css(get_labels(lang="es"))
+        assert '"Página "' in css
+        assert '" de "' in css
+        # "Pagina" without the accent is the legacy bug we removed.
+        assert '"Pagina "' not in css
+
+    def test_scaffold_injects_localised_footer(self):
+        from pdf_generator import PDFGenerator
+        gen = PDFGenerator(style="corporate", author="X")
+        gen.render_scaffold(title="t", lang="es")
+        html = gen.get_html()
+        assert "Página" in html
+        assert "Pagina " not in html

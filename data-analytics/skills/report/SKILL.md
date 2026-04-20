@@ -12,18 +12,34 @@ Guide for generating professional reports in multiple formats from data and anal
 
 Parse argument: $ARGUMENTS
 
-If the format is not specified, ask the user the following 3 questions in a single interaction, following the question convention (sec "User Interaction" of AGENTS.md) (adaptive to the environment: interactive if available, numbered list in chat if not). Options are literal — do not invent, omit, or substitute:
+If the format is not specified, ask the user the following 3 questions in a single interaction, following the question convention.
 
-| # | Question | Options (literal) | Selection |
-|---|----------|-------------------|-----------|
-| 1 | In what formats do you want the deliverables? | **Document** (PDF + DOCX) · **Web** (Interactive HTML with Plotly) · **PowerPoint** (.pptx) | Multiple |
-| 2 | What structure do you prefer for the report? | **Base scaffold** (Recommended): executive summary → methodology → data → analysis → conclusions · **On the fly**: free structure based on context | Single |
-| 3 | What visual style do you prefer? | **Corporate** (`corporate.css`, Recommended): clean, professional · **Formal/academic** (`academic.css`): serif, wide margins, paper style · **Modern/creative** (`modern.css`): colors, gradients, visually appealing | Single |
+**Rendering rules — MANDATORY**:
+- Present **every** option literally, one option per line. Never collapse, summarise, omit or reword options, even when an option looks "advanced" or secondary. The user must see all of them to make an informed choice.
+- Follow the question convention for the delivery mechanism — the agent uses an interactive question tool when the environment provides one, or a numbered list in chat otherwise. Do not hard-code the tool name; let the convention resolve it.
+- Each question is its own numbered block in chat renderings.
+- Keep the **labels** (Corporate, Academic, Modern, Design-first, Base scaffold, On the fly, Document, Web, PowerPoint) verbatim — they map to internal routing. Translate only the surrounding prose if the user is in another language.
 
-- Question 1 ALWAYS allows multiple selection (the user may want several formats)
-- If no format is selected, only a text response is given in chat
-- `output/[ANALYSIS_DIR]/report.md` is always generated automatically as internal documentation (no option needed)
-- If the format comes from the argument ($ARGUMENTS), skip directly to asking about structure and style (questions 2 and 3)
+### Question 1 — In what formats do you want the deliverables? (multiple selection)
+- **Document** — PDF + DOCX
+- **Web** — Interactive HTML with Plotly
+- **PowerPoint** — `.pptx`
+
+### Question 2 — What structure do you prefer for the report? (single selection)
+- **Base scaffold** *(Recommended)* — executive summary → methodology → data → analysis → conclusions
+- **On the fly** — free structure based on context
+
+### Question 3 — What visual style do you prefer? (single selection)
+- **Corporate** *(Recommended)* — `corporate.css`, clean and professional
+- **Academic** — `academic.css`, serif typography, wide margins, paper style
+- **Modern** — `modern.css`, colour and gradients, visually appealing
+- **Design-first** — commit to a deliberate aesthetic direction (tone, type pairing, palette, motion budget) derived from the report's subject matter. Recommended when the deliverable is a high-visibility piece — executive summaries for a board, launch briefs, narrative reports where the visual voice is part of the message. See §4.1 for the workflow.
+
+Notes:
+- Question 1 ALWAYS allows multiple selection (the user may want several formats).
+- If no format is selected, only a text response is given in chat.
+- `output/[ANALYSIS_DIR]/report.md` is always generated automatically as internal documentation (no option needed).
+- If the format comes from the argument (`$ARGUMENTS`), skip directly to questions 2 and 3.
 
 ## 2. Verify Available Data
 
@@ -73,6 +89,35 @@ from css_builder import build_css, get_palette
 css, name = build_css("corporate", "pdf")    # Assembled CSS
 palette = get_palette("corporate")           # {"primary": (0x1a,0x36,0x5d), "font_main": "Inter", ...}
 ```
+
+## 4.1 Design-first workflow (when question 3 selects "Design-first")
+
+When the user picks "Design-first" in question 3, run this five-step checklist **before** invoking any generator. Persist the result as `output/[ANALYSIS_DIR]/aesthetic.json` and pass it as `aesthetic_direction` to `DashboardBuilder`, `PDFGenerator`, `DOCXGenerator`, `create_presentation`, `chart_layout.get_chart_colors`, and `md_to_report.py --aesthetic`. This keeps the HTML, PDF, DOCX and PPTX visually coherent.
+
+1. **Classify the artifact** — `executive-dashboard` / `technical-report` / `editorial-brief` / `forensic-audit`. The class governs the next five decisions.
+2. **Choose a tone (pick one, commit)** — `editorial-serious` / `technical-minimal` / `executive-editorial` / `forensic-audit` / `maximalist-analytical` / `brutalist-data`. Half-and-half is not an option.
+3. **Type pairing** — one display face + one body face from the "Type pairings by artifact class" table in `skills-guides/dashboard-aesthetics.md`. Write the result as `font_pair: [display, body]`.
+4. **Palette** — derive a dominant accent from the data subject (finance → deep blue or oxblood; operations → cool steel or forest; audit → deep red on bone; consumer → a saturated primary). Fill a `palette_override` dict with CSS-level keys (`"--primary"`, `"--accent"`, `"--text-primary"`, …) that match the tokens of the chosen base style. *Note:* in `academic`, the token for the "primary" role is `--heading-color`; overriding `--primary` there is inert — consult the "Caveat — `academic`" note in `skills-guides/dashboard-aesthetics.md`.
+5. **Motion budget** (dashboards only) — `none` / `minimal` / `expressive`. No JS, CSS-only, `@keyframes` prefixed with `dashboard-`, `prefers-reduced-motion` honoured.
+6. **Background style** (optional) — `solid` / `gradient-mesh` / `noise` / `grain`. Decide whether the artifact earns atmosphere beyond a flat surface.
+
+Write the resulting `aesthetic.json` with this schema (extra keys are rejected by `md_to_report.py --aesthetic`):
+
+```json
+{
+  "tone": "editorial-serious",
+  "palette_override": {"--primary": "#0a2540", "--accent": "#d9472b"},
+  "font_pair": ["Fraunces", "Inter"],
+  "motion_budget": "expressive",
+  "background_style": "gradient-mesh"
+}
+```
+
+**Order of operations**: create `output/[ANALYSIS_DIR]/` before writing `aesthetic.json`. If the file already exists from a previous run and the user now picks a different style, overwrite it and add a line to `reasoning.md`:
+
+> *Aesthetic direction (content of `aesthetic.json`)*: tone=…, palette_override=…, font_pair=…, motion_budget=…, background_style=….
+
+See `skills-guides/dashboard-aesthetics.md` for interactive-specific guidance (motion, hover, backgrounds, type-at-screen) and `skills-guides/visual-craftsmanship.md` for the transversal principles (anti-patterns, palette roles, craftsmanship checklist).
 
 ## 5. Generation by Format
 

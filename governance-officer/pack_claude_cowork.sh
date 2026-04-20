@@ -242,6 +242,9 @@ else
 EOF
 fi
 
+# --- Non-runtime sweep before zipping ---
+bash "$MONOREPO_ROOT/bin/sweep-nonruntime.sh" "$PLUGIN_BUILD"
+
 # --- Generate plugin ZIP ---
 PLUGIN_ZIP_NAME="${COWORK_NAME}.zip"
 echo "Generating plugin ZIP..."
