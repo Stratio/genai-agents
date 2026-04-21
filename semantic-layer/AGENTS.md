@@ -36,7 +36,7 @@ Before activating any skill, evaluate what the user needs:
 | Request type | Skill/Action | Example |
 |---|---|---|
 | Full pipeline | `/build-semantic-layer` | "Build the semantic layer for domain X" |
-| Only technical terms | `/generate-technical-terms` | "Generate technical descriptions for domain Y" |
+| Only technical terms | `/create-technical-terms` | "Create technical descriptions for domain Y" |
 | Create/extend ontology | `/create-ontology` | "Create an ontology for X" |
 | Create business views | `/create-business-views` | "Create the business views" |
 | Update SQL mappings | `/create-sql-mappings` | "Update the SQL mappings for the views" |

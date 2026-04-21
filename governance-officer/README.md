@@ -43,7 +43,7 @@ MCP configuration is in `.mcp.json` (Claude Code / claude.ai) and in `opencode.j
 | Skill | Command | Description |
 |-------|---------|-------------|
 | Full pipeline | `/build-semantic-layer` | Build complete semantic layer: terms, ontology, views, mappings, semantic terms |
-| Technical terms | `/generate-technical-terms` | Generate technical descriptions for tables and columns |
+| Technical terms | `/create-technical-terms` | Create technical descriptions for tables and columns |
 | Ontology | `/create-ontology` | Create, extend, or delete ontology classes |
 | Business views | `/create-business-views` | Create, regenerate, or delete business views |
 | SQL mappings | `/create-sql-mappings` | Create or update SQL mappings for views |
@@ -52,7 +52,7 @@ MCP configuration is in `.mcp.json` (Claude Code / claude.ai) and in `opencode.j
 | Data collection | `/create-data-collection` | Search and create new technical domains |
 | Quality assessment | `/assess-quality` | Assess quality coverage by domain or table |
 | Rule creation | `/create-quality-rules` | Design and create quality rules with human approval |
-| Quality scheduling | `/create-quality-planification` | Create automatic execution schedules |
+| Quality scheduling | `/create-quality-schedule` | Create automatic execution schedules |
 | Quality report | `/quality-report` | Generate formal coverage report (PDF, DOCX, Markdown) |
 | PDF reading | `/pdf-reader` | Extract text, tables and data from user-provided PDF files |
 | PDF writing | `/pdf-writer` | Create custom PDFs, merge/split, watermark, encrypt, fill forms |

@@ -42,8 +42,8 @@ Before activating any skill, classify the user's intent:
 | "What quality dimensions exist?" | `get_quality_rule_dimensions` | none |
 | "What rules does table X have?" | `get_tables_quality_details` | none |
 | "What tables are in domain Y?" | `list_domain_tables` | none |
-| "Schedule/plan the execution of [domain] rules" | — | `create-quality-planification` |
-| "Create a quality schedule for [domain]" | — | `create-quality-planification` |
+| "Schedule/plan the execution of [domain] rules" | — | `create-quality-schedule` |
+| "Create a quality schedule for [domain]" | — | `create-quality-schedule` |
 | "Generate/update the metadata for [domain] rules" | `quality_rules_metadata` | none |
 | "Regenerate/force metadata for all [domain] rules" | `quality_rules_metadata(domain_name=X, quality_rules_metadata_force_update=True)` | none |
 | "Generate the metadata for rule [ID]" | `quality_rules_metadata(quality_rule_id=ID)` | none |
@@ -60,7 +60,7 @@ Before activating any skill, classify the user's intent:
 - "Create a rule that does Y" / "I want a rule that verifies Z" → specific rule described by the user → does NOT require `assess-quality` (direct Flow B of `create-quality-rules`)
 
 **Key distinction for planning vs per-rule scheduling:**
-- "Schedule the execution of X's rules" / "Create a plan for X" → folder-level planning (collection/domain), executes ALL rules in the selected folders → `create-quality-planification`
+- "Schedule the execution of X's rules" / "Create a plan for X" → folder-level planning (collection/domain), executes ALL rules in the selected folders → `create-quality-schedule`
 - "Create rules with daily execution" / scheduling during rule creation → individual per-rule scheduling, configured within the rule creation flow → managed within `create-quality-rules` (section 4)
 
 **Domain type**: If the user does not specify whether the domain is semantic or technical, ask the user with options before listing domains:
@@ -213,7 +213,7 @@ In addition to the tools listed in `skills-guides/stratio-data-tools.md`, this a
     - "regenerate/force all metadata" / "reprocess even if they already have metadata" → `quality_rules_metadata(domain_name=X, quality_rules_metadata_force_update=True)`
     - "generate the metadata for rule [ID]" → `quality_rules_metadata(domain_name=X, quality_rule_id=ID)` — if the user does not know the numeric ID, obtain it first with `get_tables_quality_details`
   - Does not require human approval (not destructive, only enriches metadata). If it fails, continue without blocking the workflow
-- **`create_quality_rule_planification`**: creates a schedule that automatically executes all quality rules in one or more folders. Requires `name`, `description`, `collection_names` (list of domains/collections), `cron_expression` (Quartz cron 6-7 fields; never very low frequencies like `* * * * * *`). Optional: `table_names` (table filter within collections), `cron_timezone` (default `Europe/Madrid`), `cron_start_datetime` (ISO 8601, first execution), `execution_size` (default `XS`, options: XS/S/M/L/XL). See skill `create-quality-planification` for the full workflow
+- **`create_quality_rule_planification`**: creates a schedule that automatically executes all quality rules in one or more folders. Requires `name`, `description`, `collection_names` (list of domains/collections), `cron_expression` (Quartz cron 6-7 fields; never very low frequencies like `* * * * * *`). Optional: `table_names` (table filter within collections), `cron_timezone` (default `Europe/Madrid`), `cron_start_datetime` (ISO 8601, first execution), `execution_size` (default `XS`, options: XS/S/M/L/XL). See skill `create-quality-schedule` for the full workflow
 - If an MCP call fails or returns an error: inform the user, do not retry more than 2 times with the same formulation
 
 ---

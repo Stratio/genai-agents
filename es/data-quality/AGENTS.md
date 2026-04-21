@@ -42,8 +42,8 @@ Antes de activar cualquier skill, clasificar el intent del usuario:
 | "Qué dimensiones de calidad existen?" | `get_quality_rule_dimensions` | ninguna |
 | "Qué reglas tiene la tabla X?" | `get_tables_quality_details` | ninguna |
 | "Qué tablas hay en el dominio Y?" | `list_domain_tables` | ninguna |
-| "Planifica/programa la ejecución de las reglas de [dominio]" | — | `create-quality-planification` |
-| "Crea una planificación de calidad para [dominio]" | — | `create-quality-planification` |
+| "Planifica/programa la ejecución de las reglas de [dominio]" | — | `create-quality-schedule` |
+| "Crea una planificación de calidad para [dominio]" | — | `create-quality-schedule` |
 | "Genera/actualiza la metadata de las reglas de [dominio]" | `quality_rules_metadata` | ninguna |
 | "Regenera/fuerza la metadata de todas las reglas de [dominio]" | `quality_rules_metadata(domain_name=X, quality_rules_metadata_force_update=True)` | ninguna |
 | "Genera la metadata de la regla [ID]" | `quality_rules_metadata(quality_rule_id=ID)` | ninguna |
@@ -60,7 +60,7 @@ Antes de activar cualquier skill, clasificar el intent del usuario:
 - "Crea una regla que haga Y" / "Quiero una regla que verifique Z" → regla concreta descrita por el usuario → NO requiere `assess-quality` (Flujo B directo de `create-quality-rules`)
 
 **Distinción clave para planificación vs scheduling por regla:**
-- "Programa la ejecución de las reglas de X" / "Crea una planificación para X" → planificación a nivel de carpeta (colección/dominio), ejecuta TODAS las reglas de las carpetas seleccionadas → `create-quality-planification`
+- "Programa la ejecución de las reglas de X" / "Crea una planificación para X" → planificación a nivel de carpeta (colección/dominio), ejecuta TODAS las reglas de las carpetas seleccionadas → `create-quality-schedule`
 - "Crea reglas con ejecución diaria" / scheduling durante creación de reglas → scheduling por regla individual, se configura dentro del flujo de creación de reglas → gestionado dentro de `create-quality-rules` (sección 4)
 
 **Tipo de dominio**: Si el usuario no específica si el dominio es semántico o técnico, preguntar al usuario con opciones antes de listar dominios:
@@ -213,7 +213,7 @@ Además de las herramientas listadas en `skills-guides/stratio-data-tools.md`, e
     - "regenera/fuerza toda la metadata" / "reprocesa aunque ya tengan metadata" → `quality_rules_metadata(domain_name=X, quality_rules_metadata_force_update=True)`
     - "genera la metadata de la regla [ID]" → `quality_rules_metadata(domain_name=X, quality_rule_id=ID)` — si el usuario no conoce el ID numérico, obtenerlo primero con `get_tables_quality_details`
   - No requiere aprobación humana (no es destructiva, solo enriquece metadata). Si falla, continuar sin bloquear el workflow
-- **`create_quality_rule_planification`**: crea una planificación (schedule) que ejecuta automáticamente todas las reglas de calidad de una o varias carpetas. Requiere `name`, `description`, `collection_names` (lista de dominios/colecciones), `cron_expression` (Quartz cron 6-7 campos; nunca frecuencias muy bajas como `* * * * * *`). Opcionales: `table_names` (filtro de tablas dentro de las colecciones), `cron_timezone` (default `Europe/Madrid`), `cron_start_datetime` (ISO 8601, primera ejecución), `execution_size` (default `XS`, opciones: XS/S/M/L/XL). Ver skill `create-quality-planification` para el workflow completo
+- **`create_quality_rule_planification`**: crea una planificación (schedule) que ejecuta automáticamente todas las reglas de calidad de una o varias carpetas. Requiere `name`, `description`, `collection_names` (lista de dominios/colecciones), `cron_expression` (Quartz cron 6-7 campos; nunca frecuencias muy bajas como `* * * * * *`). Opcionales: `table_names` (filtro de tablas dentro de las colecciones), `cron_timezone` (default `Europe/Madrid`), `cron_start_datetime` (ISO 8601, primera ejecución), `execution_size` (default `XS`, opciones: XS/S/M/L/XL). Ver skill `create-quality-schedule` para el workflow completo
 - Si una llamada MCP falla o devuelve error: informar al usuario, no reintentar más de 2 veces con la misma formulación
 
 ---
