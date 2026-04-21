@@ -40,10 +40,10 @@
     "external_directory": "allow",
     "stratio_data_*": "allow",
     "stratio_gov_*": "deny",
-    "stratio_gov_get_quality_rule_dimensions": "allow",
-    "stratio_gov_create_quality_rule": "allow",
-    "stratio_gov_create_quality_rule_planification": "allow",
-    "stratio_gov_quality_rules_metadata": "allow",
+    "*get_quality_rule_dimensions": "allow",
+    "*create_quality_rule": "allow",
+    "*create_quality_rule_planification": "allow",
+    "*quality_rules_metadata": "allow",
     "bash": {
       "*": "allow"
     }
