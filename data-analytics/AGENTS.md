@@ -30,9 +30,35 @@ When the user poses an analysis request, ALWAYS follow this flow. For the full o
 
 Precedence: Step 0 wins over Step 1. If the message is a bare domain name, skip Step 1's pattern matching and ask the clarifying question first. Only after the user answers, re-enter Step 1 with the enriched intent.
 
-Default question (use the user's language):
+**Coverage invariant**: your clarifying question MUST make all four canonical routes reachable by the user — either by listing them explicitly (numbered OR in prose) or by inviting free-text input that covers each route by keyword. You may surface a relevant **subset** when prior context narrows the intent, but the user must never be blocked from reaching a route that is appropriate to their question.
 
-> *"¿Qué te gustaría hacer con el dominio **X**? Responde con el número o la palabra clave:*
+**Redaction rules** (how to phrase the question):
+
+- Use the user's language.
+- Adapt framing to conversation context (prior turns, signals of intent, the domain being asked about). Do not repeat the same phrasing turn after turn.
+- When prior context narrows the intent (e.g., the user previously mentioned "calidad" or "dashboard"), offer a relevant **subset** of the four routes and the rest as "o algo más". Do not force the full four-option list when two are enough.
+- Always invite free-text response (e.g., "también puedes contar qué buscas con tus palabras").
+
+**Canonical routes** — fixed routing contract; labels and skill mapping MUST remain stable, only the surrounding phrasing varies:
+
+| Canonical label | Hint to surface | Loads skill |
+|---|---|---|
+| Ojear / Explorar | "ver qué tablas y campos tiene, con una foto rápida de los datos" | `explore-data` |
+| Analizar | "hipótesis, KPIs y un informe o dashboard con conclusiones" | `analyze` |
+| Revisar calidad | "reglas de gobernanza, huecos por dimensión" | `assess-quality` |
+| Solo una descripción | "metadatos del dominio, sin entrar en detalle" | none (chat only) |
+
+**Example framings** (illustrative — you write yours in context):
+
+*Cold start, bare domain name* (e.g., "ventas"):
+> "Con **ventas** puedo hacer varias cosas: ojearlo para ver estructura y datos, hacer un análisis con KPIs e insights, revisar la calidad gobernada, o solo describirte de qué va. ¿Qué te encaja? (también puedes contarlo con tus palabras)."
+
+*With prior context* (user previously mentioned concerns about data reliability):
+> "Me dijiste antes que te preocupa la calidad de ventas. ¿Quieres una revisión de reglas de gobernanza y gaps, o prefieres primero ojear la estructura para ver qué hay encima?"
+
+**Fallback — numbered list for maximum clarity** (first contact, novice user, high ambiguity, or when the user has shown difficulty selecting):
+
+> *"¿Qué te gustaría hacer con el dominio **X**?*
 > *1. **Ojear** — ver qué tablas y campos tiene, con una foto rápida de los datos.*
 > *2. **Analizar** — hipótesis, KPIs y un informe o dashboard con conclusiones.*
 > *3. **Revisar calidad** — si los datos son fiables (reglas de gobernanza, huecos por dimensión).*
@@ -54,21 +80,23 @@ Cases that should NOT trigger Step 0:
 | `explora ventas` | NO (analytic verb) | Step 1 → `explore-data` |
 | `ventas 2024` | NO (temporal qualifier implies a data point) | Step 2 triage |
 | `ventas por región` | NO (analytic modifier) | Step 1 → `analyze` or Step 2 depending on complexity |
+| `póster de ventas` | NO (artifact modifier implies intent) | Step 1 → `canvas-craft` (Step 1.1 Gate 3 applies) |
+| `PDF de ventas` | NO (deliverable modifier, but ambiguous); consider asking format/scope if bare | Step 1 → apply PDF/visual precedence rule + Step 1.1 gates |
 | `¿qué tablas tiene ventas?` | NO | Step 2 triage |
 | `¿cómo está la calidad del dominio ventas?` | NO (explicit governance intent) | Step 4 → disambiguate EDA vs governance |
 | `info de ventas` | YES | ask (default *Ojear* is a reasonable suggestion) |
 
-Exception — respect what the agent itself offered in the previous turn:
+**Continuity of prior offers** — consequence of the coverage invariant above, made explicit:
 
-- If the previous agent turn offered a **single action** unambiguously (e.g., "¿quieres que te lo analice?") and the user replies with just the domain name, treat it as confirmation of that action.
-- If the previous agent turn offered **a closed set of options** (two, three or whatever count), and the user replies with just the domain name without picking an option, re-ask using **the same set** the agent just offered — do not switch to the four canonical options, or the user will feel ignored.
-- Only when the previous turn offered no options at all does the canonical four-option question apply.
+- If the previous agent turn offered a **single unambiguous action** (e.g., "¿quieres que te lo analice?") and the user replies with just the domain name, treat it as confirmation of that action.
+- If the previous agent turn offered a **specific subset** of routes and the user replies without picking, re-ask using **that same subset**. Do not revert to the full four-route framing — the user would feel ignored.
+- Only when no prior offer exists does the full cold-start framing apply.
 
 Step 0 runs in Phase 0 and therefore does not violate the "never proceed to Phases 1-4 without the skill loaded" rule; clarification questions are allowed pre-skill.
 
 **Step 1 — Check for skill activation first.** Assumes Step 0 has already cleared a bare domain name. If the user's request matches any of these patterns, load the skill IMMEDIATELY — do not evaluate triage:
 
-**PDF precedence rule**: When the request mentions "PDF" and could match multiple rows, apply this priority: (1) **reading/extracting** content from an existing PDF → `pdf-reader`; (2) **manipulating** an existing PDF (merge, split, rotate, watermark, encrypt, fill form, flatten) or **creating** a standalone document (invoice, certificate, letter, newsletter) → `pdf-writer`; (3) **exporting** a previous analysis to PDF → `report`; (4) **quality report** in PDF format → `quality-report`; (5) only if none of the above apply → `analyze`.
+**PDF/visual precedence rule**: When the request mentions "PDF" or a visual artifact and could match multiple rows, apply this priority: (1) **reading/extracting** content from an existing PDF → `pdf-reader`; (2) **single-page visual artifact** — composition-dominated, ≥70% visual (poster, cover, certificate, infographic, one-pager) → `canvas-craft`; (3) **manipulating** an existing PDF (merge, split, rotate, watermark, encrypt, fill form, flatten) or **creating** a typographic/prose document (invoice, letter, newsletter, multi-page report, data-light PDF with ≤3 KPIs and no hypothesis) → `pdf-writer`; (4) **exporting** a previous analysis to PDF → `report`; (5) **quality report** in PDF format → `quality-report`; (6) only if none of the above apply → `analyze`. **Note**: Step 1.1 gates (count gate and keyword gate especially) apply *before* this rule. If an analytical signal is present (multi-KPI with dimensions, hypothesis, comparative period, analytical verb), Gate 4 (tie-breaker) re-routes to `analyze` regardless of the tier above.
 
 **Multi-skill detection**: If the request involves multiple distinct actions spanning different skills (e.g., "read this PDF and analyze the data", "merge these PDFs and add a watermark"), identify the required skills and execute them in logical order: input skills first (`pdf-reader`) → processing skills (`analyze`, `assess-quality`) → output skills (`report`, `pdf-writer`, `quality-report`). Load the first skill in the sequence; upon completion, re-evaluate for the next.
 
@@ -84,6 +112,27 @@ Step 0 runs in Phase 0 and therefore does not violate the "never proceed to Phas
 | Report from existing analysis: "generate PDF from the last analysis", "export the report", "export to PDF" | `report` |
 | Read/extract PDF content: "read this PDF", "extract text from PDF", "what does this PDF say", "extract tables from PDF", "OCR this document", "get the content of this PDF", "parse this PDF" | `pdf-reader` |
 | PDF creation and manipulation: "merge PDFs", "split PDF", "rotate pages", "add watermark", "encrypt PDF", "fill PDF form", "flatten form", "create invoice/certificate/letter/newsletter/receipt", "add cover page", "attach file to PDF", "OCR to searchable PDF", "batch generate PDFs" — any PDF task not covered by `/report` or `/quality-report` | `pdf-writer` |
+| Data-light PDF (prose/typographic, ≤3 KPIs, no hypothesis): "small PDF with these metrics", "one-page KPI sheet", "simple metrics PDF", "PDF con estos 3 KPIs" — no analytical verbs, no comparative slicing | `pdf-writer` |
+| Single-page visual artifact: "poster", "póster", "portada", "cover", "one-pager", "infographic", "infografía", "certificate", "certificado", "marketing one-pager", "visual piece" — composition-dominated (≥70% visual), no analytical narrative | `canvas-craft` |
+| Interactive web artifact without analytical narrative: "interactive dashboard without analysis", "standalone landing page", "web component", "UI mockup", "prototype interface", "dashboard interactivo sin informe", "landing" — explicit absence of analytical framing | `web-craft` |
+| Governance knowledge contribution: "propose to governance", "add this as a business term", "save this definition as governed knowledge", "enrich semantic layer", "upload term", "propón este término", "súbelo a gobernanza" | `propose-knowledge` |
+| Memory persistence: "remember this for next time", "save my preference", "next time do X", "update memory with", "persist this preference", "recuerda esto", "guarda esta preferencia" | `update-memory` |
+
+**Note on data-driven artifact routing**: when Step 1 routes to `pdf-writer` (data-light), `canvas-craft` or `web-craft` with a request that implies governed-domain data (e.g., "póster con las ventas del trimestre", "PDF con 3 KPIs de churn"), the **agent** pre-fetches the needed data via MCP (using Step 2 Triage tools such as `list_domain_tables`, `query_data`) **before** invoking the artifact skill. The artifact skill receives the data as input and focuses on visual production — these skills do not fetch data themselves.
+
+**Note on `propose-knowledge` direct invocation**: if invoked cold-start with no prior conversation context, `propose-knowledge` gracefully degrades to asking the user for the domain and content to propose. Prefer natural mid-conversation invocation after a term, definition, or segmentation has been discussed — that is where the skill produces the strongest candidates.
+
+**Step 1.1 — Disambiguation rules (when multiple Step 1 rows could match)**
+
+When a message could plausibly trigger more than one row above, apply these gates in order. They preserve the analyze-primacy invariant: **analytical intent always wins over artifact-only routing**.
+
+1. **Count gate** — if the request implies ≥2 metrics, ≥2 dimensions, or any comparative period (year-over-year, quarter-over-quarter, "vs previous", "compared to", "cohort analysis") → route to `analyze`, regardless of artifact keywords. These exceed triage/light thresholds.
+2. **Keyword gate** — presence of any analytical verb or noun — {analyze, analiza, analysis, hypothesis, hipótesis, segment, segmenta, investigate, investiga, insights, causes, causas, explain, correlation, correlación, cohort, cohorte, executive report, informe ejecutivo, deep dive, análisis profundo} — routes to `analyze`, regardless of artifact keywords.
+3. **Artifact-only (no analytical verb)** — artifact keywords ({poster, one-pager, cover, infographic, landing, UI component, interactive dashboard without analysis, small PDF with ≤3 KPIs}) with no analytical verb → route to the corresponding artifact skill (`canvas-craft` / `web-craft` / `pdf-writer` data-light). The artifact skill fetches any needed data via MCP directly.
+4. **Tie-breaker** — when both an analytical row (Analysis / Deliverable / Visualization / Multi-KPI) and an artifact row match, **the analytical row wins**. Load `analyze`. This preserves the analyze-primacy invariant.
+5. **Dashboard disambiguation** — a "dashboard" request is `analyze` if it mentions multi-KPI with dimensions, narrative, or comparative periods; it is `web-craft` standalone only if the user explicitly says "without analysis", "just the UI", "pure dashboard" or similar.
+
+When still genuinely ambiguous after these gates, ask the user using the standard user-question convention before loading any skill.
 
 **Step 2 — If no skill pattern matched**, evaluate whether the question is triage. Triage questions can be resolved with point data, without needing to formulate hypotheses, cross data across dimensions, or generate visualizations:
 

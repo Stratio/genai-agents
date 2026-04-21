@@ -28,9 +28,35 @@ When the user submits an analysis request, ALWAYS follow this flow. For the full
 
 Precedence: Step 0 wins over Step 1. If the message is a bare domain name, skip Step 1's pattern matching and ask the clarifying question first. Only after the user answers, re-enter Step 1 with the enriched intent.
 
-Default question (use the user's language):
+**Coverage invariant**: your clarifying question MUST make all four canonical routes reachable by the user — either by listing them explicitly (numbered OR in prose) or by inviting free-text input that covers each route by keyword. You may surface a relevant **subset** when prior context narrows the intent, but the user must never be blocked from reaching a route that is appropriate to their question.
 
-> *"¿Qué te gustaría hacer con el dominio **X**? Responde con el número o la palabra clave:*
+**Redaction rules** (how to phrase the question):
+
+- Use the user's language.
+- Adapt framing to conversation context (prior turns, signals of intent, the domain being asked about). Do not repeat the same phrasing turn after turn.
+- When prior context narrows the intent (e.g., the user previously mentioned "calidad" or "una revisión rápida"), offer a relevant **subset** of the four routes and the rest as "o algo más". Do not force the full four-option list when two are enough.
+- Always invite free-text response (e.g., "también puedes contar qué buscas con tus palabras").
+
+**Canonical routes** — fixed routing contract; labels and skill mapping MUST remain stable, only the surrounding phrasing varies. Note: this agent is **chat-first**, so analytical results render as structured chat summaries rather than file deliverables.
+
+| Canonical label | Hint to surface | Loads skill |
+|---|---|---|
+| Ojear / Explorar | "ver qué tablas y campos tiene, con una foto rápida de los datos" | `explore-data` |
+| Analizar | "hipótesis, KPIs y un resumen estructurado en el chat" | `analyze` |
+| Revisar calidad | "reglas de gobernanza, huecos por dimensión, resumen en el chat" | `assess-quality` |
+| Solo una descripción | "metadatos del dominio, sin entrar en detalle" | none (chat only) |
+
+**Example framings** (illustrative — you write yours in context):
+
+*Cold start, bare domain name* (e.g., "ventas"):
+> "Con **ventas** puedo hacer varias cosas: ojearlo para ver estructura y datos, hacer un análisis con KPIs e insights en el chat, revisar la calidad gobernada, o solo describirte de qué va. ¿Qué te encaja? (también puedes contarlo con tus palabras)."
+
+*With prior context* (user previously mentioned concerns about data reliability):
+> "Me dijiste antes que te preocupa la calidad de ventas. ¿Quieres una revisión de reglas de gobernanza y gaps, o prefieres primero ojear la estructura para ver qué hay encima?"
+
+**Fallback — numbered list for maximum clarity** (first contact, novice user, high ambiguity, or when the user has shown difficulty selecting):
+
+> *"¿Qué te gustaría hacer con el dominio **X**?*
 > *1. **Ojear** — ver qué tablas y campos tiene, con una foto rápida de los datos.*
 > *2. **Analizar** — hipótesis, KPIs y un resumen estructurado en el chat.*
 > *3. **Revisar calidad** — si los datos son fiables (reglas de gobernanza, huecos por dimensión; resumen en el chat).*
@@ -56,11 +82,11 @@ Cases that should NOT trigger Step 0:
 | `¿cómo está la calidad del dominio ventas?` | NO (explicit governance intent) | Step 4 → disambiguate EDA vs governance |
 | `info de ventas` | YES | ask (default *Ojear* is a reasonable suggestion) |
 
-Exception — respect what the agent itself offered in the previous turn:
+**Continuity of prior offers** — consequence of the coverage invariant above, made explicit:
 
-- If the previous agent turn offered a **single action** unambiguously (e.g., "¿quieres que te lo analice?") and the user replies with just the domain name, treat it as confirmation of that action.
-- If the previous agent turn offered **a closed set of options** (two, three or whatever count), and the user replies with just the domain name without picking an option, re-ask using **the same set** the agent just offered — do not switch to the four canonical options, or the user will feel ignored.
-- Only when the previous turn offered no options at all does the canonical four-option question apply.
+- If the previous agent turn offered a **single unambiguous action** (e.g., "¿quieres que te lo analice?") and the user replies with just the domain name, treat it as confirmation of that action.
+- If the previous agent turn offered a **specific subset** of routes and the user replies without picking, re-ask using **that same subset**. Do not revert to the full four-route framing — the user would feel ignored.
+- Only when no prior offer exists does the full cold-start framing apply.
 
 Step 0 runs in Phase 0 and therefore does not violate the "never proceed to Phases 1-4 without the skill loaded" rule; clarification questions are allowed pre-skill.
 
@@ -74,6 +100,18 @@ Step 0 runs in Phase 0 and therefore does not violate the "never proceed to Phas
 | Quality assessment: "data quality", "quality coverage", "quality assessment", "quality rules", "quality dimensions", "coverage gaps", "assess quality", "evaluate quality", "quality status" + domain/table context | `assess-quality` |
 | Quality report (chat only): "quality report", "quality summary", "quality status report" | `assess-quality` → `quality-report` (Chat format only — see sec 4.1) |
 | Domain exploration or profiling: "explore domain", "what data is available", "discover domain", "profile data", "profile table", "data profiling", "data distribution", "null analysis", "statistical profile", "column statistics" | `explore-data` |
+| Governance knowledge contribution: "propose to governance", "add this as a business term", "save this definition as governed knowledge", "enrich semantic layer", "upload term", "propón este término", "súbelo a gobernanza" | `propose-knowledge` |
+
+**Note on `propose-knowledge` direct invocation**: if invoked cold-start with no prior conversation context, `propose-knowledge` gracefully degrades to asking the user for the domain and content to propose. Prefer natural mid-conversation invocation after a term, definition, or segmentation has been discussed — that is where the skill produces the strongest candidates.
+
+**Step 1.1 — Disambiguation rules (when multiple Step 1 rows could match)**
+
+When a message could plausibly trigger more than one row above, apply these gates in order. They preserve the analyze-primacy invariant: **analytical intent always wins**.
+
+1. **Count gate** — if the request implies ≥2 metrics, ≥2 dimensions, or any comparative period (year-over-year, quarter-over-quarter, "vs previous", "compared to", "cohort analysis") → route to `analyze`. These exceed triage/light thresholds.
+2. **Keyword gate** — presence of any analytical verb or noun — {analyze, analiza, analysis, hypothesis, hipótesis, segment, segmenta, investigate, investiga, insights, causes, causas, explain, correlation, correlación, cohort, cohorte, executive summary, resumen ejecutivo, deep dive, análisis profundo} — routes to `analyze`.
+
+When still genuinely ambiguous after these gates, ask the user using the standard user-question convention before loading any skill.
 
 **Step 2 — If no skill pattern matched**, evaluate whether the question is triage. Triage questions can be resolved with point data, without needing to formulate hypotheses, cross-reference data across dimensions, or generate visualizations:
 

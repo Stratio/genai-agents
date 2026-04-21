@@ -51,6 +51,7 @@ Antes de activar cualquier skill, clasificar el intent del usuario:
 | "Usa valor exacto / rangos / porcentaje / conteo para medir" | — | Dentro de `create-quality-rules` (sección 3.4) |
 | Leer/extraer contenido de PDF: "lee este PDF", "extrae el texto de este PDF", "qué dice este PDF", "dame el contenido de este PDF", "parsea este PDF" | — | `pdf-reader` |
 | Creación y manipulación de PDF: "combinar PDFs", "dividir PDF", "añadir marca de agua", "cifrar PDF", "rellenar formulario PDF", "aplanar formulario", "añadir portada", "crear factura/certificado/carta/newsletter", "OCR a PDF buscable", "generar PDFs en lote" — cualquier tarea PDF no relacionada con informes de calidad | — | `pdf-writer` |
+| Dashboard de calidad interactivo standalone: "dashboard de calidad interactivo", "interactive quality dashboard", "UI de estado de calidad en vivo", "componente web para gaps de cobertura" — artefacto interactivo explícito (HTML/JS) distinto de un informe de calidad estático | — | `web-craft` |
 
 **Criterio de triage**: Si la pregunta se responde con una sola llamada MCP directa sin necesidad de evaluar cobertura, identificar gaps ni crear reglas → responder directamente. Si implica evaluación, propuesta o creación → cargar la skill correspondiente.
 

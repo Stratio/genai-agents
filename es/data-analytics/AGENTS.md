@@ -30,9 +30,35 @@ Cuando el usuario plantea una petición de análisis, SIEMPRE seguir este flujo.
 
 Precedencia: el Paso 0 gana sobre el Paso 1. Si el mensaje es solo un nombre de dominio, saltar el matching de patrones del Paso 1 y preguntar primero. Solo tras la respuesta del usuario se reentra en el Paso 1 con la intención enriquecida.
 
-Pregunta por defecto (en el idioma del usuario):
+**Invariante de cobertura**: tu pregunta de clarificación DEBE permitir al usuario acceder a las cuatro rutas canónicas — listándolas explícitamente (numeradas O en prosa) o invitando explícitamente a texto libre que las cubra por keyword. Puedes mostrar un **subconjunto** relevante cuando el contexto previo estreche la intención, pero al usuario nunca se le debe bloquear el acceso a una ruta apropiada para su pregunta.
 
-> *"¿Qué te gustaría hacer con el dominio **X**? Responde con el número o la palabra clave:*
+**Reglas de redacción** (cómo formular la pregunta):
+
+- Usa el idioma del usuario.
+- Adapta el framing al contexto de la conversación (turnos previos, señales de intención, el dominio por el que se pregunta). No repitas la misma frase turno tras turno.
+- Cuando el contexto previo estreche la intención (p. ej., el usuario mencionó antes "calidad" o "dashboard"), ofrece un **subconjunto** relevante de las cuatro rutas y el resto como "o algo más". No fuerces la lista completa de cuatro opciones cuando dos bastan.
+- Siempre invita a respuesta en texto libre (p. ej., "también puedes contar qué buscas con tus palabras").
+
+**Rutas canónicas** — contrato fijo de routing; las etiquetas y el mapping a skill DEBEN mantenerse estables, solo varía el framing que las rodea:
+
+| Etiqueta canónica | Pista a mostrar | Carga la skill |
+|---|---|---|
+| Ojear / Explorar | "ver qué tablas y campos tiene, con una foto rápida de los datos" | `explore-data` |
+| Analizar | "hipótesis, KPIs y un informe o dashboard con conclusiones" | `analyze` |
+| Revisar calidad | "reglas de gobernanza, huecos por dimensión" | `assess-quality` |
+| Solo una descripción | "metadatos del dominio, sin entrar en detalle" | ninguna (solo chat) |
+
+**Framings de ejemplo** (ilustrativos — tú escribes el tuyo según el contexto):
+
+*Cold start, nombre de dominio a secas* (p. ej., "ventas"):
+> "Con **ventas** puedo hacer varias cosas: ojearlo para ver estructura y datos, hacer un análisis con KPIs e insights, revisar la calidad gobernada, o solo describirte de qué va. ¿Qué te encaja? (también puedes contarlo con tus palabras)."
+
+*Con contexto previo* (el usuario había mencionado preocupaciones sobre la fiabilidad del dato):
+> "Me dijiste antes que te preocupa la calidad de ventas. ¿Quieres una revisión de reglas de gobernanza y gaps, o prefieres primero ojear la estructura para ver qué hay encima?"
+
+**Fallback — lista numerada para máxima claridad** (primer contacto, usuario novato, ambigüedad alta, o cuando el usuario ha tenido dificultad para seleccionar):
+
+> *"¿Qué te gustaría hacer con el dominio **X**?*
 > *1. **Ojear** — ver qué tablas y campos tiene, con una foto rápida de los datos.*
 > *2. **Analizar** — hipótesis, KPIs y un informe o dashboard con conclusiones.*
 > *3. **Revisar calidad** — si los datos son fiables (reglas de gobernanza, huecos por dimensión).*
@@ -54,21 +80,23 @@ Casos que NO deben disparar el Paso 0:
 | `explora ventas` | NO (verbo analítico) | Paso 1 → `explore-data` |
 | `ventas 2024` | NO (calificador temporal → dato puntual) | Paso 2 triage |
 | `ventas por región` | NO (modificador analítico) | Paso 1 → `analyze` o Paso 2 según complejidad |
+| `póster de ventas` | NO (modificador de artefacto implica intención) | Paso 1 → `canvas-craft` (aplica Gate 3 del Paso 1.1) |
+| `PDF de ventas` | NO (modificador de entregable, pero ambiguo); si es a secas, considerar preguntar por formato/alcance | Paso 1 → aplicar regla de precedencia PDF/visual + gates del Paso 1.1 |
 | `¿qué tablas tiene ventas?` | NO | Paso 2 triage |
 | `¿cómo está la calidad del dominio ventas?` | NO (intención de gobernanza explícita) | Paso 4 → desambiguar EDA vs gobernanza |
 | `info de ventas` | SÍ | preguntar (sugerir *Ojear* como default razonable) |
 
-Excepción — respetar lo que el propio agente ofreció en el turno previo:
+**Continuidad de ofertas previas** — consecuencia de la invariante de cobertura anterior, hecha explícita:
 
 - Si el turno previo del agente ofreció **una única acción** de forma inequívoca (p. ej., "¿quieres que te lo analice?") y el usuario responde con solo el nombre del dominio, tratarlo como confirmación de esa acción.
-- Si el turno previo del agente ofreció **un conjunto cerrado de opciones** (dos, tres o las que fueran) y el usuario responde solo con el dominio sin elegir, volver a preguntar usando **el mismo conjunto** que el agente ofreció — no cambiar a las cuatro opciones canónicas, o el usuario sentirá que el agente no estaba escuchando.
-- Solo cuando el turno previo no ofrecía ninguna opción se usa la pregunta canónica de cuatro opciones.
+- Si el turno previo del agente ofreció un **subconjunto específico** de rutas y el usuario responde sin elegir, volver a preguntar usando **ese mismo subconjunto**. No volver al framing completo de cuatro rutas — el usuario se sentiría ignorado.
+- Solo cuando no existe oferta previa se usa el framing completo de cold-start.
 
 El Paso 0 corre dentro de la Fase 0 y por tanto no viola la regla crítica "nunca avanzar a las Fases 1-4 sin skill cargada"; las preguntas de clarificación se permiten pre-skill.
 
 **Paso 1 — Comprobar activación de skill primero.** Asume que el Paso 0 ya resolvió un nombre de dominio a secas. Si la petición del usuario coincide con alguno de estos patrones, cargar la skill INMEDIATAMENTE — no evaluar triage:
 
-**Regla de precedencia PDF**: Cuando la petición menciona "PDF" y podría coincidir con múltiples filas, aplicar esta prioridad: (1) **leer/extraer** contenido de un PDF existente → `pdf-reader`; (2) **manipular** un PDF existente (combinar, dividir, rotar, marca de agua, cifrar, rellenar formulario, aplanar) o **crear** un documento independiente (factura, certificado, carta, newsletter) → `pdf-writer`; (3) **exportar** un análisis previo a PDF → `report`; (4) **informe de calidad** en formato PDF → `quality-report`; (5) solo si ninguno de los anteriores aplica → `analyze`.
+**Regla de precedencia PDF/visual**: Cuando la petición menciona "PDF" o un artefacto visual y podría coincidir con múltiples filas, aplicar esta prioridad: (1) **leer/extraer** contenido de un PDF existente → `pdf-reader`; (2) **artefacto visual de una sola página** — dominado por composición, ≥70% visual (póster, portada, certificado, infografía, one-pager) → `canvas-craft`; (3) **manipular** un PDF existente (combinar, dividir, rotar, marca de agua, cifrar, rellenar formulario, aplanar) o **crear** un documento tipográfico/de prosa (factura, carta, newsletter, informe multi-página, PDF ligero con ≤3 KPIs sin hipótesis) → `pdf-writer`; (4) **exportar** un análisis previo a PDF → `report`; (5) **informe de calidad** en formato PDF → `quality-report`; (6) solo si ninguno de los anteriores aplica → `analyze`. **Nota**: las gates del Paso 1.1 (especialmente gate de conteo y gate de keywords) se aplican *antes* que esta regla. Si hay alguna señal analítica (multi-KPI con dimensiones, hipótesis, periodo comparativo, verbo analítico), la Gate 4 (desempate) re-enruta a `analyze` independientemente del tier de arriba.
 
 **Detección multi-skill**: Si la petición involucra múltiples acciones que abarcan diferentes skills (ej: "lee este PDF y analiza los datos", "combina estos PDFs y añade marca de agua"), identificar las skills necesarias y ejecutarlas en orden lógico: skills de entrada primero (`pdf-reader`) → skills de proceso (`analyze`, `assess-quality`) → skills de salida (`report`, `pdf-writer`, `quality-report`). Cargar la primera skill de la secuencia; al completar, reevaluar para la siguiente.
 
@@ -84,6 +112,27 @@ El Paso 0 corre dentro de la Fase 0 y por tanto no viola la regla crítica "nunc
 | Informe de análisis existente: "generar PDF del último análisis", "exportar el informe", "exportar a PDF" | `report` |
 | Leer/extraer contenido de PDF: "lee este PDF", "extrae el texto de este PDF", "qué dice este PDF", "extrae las tablas de este PDF", "OCR de este documento", "dame el contenido de este PDF", "parsea este PDF" | `pdf-reader` |
 | Creación y manipulación de PDF: "combinar PDFs", "dividir PDF", "rotar páginas", "añadir marca de agua", "cifrar PDF", "rellenar formulario PDF", "aplanar formulario", "crear factura/certificado/carta/newsletter/recibo", "añadir portada", "adjuntar archivo al PDF", "OCR a PDF buscable", "generar PDFs en lote" — cualquier tarea PDF no cubierta por `/report` o `/quality-report` | `pdf-writer` |
+| PDF ligero de datos (tipográfico/prosa, ≤3 KPIs, sin hipótesis): "PDF pequeño con estas métricas", "hoja de KPIs de una página", "PDF simple con métricas", "small PDF with these metrics", "PDF con estos 3 KPIs" — sin verbos analíticos, sin cortes comparativos | `pdf-writer` |
+| Artefacto visual de una sola página: "póster", "poster", "portada", "cover", "one-pager", "infografía", "infographic", "certificado", "certificate", "pieza visual", "visual piece" — dominado por composición (≥70% visual), sin narrativa analítica | `canvas-craft` |
+| Artefacto web interactivo sin narrativa analítica: "dashboard interactivo sin análisis", "interactive dashboard without analysis", "landing standalone", "componente web", "maqueta UI", "prototipo de interfaz", "landing", "dashboard puro" — ausencia explícita de encuadre analítico | `web-craft` |
+| Contribución de conocimiento a gobernanza: "propón a gobernanza", "añade este término de negocio", "guarda esta definición como conocimiento gobernado", "enriquece la capa semántica", "sube el término", "propose to governance", "add business term" | `propose-knowledge` |
+| Persistencia en memoria: "recuerda esto para la próxima vez", "guarda mi preferencia", "la próxima vez haz X", "actualiza la memoria con", "persiste esta preferencia", "remember this", "save my preference" | `update-memory` |
+
+**Nota sobre routing a artefactos con datos**: cuando el Paso 1 enruta a `pdf-writer` (ligero), `canvas-craft` o `web-craft` con una petición que implica datos del dominio gobernado (p. ej., "póster con las ventas del trimestre", "PDF con 3 KPIs de churn"), el **agente** pre-fetchea los datos necesarios vía MCP (usando las tools de Triage del Paso 2: `list_domain_tables`, `query_data`) **antes** de invocar la skill de artefacto. La skill de artefacto recibe los datos como input y se centra en la producción visual — estas skills no obtienen datos por sí mismas.
+
+**Nota sobre invocación directa de `propose-knowledge`**: si se invoca cold-start sin contexto previo de conversación, `propose-knowledge` degrada con elegancia a pedir al usuario el dominio y el contenido a proponer. Preferir invocación natural mid-conversación tras haber discutido un término, definición o segmentación — ahí es donde la skill produce los candidatos más fuertes.
+
+**Paso 1.1 — Reglas de desambiguación (cuando varias filas del Paso 1 podrían coincidir)**
+
+Cuando un mensaje puede disparar más de una fila de arriba, aplicar estas gates en orden. Preservan la invariante de primacía analítica: **la intención analítica siempre gana sobre el routing de artefacto**.
+
+1. **Gate de conteo** — si la petición implica ≥2 métricas, ≥2 dimensiones, o cualquier periodo comparativo (YoY, QoQ, "vs anterior", "frente a", "análisis de cohorte") → enrutar a `analyze`, independientemente de las keywords de artefacto. Eso excede los umbrales de triage/ligero.
+2. **Gate de keywords** — la presencia de cualquier verbo o sustantivo analítico — {analizar, analyze, análisis, hipótesis, hypothesis, segmentar, segment, investigar, investigate, insights, causas, causes, explicar, explain, correlación, correlation, cohorte, cohort, informe ejecutivo, executive report, análisis profundo, deep dive} — enruta a `analyze`, independientemente de las keywords de artefacto.
+3. **Solo artefacto (sin verbo analítico)** — keywords de artefacto ({póster, one-pager, portada, infografía, landing, componente UI, dashboard interactivo sin análisis, PDF pequeño con ≤3 KPIs}) sin verbo analítico → enrutar a la skill de artefacto correspondiente (`canvas-craft` / `web-craft` / `pdf-writer` ligero). La skill obtiene los datos necesarios vía MCP directamente.
+4. **Desempate** — cuando coinciden tanto una fila analítica (Análisis / Entregable / Visualización / Multi-KPI) como una fila de artefacto, **gana la fila analítica**. Cargar `analyze`. Esto preserva la invariante de primacía analítica.
+5. **Desambiguación de dashboard** — una petición de "dashboard" es `analyze` si menciona multi-KPI con dimensiones, narrativa o periodos comparativos; es `web-craft` standalone solo si el usuario dice explícitamente "sin análisis", "solo la UI", "dashboard puro" o similar.
+
+Cuando tras estas gates siga genuinamente ambiguo, preguntar al usuario usando la convención estándar antes de cargar ninguna skill.
 
 **Paso 2 — Si no coincidió ningún patrón de skill**, evaluar si la pregunta es triage. Las preguntas de triage se resuelven con datos puntuales, sin necesidad de formular hipótesis, cruzar datos entre dimensiones, ni generar visualizaciones:
 
