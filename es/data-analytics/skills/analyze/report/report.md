@@ -1,12 +1,6 @@
----
-name: report
-description: "Generación de informes profesionales en múltiples formatos (PDF, DOCX, web interactiva con Plotly, PowerPoint). Usar cuando el usuario necesite generar informes, dashboards, resúmenes ejecutivos, presentaciones o cualquier entregable formal a partir de análisis de datos o exploración conversacional."
-argument-hint: "[formato: pdf|web|pptx] [tema (opcional)]"
----
+# Generación de Informes
 
-# Skill: Generación de Informes
-
-Guía para generar informes profesionales en múltiples formatos a partir de datos y análisis.
+Sub-guía de la skill `analyze`. La carga `analyze/SKILL.md` (Fase 4) después de que el workflow analítico haya producido datos y gráficos en `output/[ANALYSIS_DIR]/`. Genera entregables profesionales en múltiples formatos (PDF, DOCX, web interactiva con Plotly, PowerPoint).
 
 ## 1. Determinar Formato, Estructura y Estilo
 
@@ -60,7 +54,7 @@ Los entregables orientados al usuario se escriben con un prefijo descriptivo par
 
 ### 2.1 Visualización y storytelling
 
-Leer y seguir `skills-guides/visualization.md` para:
+Leer y seguir [../visualization.md](../visualization.md) para:
 - Selección de tipo de gráfica según pregunta analítica (sec 1)
 - Principios de visualización y accesibilidad (sec 2)
 - Data storytelling: estructura narrativa Hook→Contexto→Hallazgos→Tensión→Resolución (sec 3)
@@ -74,6 +68,18 @@ Leer y seguir `skills-guides/visualization.md` para:
 bash setup_env.sh
 ```
 Verificar que las dependencias del formato están disponibles (weasyprint para PDF, python-pptx para PowerPoint, etc.).
+
+**Imports Python desde scripts generados**: los módulos generadores viven en `skills/analyze/report/tools/`. Cuando el agente escriba un script generador (ej: `output/[ANALYSIS_DIR]/scripts/make_report.py`), añadir esa carpeta a `sys.path` al inicio del script para que imports como `from pdf_generator import PDFGenerator` resuelvan correctamente:
+
+```python
+import sys
+sys.path.insert(0, "skills/analyze/report/tools")
+
+from pdf_generator import PDFGenerator
+from css_builder import build_css, get_palette
+```
+
+Invocaciones CLI (ej: `md_to_report.py`) se llaman por ruta completa desde la raíz del agente: `python skills/analyze/report/tools/md_to_report.py ...`.
 
 ## 3.1 Idioma de los Deliverables Generados
 
@@ -95,6 +101,9 @@ Todos los formatos comparten la misma fuente de verdad para colores y fuentes:
 - **Reasoning (Markdown → PDF/HTML):** `tools/md_to_report.py` con opciones `--style`, `--cover`, `--author`, `--domain`
 
 ```python
+import sys
+sys.path.insert(0, "skills/analyze/report/tools")
+
 from css_builder import build_css, get_palette
 css, name = build_css("corporate", "pdf")    # CSS ensamblado
 palette = get_palette("corporate")           # {"primary": (0x1a,0x36,0x5d), "font_main": "Inter", ...}
@@ -106,8 +115,8 @@ Cuando el usuario elige "Design-first" en la pregunta 3, ejecuta este checklist 
 
 1. **Clasifica el artefacto** — `executive-dashboard` / `technical-report` / `editorial-brief` / `forensic-audit`. La clase gobierna las siguientes cinco decisiones.
 2. **Elige un tono (uno, comprometido)** — `editorial-serious` / `technical-minimal` / `executive-editorial` / `forensic-audit` / `maximalist-analytical` / `brutalist-data`. Mitad-y-mitad no es opción.
-3. **Emparejamiento tipográfico** — una fuente display + una body desde la tabla "Emparejamientos tipográficos por clase de artefacto" en `skills-guides/dashboard-aesthetics.md`. Escribe el resultado como `font_pair: [display, body]`.
-4. **Paleta** — deriva un acento dominante de la materia de los datos (finanzas → azul profundo u oxblood; operaciones → acero frío o bosque; auditoría → rojo profundo sobre hueso; consumo → un primario saturado). Rellena un dict `palette_override` con claves a nivel CSS (`"--primary"`, `"--accent"`, `"--text-primary"`, …) coherentes con los tokens del estilo base elegido. *Nota:* en `academic`, el token del rol "primary" es `--heading-color`; sobrescribir `--primary` allí es inerte — consulta la nota "Caveat — `academic`" en `skills-guides/dashboard-aesthetics.md`.
+3. **Emparejamiento tipográfico** — una fuente display + una body desde la tabla "Emparejamientos tipográficos por clase de artefacto" en [dashboard-aesthetics.md](dashboard-aesthetics.md). Escribe el resultado como `font_pair: [display, body]`.
+4. **Paleta** — deriva un acento dominante de la materia de los datos (finanzas → azul profundo u oxblood; operaciones → acero frío o bosque; auditoría → rojo profundo sobre hueso; consumo → un primario saturado). Rellena un dict `palette_override` con claves a nivel CSS (`"--primary"`, `"--accent"`, `"--text-primary"`, …) coherentes con los tokens del estilo base elegido. *Nota:* en `academic`, el token del rol "primary" es `--heading-color`; sobrescribir `--primary` allí es inerte — consulta la nota "Caveat — `academic`" en [dashboard-aesthetics.md](dashboard-aesthetics.md).
 5. **Presupuesto de motion** (solo dashboards) — `none` / `minimal` / `expressive`. Nada de JS, CSS puro, `@keyframes` prefijados con `dashboard-`, `prefers-reduced-motion` respetado.
 6. **Estilo de fondo** (opcional) — `solid` / `gradient-mesh` / `noise` / `grain`. Decide si el artefacto se gana atmósfera más allá de una superficie plana.
 
@@ -127,7 +136,7 @@ Escribe el `aesthetic.json` resultante con este schema (claves extra las rechaza
 
 > *Dirección estética (contenido de `aesthetic.json`)*: tone=…, palette_override=…, font_pair=…, motion_budget=…, background_style=….
 
-Consulta `skills-guides/dashboard-aesthetics.md` para la guía específica interactiva (motion, hover, fondos, tipografía para pantalla) y `skills-guides/visual-craftsmanship.md` para los principios transversales (anti-patrones, roles de paleta, checklist de artesanía).
+Consulta [dashboard-aesthetics.md](dashboard-aesthetics.md) para la guía específica interactiva (motion, hover, fondos, tipografía para pantalla) y `skills-guides/visual-craftsmanship.md` para los principios transversales (anti-patrones, roles de paleta, checklist de artesanía).
 
 ## 5. Generación por Formato
 

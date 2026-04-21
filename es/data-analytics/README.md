@@ -8,7 +8,9 @@ Agente completo de Business Intelligence y Business Analytics para Claude Code y
 - Análisis avanzado con Python (pandas, numpy, scipy)
 - Segmentación y clustering (scikit-learn)
 - Visualizaciones profesionales (matplotlib, seaborn, plotly)
-- Generación de informes multi-formato: PDF, DOCX, web interactiva, PowerPoint
+- **Entregables analíticos** (multi-formato) — PDF, DOCX, web interactiva, PowerPoint, generados por `/analyze` Fase 4 a partir de los resultados del análisis
+- **Entregables visuales ligeros sin análisis** — pósteres / infografías / portadas de una sola página (`canvas-craft`), dashboards interactivos standalone (`web-craft`), PDFs ligeros con ≤3 KPIs o documentos tipográficos como facturas y cartas (`pdf-writer`)
+- **Lectura de PDF** — extraer texto, tablas, imágenes y datos de formulario de PDFs (`pdf-reader`)
 - **Evaluación y reporte de cobertura de calidad de datos** (solo lectura) — evaluar reglas de calidad existentes, identificar gaps de cobertura, generar informes de calidad en Chat/PDF/DOCX/Markdown. La creación y planificación de reglas queda reservada a los agentes Data Quality / Governance Officer.
 - Documentación del razonamiento y validación de output
 - Memoria persistente de análisis y preferencias
@@ -44,21 +46,22 @@ Los pack scripts solo son necesarios para distribuir el agente fuera del reposit
 
 | Skill | Comando | Origen | Descripción |
 |-------|---------|--------|-------------|
-| Análisis | `/analyze` | local | Análisis completo de datos BI/BA: descubrimiento de dominio, EDA, planificación de KPIs, queries MCP, análisis Python, visualizaciones e informes |
+| Análisis | `/analyze` | local | Análisis completo de datos BI/BA: descubrimiento de dominio, EDA, planificación de KPIs, queries MCP, análisis Python, visualizaciones y entregables multi-formato (PDF, DOCX, web, PowerPoint — gestionados internamente vía `report/report.md`) |
 | Exploración | `/explore-data` | **shared** | Exploración rápida de dominios, tablas, columnas y terminología de negocio |
 | Evaluación de calidad | `/assess-quality` | **shared** | Evaluación de cobertura de calidad para un dominio, tabla o columna; identifica dimensiones cubiertas, gaps y prioridades |
 | Informe de calidad | `/quality-report` | **shared** | Generar un informe formal de cobertura de calidad de datos (Chat / PDF / DOCX / Markdown) |
-| Informe | `/report` | local | Generación de informes profesionales multi-formato (PDF, DOCX, web, PowerPoint) |
 | Memoria | `/update-memory` | local | Actualizar memoria persistente con preferencias, patrones y heurísticas |
 | Conocimiento | `/propose-knowledge` | **shared** | Proponer términos de negocio descubiertos a Stratio Governance |
 | Lectura de PDF | `/pdf-reader` | **shared** | Extraer texto, tablas, imágenes y datos de formulario de archivos PDF |
-| Escritura de PDF | `/pdf-writer` | **shared** | Crear PDFs con diseño, combinar/dividir/rotar, marca de agua, cifrar, rellenar formularios |
+| Escritura de PDF | `/pdf-writer` | **shared** | PDFs multi-página o dominados por prosa (informes ligeros con ≤3 KPIs, facturas, cartas, newsletters, certificados). También combinar/dividir/rotar, marca de agua, cifrar, rellenar formularios |
+| Artefacto visual | `/canvas-craft` | **shared** | Visuales de una sola página dominados por composición: pósteres, infografías, portadas, one-pagers (PDF o PNG) |
+| Artefacto web | `/web-craft` | **shared** | HTML interactivo standalone: dashboards sin narrativa analítica, componentes UI, landing pages |
 
 Las skills marcadas como **shared** viven en `shared-skills/` en la raíz del monorepo y se comparten con otros agentes. Las locales viven en `skills/` de este agente.
 
 ## Herramientas de generación
 
-Scripts reutilizables en `tools/` para generar deliverables:
+Scripts reutilizables en `skills/analyze/report/tools/` (propiedad de la skill `analyze`, usados durante su Fase 4 de empaquetado) para generar deliverables:
 
 | Herramienta | Descripción |
 |-------------|-------------|

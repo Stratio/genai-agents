@@ -312,6 +312,20 @@ find "$OUTPUT_DIR" \
   -exec sed -i 's/{{TOOL_QUESTIONS}}/ (`AskUserQuestion`)/g' {} \;
 echo "    [7b] Placeholder TOOL_QUESTIONS -> AskUserQuestion"
 
+# Rewrite "skills/<name>/" prefixed paths to ".claude/skills/<name>/" since
+# Claude Code puts skills under .claude/skills/ but authored content references
+# them as skills/<name>/ (the in-repo path). Applies only to documents at the
+# output root (CLAUDE.md, README.md, skills-guides/), not to files inside
+# .claude/skills/ themselves (those use skill-local relative references).
+find "$OUTPUT_DIR" -maxdepth 2 \
+  -not -path '*/.claude/*' -not -path '*/node_modules/*' -not -path '*/.venv/*' \
+  -type f \( -name '*.md' -o -name '*.json' -o -name '*.sh' -o -name '*.py' -o -name '*.txt' \) \
+  -exec sed -i -E 's#(^|[^a-zA-Z0-9_./])skills/([a-z][a-z0-9-]*)/#\1.claude/skills/\2/#g' {} \;
+find "$OUTPUT_DIR/skills-guides" \
+  -type f \( -name '*.md' \) \
+  -exec sed -i -E 's#(^|[^a-zA-Z0-9_./])skills/([a-z][a-z0-9-]*)/#\1.claude/skills/\2/#g' {} \; 2>/dev/null || true
+echo "    [7d] Rewrote skills/<name>/ → .claude/skills/<name>/ in top-level docs"
+
 # ---------------------------------------------------------------------------
 # Phase 7c — Non-runtime sweep (tests, caches, editor junk)
 # ---------------------------------------------------------------------------

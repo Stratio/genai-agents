@@ -1,12 +1,6 @@
----
-name: report
-description: "Professional report generation in multiple formats (PDF, DOCX, interactive web with Plotly, PowerPoint). Use when the user needs to generate reports, dashboards, executive summaries, presentations, or any formal deliverable from data analysis or conversation exploration."
-argument-hint: "[format: pdf|web|pptx] [topic (optional)]"
----
+# Report Generation
 
-# Skill: Report Generation
-
-Guide for generating professional reports in multiple formats from data and analyses.
+Sub-guide of the `analyze` skill. Loaded by `analyze/SKILL.md` (Phase 4) after the analytical workflow has produced data and charts in `output/[ANALYSIS_DIR]/`. Generates professional deliverables in multiple formats (PDF, DOCX, interactive web with Plotly, PowerPoint).
 
 ## 1. Determine Format, Structure, and Style
 
@@ -60,7 +54,7 @@ User-facing deliverables are written with a descriptive prefix so they are recog
 
 ### 2.1 Visualization and storytelling
 
-Read and follow `skills-guides/visualization.md` for:
+Read and follow [../visualization.md](../visualization.md) for:
 - Chart type selection based on analytical question (sec 1)
 - Visualization and accessibility principles (sec 2)
 - Data storytelling: Hook→Context→Findings→Tension→Resolution narrative structure (sec 3)
@@ -74,6 +68,18 @@ Read and follow `skills-guides/visualization.md` for:
 bash setup_env.sh
 ```
 Verify that format dependencies are available (weasyprint for PDF, python-pptx for PowerPoint, etc.).
+
+**Python imports from generator scripts**: the generator modules live in `skills/analyze/report/tools/`. When the agent writes a generator script (e.g. `output/[ANALYSIS_DIR]/scripts/make_report.py`), add that folder to `sys.path` at the top of the script so imports like `from pdf_generator import PDFGenerator` resolve correctly:
+
+```python
+import sys
+sys.path.insert(0, "skills/analyze/report/tools")
+
+from pdf_generator import PDFGenerator
+from css_builder import build_css, get_palette
+```
+
+CLI invocations (e.g. `md_to_report.py`) are called by full path from the agent root: `python skills/analyze/report/tools/md_to_report.py ...`.
 
 ## 3.1 Language of Generated Deliverables
 
@@ -95,6 +101,9 @@ All formats share the same source of truth for colors and fonts:
 - **Reasoning (Markdown → PDF/HTML):** `tools/md_to_report.py` with options `--style`, `--cover`, `--author`, `--domain`
 
 ```python
+import sys
+sys.path.insert(0, "skills/analyze/report/tools")
+
 from css_builder import build_css, get_palette
 css, name = build_css("corporate", "pdf")    # Assembled CSS
 palette = get_palette("corporate")           # {"primary": (0x1a,0x36,0x5d), "font_main": "Inter", ...}
@@ -106,8 +115,8 @@ When the user picks "Design-first" in question 3, run this five-step checklist *
 
 1. **Classify the artifact** — `executive-dashboard` / `technical-report` / `editorial-brief` / `forensic-audit`. The class governs the next five decisions.
 2. **Choose a tone (pick one, commit)** — `editorial-serious` / `technical-minimal` / `executive-editorial` / `forensic-audit` / `maximalist-analytical` / `brutalist-data`. Half-and-half is not an option.
-3. **Type pairing** — one display face + one body face from the "Type pairings by artifact class" table in `skills-guides/dashboard-aesthetics.md`. Write the result as `font_pair: [display, body]`.
-4. **Palette** — derive a dominant accent from the data subject (finance → deep blue or oxblood; operations → cool steel or forest; audit → deep red on bone; consumer → a saturated primary). Fill a `palette_override` dict with CSS-level keys (`"--primary"`, `"--accent"`, `"--text-primary"`, …) that match the tokens of the chosen base style. *Note:* in `academic`, the token for the "primary" role is `--heading-color`; overriding `--primary` there is inert — consult the "Caveat — `academic`" note in `skills-guides/dashboard-aesthetics.md`.
+3. **Type pairing** — one display face + one body face from the "Type pairings by artifact class" table in [dashboard-aesthetics.md](dashboard-aesthetics.md). Write the result as `font_pair: [display, body]`.
+4. **Palette** — derive a dominant accent from the data subject (finance → deep blue or oxblood; operations → cool steel or forest; audit → deep red on bone; consumer → a saturated primary). Fill a `palette_override` dict with CSS-level keys (`"--primary"`, `"--accent"`, `"--text-primary"`, …) that match the tokens of the chosen base style. *Note:* in `academic`, the token for the "primary" role is `--heading-color`; overriding `--primary` there is inert — consult the "Caveat — `academic`" note in [dashboard-aesthetics.md](dashboard-aesthetics.md).
 5. **Motion budget** (dashboards only) — `none` / `minimal` / `expressive`. No JS, CSS-only, `@keyframes` prefixed with `dashboard-`, `prefers-reduced-motion` honoured.
 6. **Background style** (optional) — `solid` / `gradient-mesh` / `noise` / `grain`. Decide whether the artifact earns atmosphere beyond a flat surface.
 
@@ -127,7 +136,7 @@ Write the resulting `aesthetic.json` with this schema (extra keys are rejected b
 
 > *Aesthetic direction (content of `aesthetic.json`)*: tone=…, palette_override=…, font_pair=…, motion_budget=…, background_style=….
 
-See `skills-guides/dashboard-aesthetics.md` for interactive-specific guidance (motion, hover, backgrounds, type-at-screen) and `skills-guides/visual-craftsmanship.md` for the transversal principles (anti-patterns, palette roles, craftsmanship checklist).
+See [dashboard-aesthetics.md](dashboard-aesthetics.md) for interactive-specific guidance (motion, hover, backgrounds, type-at-screen) and `skills-guides/visual-craftsmanship.md` for the transversal principles (anti-patterns, palette roles, craftsmanship checklist).
 
 ## 5. Generation by Format
 

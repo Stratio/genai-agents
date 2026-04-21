@@ -12,7 +12,7 @@ Guía detallada para generar el reasoning de cada análisis. El reasoning docume
 
 **Override del usuario**: Si el usuario pide explícitamente reasoning en otros formatos (PDF, HTML, DOCX), generar el .md primero y luego convertir con:
 ```bash
-bash -c "source .venv/bin/activate && python tools/md_to_report.py output/[ANALISIS_DIR]/reasoning/reasoning.md --style corporate"
+bash -c "source .venv/bin/activate && python skills/analyze/report/tools/md_to_report.py output/[ANALISIS_DIR]/reasoning/reasoning.md --style corporate"
 ```
 Añadir `--html` si solicitó HTML. Añadir `--docx` si solicitó DOCX.
 

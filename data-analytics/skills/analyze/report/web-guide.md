@@ -1,8 +1,8 @@
 # Web Generation Guide (Interactive Dashboard)
 
-Operational reference for the web dashboard pipeline within `/report`.
+Operational reference for the web dashboard pipeline. Loaded by `report.md` (Phase 4 of `/analyze`) when the user picks **Web** as the deliverable format.
 
-> **Language**: All code snippets below omit `lang=` and `labels=` for brevity. In real invocations, **always pass `lang="<user_language_code>"` to `DashboardBuilder(...)`** so the UI chrome (Filters / All / Clear filters / KPIs / footer, HTML `lang` attribute) matches the user's language. See sec 3.1 of `SKILL.md` for the resolution rules and catalogue keys.
+> **Language**: All code snippets below omit `lang=` and `labels=` for brevity. In real invocations, **always pass `lang="<user_language_code>"` to `DashboardBuilder(...)`** so the UI chrome (Filters / All / Clear filters / KPIs / footer, HTML `lang` attribute) matches the user's language. See sec 3.1 of `report.md` for the resolution rules and catalogue keys.
 
 ## Principle
 
@@ -57,7 +57,7 @@ function updateKPIs(filters) {
 }
 """)
 
-db.save("output/[ANALYSIS_DIR]/<slug>-dashboard.html")  # <slug> = descriptive part of [ANALYSIS_DIR] after the timestamp — see SKILL.md §1.1
+db.save("output/[ANALYSIS_DIR]/<slug>-dashboard.html")  # <slug> = descriptive part of [ANALYSIS_DIR] after the timestamp — see report.md §1.1
 ```
 
 ## Dashboard Capabilities
@@ -84,6 +84,6 @@ db.save("output/[ANALYSIS_DIR]/<slug>-dashboard.html")  # <slug> = descriptive p
 - Use the styles from `styles/web/base.css` which already have sticky nav, hover, filters, sortable tables, print media, and responsive → `DashboardBuilder` assembles CSS via `build_css(style, "web")`
 - Title/legend overlap: NEVER leave the legend in default position when the chart has a title with descriptive text. Use `apply_plotly_layout` from `tools/chart_layout.py` or configure manually: title with `y=0.95`, horizontal legend at bottom with `y=-0.12`, `margin.t=100` and `margin.b=80`
 - **Custom JS**: The functions `updateKPIs(filters)`, `updateCharts(filters)`, and `updateTables(filters)` are called automatically when a filter changes. If they are not defined, filters will have no effect — the agent MUST implement them via `add_custom_js()` with the analysis-specific logic
-- **Embedded data**: Always call `db.set_data()` with the data needed for filtering. Without embedded data, filters cannot work offline. See `skills-guides/visualization.md` sec 5.5 for size limits and pre-aggregation
+- **Embedded data**: Always call `db.set_data()` with the data needed for filtering. Without embedded data, filters cannot work offline. See [../visualization.md](../visualization.md) sec 5.5 for size limits and pre-aggregation
 - **Grid layout**: Plotly charts are always full-width (they do not accept the `width` parameter). Only `add_html_section()` supports `width="half"` for lightweight HTML content in 2 columns (e.g.: callouts, summary tables, comparative text). Do not use grid for charts — insight-style titles overflow in narrow containers
 - **formatValue**: Use `formatValue(value, 'currency')` in custom JS instead of writing manual formatting logic. Supports `'currency'`, `'percent'`, and `'number'` with K/M/B abbreviations

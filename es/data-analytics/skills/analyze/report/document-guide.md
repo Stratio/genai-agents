@@ -1,8 +1,8 @@
 # Guía de Generación de Documento (PDF + DOCX)
 
-Referencia operativa para el pipeline de documento dentro de `/report`.
+Referencia operativa para el pipeline de documento (PDF + DOCX). Cargada por `report.md` (Fase 4 de `/analyze`) cuando el usuario elige **Documento** como formato del entregable.
 
-> **Idioma**: Todos los ejemplos de código omiten los argumentos `lang=` y `labels=` por brevedad. En invocaciones reales, **pasar siempre `lang="<código_idioma_usuario>"` a cada generador** (`PDFGenerator.render_scaffold`, `PDFGenerator.render_from_html`, `DOCXGenerator.render_scaffold`, `DOCXGenerator.render_from_markdown`). Ver sec 3.1 de `SKILL.md` para las reglas de resolución y las claves del catálogo disponibles.
+> **Idioma**: Todos los ejemplos de código omiten los argumentos `lang=` y `labels=` por brevedad. En invocaciones reales, **pasar siempre `lang="<código_idioma_usuario>"` a cada generador** (`PDFGenerator.render_scaffold`, `PDFGenerator.render_from_html`, `DOCXGenerator.render_scaffold`, `DOCXGenerator.render_from_markdown`). Ver sec 3.1 de `report.md` para las reglas de resolución y las claves del catálogo disponibles.
 
 ## Pipeline
 
@@ -11,7 +11,7 @@ Referencia operativa para el pipeline de documento dentro de `/report`.
 3. Si estructura **al vuelo**: usar `render_from_html()` con HTML libre generado en el script. Solo envuelve con CSS, portada opcional, base64 y metadata
 4. Ambos modos generan portada automática, numeracion de paginas, headers, e imágenes embebidas en base64
 5. Generar script: `output/[ANALISIS_DIR]/scripts/generate_pdf.py` que importe y use `PDFGenerator`
-6. Guardar en `output/[ANALISIS_DIR]/<slug>-report.pdf` (el `<slug>` es la parte descriptiva de `[ANALISIS_DIR]` tras el timestamp — ver `SKILL.md` §1.1)
+6. Guardar en `output/[ANALISIS_DIR]/<slug>-report.pdf` (el `<slug>` es la parte descriptiva de `[ANALISIS_DIR]` tras el timestamp — ver `report.md` §1.1)
 7. `save()` por defecto no guarda el HTML (artefacto intermedio de build). Pasar `also_save_html=True` solo si se necesita una versión web estática del documento además del PDF
 8. Generar DOCX: instanciar `DOCXGenerator(style=estilo)` con los MISMOS datos que el PDF. Si scaffold → `render_scaffold()` con los mismos parámetros. Si al vuelo → `render_from_markdown()` con el markdown source
 9. Guardar en `output/[ANALISIS_DIR]/<slug>-report.docx`

@@ -109,7 +109,7 @@ A single interaction:
 - **If one or more formats are selected → deliverables ARE ALWAYS GENERATED, regardless of the chosen depth. Quick/Standard/Deep affects the analysis, not the deliverables.**
 - Additional requirements via "Other" option (time filters, segments, mandatory metrics)
 
-Structure and visual style are not asked here — they are asked later by the `report` skill.
+Structure and visual style are not asked here — they are asked later when loading `report/report.md`.
 
 ## 5. Planning
 
@@ -187,11 +187,11 @@ For formulation best practices and query strategy (planning order, parallel exec
 
 ### 5.6 Visualizations
 
-Read and follow `skills-guides/visualization.md` for chart selection and visualization principles.
+Read and follow [visualization.md](visualization.md) for chart selection and visualization principles.
 
 For each visualization in the plan, define:
 - **Analytical question** it answers
-- **Chart type**: Select according to the table in `skills-guides/visualization.md` sec 1
+- **Chart type**: Select according to the table in [visualization.md](visualization.md) sec 1
 - **Variables**: What goes on each axis, groupings, filters
 - **Title**: Formulated as an insight, not a description
 - **Source data**: MCP query that feeds the visualization
@@ -312,7 +312,7 @@ If during execution a finding is detected that exceeds the scope of the current 
 
 > **MANDATORY if the user selected formats in §4.1.** The analysis depth (Quick/Standard/Deep) does NOT affect this step — if the user chose formats, all are generated.
 
-1. Load the skill `report`
+1. Load `report/report.md` for deliverable packaging instructions
 2. Generate ALL selected formats (do not omit any)
 3. Verify existence of each file with `ls -lh` before reporting to the user (see Phase 4, step 10 of AGENTS.md)
 
@@ -367,7 +367,7 @@ If a finding does not pass the 4 questions → it is information, not insight. I
 - **IMPORTANT**: High impact + low confidence → Main section, investigate further
 - **INFORMATIONAL**: Low impact → Appendix, no recommendation
 
-For data storytelling principles and mapping findings → narrative, read `skills-guides/visualization.md` sections 3 and 4.
+For data storytelling principles and mapping findings → narrative, read [visualization.md](visualization.md) sections 3 and 4.
 
 ## 8. Analysis Memory (Confirmation required)
 

@@ -1,6 +1,6 @@
 # Shared Guide: Visualization and Data Storytelling
 
-Principles shared by `/analyze` and `/report`.
+Principles shared by `/analyze` (analytical phase and its `report/report.md` packaging sub-guide).
 
 ## 1. Chart Type Selection
 
@@ -23,11 +23,11 @@ Choose based on the analytical question:
 - Always descriptive title + subtitle with period/filter
 - Y-axis start at 0 for bars (avoid visual manipulation)
 - Colors consistent with the chosen theme (via `get_palette()`, never hardcode)
-- **Transparency**: For colors with alpha (confidence bands, fill_between, overlapping areas), use `to_rgba(color, alpha)` from `tools/chart_layout.py`. Accepts hex (`"#1a365d"`) or RGB tuple and returns `"rgba(R,G,B,A)"` compatible with Plotly and matplotlib. **NEVER** concatenate alpha to hex (`"#1a365d80"`) — Plotly rejects it
+- **Transparency**: For colors with alpha (confidence bands, fill_between, overlapping areas), use `to_rgba(color, alpha)` from `skills/analyze/report/tools/chart_layout.py`. Accepts hex (`"#1a365d"`) or RGB tuple and returns `"rgba(R,G,B,A)"` compatible with Plotly and matplotlib. **NEVER** concatenate alpha to hex (`"#1a365d80"`) — Plotly rejects it
 - Annotations for notable points (peaks, drops, anomalies)
 - **Accessibility**: Use colorblind-friendly palettes, do not rely on color alone (use shapes/patterns), alt text on images
 - **Headless backend**: Use `matplotlib.use('Agg')` at the start of the script and `bbox_inches='tight'` in `savefig()`. If the image does not render, fallback to SVG
-- **Anti-overlap layout**: Title as insight on top, context as subtitle, legend positioned below the chart or to the right exterior. Use `tools/chart_layout.py` (`apply_chart_layout` / `apply_plotly_layout`) for standard layout. **NEVER** `fig.tight_layout()` after `fig.suptitle()` — use `fig.subplots_adjust()`
+- **Anti-overlap layout**: Title as insight on top, context as subtitle, legend positioned below the chart or to the right exterior. Use `skills/analyze/report/tools/chart_layout.py` (`apply_chart_layout` / `apply_plotly_layout`) for standard layout. **NEVER** `fig.tight_layout()` after `fig.suptitle()` — use `fig.subplots_adjust()`
 - **Figsize for PDF/HTML**: Use `figsize=(7, 4.5)` as maximum for individual charts (the printable area of A4 with default margins is ~160mm ~ 6.3"). For 2-column subplots use `figsize=(12, 4.5)`. Exceeding these dimensions causes overflow in WeasyPrint because `md_to_report.py` converts `![alt](img.png)` to `<p><img>` (not `<figure>`), without width containment CSS.
 - **Disparate scales**: Before plotting multiple series on the same axis, check if magnitudes differ by more than 3x. If so, use subplots with independent Y scales instead of a shared axis. For bars with multiple series, use grouped bars (dodge), never overlap with alpha. **Mandatory checklist before plotting series together:**
   1. Calculate `max(series_A) / max(series_B)`. If ratio > 3 → separate subplots with independent Y scales
@@ -74,7 +74,7 @@ Map each finding to its narrative role:
 
 ## 5. Interactive Dashboard
 
-Principles for composing web dashboards with `tools/dashboard_builder.py` (`DashboardBuilder`).
+Principles for composing web dashboards with `skills/analyze/report/tools/dashboard_builder.py` (`DashboardBuilder`).
 
 ### 5.1 When to use dashboard vs standalone charts
 

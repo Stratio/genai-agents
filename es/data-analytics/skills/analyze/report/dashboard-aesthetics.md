@@ -1,6 +1,6 @@
 # Estética de dashboards e informes
 
-Guía específica interactiva para la skill `report` cuando el usuario elige **Design-first** en la pregunta 3. Consúmela junto a los principios compartidos de `skills-guides/visual-craftsmanship.md`.
+Guía específica interactiva cargada por `report.md` (Fase 4 de `/analyze`) cuando el usuario elige **Design-first** en la pregunta 3. Consúmela junto a los principios compartidos de `skills-guides/visual-craftsmanship.md` (proporcionada en la raíz del agente).
 
 ## Emparejamientos tipográficos por clase de artefacto
 
@@ -68,7 +68,7 @@ Cada elemento interactivo (filtro, sort, nav link, tarjeta KPI en modo drill-dow
 
 ## Schema canónico de `aesthetic.json`
 
-Es el fichero que la skill `report` escribe en `output/[ANALYSIS_DIR]/aesthetic.json` y pasa a cada generador.
+Es el fichero que `report.md` escribe en `output/[ANALYSIS_DIR]/aesthetic.json` y pasa a cada generador.
 
 ```json
 {

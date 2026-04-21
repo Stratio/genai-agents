@@ -15,7 +15,9 @@ El agente mantiene memoria entre sesiones, recordando tus preferencias de análi
 - Realizar análisis estadísticos avanzados (correlaciones, distribuciones, tests de hipótesis)
 - Segmentación y clustering automático de datos (RFM, KMeans, DBSCAN)
 - Generar visualizaciones profesionales (gráficas, charts, dashboards)
-- Crear informes en múltiples formatos: PDF, DOCX, PowerPoint, web interactiva
+- **Informes analíticos** en múltiples formatos (PDF, DOCX, PowerPoint, web interactiva) — generados cuando pides un análisis con un entregable
+- **Entregables visuales ligeros** sin ejecutar un análisis — pósters e infografías rápidas, dashboards interactivos standalone, PDFs simples con pocos KPIs
+- **Leer PDFs existentes** para extraer texto, tablas y datos de formulario
 - **Evaluar la cobertura de calidad del dato** y generar informes de calidad (Chat / PDF / DOCX / Markdown) — solo lectura, no crea ni programa reglas
 - Recordar preferencias y análisis previos entre sesiones (memoria persistente)
 - Proponer términos de negocio al diccionario de gobernanza
@@ -34,11 +36,30 @@ El agente mantiene memoria entre sesiones, recordando tus preferencias de análi
 - "Segmenta los clientes por comportamiento de compra"
 - "Hay anomalías en los datos de facturación del último mes?"
 
-### Informes
+### Informes analíticos (análisis + entregable)
 - "Genera un informe PDF con el análisis de rentabilidad"
-- "Crea un dashboard web interactivo con los KPIs de ventas"
-- "Prepara una presentación PowerPoint con los resultados del trimestre"
+- "Crea un dashboard web interactivo con los KPIs de ventas y la narrativa del deep-dive"
+- "Prepara una presentación PowerPoint con los resultados del trimestre y los hallazgos clave"
 - "Genera un informe Word con el análisis de cohortes"
+
+### Visuales ligeros (sin análisis, solo el artefacto)
+- "Hazme un póster con los 3 KPIs principales del último trimestre" *(canvas-craft)*
+- "Construye una infografía de marketing con los números del lanzamiento" *(canvas-craft)*
+- "Dame un PDF de una página con estas 3 cifras de ventas" *(pdf-writer)*
+- "Dashboard interactivo standalone para el equipo de operaciones, sin narrativa" *(web-craft)*
+- "Reempaqueta el output del análisis de ayer como un PDF en otro estilo" *(pdf-writer)*
+
+### Reempaquetar una exploración o consulta rápida
+Tras explorar un dominio, una evaluación de calidad o una consulta MCP rápida, puedes pedir empaquetar lo que has visto — sin reanalizar:
+- Tras `/explore-data` del dominio ventas → "Ahora dame esto en un PDF" *(pdf-writer)*
+- Tras listar las tablas de un dominio → "Hazme un póster de una página con esta lista" *(canvas-craft)*
+- Tras `/assess-quality` → "Pásalo a un dashboard standalone" *(web-craft)*
+
+(Si añades un verbo analítico — "ahora analiza esto y dame un PDF" — el agente ejecuta el análisis completo en lugar de solo empaquetar.)
+
+### Lectura de PDFs
+- "Lee este PDF y extrae las tablas"
+- "¿Qué dice este PDF de contrato sobre las condiciones de renovación?"
 
 ### Exploración
 - "Qué dominios de datos hay disponibles?"
@@ -57,15 +78,16 @@ El agente mantiene memoria entre sesiones, recordando tus preferencias de análi
 
 | Comando | Descripción |
 |---------|-------------|
-| `/analyze` | Análisis completo: descubrimiento de dominio, planificación, queries, análisis estadístico, visualizaciones e informes |
-| `/report` | Generación de informes profesionales en PDF, DOCX, web interactiva o PowerPoint |
+| `/analyze` | Análisis completo: descubrimiento de dominio, planificación, queries, análisis estadístico, visualizaciones y entregables multi-formato (PDF, DOCX, web interactiva, PowerPoint — generados internamente) |
 | `/explore-data` | Exploración rápida de dominios, tablas, columnas y terminología de negocio |
 | `/assess-quality` | Evaluación de cobertura de calidad (dimensiones, reglas existentes, gaps) |
 | `/quality-report` | Generar un informe formal de cobertura de calidad (Chat / PDF / DOCX / Markdown) |
 | `/update-memory` | Actualizar la memoria persistente con preferencias y patrones aprendidos |
 | `/propose-knowledge` | Proponer términos de negocio descubiertos al diccionario de gobernanza |
 | `/pdf-reader` | Leer y extraer contenido de archivos PDF (texto, tablas, imágenes, formularios, adjuntos) |
-| `/pdf-writer` | Crear documentos PDF personalizados, combinar/dividir/rotar PDFs, añadir marcas de agua, cifrar, rellenar formularios |
+| `/pdf-writer` | PDFs multi-página o dominados por prosa (informes ligeros con ≤3 KPIs, facturas, cartas, newsletters, certificados). También combinar/dividir/rotar, marca de agua, cifrar, rellenar formularios |
+| `/canvas-craft` | Visuales de una sola página dominados por composición: pósters, infografías, portadas, one-pagers de marketing (PDF o PNG) |
+| `/web-craft` | HTML interactivo standalone: dashboards sin narrativa analítica, componentes UI, landing pages |
 
 ## Conexiones necesarias
 

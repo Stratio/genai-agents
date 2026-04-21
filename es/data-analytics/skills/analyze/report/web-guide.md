@@ -1,8 +1,8 @@
 # Guía de Generación Web (Dashboard Interactivo)
 
-Referencia operativa para el pipeline de dashboard web dentro de `/report`.
+Referencia operativa para el pipeline de dashboard web. Cargada por `report.md` (Fase 4 de `/analyze`) cuando el usuario elige **Web** como formato del entregable.
 
-> **Idioma**: Todos los ejemplos de código omiten `lang=` y `labels=` por brevedad. En invocaciones reales, **pasar siempre `lang="<código_idioma_usuario>"` a `DashboardBuilder(...)`** para que el chrome UI (Filters/All/Clear filters/KPIs/footer, atributo HTML `lang`) coincida con el idioma del usuario. Ver sec 3.1 de `SKILL.md` para las reglas de resolución y claves del catálogo.
+> **Idioma**: Todos los ejemplos de código omiten `lang=` y `labels=` por brevedad. En invocaciones reales, **pasar siempre `lang="<código_idioma_usuario>"` a `DashboardBuilder(...)`** para que el chrome UI (Filters/All/Clear filters/KPIs/footer, atributo HTML `lang`) coincida con el idioma del usuario. Ver sec 3.1 de `report.md` para las reglas de resolución y claves del catálogo.
 
 ## Principio
 
@@ -57,7 +57,7 @@ function updateKPIs(filters) {
 }
 """)
 
-db.save("output/[ANALISIS_DIR]/<slug>-dashboard.html")  # <slug> = parte descriptiva de [ANALISIS_DIR] tras el timestamp — ver SKILL.md §1.1
+db.save("output/[ANALISIS_DIR]/<slug>-dashboard.html")  # <slug> = parte descriptiva de [ANALISIS_DIR] tras el timestamp — ver report.md §1.1
 ```
 
 ## Capacidades del Dashboard
@@ -84,6 +84,6 @@ db.save("output/[ANALISIS_DIR]/<slug>-dashboard.html")  # <slug> = parte descrip
 - Usar los estilos de `styles/web/base.css` que ya tienen nav sticky, hover, filtros, tablas ordenables, print media y responsive → `DashboardBuilder` ensambla CSS vía `build_css(style, "web")`
 - Solapamiento título/leyenda: NUNCA dejar la leyenda en posición default cuando la gráfica tiene título con texto descriptivo. Usar `apply_plotly_layout` de `tools/chart_layout.py` o configurar manualmente: title con `y=0.95`, legend horizontal abajo con `y=-0.12`, `margin.t=100` y `margin.b=80`
 - **Custom JS**: Las funciones `updateKPIs(filters)`, `updateCharts(filters)` y `updateTables(filters)` se llaman automáticamente cuando cambia un filtro. Si no se definen, los filtros no tendrán efecto — el agente DEBE implementarlas vía `add_custom_js()` con la lógica específica del análisis
-- **Datos embebidos**: Llamar siempre a `db.set_data()` con los datos necesarios para filtrado. Sin datos embebidos, los filtros no pueden funcionar offline. Ver `skills-guides/visualization.md` sec 5.5 para limites de tamaño y pre-agregacion
+- **Datos embebidos**: Llamar siempre a `db.set_data()` con los datos necesarios para filtrado. Sin datos embebidos, los filtros no pueden funcionar offline. Ver [../visualization.md](../visualization.md) sec 5.5 para limites de tamaño y pre-agregacion
 - **Grid layout**: Las gráficas Plotly son siempre full-width (no aceptan parámetro `width`). Solo `add_html_section()` soporta `width="half"` para contenido HTML ligero en 2 columnas (ej: callouts, tablas de resumen, texto comparativo). No usar grid para gráficas — los títulos insight-style desbordan en contenedores estrechos
 - **formatValue**: Usar `formatValue(value, 'currency')` en custom JS en lugar de escribir lógica de formateo manual. Soporta `'currency'`, `'percent'` y `'number'` con abreviaturas K/M/B
