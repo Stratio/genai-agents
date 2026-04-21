@@ -43,7 +43,10 @@ ocrmypdf>=17.0
 
 # === PDF writing (shared-skills pdf-writer and canvas-craft) ===
 reportlab>=4.4
-svglib>=1.5
+# svglib 1.6+ pulls rlPyCairo → pycairo, which requires a C toolchain to build
+# from source. The CI builder image has no gcc, so pin below 1.6 until a wheel
+# or a toolchain is available.
+svglib>=1.5,<1.6
 pillow>=11.0
 
 # === Testing ===
