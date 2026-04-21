@@ -43,20 +43,24 @@ fi
 echo ""
 echo "=== Installed Versions ==="
 python3 -c "
-import weasyprint, docx, jinja2, markdown
-import reportlab, pypdf, pdfplumber, pypdfium2, pdf2image, svglib, PIL
-print(f'weasyprint:    {weasyprint.__version__}')
-print(f'python-docx:   {docx.__version__}')
-print(f'Jinja2:        {jinja2.__version__}')
-print(f'markdown:      {markdown.__version__}')
-print(f'reportlab:     {reportlab.__version__}')
-print(f'pypdf:         {pypdf.__version__}')
-print(f'pdfplumber:    {pdfplumber.__version__}')
-print(f'pypdfium2:     {pypdfium2.__version__}')
-print(f'pdf2image:     {pdf2image.__version__}')
-print(f'svglib:        {svglib.__version__ if hasattr(svglib, \"__version__\") else \"n/a\"}')
-print(f'pillow:        {PIL.__version__}')
-"
+from importlib.metadata import version, PackageNotFoundError
+def _v(pkg):
+    try:
+        return version(pkg)
+    except PackageNotFoundError:
+        return 'n/a'
+print(f'weasyprint:    {_v(\"weasyprint\")}')
+print(f'python-docx:   {_v(\"python-docx\")}')
+print(f'Jinja2:        {_v(\"Jinja2\")}')
+print(f'markdown:      {_v(\"markdown\")}')
+print(f'reportlab:     {_v(\"reportlab\")}')
+print(f'pypdf:         {_v(\"pypdf\")}')
+print(f'pdfplumber:    {_v(\"pdfplumber\")}')
+print(f'pypdfium2:     {_v(\"pypdfium2\")}')
+print(f'pdf2image:     {_v(\"pdf2image\")}')
+print(f'svglib:        {_v(\"svglib\")}')
+print(f'pillow:        {_v(\"pillow\")}')
+" || true
 
 echo ""
 echo "=== Environment ready ==="

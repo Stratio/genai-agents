@@ -51,31 +51,34 @@ fi
 echo ""
 echo "=== Installed Versions ==="
 python3 -c "
-import pandas, numpy, scipy, matplotlib, seaborn, plotly
-import sklearn, jinja2, nbformat, nbclient, openpyxl, tabulate, pptx, docx
-import reportlab, pypdf, pdfplumber, pypdfium2, pdf2image, svglib, PIL
-print(f'pandas:       {pandas.__version__}')
-print(f'numpy:        {numpy.__version__}')
-print(f'scipy:        {scipy.__version__}')
-print(f'matplotlib:   {matplotlib.__version__}')
-print(f'seaborn:      {seaborn.__version__}')
-print(f'plotly:       {plotly.__version__}')
-print(f'scikit-learn: {sklearn.__version__}')
-print(f'jinja2:       {jinja2.__version__}')
-print(f'nbformat:     {nbformat.__version__}')
-print(f'nbclient:     {nbclient.__version__}')
-print(f'openpyxl:     {openpyxl.__version__}')
-print(f'tabulate:     {tabulate.__version__}')
-print(f'python-pptx:  {pptx.__version__}')
-print(f'python-docx:  {docx.__version__}')
-print(f'reportlab:    {reportlab.__version__}')
-print(f'pypdf:        {pypdf.__version__}')
-print(f'pdfplumber:   {pdfplumber.__version__}')
-print(f'pypdfium2:    {pypdfium2.__version__}')
-print(f'pdf2image:    {pdf2image.__version__}')
-print(f'svglib:       {svglib.__version__ if hasattr(svglib, \"__version__\") else \"n/a\"}')
-print(f'pillow:       {PIL.__version__}')
-"
+from importlib.metadata import version, PackageNotFoundError
+def _v(pkg):
+    try:
+        return version(pkg)
+    except PackageNotFoundError:
+        return 'n/a'
+print(f'pandas:       {_v(\"pandas\")}')
+print(f'numpy:        {_v(\"numpy\")}')
+print(f'scipy:        {_v(\"scipy\")}')
+print(f'matplotlib:   {_v(\"matplotlib\")}')
+print(f'seaborn:      {_v(\"seaborn\")}')
+print(f'plotly:       {_v(\"plotly\")}')
+print(f'scikit-learn: {_v(\"scikit-learn\")}')
+print(f'jinja2:       {_v(\"Jinja2\")}')
+print(f'nbformat:     {_v(\"nbformat\")}')
+print(f'nbclient:     {_v(\"nbclient\")}')
+print(f'openpyxl:     {_v(\"openpyxl\")}')
+print(f'tabulate:     {_v(\"tabulate\")}')
+print(f'python-pptx:  {_v(\"python-pptx\")}')
+print(f'python-docx:  {_v(\"python-docx\")}')
+print(f'reportlab:    {_v(\"reportlab\")}')
+print(f'pypdf:        {_v(\"pypdf\")}')
+print(f'pdfplumber:   {_v(\"pdfplumber\")}')
+print(f'pypdfium2:    {_v(\"pypdfium2\")}')
+print(f'pdf2image:    {_v(\"pdf2image\")}')
+print(f'svglib:       {_v(\"svglib\")}')
+print(f'pillow:       {_v(\"pillow\")}')
+" || true
 
 echo ""
 echo "=== Environment ready ==="
