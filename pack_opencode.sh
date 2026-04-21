@@ -304,19 +304,20 @@ find "$OUTPUT_DIR" \
   -exec sed -i 's/{{TOOL_QUESTIONS}}/ (`question`)/g' {} \;
 echo "    [7b] Placeholder TOOL_QUESTIONS -> question"
 
-# Rewrite "skills/<name>/" prefixed paths to ".opencode/skills/<name>/" since
-# OpenCode puts skills under .opencode/skills/ but authored content references
-# them as skills/<name>/ (the in-repo path). Applies only to documents at the
-# output root (AGENTS.md, README.md, skills-guides/), not to files inside
-# .opencode/skills/ themselves (those use skill-local relative references).
-find "$OUTPUT_DIR" -maxdepth 2 \
-  -not -path '*/.opencode/*' -not -path '*/node_modules/*' -not -path '*/.venv/*' \
+# Rewrite "skills/<name>/" prefixed paths to ".opencode/skills/<name>/" everywhere
+# in the output (top-level docs AND files inside .opencode/skills/). OpenCode
+# puts skills under .opencode/skills/ but the authored content references them
+# as skills/<name>/ (the in-repo path). This rewrite makes bash invocations,
+# sys.path.insert calls, docstrings, and all absolute references resolve in
+# the packaged layout. The regex matches `skills/<kebab-name>/` only when not
+# preceded by an alphanumeric / underscore / dot / slash — so relative md
+# references like `[file.md](file.md)` and python imports `from foo import X`
+# are not affected.
+find "$OUTPUT_DIR" \
+  -not -path '*/node_modules/*' -not -path '*/.venv/*' \
   -type f \( -name '*.md' -o -name '*.json' -o -name '*.sh' -o -name '*.py' -o -name '*.txt' \) \
   -exec sed -i -E 's#(^|[^a-zA-Z0-9_./])skills/([a-z][a-z0-9-]*)/#\1.opencode/skills/\2/#g' {} \;
-find "$OUTPUT_DIR/skills-guides" \
-  -type f \( -name '*.md' \) \
-  -exec sed -i -E 's#(^|[^a-zA-Z0-9_./])skills/([a-z][a-z0-9-]*)/#\1.opencode/skills/\2/#g' {} \; 2>/dev/null || true
-echo "    [7d] Rewrote skills/<name>/ → .opencode/skills/<name>/ in top-level docs"
+echo "    [7d] Rewrote skills/<name>/ → .opencode/skills/<name>/ everywhere"
 
 # ---------------------------------------------------------------------------
 # Phase 7c — Non-runtime sweep (tests, caches, editor junk)
