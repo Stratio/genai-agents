@@ -179,3 +179,27 @@ If the MCP takes too long or returns an error:
 4. **Validation queries**: Data cross-checks, consistency checks -> ensure reliability
 
 This order is for **planning** the questions. In **execution**, launch all independent queries in parallel — typically categories 1, 2, and 3 can be executed simultaneously. Only category 4 (cross-validation) may require previous results.
+
+## 10. OpenSearch Availability Fallback
+
+`search_domains` consults OpenSearch internally. OpenSearch may not be available in every environment (on-premises deployments, isolated environments, infrastructure incidents). This section defines the fallback when the tool is unavailable — distinct from the *empty result* fallback already described in §4.1.
+
+### 10.1 Case detection
+
+| Situation | Indicator | Fallback path |
+|-----------|-----------|---------------|
+| Empty result (already documented) | Tool returns a well-formed response with zero matches | §4.1 — call `list_domains()` and ask the user |
+| Unavailability (new) | Error response mentioning OpenSearch / index / connection / timeout, **or** two successive retries per §8.2 still fail (not a `task_id` pending per §8.1) | §10.2 |
+
+### 10.2 Deterministic fallback
+
+| OpenSearch tool | Deterministic alternative | Coverage |
+|-----------------|---------------------------|----------|
+| `search_domains(search_text, domain_type?)` | `list_domains(domain_type?)` + local substring filter over `name` and `description` | Complete dataset; no relevance ranking |
+
+Procedure:
+1. On first detected unavailability in the session, announce the degradation to the user once — e.g. *"Domain search is currently unavailable; I will use the full domain listing instead."* Do not repeat on subsequent calls in the same session.
+2. Invoke the deterministic alternative.
+3. Continue the workflow normally (non-blocking).
+4. Stop only if the alternative cannot cover the user's need (the listing is too large for the user to pick from, or a free-text search is genuinely required). In that case, ask the user to narrow the scope manually.
+5. Note the degradation in any reasoning or summary produced at the end of the turn.

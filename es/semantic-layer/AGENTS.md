@@ -52,6 +52,8 @@ Antes de activar cualquier skill, evaluar que necesita el usuario:
 | Explorar capa publicada | Triage directo: `search_domains(texto, domain_type='business')` o `list_domains(domain_type='business')` + tools sql | "¿Que tiene la capa semántica de X?" |
 | Referencia de tools | `/stratio-semantic-layer` | "¿Como funciona create_ontology?" |
 
+> **Indisponibilidad de OpenSearch**: si `search_domains`, `search_ontologies` o `search_data_dictionary` fallan por indisponibilidad del backend (no por resultado vacío), seguir §10 de `stratio-semantic-layer-tools.md` para el fallback determinístico.
+
 **Routing para pipeline completo**: Cuando el usuario pide construir una capa semántica y no queda claro si tiene un dominio existente, preguntar antes de cargar ninguna skill: ¿quiere usar un dominio técnico existente o crear una nueva colección de datos? Si necesita crear una colección nueva → cargar `/create-data-collection`. Cuando la colección este creada, sugerir continuar con `/build-semantic-layer [nombre_del_nuevo_dominio]`.
 
 **Activación de skills**: Cargar la skill correspondiente ANTES de continuar con el workflow. La skill contiene el detalle operativo necesario.

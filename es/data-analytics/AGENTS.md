@@ -172,6 +172,8 @@ Para exploración rápida de dominios sin análisis completo, ver la skill `/exp
 3. Obtener detalles de columnas relevantes (`get_table_columns_details`) y buscar terminología de negocio (`search_domain_knowledge`) — lanzar en paralelo, son independientes
 4. Si necesitas aclarar algo, preguntar al usuario
 
+> **Indisponibilidad de OpenSearch**: si `search_domains` falla por indisponibilidad del backend (no por resultado vacío), seguir §10 de `stratio-data-tools.md` para el fallback determinístico.
+
 ### Fase 1.1 — EDA y Perfilado de Datos (en fase de planificación, solo lectura)
 
 Ejecutar en paralelo antes de preguntar al usuario sobre formatos o profundidad:

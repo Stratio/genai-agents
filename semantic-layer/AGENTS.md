@@ -52,6 +52,8 @@ Before activating any skill, evaluate what the user needs:
 | Explore published layer | Direct triage: `search_domains(text, domain_type='business')` or `list_domains(domain_type='business')` + sql tools | "What does the semantic layer of X contain?" |
 | Tools reference | `/stratio-semantic-layer` | "How does create_ontology work?" |
 
+> **OpenSearch unavailability**: if `search_domains`, `search_ontologies` or `search_data_dictionary` fail due to backend unavailability (not due to empty results), follow §10 of `stratio-semantic-layer-tools.md` for the deterministic fallback.
+
 **Routing for full pipeline**: When the user asks to build a semantic layer and it is not clear whether they have an existing domain, ask before loading any skill: do they want to use an existing technical domain or create a new data collection? If they need to create a new collection → load `/create-data-collection`. Once the collection is created, suggest continuing with `/build-semantic-layer [new_domain_name]`.
 
 **Skill activation**: Load the corresponding skill BEFORE continuing with the workflow. The skill contains the necessary operational detail.
