@@ -200,6 +200,7 @@ def draw_chrome(canvas, doc):
     canvas.setFillColor(MUTED)
     canvas.drawString(MARGIN_X, 15 * mm, "Annual Report — 2026")
     canvas.drawRightString(w - MARGIN_X, 15 * mm, f"{doc.page:02d}")
+    # Para totales "Página X de Y", ver REFERENCE.md §7 (NumberedCanvas).
     canvas.restoreState()
 
 def build(output_path, story):
@@ -493,7 +494,7 @@ es posible pero engorroso. OCRmyPDF gestiona todos los casos límite.
 
 - **`FORMS.md`** — rellenar campos AcroForm interactivos en PDFs existentes
 - **`REFERENCE.md`** — patrones avanzados de reportlab, incrustación de SVG,
-  generación de índices, marcadores, renderizado por lotes
+  generación de índices, marcadores, numeración de páginas, renderizado por lotes
 - **`fonts/`** — los propios archivos TTF, con los avisos de licencia OFL
 
 ## 11. Instalación

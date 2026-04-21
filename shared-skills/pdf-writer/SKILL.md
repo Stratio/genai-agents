@@ -189,6 +189,7 @@ def draw_chrome(canvas, doc):
     canvas.setFillColor(MUTED)
     canvas.drawString(MARGIN_X, 15 * mm, "Annual Report — 2026")
     canvas.drawRightString(w - MARGIN_X, 15 * mm, f"{doc.page:02d}")
+    # For "Page X of Y" totals, see REFERENCE.md §7 (NumberedCanvas).
     canvas.restoreState()
 
 def build(output_path, story):
@@ -473,7 +474,7 @@ fiddly. OCRmyPDF handles all the edge cases.
 
 - **`FORMS.md`** — filling interactive AcroForm fields in existing PDFs
 - **`REFERENCE.md`** — advanced reportlab patterns, SVG embedding,
-  TOC generation, bookmarks, batch rendering
+  TOC generation, bookmarks, page numbering, batch rendering
 - **`fonts/`** — the TTF files themselves, with OFL license notices
 
 ## 11. Installation

@@ -12,11 +12,12 @@ por lotes o tipografía condicional.
 4. Incrustación de gráficos vectoriales SVG
 5. Inserción de gráficas directamente en PDFs
 6. Cabeceras, pies de página y títulos corridos
-7. Diseños de impresión a doble cara (márgenes en espejo)
-8. Patrones de generación por lotes
-9. Conformidad PDF/A y salida de archivo
-10. Adjuntar archivos dentro de un PDF
-11. Fusión preservando marcadores
+7. Contador total de páginas con NumberedCanvas
+8. Diseños de impresión a doble cara (márgenes en espejo)
+9. Patrones de generación por lotes
+10. Conformidad PDF/A y salida de archivo
+11. Adjuntar archivos dentro de un PDF
+12. Fusión preservando marcadores
 
 ---
 
@@ -204,7 +205,50 @@ def draw_header(canvas, doc):
 
 Actualiza `doc.current_chapter` cada vez que encuentres un encabezado de capítulo.
 
-## 7. Diseños de impresión a doble cara (márgenes en espejo)
+## 7. Contador total de páginas con NumberedCanvas
+
+`canvas.getPageNumber()` devuelve la página actual, pero reportlab no tiene
+forma de conocer el total hasta que todas las páginas se han compuesto.
+El patrón canónico es una subclase de `Canvas` que captura el estado de
+cada página en `showPage()` y lo repinta en `save()` cuando el total
+ya es conocido:
+
+```python
+from reportlab.pdfgen import canvas
+
+class NumberedCanvas(canvas.Canvas):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._saved_states = []
+
+    def showPage(self):
+        self._saved_states.append(dict(self.__dict__))
+        self._startPage()
+
+    def save(self):
+        total = len(self._saved_states)
+        for state in self._saved_states:
+            self.__dict__.update(state)
+            self._draw_page_number(total)
+            super().showPage()
+        super().save()
+
+    def _draw_page_number(self, total):
+        self.setFont("Body", 8)
+        self.setFillColor(MUTED)
+        self.drawRightString(
+            A4[0] - MARGIN_X, 15 * mm,
+            f"{self._pageNumber} / {total}",
+        )
+
+doc.build(story, canvasmaker=NumberedCanvas)
+```
+
+Combínalo con el callback `draw_header` de §6 para tener "chrome"
+arriba y paginación `X / Y` abajo — ambos pasan por el mismo canvas
+en cada página.
+
+## 8. Diseños de impresión a doble cara (márgenes en espejo)
 
 Para folletos y libros, alterna los márgenes interior/exterior:
 
@@ -224,7 +268,7 @@ def frame_for(page_num):
 O bien define dos objetos `PageTemplate`, uno por paridad, y alterna con
 `NextPageTemplate`.
 
-## 8. Patrones de generación por lotes
+## 9. Patrones de generación por lotes
 
 Generación de cientos de facturas, certificados o cartas a partir de un conjunto
 de datos:
@@ -258,7 +302,7 @@ Importante: **registra las fuentes dentro de la función worker**, no en el
 proceso principal. Los registros TTF no siempre sobreviven la frontera
 fork/spawn.
 
-## 9. Conformidad PDF/A y salida de archivo
+## 10. Conformidad PDF/A y salida de archivo
 
 PDF/A es el estándar ISO para archivado a largo plazo. Requisitos clave:
 las fuentes deben estar embebidas, sin transparencias, sin cifrado, sin
@@ -275,7 +319,7 @@ gs -dPDFA=2 -dBATCH -dNOPAUSE -sProcessColorModel=DeviceRGB \
 
 O usa una librería dedicada como `pikepdf` con inyección manual de metadatos.
 
-## 10. Adjuntar archivos dentro de un PDF
+## 11. Adjuntar archivos dentro de un PDF
 
 Útil para entregar un PDF acabado con sus datos en bruto (CSV, Excel)
 embebidos:
@@ -301,7 +345,7 @@ with open("/tmp/report_with_data.pdf", "wb") as f:
 Los visores mostrarán un icono de clip; los usuarios podrán extraer el adjunto
 desde el documento.
 
-## 11. Fusión preservando marcadores
+## 12. Fusión preservando marcadores
 
 `PdfWriter.append` conserva las entradas del esquema (marcadores) de cada
 fuente:

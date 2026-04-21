@@ -5,8 +5,8 @@ Provides two rendering modes (parallel API to PDFGenerator):
   data -> analysis -> conclusions) with KPIs, figures, tables, callouts.
 - **render_from_markdown**: Converts markdown content to DOCX elements.
 
-Usage:
-    from tools.docx_generator import DOCXGenerator
+Usage (from a script that has added skills/analyze/report/tools to sys.path):
+    from docx_generator import DOCXGenerator
 
     gen = DOCXGenerator(style="corporate")
 

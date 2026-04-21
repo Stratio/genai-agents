@@ -109,7 +109,7 @@ Una sola interacción:
 - **Si selecciona uno o más formatos → los deliverables SE GENERAN SIEMPRE, independientemente de la profundidad elegida. Rápido/Estándar/Profundo afecta al análisis, no a los entregables.**
 - Requisitos adicionales vía opción "Other" (filtros temporales, segmentos, métricas obligatorias)
 
-La estructura y el estilo visual no se preguntan aquí — los pregunta después la skill `report`.
+La estructura y el estilo visual no se preguntan aquí — se preguntan después al cargar `report/report.md`.
 
 ## 5. Planificación
 
@@ -187,11 +187,11 @@ Para buenas prácticas de formulación y estrategia de queries (orden de planifi
 
 ### 5.6 Visualizaciones
 
-Leer y seguir `skills-guides/visualization.md` para selección de gráficas y principios de visualización.
+Leer y seguir [visualization.md](visualization.md) para selección de gráficas y principios de visualización.
 
 Para cada visualización del plan, definir:
 - **Pregunta analítica** que responde
-- **Tipo de gráfica**: Seleccionar según tabla en `skills-guides/visualization.md` sec 1
+- **Tipo de gráfica**: Seleccionar según tabla en [visualization.md](visualization.md) sec 1
 - **Variables**: Que va en cada eje, agrupaciones, filtros
 - **Título**: Formulado como insight, no como descripción
 - **Datos fuente**: Query MCP que alimenta la visualización
@@ -312,7 +312,7 @@ Si durante la ejecución se detecta un hallazgo que excede el alcance del nivel 
 
 > **OBLIGATORIO si el usuario seleccionó formatos en §4.1.** La profundidad del análisis (Rápido/Estándar/Profundo) NO afecta a este paso — si el usuario eligió formatos, todos se generan.
 
-1. Cargar la skill `report`
+1. Cargar `report/report.md` con las instrucciones de empaquetado del entregable
 2. Generar TODOS los formatos seleccionados (no omitir ninguno)
 3. Verificar existencia de cada fichero con `ls -lh` antes de reportar al usuario (ver Fase 4, paso 10 de AGENTS.md)
 
@@ -367,7 +367,7 @@ Si un hallazgo no pasa las 4 preguntas → es información, no insight. No va al
 - **IMPORTANTE**: Alto impacto + baja confianza → Sección principal, investigar más
 - **INFORMATIVO**: Bajo impacto → Apéndice, sin recomendación
 
-Para principios de data storytelling y mapping hallazgos → narrativa, leer `skills-guides/visualization.md` secciones 3 y 4.
+Para principios de data storytelling y mapping hallazgos → narrativa, leer [visualization.md](visualization.md) secciones 3 y 4.
 
 ## 8. Memoria de Análisis (Confirmación requerida)
 

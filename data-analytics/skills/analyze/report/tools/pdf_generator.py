@@ -6,8 +6,8 @@ Provides two rendering modes:
 - **render_from_html**: Wraps free-form HTML with CSS, optional cover page,
   and base64-embedded images. Gives full creative freedom to the LLM.
 
-Usage:
-    from tools.pdf_generator import PDFGenerator
+Usage (from a script that has added skills/analyze/report/tools to sys.path):
+    from pdf_generator import PDFGenerator
 
     gen = PDFGenerator(style="corporate")
 

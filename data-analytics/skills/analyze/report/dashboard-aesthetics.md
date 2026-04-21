@@ -1,6 +1,6 @@
 # Dashboard and Report Aesthetics
 
-Interactive-specific guidance for the `report` skill when the user picks **Design-first** in question 3. Consume this alongside the shared principles in `skills-guides/visual-craftsmanship.md`.
+Interactive-specific guidance loaded by `report.md` (Phase 4 of `/analyze`) when the user picks **Design-first** in question 3. Consume this alongside the shared principles in `skills-guides/visual-craftsmanship.md` (provided at the agent root).
 
 ## Type pairings by artifact class
 
@@ -68,7 +68,7 @@ Every interactive element (filter, sort handle, nav link, KPI card in drill-down
 
 ## `aesthetic.json` canonical schema
 
-This is the file the `report` skill writes to `output/[ANALYSIS_DIR]/aesthetic.json` and passes to every generator.
+This is the file `report.md` writes to `output/[ANALYSIS_DIR]/aesthetic.json` and passes to every generator.
 
 ```json
 {

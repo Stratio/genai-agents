@@ -1,6 +1,6 @@
 # Guía Compartida: Visualización y Data Storytelling
 
-Principios compartidos por `/analyze` y `/report`.
+Principios compartidos por `/analyze` (fase analítica y su sub-guía de empaquetado `report/report.md`).
 
 ## 1. Selección de Tipo de Gráfica
 
@@ -23,12 +23,12 @@ Elegir según la pregunta analítica:
 - Siempre título descriptivo + subtítulo con periodo/filtro
 - Eje Y comenzar en 0 para barras (evitar manipulación visual)
 - Colores coherentes con el tema elegido (vía `get_palette()`, nunca hardcodear)
-- **Transparencia**: Para colores con alpha (bandas de confianza, fill_between, areas superpuestas), usar `to_rgba(color, alpha)` de `tools/chart_layout.py`. Acepta hex (`"#1a365d"`) o tupla RGB y devuelve `"rgba(R,G,B,A)"` compatible con Plotly y matplotlib. **NUNCA** concatenar alpha a hex (`"#1a365d80"`) — Plotly lo rechaza
+- **Transparencia**: Para colores con alpha (bandas de confianza, fill_between, areas superpuestas), usar `to_rgba(color, alpha)` de `skills/analyze/report/tools/chart_layout.py`. Acepta hex (`"#1a365d"`) o tupla RGB y devuelve `"rgba(R,G,B,A)"` compatible con Plotly y matplotlib. **NUNCA** concatenar alpha a hex (`"#1a365d80"`) — Plotly lo rechaza
 - Anotaciones para puntos notables (picos, caidas, anomalías)
 - **Accesibilidad**: Usar paletas colorblind-friendly, no depender solo del color (usar formas/patrones), texto alternativo en imágenes
 - **Backend sin display**: Usar `matplotlib.use('Agg')` al inicio del script y `bbox_inches='tight'` en `savefig()`. Si la imagen no renderiza, fallback a SVG
-- **Layout anti-solapamiento**: Título como insight arriba, contexto como subtítulo, leyenda posicionada debajo del gráfico o a la derecha exterior. Usar `tools/chart_layout.py` (`apply_chart_layout` / `apply_plotly_layout`) para layout estándar. **NUNCA** `fig.tight_layout()` después de `fig.suptitle()` — usar `fig.subplots_adjust()`
-- **Figsize para PDF/HTML**: Usar `figsize=(7, 4.5)` como máximo para gráficas individuales (el área imprimible del A4 con los márgenes por defecto es ~160mm ≈ 6.3"). Para subplots de 2 columnas usar `figsize=(12, 4.5)`. Exceder estas dimensiones provoca desbordamiento en WeasyPrint porque `md_to_report.py` convierte `![alt](img.png)` en `<p><img>` (no `<figure>`), sin CSS de contención de ancho.
+- **Layout anti-solapamiento**: Título como insight arriba, contexto como subtítulo, leyenda posicionada debajo del gráfico o a la derecha exterior. Usar `skills/analyze/report/tools/chart_layout.py` (`apply_chart_layout` / `apply_plotly_layout`) para layout estándar. **NUNCA** `fig.tight_layout()` después de `fig.suptitle()` — usar `fig.subplots_adjust()`
+- **Figsize para PDF/HTML**: Usar `figsize=(7, 4.5)` como máximo para gráficas individuales (el área imprimible del A4 con los márgenes por defecto es ~160mm ≈ 6.3"). Para subplots de 2 columnas usar `figsize=(12, 4.5)`. Exceder estas dimensiones provoca desbordamiento en WeasyPrint porque `skills/analyze/report/tools/md_to_report.py` convierte `![alt](img.png)` en `<p><img>` (no `<figure>`), sin CSS de contención de ancho.
 - **Escalas dispares**: Antes de graficar múltiples series en el mismo eje, verificar si las magnitudes difieren por más de 3x. Si es así, usar subplots con escalas Y independientes en lugar de eje compartido. Para barras con múltiples series, usar barras agrupadas (dodge), nunca superponer con alpha. **Checklist obligatorio antes de graficar series juntas:**
   1. Calcular `max(serie_A) / max(serie_B)`. Si ratio > 3 → subplots separados con escalas Y independientes
   2. Calcular rango de variación de cada serie (`max - min`). Si difieren por más de 10x → las barras agrupadas son engañosas (una serie parece plana). Separar en subplots o usar índices (base 100)
@@ -74,7 +74,7 @@ Mapear cada hallazgo a su rol narrativo:
 
 ## 5. Dashboard Interactivo
 
-Principios para componer dashboards web con `tools/dashboard_builder.py` (`DashboardBuilder`).
+Principios para componer dashboards web con `skills/analyze/report/tools/dashboard_builder.py` (`DashboardBuilder`).
 
 ### 5.1 Cuándo usar dashboard vs gráficas sueltas
 

@@ -96,9 +96,9 @@ Step 0 runs in Phase 0 and therefore does not violate the "never proceed to Phas
 
 **Step 1 — Check for skill activation first.** Assumes Step 0 has already cleared a bare domain name. If the user's request matches any of these patterns, load the skill IMMEDIATELY — do not evaluate triage:
 
-**PDF/visual precedence rule**: When the request mentions "PDF" or a visual artifact and could match multiple rows, apply this priority: (1) **reading/extracting** content from an existing PDF → `pdf-reader`; (2) **single-page visual artifact** — composition-dominated, ≥70% visual (poster, cover, certificate, infographic, one-pager) → `canvas-craft`; (3) **manipulating** an existing PDF (merge, split, rotate, watermark, encrypt, fill form, flatten) or **creating** a typographic/prose document (invoice, letter, newsletter, multi-page report, data-light PDF with ≤3 KPIs and no hypothesis) → `pdf-writer`; (4) **exporting** a previous analysis to PDF → `report`; (5) **quality report** in PDF format → `quality-report`; (6) only if none of the above apply → `analyze`. **Note**: Step 1.1 gates (count gate and keyword gate especially) apply *before* this rule. If an analytical signal is present (multi-KPI with dimensions, hypothesis, comparative period, analytical verb), Gate 4 (tie-breaker) re-routes to `analyze` regardless of the tier above.
+**PDF/visual precedence rule**: When the request mentions "PDF" or a visual artifact and could match multiple rows, apply this priority: (1) **reading/extracting** content from an existing PDF → `pdf-reader`; (2) **single-page visual artifact** — composition-dominated, ≥70% visual (poster, cover, certificate, infographic, one-pager) → `canvas-craft`; (3) **manipulating** an existing PDF (merge, split, rotate, watermark, encrypt, fill form, flatten) or **creating** a typographic/prose document (invoice, letter, newsletter, multi-page report, data-light PDF with ≤3 KPIs and no hypothesis) → `pdf-writer`; (4) **quality report** in PDF format → `quality-report`; (5) only if none of the above apply → `analyze`. **Note**: Step 1.1 gates (count gate and keyword gate especially) apply *before* this rule. If an analytical signal is present (multi-KPI with dimensions, hypothesis, comparative period, analytical verb), Gate 4 (tie-breaker) re-routes to `analyze` regardless of the tier above. **Repackaging from a previous `output/[ANALYSIS_DIR]/`** (e.g., "regenerate yesterday's analysis as a PDF in another style") routes to `pdf-writer` / `canvas-craft` / `web-craft` based on the desired artifact — the analytical pipeline does not have a standalone repackaging entry point.
 
-**Multi-skill detection**: If the request involves multiple distinct actions spanning different skills (e.g., "read this PDF and analyze the data", "merge these PDFs and add a watermark"), identify the required skills and execute them in logical order: input skills first (`pdf-reader`) → processing skills (`analyze`, `assess-quality`) → output skills (`report`, `pdf-writer`, `quality-report`). Load the first skill in the sequence; upon completion, re-evaluate for the next.
+**Multi-skill detection**: If the request involves multiple distinct actions spanning different skills (e.g., "read this PDF and analyze the data", "merge these PDFs and add a watermark"), identify the required skills and execute them in logical order: input skills first (`pdf-reader`) → processing skills (`analyze`, `assess-quality`) → output skills (`pdf-writer`, `canvas-craft`, `web-craft`, `quality-report`). Load the first skill in the sequence; upon completion, re-evaluate for the next.
 
 | Request pattern | Skill to load |
 |----------------|---------------|
@@ -109,9 +109,9 @@ Step 0 runs in Phase 0 and therefore does not violate the "never proceed to Phas
 | Quality assessment: "data quality", "quality coverage", "quality assessment", "quality rules", "quality dimensions", "coverage gaps", "assess quality", "evaluate quality", "quality status" + domain/table context | `assess-quality` |
 | Quality report: "quality report", "quality coverage report", "quality PDF", "quality DOCX", "quality document" | `assess-quality` → `quality-report` |
 | Domain exploration or profiling: "explore domain", "what data is available", "discover domain", "profile data", "profile table", "data profiling", "data distribution", "null analysis", "statistical profile", "column statistics" | `explore-data` |
-| Report from existing analysis: "generate PDF from the last analysis", "export the report", "export to PDF" | `report` |
+| Repackage prior conversation output: user has just received output from `/explore-data`, `/assess-quality`, a Step 2 triage MCP call (e.g., `list_domain_tables`, `search_domain_knowledge`), or has a prior `output/[ANALYSIS_DIR]/` from `/analyze`, AND now asks to package that same content into a visual artifact ("dame esto en PDF", "póster con esto", "pásalo a un dashboard", "make a one-pager from what we just looked at", "exporta esta exploración a PDF"). The request must NOT introduce analytical verbs ({analyze, hypothesis, segment, investigate, insights, correlation, cohort, deep dive, etc.}) nor new dimensions / KPIs not present in the prior output | `pdf-writer` (document or data-light PDF), `canvas-craft` (poster / infographic / one-pager), or `web-craft` (standalone interactive) depending on the requested artifact |
 | Read/extract PDF content: "read this PDF", "extract text from PDF", "what does this PDF say", "extract tables from PDF", "OCR this document", "get the content of this PDF", "parse this PDF" | `pdf-reader` |
-| PDF creation and manipulation: "merge PDFs", "split PDF", "rotate pages", "add watermark", "encrypt PDF", "fill PDF form", "flatten form", "create invoice/certificate/letter/newsletter/receipt", "add cover page", "attach file to PDF", "OCR to searchable PDF", "batch generate PDFs" — any PDF task not covered by `/report` or `/quality-report` | `pdf-writer` |
+| PDF creation and manipulation: "merge PDFs", "split PDF", "rotate pages", "add watermark", "encrypt PDF", "fill PDF form", "flatten form", "create invoice/certificate/letter/newsletter/receipt", "add cover page", "attach file to PDF", "OCR to searchable PDF", "batch generate PDFs" — any PDF task not covered by `/quality-report` | `pdf-writer` |
 | Data-light PDF (prose/typographic, ≤3 KPIs, no hypothesis): "small PDF with these metrics", "one-page KPI sheet", "simple metrics PDF", "PDF con estos 3 KPIs" — no analytical verbs, no comparative slicing | `pdf-writer` |
 | Single-page visual artifact: "poster", "póster", "portada", "cover", "one-pager", "infographic", "infografía", "certificate", "certificado", "marketing one-pager", "visual piece" — composition-dominated (≥70% visual), no analytical narrative | `canvas-craft` |
 | Interactive web artifact without analytical narrative: "interactive dashboard without analysis", "standalone landing page", "web component", "UI mockup", "prototype interface", "dashboard interactivo sin informe", "landing" — explicit absence of analytical framing | `web-craft` |
@@ -126,6 +126,7 @@ Step 0 runs in Phase 0 and therefore does not violate the "never proceed to Phas
 
 When a message could plausibly trigger more than one row above, apply these gates in order. They preserve the analyze-primacy invariant: **analytical intent always wins over artifact-only routing**.
 
+0. **Post-exploration repackaging gate (context-aware)** — if the immediately prior turn(s) consisted of `/explore-data`, `/assess-quality`, a Step 2 triage MCP response (`list_domain_tables`, `search_domain_knowledge`, `get_tables_details`, `get_table_columns_details`), or a prior `output/[ANALYSIS_DIR]/` from `/analyze`, AND the new request only asks to convert that same content into a visual artifact ("dame esto en PDF", "haz un póster con esto", "pásalo a un dashboard"), AND does NOT introduce any analytical verb or new analytical dimension → route directly to `pdf-writer` / `canvas-craft` / `web-craft` per the requested artifact. The agent reuses the data already identified in the prior turns (re-fetching via MCP if needed using the same tables/columns) and passes it to the artifact skill. **Do NOT enter `/analyze`.** This gate runs BEFORE the keyword gate so that "informe", "report", "dashboard" used as packaging verbs do not falsely trigger `/analyze`. If the user adds an analytical verb (e.g., "ahora analiza esto y dame un PDF") this gate does NOT apply — fall through to the keyword gate.
 1. **Count gate** — if the request implies ≥2 metrics, ≥2 dimensions, or any comparative period (year-over-year, quarter-over-quarter, "vs previous", "compared to", "cohort analysis") → route to `analyze`, regardless of artifact keywords. These exceed triage/light thresholds.
 2. **Keyword gate** — presence of any analytical verb or noun — {analyze, analiza, analysis, hypothesis, hipótesis, segment, segmenta, investigate, investiga, insights, causes, causas, explain, correlation, correlación, cohort, cohorte, executive report, informe ejecutivo, deep dive, análisis profundo} — routes to `analyze`, regardless of artifact keywords.
 3. **Artifact-only (no analytical verb)** — artifact keywords ({poster, one-pager, cover, infographic, landing, UI component, interactive dashboard without analysis, small PDF with ≤3 KPIs}) with no analytical verb → route to the corresponding artifact skill (`canvas-craft` / `web-craft` / `pdf-writer` data-light). The artifact skill fetches any needed data via MCP directly.
@@ -192,7 +193,7 @@ For full operational detail (sufficiency checklist, scoring thresholds, mini-sum
 
 Read `output/MEMORY.md` sec Preferences (if it exists) for personalised defaults.
 
-Load `/analyze` §4.1 to run the question block (Depth + Audience + Format + Tests). After the analysis is approved, `/report` §1 handles the next question block (Structure + Visual style). Upon return from each skill, continue with the next Phase below.
+Load `/analyze` §4.1 to run the question block (Depth + Audience + Format + Tests). After the analysis is approved, `/analyze` Phase 4 loads `report/report.md` §1 to run the next question block (Structure + Visual style). Upon return, continue with the next Phase below.
 
 **Note**: ALWAYS provide a summary of findings in chat, regardless of the selected formats.
 
@@ -377,7 +378,7 @@ Then offer to export the gap inventory (chat summary or Markdown) so the user ca
 
 ### Quality report generation
 
-Quality reports use their own generator (bundled with the `quality-report` skill), **not** the data-analytics `/report` infrastructure (no CSS themes, no Jinja2 templates, no DashboardBuilder). Full operational detail lives in the `/quality-report` skill. Indicative commands:
+Quality reports use their own generator (bundled with the `quality-report` skill), **not** the analytical deliverable infrastructure in `skills/analyze/report/` (no CSS themes, no Jinja2 templates, no DashboardBuilder). Full operational detail lives in the `/quality-report` skill. Indicative commands:
 
 ```bash
 .venv/bin/python skills/quality-report/scripts/validate_report_input.py output/report-input.json
@@ -425,7 +426,7 @@ Quality reports use their own generator (bundled with the `quality-report` skill
 
 ## 7. Visualizations and Narrative
 
-Three core principles (see `/report` and `skills-guides/visualization.md` for the full guide):
+Three core principles (see `skills/analyze/visualization.md` and `/analyze` Phase 4 → `report/report.md` for the full guide):
 1. **Titles as insights** ("North concentrates 45%"), not descriptions ("Sales by region")
 2. **Numbers with context**: Always vs previous period, vs target, or vs average
 3. **Accessibility**: Colorblind-friendly palettes via `get_palette()`, do not rely on color alone
@@ -434,13 +435,13 @@ Three core principles (see `/report` and `skills-guides/visualization.md` for th
 
 ## 8. Output Formats
 
-For detailed generation instructions per format, see the `/report` skill.
+For detailed generation instructions per format, see `skills/analyze/report/report.md` (loaded from `/analyze` Phase 4).
 
 | Format | How to generate | When to use |
 |--------|----------------|-------------|
-| **Document (PDF + DOCX)** | `tools/pdf_generator.py` + `tools/docx_generator.py` | Professional reports. Generates `<slug>-report.pdf` and `<slug>-report.docx` inside the analysis folder (see `/report` skill §1.1) |
-| **Web** | `tools/dashboard_builder.py` (`DashboardBuilder`) — Self-contained HTML with global filters, dynamic KPI cards, sortable tables, interactive Plotly charts, embedded JSON data, and CSS from the chosen style | Interactive dashboards, reports with filters, browser sharing |
-| **PowerPoint** | `tools/pptx_layout.py` (layout helpers) + `tools/css_builder.py` (colors) | Executive presentations, stakeholder meetings |
+| **Document (PDF + DOCX)** | `skills/analyze/report/tools/pdf_generator.py` + `skills/analyze/report/tools/docx_generator.py` | Professional reports. Generates `<slug>-report.pdf` and `<slug>-report.docx` inside the analysis folder (see `report/report.md` §1.1) |
+| **Web** | `skills/analyze/report/tools/dashboard_builder.py` (`DashboardBuilder`) — Self-contained HTML with global filters, dynamic KPI cards, sortable tables, interactive Plotly charts, embedded JSON data, and CSS from the chosen style | Interactive dashboards, reports with filters, browser sharing |
+| **PowerPoint** | `skills/analyze/report/tools/pptx_layout.py` (layout helpers) + `skills/analyze/report/tools/css_builder.py` (colors) | Executive presentations, stakeholder meetings |
 | **PDF reading** | Skill `pdf-reader` — diagnose-first extraction with fallback chain (pdfplumber → pdfminer → pypdf → pdftotext), OCR for scans, form field reading, image extraction | Reading user-provided PDFs, extracting data from PDF sources, ingesting PDF content for analysis |
 | **Ad-hoc PDF** | Skill `pdf-writer` — reportlab-based generation with custom typography, design-first workflow. Also handles merge, split, rotate, watermark, encrypt, form filling | Documents outside the standard report pipeline: invoices, certificates, letters, newsletters. Also post-processing of existing PDFs |
 
@@ -450,15 +451,15 @@ For detailed generation instructions per format, see the `/report` skill.
 
 | Layer | Directory | Content |
 |-------|----------|---------|
-| **Tokens** | `styles/tokens/` | `@font-face` + `:root` variables — visual identity |
-| **Theme** | `styles/themes/` | Styled components with `var()` — works equally in PDF and web |
-| **Target** | `styles/pdf/` or `styles/web/` | Target-exclusive rules — ONE single `base.css` per target |
+| **Tokens** | `skills/analyze/report/styles/tokens/` | `@font-face` + `:root` variables — visual identity |
+| **Theme** | `skills/analyze/report/styles/themes/` | Styled components with `var()` — works equally in PDF and web |
+| **Target** | `skills/analyze/report/styles/pdf/` or `skills/analyze/report/styles/web/` | Target-exclusive rules — ONE single `base.css` per target |
 
 Available styles: **Corporate** (`corporate`), **Formal/academic** (`academic`), **Modern/creative** (`modern`). If the style does not exist, falls back to `corporate` without error.
 
-For style API (`build_css`, `get_palette` from `tools/css_builder.py`), see skill `/report` section 6.
+For style API (`build_css`, `get_palette` from `skills/analyze/report/tools/css_builder.py`), see `report/report.md` section 6.
 
-**Additional resources**: `templates/pdf/` contains Jinja2 templates (base.html, cover.html, components/, reports/scaffold.html). `styles/fonts/` contains local woff2 fonts (DM Sans, Inter, JetBrains Mono).
+**Additional resources**: `skills/analyze/report/templates/pdf/` contains Jinja2 templates (base.html, cover.html, components/, reports/scaffold.html). `skills/analyze/report/styles/fonts/` contains local woff2 fonts (DM Sans, Inter, JetBrains Mono).
 
 ---
 
@@ -472,7 +473,7 @@ Reasoning generation varies by depth:
 | Standard | Generate in `output/[ANALYSIS_DIR]/reasoning/` | .md only |
 | Deep | Generate in `output/[ANALYSIS_DIR]/reasoning/` | .md only (full + suggestions) |
 
-The user can override by indicating in their request (e.g.: "no reasoning", "reasoning also in PDF"). If they request PDF, use `tools/md_to_report.py --style corporate`. If they request HTML, add `--html`. If they request DOCX, add `--docx`.
+The user can override by indicating in their request (e.g.: "no reasoning", "reasoning also in PDF"). If they request PDF, use `skills/analyze/report/tools/md_to_report.py --style corporate`. If they request HTML, add `--html`. If they request DOCX, add `--docx`.
 
 For mandatory content and template, see skill `/analyze` [reasoning-guide.md](reasoning-guide.md).
 
@@ -483,7 +484,7 @@ For mandatory content and template, see skill `/analyze` [reasoning-guide.md](re
 **Question convention**: Whenever these instructions say "ask the user with options", present the options clearly and in a structured manner. If the environment provides a tool for interactive questions{{TOOL_QUESTIONS}}, invoke it mandatorily — never write the questions in chat when a user-questioning tool is available. If not, present the options as a numbered list in chat, in a readable format, and indicate to the user to respond with the number or name of their choice. For multiple selection, indicate they can choose several separated by comma. Apply this convention to every reference to "user questions with options" in skills and guides.
 
 - **Response and deliverable language**: Respond in the same language the user uses. The following must be written in the user's language, unless the user explicitly indicates a different language:
-  - Analytical reports (PDF, DOCX, Web/HTML, PowerPoint, Markdown) generated by `/analyze` + `/report`
+  - Analytical reports (PDF, DOCX, Web/HTML, PowerPoint, Markdown) generated by `/analyze` (which loads `report/report.md` for deliverable packaging)
   - **Data quality coverage reports** (Chat, PDF, DOCX, Markdown) generated by `/assess-quality` + `/quality-report`
   - Phase 1.1 mini-summary (Data Profiling Score + Governance Quality Status)
   - Reasoning files, validation files
@@ -491,7 +492,7 @@ For mandatory content and template, see skill `/analyze` [reasoning-guide.md](re
   - Chat summaries, user questions, recommendations, and any other generated content
 - ALWAYS ask about the domain if it is not clear
 - Output format: captured via `/analyze` §4.1 Q3 — confirm it is answered before planning
-- Structure and visual style: handled by `/report` §1 — ensure the skill is loaded when at least one output format was selected
+- Structure and visual style: handled by `report/report.md` §1 — loaded by `/analyze` Phase 4 when at least one output format was selected
 - ALWAYS provide a summary of findings in chat even when deliverables are generated
 - Ask the user with structured options (not open-ended or free-text questions). Use the question convention defined above
 - When presenting a question with predefined options, list **every** option literally — one per line — even when an option looks advanced or secondary. Never collapse, summarise or silently drop options. Keep label strings verbatim so the routing logic downstream can recognise the choice

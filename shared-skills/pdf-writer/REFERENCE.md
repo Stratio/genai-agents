@@ -12,11 +12,12 @@ conditional typography.
 4. Embedding SVG vector graphics
 5. Drawing charts directly into PDFs
 6. Headers, footers, and running titles
-7. Two-sided print layouts (mirrored margins)
-8. Batch generation patterns
-9. PDF/A compliance and archival output
-10. Attaching files inside a PDF
-11. Merging while preserving bookmarks
+7. Total page count with NumberedCanvas
+8. Two-sided print layouts (mirrored margins)
+9. Batch generation patterns
+10. PDF/A compliance and archival output
+11. Attaching files inside a PDF
+12. Merging while preserving bookmarks
 
 ---
 
@@ -203,7 +204,49 @@ def draw_header(canvas, doc):
 
 Update `doc.current_chapter` as you encounter chapter headings.
 
-## 7. Two-sided print layouts (mirrored margins)
+## 7. Total page count with NumberedCanvas
+
+`canvas.getPageNumber()` returns the current page, but reportlab has no
+way to know the total until every page has been laid out. The canonical
+pattern is a `Canvas` subclass that captures each page's state in
+`showPage()` and replays it in `save()` once the total is known:
+
+```python
+from reportlab.pdfgen import canvas
+
+class NumberedCanvas(canvas.Canvas):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._saved_states = []
+
+    def showPage(self):
+        self._saved_states.append(dict(self.__dict__))
+        self._startPage()
+
+    def save(self):
+        total = len(self._saved_states)
+        for state in self._saved_states:
+            self.__dict__.update(state)
+            self._draw_page_number(total)
+            super().showPage()
+        super().save()
+
+    def _draw_page_number(self, total):
+        self.setFont("Body", 8)
+        self.setFillColor(MUTED)
+        self.drawRightString(
+            A4[0] - MARGIN_X, 15 * mm,
+            f"{self._pageNumber} / {total}",
+        )
+
+doc.build(story, canvasmaker=NumberedCanvas)
+```
+
+Combine with the `draw_header` callback from §6 for chrome on the top
+and `X / Y` pagination on the bottom — both run through the same
+canvas on each page.
+
+## 8. Two-sided print layouts (mirrored margins)
 
 For booklets and books, alternate inner/outer margins:
 
@@ -223,7 +266,7 @@ def frame_for(page_num):
 Or define two `PageTemplate` objects, one per parity, and switch with
 `NextPageTemplate`.
 
-## 8. Batch generation patterns
+## 9. Batch generation patterns
 
 Generating hundreds of invoices, certificates, or letters from a dataset:
 
@@ -256,7 +299,7 @@ Important: **register fonts inside the worker function**, not in the
 main process. TTF registrations don't always survive the fork/spawn
 boundary.
 
-## 9. PDF/A compliance and archival output
+## 10. PDF/A compliance and archival output
 
 PDF/A is the ISO standard for long-term archival. Key requirements:
 fonts must be embedded, no transparency, no encryption, no external
@@ -273,7 +316,7 @@ gs -dPDFA=2 -dBATCH -dNOPAUSE -sProcessColorModel=DeviceRGB \
 
 Or use a dedicated library like `pikepdf` + manual metadata injection.
 
-## 10. Attaching files inside a PDF
+## 11. Attaching files inside a PDF
 
 Useful for delivering a polished PDF with its raw data (CSV, Excel)
 embedded:
@@ -299,7 +342,7 @@ with open("/tmp/report_with_data.pdf", "wb") as f:
 Readers will show a paperclip icon; users can extract the attachment
 from the document.
 
-## 11. Merging while preserving bookmarks
+## 12. Merging while preserving bookmarks
 
 `PdfWriter.append` preserves outline entries (bookmarks) from each
 source:

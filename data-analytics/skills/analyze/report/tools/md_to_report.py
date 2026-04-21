@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
 """Convert a Markdown file to PDF, and optionally HTML and DOCX.
 
-Usage:
-    python tools/md_to_report.py <input.md> [--output-dir DIR] [--style STYLE]
+Usage (run from the agent root):
+    python skills/analyze/report/tools/md_to_report.py <input.md> [--output-dir DIR] [--style STYLE]
            [--author AUTHOR] [--no-embed-images] [--cover] [--domain DOMAIN]
            [--title TITLE] [--html] [--docx]
 
 Arguments:
     input.md            Path to the source markdown file.
     --output-dir        Directory for generated files (default: same as input).
-    --style             CSS preset from styles/ folder: corporate, academic, modern
+    --style             CSS preset name: corporate, academic, modern
                         (default: corporate). Can also be a path to a custom CSS file.
+                        Presets are resolved from the sibling `../styles/tokens/` folder.
     --author            Author name for PDF metadata and cover page.
     --no-embed-images   Skip embedding local images as base64 in the PDF.
     --cover             Generate a cover page with title, author, date, and domain.
@@ -192,9 +193,10 @@ def convert(input_path: Path, output_dir: Path, style: str,
     language. See `i18n.get_labels` for resolution rules.
 
     `aesthetic_direction` applies a deliberate visual direction on top of
-    the base style. Schema is documented in `skills/report/skills-guides/
-    dashboard-aesthetics.md`. When present, it flows to `resolve_css` and
-    to the DOCX generator so the PDF, HTML and DOCX stay visually coherent.
+    the base style. Schema is documented in `dashboard-aesthetics.md`
+    (sibling of this file's parent dir). When present, it flows to
+    `resolve_css` and to the DOCX generator so the PDF, HTML and DOCX
+    stay visually coherent.
 
     Returns (html_path_or_None, pdf_path, docx_path_or_None).
     """

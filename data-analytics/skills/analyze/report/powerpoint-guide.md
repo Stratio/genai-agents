@@ -1,6 +1,6 @@
 # PowerPoint Generation Guide
 
-Operational reference for the PowerPoint pipeline within `/report`.
+Operational reference for the PowerPoint pipeline. Loaded by `report.md` (Phase 4 of `/analyze`) when the user picks **PowerPoint** as the deliverable format.
 
 ## Pipeline
 
@@ -24,7 +24,7 @@ Operational reference for the PowerPoint pipeline within `/report`.
    - Typography: titles 36-44pt bold, body 14-16pt
    - Indicative number of slides: 8-12 for executive, 15-20 for detailed
 10. Generate script: `output/[ANALYSIS_DIR]/scripts/generate_pptx.py --style corporate`
-11. Save in `output/[ANALYSIS_DIR]/<slug>-presentation.pptx` (the `<slug>` is the descriptive part of `[ANALYSIS_DIR]` after the timestamp — see `SKILL.md` §1.1)
+11. Save in `output/[ANALYSIS_DIR]/<slug>-presentation.pptx` (the `<slug>` is the descriptive part of `[ANALYSIS_DIR]` after the timestamp — see `report.md` §1.1)
 
 ## Slides with Image + Side Panel
 
