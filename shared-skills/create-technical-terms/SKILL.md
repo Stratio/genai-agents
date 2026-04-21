@@ -1,12 +1,12 @@
 ---
-name: generate-technical-terms
-description: "Generate or regenerate technical terms (table and column descriptions) in Stratio Governance for a technical domain."
+name: create-technical-terms
+description: "Create or regenerate technical terms (table and column descriptions) in Stratio Governance for a technical domain."
 argument-hint: "[technical domain (optional)]"
 ---
 
-# Skill: Generate Technical Terms
+# Skill: Create Technical Terms
 
-Generates technical descriptions for tables and columns of a domain in Stratio Governance. Phase 1 of the semantic layer pipeline.
+Creates technical descriptions for tables and columns of a domain in Stratio Governance. Phase 1 of the semantic layer pipeline.
 
 ## MCP Tools Used
 

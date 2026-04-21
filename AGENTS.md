@@ -11,7 +11,7 @@ genai-agents/
     explore-data/
     stratio-data/
     stratio-semantic-layer/
-    generate-technical-terms/
+    create-technical-terms/
     create-ontology/
     create-business-views/
     create-sql-mappings/
@@ -21,7 +21,7 @@ genai-agents/
     build-semantic-layer/
     assess-quality/
     create-quality-rules/
-    create-quality-planification/
+    create-quality-schedule/
     quality-report/
     pdf-reader/
     pdf-writer/

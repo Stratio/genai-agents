@@ -53,7 +53,7 @@ El agente trabaja con Stratio Data Governance vía herramientas MCP, orquestando
 | Comando | Descripción |
 |---------|-------------|
 | `/build-semantic-layer` | Pipeline completo de capa semántica: términos, ontología, vistas, mappings, términos semánticos |
-| `/generate-technical-terms` | Generar descripciones técnicas para tablas y columnas |
+| `/create-technical-terms` | Crear descripciones técnicas para tablas y columnas |
 | `/create-ontology` | Crear, extender o eliminar clases de ontología con planificación interactiva |
 | `/create-business-views` | Crear, regenerar o eliminar business views |
 | `/create-sql-mappings` | Crear o actualizar SQL mappings para vistas existentes |
@@ -62,7 +62,7 @@ El agente trabaja con Stratio Data Governance vía herramientas MCP, orquestando
 | `/create-data-collection` | Buscar tablas en el diccionario y crear nuevas data collections |
 | `/assess-quality` | Evaluar la cobertura de calidad por dominio o tabla |
 | `/create-quality-rules` | Diseñar y crear reglas de calidad con aprobación humana obligatoria |
-| `/create-quality-planification` | Crear planificaciones de ejecución automática para reglas de calidad |
+| `/create-quality-schedule` | Crear planificaciones de ejecución automática para reglas de calidad |
 | `/quality-report` | Generar un informe formal de cobertura en PDF, DOCX o Markdown |
 | `/pdf-reader` | Leer y extraer contenido de archivos PDF (texto, tablas, imágenes, formularios) |
 | `/pdf-writer` | Crear documentos PDF personalizados, combinar/dividir PDFs, añadir marcas de agua, cifrar, rellenar formularios |

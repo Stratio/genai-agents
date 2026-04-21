@@ -43,7 +43,7 @@ La configuración MCP está en `.mcp.json` (Claude Code / claude.ai) y en `openc
 | Skill | Comando | Descripción |
 |-------|---------|-------------|
 | Pipeline completo | `/build-semantic-layer` | Construir capa semántica completa: términos, ontología, vistas, mappings, términos semánticos |
-| Términos técnicos | `/generate-technical-terms` | Generar descripciones técnicas para tablas y columnas |
+| Términos técnicos | `/create-technical-terms` | Crear descripciones técnicas para tablas y columnas |
 | Ontología | `/create-ontology` | Crear, extender o eliminar clases de ontología |
 | Business views | `/create-business-views` | Crear, regenerar o eliminar business views |
 | SQL mappings | `/create-sql-mappings` | Crear o actualizar SQL mappings para vistas |
@@ -52,7 +52,7 @@ La configuración MCP está en `.mcp.json` (Claude Code / claude.ai) y en `openc
 | Data collection | `/create-data-collection` | Buscar y crear nuevos dominios técnicos |
 | Evaluación de calidad | `/assess-quality` | Evaluar la cobertura de calidad por dominio o tabla |
 | Creación de reglas | `/create-quality-rules` | Diseñar y crear reglas de calidad con aprobación humana |
-| Planificación de calidad | `/create-quality-planification` | Crear planificaciones de ejecución automática |
+| Planificación de calidad | `/create-quality-schedule` | Crear planificaciones de ejecución automática |
 | Informe de calidad | `/quality-report` | Generar informe formal de cobertura (PDF, DOCX, Markdown) |
 | Lectura de PDF | `/pdf-reader` | Extraer texto, tablas y datos de archivos PDF proporcionados por el usuario |
 | Escritura de PDF | `/pdf-writer` | Crear PDFs personalizados, combinar/dividir, marca de agua, cifrar, rellenar formularios |

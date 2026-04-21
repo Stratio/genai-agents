@@ -156,7 +156,7 @@ Notes:
 | `explore-data` | Quick exploration of domains, tables, columns and governed terminology | data-analytics, data-analytics-light |
 | `stratio-data` | Stratio data MCPs reference: rules, usage patterns and best practices | (standalone) |
 | `stratio-semantic-layer` | Stratio semantic layer MCPs reference: rules, usage patterns and best practices for governance tools | semantic-layer, governance-officer |
-| `generate-technical-terms` | Generate or regenerate technical terms (table and column descriptions) for a domain | semantic-layer, governance-officer |
+| `create-technical-terms` | Create or regenerate technical terms (table and column descriptions) for a domain | semantic-layer, governance-officer |
 | `create-ontology` | Create or extend ontologies with interactive planning | semantic-layer, governance-officer |
 | `create-business-views` | Create, regenerate or publish business views and SQL mappings from an ontology | semantic-layer, governance-officer |
 | `create-sql-mappings` | Create or update SQL mappings for existing views | semantic-layer, governance-officer |
@@ -166,7 +166,7 @@ Notes:
 | `build-semantic-layer` | Full semantic layer pipeline: orchestrates technical terms, ontology, views, mappings and semantic terms creation | semantic-layer, governance-officer |
 | `assess-quality` | Assess quality coverage by domain, table or column: dimensions covered, gaps and priorities | data-analytics, data-analytics-light, data-quality, governance-officer |
 | `create-quality-rules` | Design and create quality rules to cover gaps, with mandatory human approval | data-quality, governance-officer |
-| `create-quality-planification` | Create automatic execution schedules for quality rule folders | data-quality, governance-officer |
+| `create-quality-schedule` | Create automatic execution schedules for quality rule folders | data-quality, governance-officer |
 | `quality-report` | Generate a formal quality coverage report in PDF, DOCX or Markdown (in `data-analytics-light` only the Chat format is used) | data-analytics, data-analytics-light, data-quality, governance-officer |
 | `pdf-reader` | Inspect, extract text, tables, images, form values and attachments from PDF files with diagnose-first strategy | data-analytics, data-quality, governance-officer |
 | `pdf-writer` | Create designed PDFs, transform existing ones (merge, split, rotate, watermark, encrypt) and fill forms. Design-first workflow with custom typography | data-analytics, data-quality, governance-officer |

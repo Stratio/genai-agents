@@ -55,7 +55,7 @@ The cowork script also accepts `--gov-url <URL>`, `--gov-key <KEY>`, `--sql-url 
 | `.claude/settings.local.json` | ❌ | ❌ | ✅ | ❌ |
 
 ¹ Generated (not a direct copy): `skills-guides/` references → `skills/stratio-semantic-layer/`, placeholder `{{TOOL_QUESTIONS}}` resolved.
-² Flattened at root: `build-semantic-layer.md`, `stratio-semantic-layer.md`, `generate-technical-terms.md`, etc.; guides prefixed: `skills-guides_stratio-semantic-layer-tools.md`.
+² Flattened at root: `build-semantic-layer.md`, `stratio-semantic-layer.md`, `create-technical-terms.md`, etc.; guides prefixed: `skills-guides_stratio-semantic-layer-tools.md`.
 ³ Guides renamed with prefix: `skills-guides_stratio-semantic-layer-tools.md`.
 ⁴ Guides inside each skill (self-contained) + in `skills-guides/` for references from `CLAUDE.md`/`AGENTS.md`.
 
@@ -79,7 +79,7 @@ The result is located in `dist/claude_cowork/semantic-layer/`.
 **How to use it in Cowork:**
 
 1. Copy `CLAUDE.md` to the project's working directory in Cowork — Cowork reads it automatically as folder instructions
-3. Install `<name>.zip` as a plugin in Cowork (provides the skills `/build-semantic-layer`, `/stratio-semantic-layer`, `/generate-technical-terms`, `/create-ontology`, `/create-business-views`, `/create-sql-mappings`, `/create-semantic-terms`, `/manage-business-terms`, `/create-data-collection` and the MCP connection)
+3. Install `<name>.zip` as a plugin in Cowork (provides the skills `/build-semantic-layer`, `/stratio-semantic-layer`, `/create-technical-terms`, `/create-ontology`, `/create-business-views`, `/create-sql-mappings`, `/create-semantic-terms`, `/manage-business-terms`, `/create-data-collection` and the MCP connection)
 4. The Cowork orchestrator reads the instructions from `CLAUDE.md` and delegates to the plugin skills when appropriate
 
 > **MCP configuration:** The plugin ZIP includes a `.mcp.json` that registers the MCP servers automatically when installed in Cowork. Always package with `--gov-url`, `--sql-url`, and `--key` to hardcode credentials — Cowork (which runs inside Claude Desktop) does **not** expand `${VAR:-default}` templates; that syntax only works in Claude Code CLI. If you need to use the agent in Claude Desktop without Cowork (no plugin support), configure the MCP servers manually in `claude_desktop_config.json` using the `mcp-remote` proxy — see section [6c of the root README](../README.md#6c-test-in-claude-desktop--claude-cowork) for the format.
@@ -114,7 +114,7 @@ The pack scripts generate the correct format for each platform (renaming files, 
 |-------|---------|-------------|
 | Full pipeline | `/build-semantic-layer` | 5-phase pipeline to build the semantic layer of a domain |
 | Semantic MCP reference | `/stratio-semantic-layer` | Governance MCP tools reference: rules, patterns, and best practices |
-| Technical terms | `/generate-technical-terms` | Generate technical descriptions of tables and columns |
+| Technical terms | `/create-technical-terms` | Create technical descriptions of tables and columns |
 | Ontology | `/create-ontology` | Create, extend, or delete ontology classes with interactive planning |
 | Business views | `/create-business-views` | Create, regenerate, or delete business views from an ontology |
 | SQL Mappings | `/create-sql-mappings` | Create or update SQL mappings for existing views |

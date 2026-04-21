@@ -49,7 +49,7 @@ El agente no ejecuta queries de datos ni genera ficheros en disco. Su output es 
 | Comando | Descripción |
 |---------|-------------|
 | `/build-semantic-layer` | Pipeline completo de 5 fases para construir la capa semántica de un dominio |
-| `/generate-technical-terms` | Generar descripciones técnicas automáticas de tablas y columnas |
+| `/create-technical-terms` | Crear descripciones técnicas automáticas de tablas y columnas |
 | `/create-ontology` | Crear, ampliar o eliminar clases de ontología con planificación interactiva |
 | `/create-business-views` | Crear, regenerar o eliminar vistas de negocio desde una ontología |
 | `/create-sql-mappings` | Crear o actualizar SQL mappings para vistas de negocio existentes |

@@ -1,5 +1,5 @@
 ---
-name: create-quality-planification
+name: create-quality-schedule
 description: "Crear una planificación (schedule) para ejecutar automáticamente todas las reglas de calidad de una o varias carpetas/colecciones. Opera a nivel de carpeta (dominio/colección), no de regla individual. Requiere confirmación humana obligatoria antes de ejecutar."
 argument-hint: "[dominio/colección] [frecuencia (opcional)]"
 ---

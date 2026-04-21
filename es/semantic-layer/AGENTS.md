@@ -36,7 +36,7 @@ Antes de activar cualquier skill, evaluar que necesita el usuario:
 | Tipo de petición | Skill/Acción | Ejemplo |
 |---|---|---|
 | Pipeline completo | `/build-semantic-layer` | "Construye la capa semántica del dominio X" |
-| Solo términos técnicos | `/generate-technical-terms` | "Genera descripciones técnicas para el dominio Y" |
+| Solo términos técnicos | `/create-technical-terms` | "Crea descripciones técnicas para el dominio Y" |
 | Crear/ampliar ontología | `/create-ontology` | "Crea una ontología para X" |
 | Crear vistas de negocio | `/create-business-views` | "Crea las vistas de negocio" |
 | Actualizar mappings SQL | `/create-sql-mappings` | "Actualiza los mappings SQL de las vistas" |
