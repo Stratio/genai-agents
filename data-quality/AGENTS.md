@@ -39,12 +39,19 @@ Before activating any skill, classify the user's intent:
 | "Create quality rules for [domain/table/column]" | — | `assess-quality` → `create-quality-rules` (Flow A) |
 | "Complete the quality coverage of [table/column]" | — | `assess-quality` → `create-quality-rules` (Flow A) |
 | "Create a rule that verifies [specific condition]" | — | `create-quality-rules` (Flow B — direct) |
+| "Modify/update rule X" / "Fix rule X" / "Rule X is KO, fix it" | — | `update-quality-rules` |
+| "Change the threshold / SQL / schedule of rule X" | — | `update-quality-rules` |
+| "Remove the schedule from rule X" | — | `update-quality-rules` |
 | "Generate a quality report" / "Write a PDF" | — | `assess-quality` → `quality-report` |
 | "What quality dimensions exist?" | `get_quality_rule_dimensions` | none |
 | "What rules does table X have?" | `get_tables_quality_details` | none |
 | "What tables are in domain Y?" | `list_domain_tables` | none |
-| "Schedule/plan the execution of [domain] rules" | — | `create-quality-schedule` |
-| "Create a quality schedule for [domain]" | — | `create-quality-schedule` |
+| "Schedule/plan the execution of [domain] rules" | — | `create-quality-scheduler` |
+| "Create a quality schedule for [domain]" | — | `create-quality-scheduler` |
+| "What schedulers/plans exist?" / "Show me the quality schedulers" | `list_quality_rule_schedulers` | none |
+| "Modify/update scheduler X" / "Change the cron of scheduler X" | — | `update-quality-scheduler` |
+| "Activate/deactivate scheduler X" | — | `update-quality-scheduler` |
+| "Change the collections of scheduler X" | — | `update-quality-scheduler` |
 | "Generate/update the metadata for [domain] rules" | `quality_rules_metadata` | none |
 | "Regenerate/force metadata for all [domain] rules" | `quality_rules_metadata(domain_name=X, quality_rules_metadata_force_update=True)` | none |
 | "Generate the metadata for rule [ID]" | `quality_rules_metadata(quality_rule_id=ID)` | none |
@@ -130,6 +137,10 @@ When the user describes a specific rule (e.g., "create a rule that verifies ever
 
 This flow does NOT require prior `assess-quality`. See the "Flow B" section in the `create-quality-rules` skill for operational detail.
 
+### Update flow
+
+`update_quality_rule` also requires explicit user confirmation before execution. Skill `update-quality-rules` integrates the mandatory approval pause following the same protocol: show the before/after plan, wait for confirmation, only then execute. If the query changes, SQL validation is MANDATORY before presenting the plan.
+
 ### Common to both flows
 
 If the user rejects or modifies the plan: adjust the proposed rules and present again.
@@ -212,13 +223,17 @@ In addition to the tools listed in `skills-guides/stratio-data-tools.md`, this a
 | `get_quality_rule_dimensions` | stratio_gov | Quality dimension definitions for the domain |
 | `create_quality_rule` | stratio_gov | **ONLY with human approval** — create rules |
 | `create_quality_rule_scheduler` | stratio_gov | **ONLY with human approval** — create execution schedules for rule folders |
+| `list_quality_rule_schedulers` | stratio_gov | List all existing schedulers (UUID, name, cron, collections, status) — use to discover UUID before update |
+| `update_quality_rule_scheduler` | stratio_gov | **ONLY with human approval** — update existing quality rule schedulers by UUID |
 | `quality_rules_metadata` | stratio_gov | Generate AI metadata (description, dimension) for quality rules |
 | `get_critical_data_elements` | stratio_gov | List tables and columns tagged as Critical Data Elements in a collection |
+| `update_quality_rule` | stratio_gov | **ONLY with human approval** — update existing rules by UUID |
 | `set_critical_data_elements` | stratio_gov | **ONLY with human approval** — tag tables/columns as Critical Data Elements |
 
 ### Quality-specific rules
 
-- **NEVER** call `create_quality_rule`, `create_quality_rule_scheduler`, or `set_critical_data_elements` without explicit user confirmation
+- **NEVER** call `create_quality_rule`, `update_quality_rule`, `create_quality_rule_scheduler`, `update_quality_rule_scheduler`, or `set_critical_data_elements` without explicit user confirmation
+- **`update_quality_rule`**: requires the rule's UUID (obtain it via `get_tables_quality_details` if not already in context); only pass the fields that actually change — omit fields that remain unchanged. To remove scheduling, pass `cron_expression=""` (empty string). If `query` or `query_reference` changes, SQL validation is MANDATORY before presenting the plan to the user. See skill `update-quality-rules` for the full workflow
 - **`set_critical_data_elements`**: HTTP 409 responses mean the asset was already tagged as a CDE — this is NOT an error. Count these as "already tagged" and do not treat them as failures
 - **SQL validation (MANDATORY)**: Before proposing or creating a rule, both the `query` and the `query_reference` must be verified as valid. To do this, execute each SQL using `execute_sql`. The `${table_name}` placeholders (e.g., `${account}`, `${card}`) must be resolved to the plain table name (stripping the `${}` wrapper) before calling `execute_sql`. Keep the full `${table_name}` format in `create_quality_rule` — the governance system resolves placeholders to physical storage paths at rule execution time.
 - **MANDATORY use of `get_quality_rule_dimensions`**: Must always be executed at the start of any assessment to know the dimensions supported by the domain and their definitions. Do not assume default dimensions.
@@ -233,6 +248,8 @@ In addition to the tools listed in `skills-guides/stratio-data-tools.md`, this a
     - "generate the metadata for rule [ID]" → `quality_rules_metadata(domain_name=X, quality_rule_id=ID)` — if the user does not know the numeric ID, obtain it first with `get_tables_quality_details`
   - Does not require human approval (not destructive, only enriches metadata). If it fails, continue without blocking the workflow
 - **`create_quality_rule_scheduler`**: creates a schedule that automatically executes all quality rules in one or more folders. Requires `name`, `description`, `collection_names` (list of domains/collections), `cron_expression` (Quartz cron 6-7 fields; never very low frequencies like `* * * * * *`). Optional: `table_names` (table filter within collections), `cron_timezone` (default `Europe/Madrid`), `cron_start_datetime` (ISO 8601, first execution), `execution_size` (default `XS`, options: XS/S/M/L/XL). See skill `create-quality-scheduler` for the full workflow
+- **`list_quality_rule_schedulers`**: no parameters — returns all schedulers with UUID, name, active status, cron, planned resources. Use at the start of `update-quality-scheduler` if the user does not have the UUID in context
+- **`update_quality_rule_scheduler`**: requires `planification_uuid` (UUID of the existing scheduler to modify); only pass the fields that actually change. If `collection_names` is provided, it replaces all existing planned resources (validate collections with `search_domains` and verify they contain rules). `table_names` only applies when `collection_names` is provided. `cron_timezone` and `cron_start_datetime` only apply when `cron_expression` is provided. See skill `update-quality-scheduler` for the full workflow
 - If an MCP call fails or returns an error: inform the user, do not retry more than 2 times with the same formulation
 
 ---

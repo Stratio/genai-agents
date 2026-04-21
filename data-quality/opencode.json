@@ -43,11 +43,13 @@
     "*get_quality_rule_dimensions": "allow",
     "*create_quality_rule": "allow",
     "*create_quality_rule_scheduler": "allow",
+    "*list_quality_rule_schedulers": "allow",
+    "*update_quality_rule_scheduler": "allow",
     "*quality_rules_metadata": "allow",
     "*get_mcp_task_result": "allow",
     "*get_critical_data_elements": "allow",
     "*set_critical_data_elements": "allow",
-    "*get_mcp_task_result": "allow",
+    "*update_quality_rule": "allow",
     "bash": {
       "*": "allow"
     }

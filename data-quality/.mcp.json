@@ -21,7 +21,10 @@
       "allowedTools": [
         "get_quality_rule_dimensions",
         "create_quality_rule",
+        "update_quality_rule",
         "create_quality_rule_scheduler",
+        "list_quality_rule_schedulers",
+        "update_quality_rule_scheduler",
         "quality_rules_metadata",
         "get_critical_data_elements",
         "set_critical_data_elements",

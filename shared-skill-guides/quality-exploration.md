@@ -18,6 +18,8 @@ Dimension definitions must always be obtained before assessing:
 
 Additionally, execute `quality_rules_metadata(domain_name=domain_name)` before assessing to have fresh AI metadata on the rules (description, dimension). Without `force_update` — only processes rules without metadata or modified ones. Non-blocking: if it fails, continue with the workflow normally.
 
+Also call `get_critical_data_elements(collection_name=domain_name)` to retrieve the Critical Data Elements (CDEs) for the domain. If CDEs exist, the assessment must prioritize those tables and columns; gaps on CDE assets escalate one priority level (MEDIUM → HIGH, HIGH → CRITICAL). Non-blocking: if the domain has no CDEs configured, continue normally.
+
 This step is **MANDATORY** and fundamental for the following reasons:
 - **Domain-Specific Dimensions**: Each domain may have its own dimensions defined in its quality document, beyond the standard ones.
 - **Definitions and Ambiguity**: Since some dimensions are ambiguous by nature, the domain definition may differ from the standard one (e.g., what a domain considers `consistency` may be different from the general definition). The domain definition ALWAYS prevails.

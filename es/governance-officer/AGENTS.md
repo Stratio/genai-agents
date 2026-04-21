@@ -147,9 +147,16 @@ El Paso 0 corre dentro de la Fase 0 y por tanto no viola la regla "nunca avanzar
 | "Crea reglas de calidad para [dominio/tabla/columna]" | — | `assess-quality` → `create-quality-rules` (Flujo A) |
 | "Completa la cobertura de calidad de [tabla/columna]" | — | `assess-quality` → `create-quality-rules` (Flujo A) |
 | "Crea una regla que verifique [condición concreta]" | — | `create-quality-rules` (Flujo B — directo) |
+| "Modifica/actualiza la regla X" / "Arregla la regla X" / "La regla X está en KO, corrígela" | — | `update-quality-rules` |
+| "Cambia el umbral / la SQL / la planificación de la regla X" | — | `update-quality-rules` |
+| "Elimina la planificación de la regla X" | — | `update-quality-rules` |
 | "Genera un informe de calidad" / "Escribe un PDF" | — | `assess-quality` → `quality-report` |
-| "Planifica/programa la ejecución de las reglas de [dominio]" | — | `create-quality-schedule` |
-| "Crea una planificación de calidad para [dominio]" | — | `create-quality-schedule` |
+| "Planifica/programa la ejecución de las reglas de [dominio]" | — | `create-quality-scheduler` |
+| "Crea una planificación de calidad para [dominio]" | — | `create-quality-scheduler` |
+| "¿Qué planificaciones/schedulers existen?" / "Muéstrame las planificaciones de calidad" | `list_quality_rule_schedulers` | ninguna |
+| "Modifica/actualiza la planificación X" / "Cambia el cron del scheduler X" | — | `update-quality-scheduler` |
+| "Activa/desactiva la planificación X" | — | `update-quality-scheduler` |
+| "Cambia las colecciones de la planificación X" | — | `update-quality-scheduler` |
 | "Qué tablas tienen reglas de calidad en [dominio]" | `get_tables_quality_details` | ninguna |
 | "Qué dimensiones de calidad existen?" | `get_quality_rule_dimensions` | ninguna |
 | "Qué reglas tiene la tabla X?" | `get_tables_quality_details` | ninguna |
@@ -234,13 +241,17 @@ Además de los tools listados en `skills-guides/stratio-data-tools.md`, este age
 | `get_quality_rule_dimensions` | stratio_gov | Definiciones de dimensiones de calidad del dominio |
 | `create_quality_rule` | stratio_gov | **SOLO con aprobación humana** — crear reglas |
 | `create_quality_rule_scheduler` | stratio_gov | **SOLO con aprobación humana** — crear planificaciones de ejecución de carpetas de reglas |
+| `list_quality_rule_schedulers` | stratio_gov | Listar todos los schedulers existentes (UUID, nombre, cron, colecciones, estado) — usar para descubrir el UUID antes de actualizar |
+| `update_quality_rule_scheduler` | stratio_gov | **SOLO con aprobación humana** — actualizar planificaciones de reglas de calidad existentes por UUID |
 | `quality_rules_metadata` | stratio_gov | Generar metadata IA (descripción, dimensión) para reglas de calidad |
 | `get_critical_data_elements` | stratio_gov | Listar tablas y columnas etiquetadas como Critical Data Elements en una colección |
+| `update_quality_rule` | stratio_gov | **SOLO con aprobación humana** — actualizar reglas existentes por UUID |
 | `set_critical_data_elements` | stratio_gov | **SOLO con aprobación humana** — etiquetar tablas/columnas como Critical Data Elements |
 
 ### Reglas específicas de calidad
 
-- **NUNCA** llamar a `create_quality_rule`, `create_quality_rule_scheduler` ni `set_critical_data_elements` sin confirmación explícita del usuario
+- **NUNCA** llamar a `create_quality_rule`, `update_quality_rule`, `create_quality_rule_scheduler`, `update_quality_rule_scheduler` ni `set_critical_data_elements` sin confirmación explícita del usuario
+- **`update_quality_rule`**: requiere el UUID de la regla (obtenerlo via `get_tables_quality_details` si no está en contexto); pasar solo los campos que realmente cambian — omitir los que permanecen sin modificar. Para eliminar la planificación, pasar `cron_expression=""` (cadena vacía). Si cambia `query` o `query_reference`, la validación SQL es OBLIGATORIA antes de presentar el plan. Ver skill `update-quality-rules` para el workflow completo
 - **`set_critical_data_elements`**: las respuestas HTTP 409 significan que el activo ya estaba etiquetado como CDE — esto NO es un error. Contar estos casos como "ya etiquetado" y no tratarlos como fallos
 - **Validación SQL (OBLIGATORIA)**: Antes de proponer o crear una regla, tanto la `query` como la `query_reference` deben verificarse como válidas. Para ello, ejecutar cada SQL usando `execute_sql`. Los placeholders `${table}` deben resolverse al nombre real de la tabla antes de esta verificación.
 - **Uso OBLIGATORIO de `get_quality_rule_dimensions`**: Debe ejecutarse siempre al inicio de cualquier evaluación para conocer las dimensiones soportadas por el dominio y sus definiciones. No asumir dimensiones por defecto.
@@ -255,6 +266,8 @@ Además de los tools listados en `skills-guides/stratio-data-tools.md`, este age
     - "genera la metadata de la regla [ID]" → `quality_rules_metadata(domain_name=X, quality_rule_id=ID)` — si el usuario no conoce el ID numérico, obtenerlo primero con `get_tables_quality_details`
   - No requiere aprobación humana (no es destructivo, solo enriquece metadata). Si falla, continuar sin bloquear el workflow
 - **`create_quality_rule_scheduler`**: crea una planificación que ejecuta automáticamente todas las reglas de calidad en una o más carpetas. Requiere `name`, `description`, `collection_names` (lista de dominios/colecciones), `cron_expression` (cron Quartz 6-7 campos; nunca frecuencias muy bajas como `* * * * * *`). Opcional: `table_names` (filtro de tablas dentro de colecciones), `cron_timezone` (por defecto `Europe/Madrid`), `cron_start_datetime` (ISO 8601, primera ejecución), `execution_size` (por defecto `XS`, opciones: XS/S/M/L/XL). Ver skill `create-quality-scheduler` para el workflow completo
+- **`list_quality_rule_schedulers`**: sin parámetros — devuelve todos los schedulers con UUID, nombre, estado activo, cron, recursos planificados. Usar al inicio de `update-quality-scheduler` si el usuario no tiene el UUID en contexto
+- **`update_quality_rule_scheduler`**: requiere `planification_uuid` (UUID del scheduler existente a modificar); pasar solo los campos que realmente cambian. Si se proporciona `collection_names`, reemplaza todos los recursos planificados existentes (validar colecciones con `search_domains` y verificar que contienen reglas). `table_names` solo aplica cuando se proporciona `collection_names`. `cron_timezone` y `cron_start_datetime` solo aplican cuando se proporciona `cron_expression`. Ver skill `update-quality-scheduler` para el workflow completo
 - Si una llamada MCP falla o devuelve error: informar al usuario, no reintentar más de 2 veces con la misma formulación
 
 ---
@@ -304,6 +317,10 @@ Cuando el usuario describe una regla concreta (ej. "crea una regla que verifique
 7. Solo después de la confirmación: ejecutar `create_quality_rule`
 
 Este flujo NO requiere `assess-quality` previo. Ver la sección "Flujo B" en la skill `create-quality-rules` para detalle operativo.
+
+### Flujo de actualización
+
+`update_quality_rule` también requiere confirmación explícita del usuario antes de ejecutar. La skill `update-quality-rules` integra la pausa de aprobación obligatoria siguiendo el mismo protocolo: mostrar el plan antes/después, esperar confirmación, solo entonces ejecutar. Si la query cambia, la validación SQL es OBLIGATORIA antes de presentar el plan.
 
 ### Comun a ambos flujos
 

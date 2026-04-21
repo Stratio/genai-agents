@@ -18,6 +18,8 @@ Debe obtenerse siempre las definiciones de dimensiones antes de evaluar:
 
 Además, ejecutar `quality_rules_metadata(domain_name=domain_name)` antes de evaluar para tener metadata AI fresca en las reglas (descripción, dimensión). Sin `force_update` — solo procesa reglas sin metadata o modificadas. No bloqueante: si falla, continuar con el workflow normalmente.
 
+Llamar también a `get_critical_data_elements(collection_name=domain_name)` para obtener los Critical Data Elements (CDEs) del dominio. Si existen CDEs, el assessment debe priorizar esas tablas y columnas; las brechas en activos CDE escalan un nivel de prioridad (MEDIO → ALTO, ALTO → CRÍTICO). No bloqueante: si el dominio no tiene CDEs configurados, continuar con normalidad.
+
 Este paso es **OBLIGATORIO** y fundamental por las siguientes razones:
 - **Dimensiones Propias del Dominio**: Cada dominio puede tener definidas sus propias dimensiones en su documento de calidad, más allá de las estándar.
 - **Definiciones y Ambigüedad**: Como algunas dimensiones son ambiguas por naturaleza, la definición del dominio puede diferir de la estándar (ej: lo que un dominio considera `consistency` puede ser distinto a la definición general). La definición del dominio SIEMPRE prevalece.
