@@ -115,16 +115,13 @@ Para exploración rápida de dominios sin análisis completo, ver la skill `/exp
 
 ### Fase 1.1 — EDA y Perfilado de Datos (en fase de planificación, solo lectura)
 
-Antes de planificar métricas, entender la realidad de los datos en dos dimensiones:
+Ejecutar en paralelo antes de preguntar al usuario sobre profundidad:
+- `profile_data` por tabla clave → **Data Profiling Score** (ALTO/MEDIO/BAJO).
+- `get_tables_quality_details(domain_name, tables)` → **Governance Quality Status** (número de reglas + desglose OK/KO/WARNING).
 
-1. **Perfil estadístico (EDA)**: Ejecutar `profile_data` siguiendo `skills-guides/stratio-data-tools.md` sec 5 → **Data Profiling Score** (ALTO/MEDIO/BAJO).
-2. **Reglas de gobernanza existentes (chequeo ligero)**: En paralelo con el profiling, llamar a `get_tables_quality_details(domain_name, tables)` → **Governance Quality Status**: número de reglas, desglose OK/KO/WARNING, y si alguna regla KO afecta a columnas relevantes al análisis.
+Presentar ambas señales en un único mini-resumen antes de cualquier pregunta al usuario. Si una regla KO afecta a una columna que el usuario va a usar, marcarlo explícitamente y preguntar si continuar, excluir la columna o cambiar a `/assess-quality`.
 
-Presentar ambas señales en un único mini-resumen antes de preguntar al usuario sobre profundidad. Si una regla KO afecta a una columna que se va a usar, marcarlo explícitamente y preguntar si continuar, excluir la columna o cambiar a `/assess-quality` para una evaluación completa de cobertura.
-
-Para detalle operativo completo (checklist de suficiencia, scoring, formato del mini-resumen, ejemplos), ver skill `/analyze` sec 3.
-
-> **Nota**: Este es un chequeo *ligero* que muestra reglas ya definidas. La evaluación completa de cobertura de gobernanza es trabajo de la skill `/assess-quality` — redirigir allí cuando el usuario pida evaluación de cobertura en lugar de análisis. Ver Fase 0 Paso 4 para la desambiguación.
+Para detalle operativo completo (checklist de suficiencia, umbrales de scoring, formato del mini-resumen, ejemplos), ver `/analyze` §3. La evaluación completa de cobertura (catálogo de dimensiones, identificación de gaps) es trabajo de `/assess-quality` — ver Fase 0 Paso 4 para la desambiguación.
 
 ### Fase 1.9 — Defaults
 
@@ -132,9 +129,7 @@ Para detalle operativo completo (checklist de suficiencia, scoring, formato del 
 
 ### Fase 2 — Preguntas al Usuario (en fase de planificación, solo lectura)
 
-Agrupar en 1 bloque de preguntas al usuario con opciones seleccionables (detalle de opciones en skill `/analyze` sec 4):
-
-**Bloque 1** (siempre): Profundidad y Audiencia. En Estándar/Profundo, también Testing.
+Cargar `/analyze` §4 para ejecutar el bloque de preguntas (Profundidad + Audiencia; en Estándar/Profundo, también Tests). Al volver, continuar con la siguiente Fase debajo. Light es chat-first, por lo que no aplican preguntas de Formato/Estructura/Estilo.
 
 **Nota**: SIEMPRE dar un resumen de hallazgos en la conversación.
 
@@ -181,7 +176,7 @@ Agrupar en 1 bloque de preguntas al usuario con opciones seleccionables (detalle
 6. **Loop de iteración**: Si un hallazgo contradice hipótesis o revela patrón inesperado, iterar (nuevas queries + actualizar análisis). Max 2 iteraciones; detalle en skill `/analyze` sec 6.5
 7. Generar visualizaciones como soporte visual del análisis
 8. Presentar resultados en el chat: hallazgos con insights accionables, tablas, visualizaciones, recomendaciones priorizadas y limitaciones (ver skill `/analyze` sec 7.1)
-9. Propuesta de conocimiento (opcional): preguntar al usuario si desea proponer términos de negocio. Nunca proponer automáticamente
+9. Propuesta de conocimiento (opcional): ver `/analyze` §9 — pregunta al usuario y, si acepta, carga `/propose-knowledge`. Nunca propone automáticamente.
 
 ---
 
@@ -365,5 +360,4 @@ La generación de informes formales (Markdown estructurado, PDF, DOCX, PPTX, HTM
 - Mostrar el plan completo antes de ejecutar
 - Reportar progreso durante la ejecución
 - Al finalizar: presentar hallazgos completos en el chat con insights, visualizaciones y recomendaciones
-- Propuesta de conocimiento: al finalizar un análisis completo, preguntar si el usuario desea proponer conocimiento de negocio descubierto a `Stratio Governance`. SIEMPRE opcional — nunca proponer automáticamente. Presentar propuestas al usuario ANTES de enviarlas al MCP
 

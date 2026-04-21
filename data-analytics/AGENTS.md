@@ -125,16 +125,13 @@ For quick domain exploration without a full analysis, see the `/explore-data` sk
 
 ### Phase 1.1 — EDA and Data Profiling (during planning phase, read-only)
 
-Before planning metrics, understand the reality of the data on two dimensions:
+Run in parallel before asking the user about formats or depth:
+- `profile_data` per key table → **Data Profiling Score** (HIGH/MEDIUM/LOW).
+- `get_tables_quality_details(domain_name, tables)` → **Governance Quality Status** (rule count + OK/KO/WARNING breakdown).
 
-1. **Statistical profile (EDA)**: Run `profile_data` per `skills-guides/stratio-data-tools.md` sec 5 → **Data Profiling Score** (HIGH/MEDIUM/LOW).
-2. **Existing governance rules (lightweight check)**: In parallel with profiling, call `get_tables_quality_details(domain_name, tables)` for the tables you plan to analyse → **Governance Quality Status**: rule count, OK/KO/WARNING breakdown, and whether any KO rule affects columns relevant to the analysis.
+Present both signals in a single mini-summary before any user question. If a KO rule affects a column the user intends to use, flag it explicitly and ask whether to continue, exclude the column, or switch to `/assess-quality`.
 
-Present both signals in a single mini-summary before asking the user about formats or depth. If a KO rule affects a column you intend to use, flag it explicitly and ask whether to continue, exclude the column, or switch to `/assess-quality` for a full coverage evaluation.
-
-For full operational detail (sufficiency checklist, scoring, mini-summary format, examples), see skill `/analyze` sec 3.
-
-> **Note**: This is a *lightweight* check that surfaces already-defined rules. A complete governance coverage evaluation (dimension catalog, gap identification by column, prioritisation) is the job of the `/assess-quality` skill — redirect there when the user asks for coverage assessment rather than analysis. See Phase 0 Step 4 for disambiguation.
+For full operational detail (sufficiency checklist, scoring thresholds, mini-summary format, examples), see `/analyze` §3. A full coverage evaluation (dimension catalog, gap identification, prioritisation) is the job of `/assess-quality` — see Phase 0 Step 4 for disambiguation.
 
 ### Phase 1.2 — Defaults
 
@@ -142,13 +139,11 @@ For full operational detail (sufficiency checklist, scoring, mini-summary format
 
 ### Phase 2 — User Questions (during planning phase, read-only)
 
-Read `output/MEMORY.md` sec Preferences (if it exists) to offer personalized defaults to the user.
+Read `output/MEMORY.md` sec Preferences (if it exists) for personalised defaults.
 
-Ask a single question block for the user with selectable options (option details in skill `/analyze` sec 4.1): Depth + Audience + Format (allow multiple selection). In Standard/Deep, also Testing.
+Load `/analyze` §4.1 to run the question block (Depth + Audience + Format + Tests). After the analysis is approved, `/report` §1 handles the next question block (Structure + Visual style). Upon return from each skill, continue with the next Phase below.
 
-The `report` skill will later ask about structure and visual style.
-
-**Note**: ALWAYS provide a summary of findings in the conversation, regardless of the selected formats.
+**Note**: ALWAYS provide a summary of findings in chat, regardless of the selected formats.
 
 **Activation matrix by depth:**
 
@@ -208,8 +203,8 @@ The `report` skill will later ask about structure and visual style.
 11. **(If depth >= Standard — see sec 9)** Generate reasoning in `output/[ANALYSIS_DIR]/reasoning/reasoning.md`
 12. **Final output validation**: Run checklist according to depth (Quick: Block A in chat; Standard: A+B+C in .md; Deep: A+B+C+D in .md). Does not block delivery. See skill `/analyze` [validation-guide.md](validation-guide.md)
 13. Report results in chat: summary of findings + generated file paths + validation summary
-14. Knowledge proposal (optional): ask the user if they want to analyze the conversation to propose business terms and preferences to the `Stratio Governance` layer. If they accept, follow the /propose-knowledge workflow. Never propose automatically
-15. **Analysis memory**: Ask the user if they want to save to persistent memory. If they accept, write an entry in `output/ANALYSIS_MEMORY.md` and update `output/MEMORY.md` (see skill `/analyze` sec 8). If they decline, skip all memory writing steps
+14. Knowledge proposal (optional): see `/analyze` §9 — asks the user and, if accepted, loads `/propose-knowledge`. Never proposes automatically.
+15. Analysis memory: see `/analyze` §8 — writes `output/ANALYSIS_MEMORY.md` and `output/[ANALYSIS_DIR]/analysis_memory.md`; then invokes `/update-memory` for curated preferences.
 
 ---
 
@@ -444,15 +439,14 @@ For mandatory content and template, see skill `/analyze` [reasoning-guide.md](re
   - Memory files (MEMORY.md, ANALYSIS_MEMORY.md, analysis_memory.md)
   - Chat summaries, user questions, recommendations, and any other generated content
 - ALWAYS ask about the domain if it is not clear
-- ALWAYS ask about the desired output format
-- ALWAYS ask about structure and visual style if the user chose output formats
+- Output format: captured via `/analyze` §4.1 Q3 — confirm it is answered before planning
+- Structure and visual style: handled by `/report` §1 — ensure the skill is loaded when at least one output format was selected
 - ALWAYS provide a summary of findings in chat even when deliverables are generated
 - Ask the user with structured options (not open-ended or free-text questions). Use the question convention defined above
 - When presenting a question with predefined options, list **every** option literally — one per line — even when an option looks advanced or secondary. Never collapse, summarise or silently drop options. Keep label strings verbatim so the routing logic downstream can recognise the choice
 - Show the complete plan before executing
 - Report progress during execution
 - Upon completion: summary of findings in chat + generated file paths
-- Knowledge proposal: upon completing a full analysis, ask if the user wants to propose discovered business knowledge to `Stratio Governance`. ALWAYS optional — never propose automatically. Present proposals to the user BEFORE sending them to the MCP
 
 ---
 

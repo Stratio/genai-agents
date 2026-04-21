@@ -115,6 +115,12 @@ All pack scripts accept `--lang <code>` to generate output in a specific languag
 
 ## Shared skills
 
+### Reference rules
+
+Shared-skills must stay self-contained — no SKILL.md in `shared-skills/` references another shared-skill by name, so any shared-skill can be packaged standalone. Documented exceptions: `pdf-reader` ↔ `pdf-writer` (companion skills) and the `visual-craftsmanship.md` guide (the only place where `web-craft`, `canvas-craft` and `pdf-writer` are compared side by side).
+
+Skills inside `<agent>/skills/` and any `AGENTS.md` may reference directly any skill the agent declares (local or shared). Prefer `load /skill-x and follow its §Y` over duplicating instructions.
+
 ### Visual-craftsmanship family
 
 Three shared skills cover the visual output of the monorepo. They share the guide `shared-skill-guides/visual-craftsmanship.md` but do not reference each other in runtime. The disambiguation table in that guide is the only place where the three names live together.

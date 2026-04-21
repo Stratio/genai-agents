@@ -115,16 +115,13 @@ For quick domain exploration without full analysis, see the `/explore-data` skil
 
 ### Phase 1.1 — EDA and Data Profiling (during planning phase, read-only)
 
-Before planning metrics, understand the reality of the data on two dimensions:
+Run in parallel before asking the user about depth:
+- `profile_data` per key table → **Data Profiling Score** (HIGH/MEDIUM/LOW).
+- `get_tables_quality_details(domain_name, tables)` → **Governance Quality Status** (rule count + OK/KO/WARNING breakdown).
 
-1. **Statistical profile (EDA)**: Run `profile_data` per `skills-guides/stratio-data-tools.md` sec 5 → **Data Profiling Score** (HIGH/MEDIUM/LOW).
-2. **Existing governance rules (lightweight check)**: In parallel with profiling, call `get_tables_quality_details(domain_name, tables)` → **Governance Quality Status**: rule count, OK/KO/WARNING breakdown, and whether any KO rule affects columns relevant to the analysis.
+Present both signals in a single mini-summary before any user question. If a KO rule affects a column the user intends to use, flag it explicitly and ask whether to continue, exclude the column, or switch to `/assess-quality`.
 
-Present both signals in a single mini-summary before asking the user about depth. If a KO rule affects a column you intend to use, flag it explicitly and ask whether to continue, exclude the column, or switch to `/assess-quality` for a full coverage evaluation.
-
-For full operational detail (sufficiency checklist, scoring, mini-summary format, examples), see skill `/analyze` sec 3.
-
-> **Note**: This is a *lightweight* check that surfaces already-defined rules. A complete governance coverage evaluation is the job of the `/assess-quality` skill — redirect there when the user asks for coverage assessment rather than analysis. See Phase 0 Step 4 for disambiguation.
+For full operational detail (sufficiency checklist, scoring thresholds, mini-summary format, examples), see `/analyze` §3. A full coverage evaluation (dimension catalog, gap identification) is the job of `/assess-quality` — see Phase 0 Step 4 for disambiguation.
 
 ### Phase 1.9 — Defaults
 
@@ -132,9 +129,7 @@ For full operational detail (sufficiency checklist, scoring, mini-summary format
 
 ### Phase 2 — Questions to the User (during planning phase, read-only)
 
-Group into 1 block of questions to the user with selectable options (option details in skill `/analyze` sec 4):
-
-**Block 1** (always): Depth and Audience. In Standard/Deep, also Testing.
+Load `/analyze` §4 to run the question block (Depth + Audience; in Standard/Deep, also Tests). Upon return, continue with the next Phase below. Light is chat-first, so no Format/Structure/Style questions apply.
 
 **Note**: ALWAYS provide a summary of findings in the conversation.
 
@@ -181,7 +176,7 @@ Group into 1 block of questions to the user with selectable options (option deta
 6. **Iteration loop**: If a finding contradicts a hypothesis or reveals an unexpected pattern, iterate (new queries + update analysis). Max 2 iterations; detail in skill `/analyze` sec 6.5
 7. Generate visualizations as visual support for the analysis
 8. Present results in chat: findings with actionable insights, tables, visualizations, prioritized recommendations, and limitations (see skill `/analyze` sec 7.1)
-9. Knowledge proposal (optional): ask the user if they want to propose business terms. Never propose automatically
+9. Knowledge proposal (optional): see `/analyze` §9 — asks the user and, if accepted, loads `/propose-knowledge`. Never proposes automatically.
 
 ---
 
@@ -365,4 +360,3 @@ Formal report generation (structured Markdown, PDF, DOCX, PPTX, HTML) is delegat
 - Show the full plan before executing
 - Report progress during execution
 - Upon completion: present complete findings in chat with insights, visualizations, and recommendations
-- Knowledge proposal: upon completing a full analysis, ask if the user wants to propose discovered business knowledge to `Stratio Governance`. ALWAYS optional — never propose automatically. Present proposals to the user BEFORE sending them to the MCP

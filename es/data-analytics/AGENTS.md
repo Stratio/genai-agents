@@ -125,16 +125,13 @@ Para exploración rápida de dominios sin análisis completo, ver la skill `/exp
 
 ### Fase 1.1 — EDA y Perfilado de Datos (en fase de planificación, solo lectura)
 
-Antes de planificar métricas, entender la realidad de los datos en dos dimensiones:
+Ejecutar en paralelo antes de preguntar al usuario sobre formatos o profundidad:
+- `profile_data` por tabla clave → **Data Profiling Score** (ALTO/MEDIO/BAJO).
+- `get_tables_quality_details(domain_name, tables)` → **Governance Quality Status** (número de reglas + desglose OK/KO/WARNING).
 
-1. **Perfil estadístico (EDA)**: Ejecutar `profile_data` siguiendo `skills-guides/stratio-data-tools.md` sec 5 → **Data Profiling Score** (ALTO/MEDIO/BAJO).
-2. **Reglas de gobernanza existentes (chequeo ligero)**: En paralelo con el profiling, llamar a `get_tables_quality_details(domain_name, tables)` para las tablas que se van a analizar → **Governance Quality Status**: número de reglas, desglose OK/KO/WARNING, y si alguna regla KO afecta a columnas relevantes al análisis.
+Presentar ambas señales en un único mini-resumen antes de cualquier pregunta al usuario. Si una regla KO afecta a una columna que el usuario va a usar, marcarlo explícitamente y preguntar si continuar, excluir la columna o cambiar a `/assess-quality`.
 
-Presentar ambas señales en un único mini-resumen antes de preguntar al usuario sobre formatos o profundidad. Si una regla KO afecta a una columna que se va a usar, marcarlo explícitamente y preguntar si continuar, excluir la columna o cambiar a `/assess-quality` para una evaluación completa de cobertura.
-
-Para detalle operativo completo (checklist de suficiencia, scoring, formato del mini-resumen, ejemplos), ver skill `/analyze` sec 3.
-
-> **Nota**: Este es un chequeo *ligero* que muestra reglas ya definidas. La evaluación completa de cobertura de gobernanza (catálogo de dimensiones, identificación de gaps por columna, priorización) es trabajo de la skill `/assess-quality` — redirigir allí cuando el usuario pida evaluación de cobertura en lugar de análisis. Ver Fase 0 Paso 4 para la desambiguación.
+Para detalle operativo completo (checklist de suficiencia, umbrales de scoring, formato del mini-resumen, ejemplos), ver `/analyze` §3. La evaluación completa de cobertura (catálogo de dimensiones, identificación de gaps, priorización) es trabajo de `/assess-quality` — ver Fase 0 Paso 4 para la desambiguación.
 
 ### Fase 1.2 — Defaults
 
@@ -142,11 +139,9 @@ Para detalle operativo completo (checklist de suficiencia, scoring, formato del 
 
 ### Fase 2 — Preguntas al Usuario (en fase de planificación, solo lectura)
 
-Leer `output/MEMORY.md` sec Preferencias (si existe) para ofrecer defaults personalizados al usuario.
+Leer `output/MEMORY.md` sec Preferencias (si existe) para ofrecer defaults personalizados.
 
-Hacer un único bloque de preguntas al usuario con opciones seleccionables (detalle de opciones en skill `/analyze` sec 4.1): Profundidad + Audiencia + Formato (permitir selección múltiple). En Estándar/Profundo, también Testing.
-
-La skill `report` preguntará más tarde por estructura y estilo visual.
+Cargar `/analyze` §4.1 para ejecutar el bloque de preguntas (Profundidad + Audiencia + Formato + Tests). Tras la aprobación del análisis, `/report` §1 ejecuta el siguiente bloque de preguntas (Estructura + Estilo visual). Al volver de cada skill, continuar con la siguiente Fase debajo.
 
 **Nota**: SIEMPRE dar un resumen de hallazgos en la conversación, independientemente de los formatos seleccionados.
 
@@ -208,8 +203,8 @@ La skill `report` preguntará más tarde por estructura y estilo visual.
 11. **(Si profundidad >= Estándar — ver sec 9)** Generar reasoning en `output/[ANALISIS_DIR]/reasoning/reasoning.md`
 12. **Validación de output final**: Ejecutar checklist según profundidad (Rápido: Bloque A en chat; Estándar: A+B+C en .md; Profundo: A+B+C+D en .md). No bloquea la entrega. Ver skill `/analyze` [validation-guide.md](validation-guide.md)
 13. Reportar resultados en el chat: resumen de hallazgos + rutas de archivos generados + resumen de validación
-14. Propuesta de conocimiento (opcional): preguntar al usuario si desea analizar la conversación para proponer términos de negocio y preferencias a la capa de `Stratio Governance`. Si acepta, seguir el workflow de /propose-knowledge. Nunca proponer automáticamente
-15. **Memoria de análisis**: Preguntar al usuario si desea guardar en memoria persistente. Si acepta, escribir entrada en `output/ANALYSIS_MEMORY.md` y actualizar `output/MEMORY.md` (ver skill `/analyze` sec 8). Si rechaza, omitir todos los pasos de escritura de memoria
+14. Propuesta de conocimiento (opcional): ver `/analyze` §9 — pregunta al usuario y, si acepta, carga `/propose-knowledge`. Nunca propone automáticamente.
+15. Memoria de análisis: ver `/analyze` §8 — escribe `output/ANALYSIS_MEMORY.md` y `output/[ANALISIS_DIR]/analysis_memory.md`; luego invoca `/update-memory` para las preferencias curadas.
 
 ---
 
@@ -444,15 +439,14 @@ Para contenido obligatorio y plantilla, ver skill `/analyze` [reasoning-guide.md
   - Ficheros de memoria (MEMORY.md, ANALYSIS_MEMORY.md, analysis_memory.md)
   - Resúmenes en chat, preguntas al usuario, recomendaciones y cualquier otro contenido generado
 - SIEMPRE preguntar el dominio si no está claro
-- SIEMPRE preguntar el formato de salida deseado
-- SIEMPRE preguntar estructura y estilo visual si el usuario eligió formatos de salida
+- Formato de salida: capturado vía `/analyze` §4.1 Q3 — confirmar que está respondido antes de planificar
+- Estructura y estilo visual: gestionados por `/report` §1 — asegurar que la skill se carga cuando se seleccionó al menos un formato de salida
 - SIEMPRE dar resumen de hallazgos en el chat aunque se generen deliverables
 - Preguntar al usuario con opciones estructuradas (no preguntas abiertas ni texto libre). Usar la convención de preguntas definida arriba
 - Al presentar una pregunta con opciones predefinidas, listar **todas** las opciones literalmente — una por línea — aunque alguna parezca avanzada o secundaria. Nunca agrupar, resumir ni descartar opciones en silencio. Mantener los labels literales para que el routing downstream reconozca la elección
 - Mostrar el plan completo antes de ejecutar
 - Reportar progreso durante la ejecución
 - Al finalizar: resumen de hallazgos en el chat + rutas de archivos generados
-- Propuesta de conocimiento: al finalizar un análisis completo, preguntar si el usuario desea proponer conocimiento de negocio descubierto a `Stratio Governance`. SIEMPRE opcional — nunca proponer automáticamente. Presentar propuestas al usuario ANTES de enviarlas al MCP
 
 ---
 
