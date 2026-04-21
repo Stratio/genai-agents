@@ -305,6 +305,12 @@ find "$OUTPUT_DIR" \
 echo "    [7b] Placeholder TOOL_QUESTIONS -> question"
 
 # ---------------------------------------------------------------------------
+# Phase 7c — Non-runtime sweep (tests, caches, editor junk)
+# ---------------------------------------------------------------------------
+bash "$SCRIPT_DIR/bin/sweep-nonruntime.sh" "$OUTPUT_DIR"
+echo "    [7c] Non-runtime files removed"
+
+# ---------------------------------------------------------------------------
 # Phase 8 — Integrity verification
 # ---------------------------------------------------------------------------
 echo "    [8] Verifying integrity..."

@@ -83,16 +83,13 @@ Antes de preguntar al usuario sobre formatos y planificar métricas, entender la
 
 ## 4. Clasificación y Preguntas al Usuario
 
-> **Nota**: Todas las preguntas con opciones de esta sección siguen la convención de preguntas (sec "Interacción con el Usuario" de AGENTS.md).
+> **Nota**: Todas las preguntas con opciones de esta sección siguen la convención de preguntas.
 
 ### 4.0 Triage vs Análisis
 
 Las preguntas simples (datos puntuales, sin dimensiones de corte) se resuelven en Triage (Fase 0 del workflow) sin invocar esta skill. Todo lo demás es un análisis y sigue el flujo de bloques de preguntas descrito a continuación.
 
-**Defaults generales:**
-- Estilo visual: **Corporativo** (si el usuario no elige otro en Bloque 2)
-
-### 4.1 Bloque 1 — Profundidad, Audiencia y Formato
+### 4.1 Bloque de preguntas — Profundidad, Audiencia, Formato, Tests
 
 Una sola interacción:
 
@@ -112,16 +109,7 @@ Una sola interacción:
 - **Si selecciona uno o más formatos → los deliverables SE GENERAN SIEMPRE, independientemente de la profundidad elegida. Rápido/Estándar/Profundo afecta al análisis, no a los entregables.**
 - Requisitos adicionales vía opción "Other" (filtros temporales, segmentos, métricas obligatorias)
 
-### 4.2 Bloque 2 — Estructura y Estilo (solo si seleccionó formato en Bloque 1)
-
-Una sola interacción con 2 preguntas. Las opciones son literales — no inventar, no omitir, no sustituir:
-
-| # | Pregunta | Opciones (literales) | Selección |
-|---|----------|---------------------|-----------|
-| 1 | ¿Qué estructura prefieres para el reporte? | **Scaffold base** (Recomendado): resumen ejecutivo → metodología → datos → análisis → conclusiones · **Al vuelo**: estructura libre según contexto | Única |
-| 2 | ¿Qué estilo visual prefieres? | **Corporativo** (`corporate.css`, Recomendado): limpio, profesional · **Formal/académico** (`academic.css`): serif, márgenes amplios, estilo paper · **Moderno/creativo** (`modern.css`): colores, gradientes, visualmente atractivo | Única |
-
-Si no seleccionó formato en Bloque 1 → Bloque 2 se omite completamente. Resultado: de 6 a 1-2 interacciones.
+La estructura y el estilo visual no se preguntan aquí — los pregunta después la skill `report`.
 
 ## 5. Planificación
 
@@ -280,7 +268,7 @@ Aplicar las 7 validaciones de `skills-guides/stratio-data-tools.md` sec 7 a cada
 
 ### 6.5 Testing
 
-> **Solo si la profundidad es Estándar/Profundo Y el usuario eligió "Sí" en la pregunta de testing del Bloque 1.** En profundidad Rápido o si el usuario eligió "No", omitir esta sección y ejecutar directamente el script con datos reales.
+> **Solo si la profundidad es Estándar/Profundo Y el usuario eligió "Sí" en la pregunta de testing de §4.1.** En profundidad Rápido o si el usuario eligió "No", omitir esta sección y ejecutar directamente el script con datos reales.
 
 - Generar `output/[ANALISIS_DIR]/scripts/test_*.py` con tests unitarios ANTES de ejecutar con datos reales
 - Usar DataFrames mock con estructura similar a los datos reales
@@ -313,7 +301,7 @@ Si durante la ejecución se detecta un hallazgo que excede el alcance del nivel 
 
 **Acción:**
 1. Pausar la ejecución normal
-2. Informar al usuario siguiendo la convención de preguntas (sec "Interacción con el Usuario" de AGENTS.md): "He detectado [descripción del hallazgo]. Esto requiere investigación adicional. ¿Quieres que profundice?" con opciones:
+2. Informar al usuario siguiendo la convención de preguntas: "He detectado [descripción del hallazgo]. Esto requiere investigación adicional. ¿Quieres que profundice?" con opciones:
    - "Sí, profundizar" → Escalar complejidad, activar fases adicionales (EDA completo, hipótesis sobre el hallazgo, visualizaciones de drill-down)
    - "No, solo documentar" → Registrar hallazgo en el chat y en reasoning como "área de investigación futura"
 3. El upgrade NO reinicia el análisis — extiende el análisis actual con fases adicionales
@@ -322,7 +310,7 @@ Si durante la ejecución se detecta un hallazgo que excede el alcance del nivel 
 
 ### 6.9 Generación de deliverables
 
-> **OBLIGATORIO si el usuario seleccionó formatos en el Bloque 1.** La profundidad del análisis (Rápido/Estándar/Profundo) NO afecta a este paso — si el usuario eligió formatos, todos se generan.
+> **OBLIGATORIO si el usuario seleccionó formatos en §4.1.** La profundidad del análisis (Rápido/Estándar/Profundo) NO afecta a este paso — si el usuario eligió formatos, todos se generan.
 
 1. Cargar la skill `report`
 2. Generar TODOS los formatos seleccionados (no omitir ninguno)
@@ -383,7 +371,7 @@ Para principios de data storytelling y mapping hallazgos → narrativa, leer `sk
 
 ## 8. Memoria de Análisis (Confirmación requerida)
 
-Tras presentar el reporte final, preguntar al usuario (siguiendo la convención de preguntas (sec "Interacción con el Usuario" de AGENTS.md)):
+Tras presentar el reporte final, preguntar al usuario (siguiendo la convención de preguntas):
 
 "¿Deseas guardar este análisis en la memoria persistente? Se actualizarán el registro de análisis (`ANALYSIS_MEMORY.md`) y la memoria de conocimiento (`MEMORY.md`)."
 - **Si** → Continuar con los pasos 8.1, 8.2 y 8.3
@@ -440,7 +428,7 @@ Tras escribir en ANALYSIS_MEMORY.md, invocar la skill `/update-memory` para actu
 
 ## 9. Propuesta de Conocimiento (Opcional)
 
-Tras presentar el reporte final, preguntar al usuario siguiendo la convención de preguntas (sec "Interacción con el Usuario" de AGENTS.md):
+Tras presentar el reporte final, preguntar al usuario siguiendo la convención de preguntas:
 - **Si**: Analizar conversación y proponer conocimiento al dominio
 - **No**: Finalizar sin proponer
 

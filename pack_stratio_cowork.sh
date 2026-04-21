@@ -169,6 +169,7 @@ mkdir -p "$BUNDLE_STAGING"
 
 ZIP_NO_SHARED="${AGENT_NAME}-opencode-agent.zip"
 echo "    [4] Generating $ZIP_NO_SHARED..."
+bash "$SCRIPT_DIR/bin/sweep-nonruntime.sh" "$STAGING_NO_SHARED"
 (cd "$STAGING_NO_SHARED" && zip -r "$BUNDLE_STAGING/$ZIP_NO_SHARED" . -q)
 ZIP_SIZE=$(du -sh "$BUNDLE_STAGING/$ZIP_NO_SHARED" | cut -f1)
 echo "    [4] $ZIP_NO_SHARED generated ($ZIP_SIZE)"
@@ -224,6 +225,7 @@ find "$SKILLS_STAGING" \
   -exec sed -i 's|shared-skill-guides/||g' {} \;
 
 if [[ $N_SKILLS_PACKED -gt 0 ]]; then
+  bash "$SCRIPT_DIR/bin/sweep-nonruntime.sh" "$SKILLS_STAGING"
   (cd "$SKILLS_STAGING" && zip -r "$BUNDLE_STAGING/$ZIP_SHARED" . -q)
   ZIP_SIZE=$(du -sh "$BUNDLE_STAGING/$ZIP_SHARED" | cut -f1)
   echo "    [5] $ZIP_SHARED generated ($N_SKILLS_PACKED skill(s), $N_GUIDES_PACKED guide(s)) ($ZIP_SIZE)"

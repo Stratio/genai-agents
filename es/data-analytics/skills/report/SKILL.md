@@ -12,18 +12,44 @@ Guía para generar informes profesionales en múltiples formatos a partir de dat
 
 Parsear argumento: $ARGUMENTS
 
-Si el formato no está especificado, preguntar al usuario las 3 preguntas siguientes en una sola interacción, siguiendo la convención de preguntas (sec "Interacción con el Usuario" de AGENTS.md) (adaptativa al entorno: interactivas si disponibles, lista numerada en chat si no). Las opciones son literales — no inventar, no omitir, no sustituir:
+Si el formato no está especificado, preguntar al usuario las 3 preguntas siguientes en una sola interacción, siguiendo la convención de preguntas.
 
-| # | Pregunta | Opciones (literales) | Selección |
-|---|----------|---------------------|-----------|
-| 1 | ¿En que formatos quieres los deliverables? | **Documento** (PDF + DOCX) · **Web** (HTML interactivo con Plotly) · **PowerPoint** (.pptx) | Múltiple |
-| 2 | ¿Qué estructura prefieres para el reporte? | **Scaffold base** (Recomendado): resumen ejecutivo → metodología → datos → análisis → conclusiones · **Al vuelo**: estructura libre según contexto | Única |
-| 3 | ¿Qué estilo visual prefieres? | **Corporativo** (`corporate.css`, Recomendado): limpio, profesional · **Formal/académico** (`academic.css`): serif, márgenes amplios, estilo paper · **Moderno/creativo** (`modern.css`): colores, gradientes, visualmente atractivo | Única |
+**Reglas de presentación — OBLIGATORIAS**:
+- Presentar **todas** las opciones literalmente, una por línea. Nunca agrupar, resumir, omitir ni parafrasear opciones, aunque alguna parezca "avanzada" o secundaria. El usuario debe ver todas para decidir con criterio.
+- Seguir la convención de preguntas para el mecanismo de entrega — el agente usa una herramienta interactiva de pregunta cuando el entorno la provee, o una lista numerada en chat en otro caso. No fijar el nombre de la herramienta; dejar que la convención lo resuelva.
+- Cada pregunta es su propio bloque numerado en el renderizado en chat.
+- Mantener los **labels** (Corporativo, Académico, Moderno, Design-first, Scaffold base, Al vuelo, Documento, Web, PowerPoint) literales — se mapean a routing interno. Solo se traduce la prosa circundante si el usuario trabaja en otro idioma.
 
-- La pregunta 1 SIEMPRE permite selección múltiple (el usuario puede querer varios formatos)
-- Si no selecciona ningún formato, solo se da respuesta textual en el chat
-- Siempre se genera `output/[ANALISIS_DIR]/report.md` automáticamente como documentación interna (no necesita opción)
-- Si el formato viene en el argumento ($ARGUMENTS), saltar directamente a preguntar estructura y estilo (preguntas 2 y 3)
+### Pregunta 1 — ¿En qué formatos quieres los entregables? (selección múltiple)
+- **Documento** — PDF + DOCX
+- **Web** — HTML interactivo con Plotly
+- **PowerPoint** — `.pptx`
+
+### Pregunta 2 — ¿Qué estructura prefieres para el informe? (selección única)
+- **Scaffold base** *(Recomendado)* — resumen ejecutivo → metodología → datos → análisis → conclusiones
+- **Al vuelo** — estructura libre según el contexto
+
+### Pregunta 3 — ¿Qué estilo visual prefieres? (selección única)
+- **Corporativo** *(Recomendado)* — `corporate.css`, limpio y profesional
+- **Académico** — `academic.css`, tipografía serif, márgenes amplios, estilo paper
+- **Moderno** — `modern.css`, color y gradientes, visualmente atractivo
+- **Design-first** — compromiso con una dirección estética deliberada (tono, emparejamiento tipográfico, paleta, presupuesto de motion) derivada de la materia del informe. Recomendado cuando el entregable es una pieza de alta visibilidad — resúmenes ejecutivos para un consejo, briefs de lanzamiento, informes narrativos donde la voz visual es parte del mensaje. Ver §4.1 para el workflow.
+
+Notas:
+- La pregunta 1 SIEMPRE permite selección múltiple (el usuario puede querer varios formatos).
+- Si no se selecciona ningún formato, solo se da respuesta textual en el chat.
+- Siempre se genera `output/[ANALISIS_DIR]/report.md` automáticamente como documentación interna (no necesita opción).
+- Si el formato viene en el argumento (`$ARGUMENTS`), saltar directamente a las preguntas 2 y 3.
+
+### 1.1 Convención de nombres para deliverables
+
+Los entregables orientados al usuario se escriben con un prefijo descriptivo para que sean reconocibles tras descargarlos, fuera de su carpeta:
+
+- `<slug>-report.pdf`, `<slug>-report.docx` (formato Document)
+- `<slug>-dashboard.html` (formato Web)
+- `<slug>-presentation.pptx` (formato PowerPoint)
+
+`<slug>` es la parte descriptiva de `[ANALISIS_DIR]` — la carpeta es `YYYY-MM-DD_HHMM_<slug>/`, así que `<slug>` es todo lo que va después del prefijo de timestamp. Los ficheros internos (`plan.md`, `reasoning.md`, `report.md`, `validation.md`, `aesthetic.json`) se quedan sin prefijo.
 
 ## 2. Verificar Datos Disponibles
 
@@ -73,6 +99,35 @@ from css_builder import build_css, get_palette
 css, name = build_css("corporate", "pdf")    # CSS ensamblado
 palette = get_palette("corporate")           # {"primary": (0x1a,0x36,0x5d), "font_main": "Inter", ...}
 ```
+
+## 4.1 Workflow Design-first (cuando la pregunta 3 elige "Design-first")
+
+Cuando el usuario elige "Design-first" en la pregunta 3, ejecuta este checklist de cinco pasos **antes** de invocar ningún generador. Persiste el resultado en `output/[ANALYSIS_DIR]/aesthetic.json` y pásalo como `aesthetic_direction` a `DashboardBuilder`, `PDFGenerator`, `DOCXGenerator`, `create_presentation`, `chart_layout.get_chart_colors`, y `md_to_report.py --aesthetic`. Así el HTML, el PDF, el DOCX y el PPTX quedan visualmente coherentes.
+
+1. **Clasifica el artefacto** — `executive-dashboard` / `technical-report` / `editorial-brief` / `forensic-audit`. La clase gobierna las siguientes cinco decisiones.
+2. **Elige un tono (uno, comprometido)** — `editorial-serious` / `technical-minimal` / `executive-editorial` / `forensic-audit` / `maximalist-analytical` / `brutalist-data`. Mitad-y-mitad no es opción.
+3. **Emparejamiento tipográfico** — una fuente display + una body desde la tabla "Emparejamientos tipográficos por clase de artefacto" en `skills-guides/dashboard-aesthetics.md`. Escribe el resultado como `font_pair: [display, body]`.
+4. **Paleta** — deriva un acento dominante de la materia de los datos (finanzas → azul profundo u oxblood; operaciones → acero frío o bosque; auditoría → rojo profundo sobre hueso; consumo → un primario saturado). Rellena un dict `palette_override` con claves a nivel CSS (`"--primary"`, `"--accent"`, `"--text-primary"`, …) coherentes con los tokens del estilo base elegido. *Nota:* en `academic`, el token del rol "primary" es `--heading-color`; sobrescribir `--primary` allí es inerte — consulta la nota "Caveat — `academic`" en `skills-guides/dashboard-aesthetics.md`.
+5. **Presupuesto de motion** (solo dashboards) — `none` / `minimal` / `expressive`. Nada de JS, CSS puro, `@keyframes` prefijados con `dashboard-`, `prefers-reduced-motion` respetado.
+6. **Estilo de fondo** (opcional) — `solid` / `gradient-mesh` / `noise` / `grain`. Decide si el artefacto se gana atmósfera más allá de una superficie plana.
+
+Escribe el `aesthetic.json` resultante con este schema (claves extra las rechaza `md_to_report.py --aesthetic`):
+
+```json
+{
+  "tone": "editorial-serious",
+  "palette_override": {"--primary": "#0a2540", "--accent": "#d9472b"},
+  "font_pair": ["Fraunces", "Inter"],
+  "motion_budget": "expressive",
+  "background_style": "gradient-mesh"
+}
+```
+
+**Orden de operaciones**: crea `output/[ANALYSIS_DIR]/` antes de escribir `aesthetic.json`. Si el fichero ya existe de una ejecución anterior y el usuario elige ahora un estilo distinto, sobrescríbelo y añade una línea a `reasoning.md`:
+
+> *Dirección estética (contenido de `aesthetic.json`)*: tone=…, palette_override=…, font_pair=…, motion_budget=…, background_style=….
+
+Consulta `skills-guides/dashboard-aesthetics.md` para la guía específica interactiva (motion, hover, fondos, tipografía para pantalla) y `skills-guides/visual-craftsmanship.md` para los principios transversales (anti-patrones, roles de paleta, checklist de artesanía).
 
 ## 5. Generación por Formato
 

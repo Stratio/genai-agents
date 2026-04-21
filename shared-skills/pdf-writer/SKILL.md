@@ -41,14 +41,32 @@ Only then open reportlab.
 | Analytical report | Editorial-serious | A4 / Letter | Crimson Pro (body) + Instrument Sans (display) |
 | Financial statement | Technical-minimal | A4 / Letter | IBM Plex Serif (body) + IBM Plex Mono (data) |
 | Invoice / receipt | Clean-utilitarian | A4 / Letter | Instrument Sans (everything) + JetBrains Mono (figures) |
-| Certificate / diploma | Formal-ceremonial | Landscape A4 | Young Serif (display) + Crimson Pro (body) |
 | Newsletter | Warm-magazine | Letter | Lora (body) + Big Shoulders (display) |
 | Contract / legal | Restrained-precise | A4 / Letter | Libre Baskerville (body) + Instrument Sans (captions) |
-| Poster / one-pager | Bold-graphic | A3 / Tabloid | Boldonse or Big Shoulders (display) + Work Sans (body) |
 | Booklet / zine | Editorial-playful | A5 | Crimson Pro (body) + Italiana or Erica One (display) |
 
 These are starting points, not mandates. Break them when the brief calls
 for it. The point is **never default to reportlab's built-in Helvetica**.
+
+### When this skill is not the right fit
+
+This skill produces multi-page typographic documents where prose, tables
+or structured data carry the meaning. Some briefs look similar but belong
+to a different tool:
+
+- **Single-page artifacts where composition dominates** — posters,
+  certificates, marketing one-pagers, infographics. In those pieces,
+  roughly seventy per cent or more of the surface is visual composition
+  rather than prose or data. Typography becomes a visual element. A
+  different skill handles that medium; see
+  `skills-guides/visual-craftsmanship.md` for the selection criterion.
+- **Interactive web interfaces** — components, pages, dashboards that live
+  in a browser. PDF is static; those briefs call for HTML/CSS.
+
+For a report that needs a designed cover, produce the cover with the
+dedicated visual-artifact skill, assemble the multi-page body here, and
+merge the two with `pypdf` as a final step. Keep the cover's last-page
+margins consistent with the body's first-page margins for a clean seam.
 
 ## 2. Registering custom fonts (do this first)
 
@@ -182,6 +200,7 @@ def build(output_path, story):
         title="Annual Report 2026",
         author="Acme Analytics",
     )
+    doc._pdfVersion = (1, 4)  # reportlab defaults to 1.3; bump so alpha/ExtGState render
     frame = Frame(
         doc.leftMargin, doc.bottomMargin,
         doc.width, doc.height,

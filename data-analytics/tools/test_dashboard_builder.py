@@ -390,3 +390,118 @@ class TestStyles:
         db.add_kpi("k1", "KPI", "100")
         html = db.build()
         assert "kpi-container" in html
+
+
+class TestAestheticDirection:
+    """The optional ``aesthetic_direction`` dict applies palette, type and
+    motion overrides on top of the base style. Default behaviour (None)
+    must match the legacy rendering."""
+
+    def test_no_aesthetic_direction_leaves_baseline(self):
+        db = DashboardBuilder(title="Test", style="corporate")
+        db.add_kpi("k1", "KPI", "100")
+        html = db.build()
+        assert "/* === override === */" not in html
+        assert "dashboard-rise" not in html
+        assert "dashboard-fade-in" not in html
+
+    def test_palette_override_rewrites_primary_token(self):
+        db = DashboardBuilder(
+            title="Test", style="corporate",
+            aesthetic_direction={"palette_override": {"--primary": "#0a2540"}},
+        )
+        db.add_kpi("k1", "KPI", "100")
+        html = db.build()
+        assert "/* === override === */" in html
+        assert "#0a2540" in html
+
+    def test_font_pair_applies_body_token_and_display_rule(self):
+        db = DashboardBuilder(
+            title="Test", style="corporate",
+            aesthetic_direction={"font_pair": ["Fraunces", "Inter"]},
+        )
+        db.add_kpi("k1", "KPI", "100")
+        html = db.build()
+        # Body flows through --font-main override.
+        assert "--font-main: 'Inter'" in html
+        # Display is emitted as a selector rule, not a token.
+        assert "h1, h2, .kpi-value { font-family: 'Fraunces'; }" in html
+
+    def test_motion_expressive_emits_staggered_keyframes_and_reduced_motion(self):
+        db = DashboardBuilder(
+            title="Test", style="corporate",
+            aesthetic_direction={"motion_budget": "expressive"},
+        )
+        db.add_kpi("k1", "KPI", "100")
+        db.add_kpi("k2", "KPI", "200")
+        html = db.build()
+        assert "@keyframes dashboard-rise" in html
+        assert "animation-delay" in html
+        assert "prefers-reduced-motion" in html
+
+    def test_motion_minimal_emits_fade_in_only(self):
+        db = DashboardBuilder(
+            title="Test", style="corporate",
+            aesthetic_direction={"motion_budget": "minimal"},
+        )
+        db.add_kpi("k1", "KPI", "100")
+        html = db.build()
+        assert "@keyframes dashboard-fade-in" in html
+        assert "dashboard-rise" not in html
+        assert "prefers-reduced-motion" in html
+
+    def test_background_gradient_mesh_injects_body_rule(self):
+        db = DashboardBuilder(
+            title="Test", style="corporate",
+            aesthetic_direction={"background_style": "gradient-mesh"},
+        )
+        html = db.build()
+        assert "radial-gradient" in html
+
+    def test_background_noise_injects_svg_filter(self):
+        db = DashboardBuilder(
+            title="Test", style="corporate",
+            aesthetic_direction={"background_style": "noise"},
+        )
+        html = db.build()
+        assert "feTurbulence" in html
+
+    def test_motion_none_leaves_no_keyframes(self):
+        db = DashboardBuilder(
+            title="Test", style="corporate",
+            aesthetic_direction={"motion_budget": "none"},
+        )
+        db.add_kpi("k1", "KPI", "100")
+        html = db.build()
+        assert "@keyframes dashboard-fade-in" not in html
+        assert "@keyframes dashboard-rise" not in html
+
+    def test_background_solid_is_noop(self):
+        db = DashboardBuilder(
+            title="Test", style="corporate",
+            aesthetic_direction={"background_style": "solid"},
+        )
+        html = db.build()
+        assert "radial-gradient" not in html
+        assert "feTurbulence" not in html
+
+    def test_caller_dict_not_mutated(self):
+        """Applying the aesthetic must not leak private state back to the caller."""
+        aesthetic = {"font_pair": ["Fraunces", "Inter"]}
+        db = DashboardBuilder(
+            title="Test", style="corporate", aesthetic_direction=aesthetic,
+        )
+        db.build()
+        assert "_display_font" not in aesthetic, (
+            "DashboardBuilder mutated the caller's aesthetic dict"
+        )
+
+    def test_noise_preserves_sticky_nav(self):
+        """body > *:not(.nav) — the sticky nav selector must be excluded."""
+        db = DashboardBuilder(
+            title="Test", style="corporate",
+            aesthetic_direction={"background_style": "noise"},
+        )
+        html = db.build()
+        assert "body > *:not(.nav)" in html
+        assert "body > * { position: relative" not in html

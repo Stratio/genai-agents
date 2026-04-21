@@ -17,8 +17,9 @@ body {
         font-size: 8pt;
     }
 
+    /* Default footer — overridden by PDFGenerator per-language */
     @bottom-center {
-        content: "Pagina " counter(page) " de " counter(pages);
+        content: "Page " counter(page) " of " counter(pages);
         font-size: 8pt;
         color: #64748b;
     }

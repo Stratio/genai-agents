@@ -33,7 +33,7 @@ from pathlib import Path
 
 import markdown
 
-from css_builder import build_css
+from css_builder import build_css, aesthetic_to_override_tokens
 from i18n import get_labels
 from image_utils import embed_images_in_html
 
@@ -48,6 +48,53 @@ EXTRA_MD_EXTENSIONS = [
     "sane_lists",  # better list handling
 ]
 
+# Canonical schema of ``aesthetic.json`` — any other key is rejected.
+_AESTHETIC_KEYS = {"tone", "palette_override", "font_pair",
+                   "motion_budget", "background_style"}
+_MOTION_BUDGETS = {"none", "minimal", "expressive"}
+_BACKGROUND_STYLES = {"solid", "gradient-mesh", "noise", "grain"}
+
+
+def load_aesthetic(path: Path) -> dict:
+    """Load and validate an aesthetic.json file.
+
+    Raises ValueError if the file violates the canonical schema. Rejecting
+    typos early prevents generators from silently ignoring misspelled values.
+    """
+    import json
+    data = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(data, dict):
+        raise ValueError("aesthetic.json must be a JSON object")
+    unknown = set(data) - _AESTHETIC_KEYS
+    if unknown:
+        raise ValueError(
+            f"aesthetic.json contains unknown keys: {sorted(unknown)}. "
+            f"Allowed keys are: {sorted(_AESTHETIC_KEYS)}."
+        )
+    if "tone" in data and not isinstance(data["tone"], str):
+        raise ValueError("aesthetic.json: 'tone' must be a string")
+    if "palette_override" in data and not isinstance(data["palette_override"], dict):
+        raise ValueError("aesthetic.json: 'palette_override' must be an object")
+    fp = data.get("font_pair")
+    if fp is not None:
+        if (not isinstance(fp, list) or len(fp) != 2
+                or not all(isinstance(x, str) and x for x in fp)):
+            raise ValueError("aesthetic.json: 'font_pair' must be a list of "
+                             "exactly two non-empty strings [display, body]")
+    mb = data.get("motion_budget")
+    if mb is not None and mb not in _MOTION_BUDGETS:
+        raise ValueError(
+            f"aesthetic.json: 'motion_budget' must be one of "
+            f"{sorted(_MOTION_BUDGETS)} (got {mb!r})"
+        )
+    bs = data.get("background_style")
+    if bs is not None and bs not in _BACKGROUND_STYLES:
+        raise ValueError(
+            f"aesthetic.json: 'background_style' must be one of "
+            f"{sorted(_BACKGROUND_STYLES)} (got {bs!r})"
+        )
+    return data
+
 
 def _extract_h1(md_content: str) -> str | None:
     """Extract the first H1 heading from markdown content."""
@@ -57,9 +104,10 @@ def _extract_h1(md_content: str) -> str | None:
     return None
 
 
-def resolve_css(style: str) -> str:
-    """Resolve a style name or path to CSS content."""
-    css_content, _ = build_css(style, "pdf")
+def resolve_css(style: str, aesthetic_direction: dict | None = None) -> str:
+    """Resolve a style name or path to CSS content, applying an aesthetic."""
+    override_tokens = aesthetic_to_override_tokens(aesthetic_direction)
+    css_content, _ = build_css(style, "pdf", override_tokens=override_tokens or None)
     return css_content
 
 
@@ -135,17 +183,23 @@ def convert(input_path: Path, output_dir: Path, style: str,
             generate_docx: bool = False,
             also_save_html: bool = False,
             lang: str | None = None,
-            labels: dict[str, str] | None = None) -> tuple[Path | None, Path, Path | None]:
+            labels: dict[str, str] | None = None,
+            aesthetic_direction: dict | None = None) -> tuple[Path | None, Path, Path | None]:
     """Convert a markdown file to PDF, and optionally HTML and DOCX.
 
     `lang` / `labels` flow through to `md_to_html` and to the DOCX generator
     so that cover labels and the HTML `lang` attribute match the user's
     language. See `i18n.get_labels` for resolution rules.
 
+    `aesthetic_direction` applies a deliberate visual direction on top of
+    the base style. Schema is documented in `skills/report/skills-guides/
+    dashboard-aesthetics.md`. When present, it flows to `resolve_css` and
+    to the DOCX generator so the PDF, HTML and DOCX stay visually coherent.
+
     Returns (html_path_or_None, pdf_path, docx_path_or_None).
     """
     md_content = input_path.read_text(encoding="utf-8")
-    css = resolve_css(style)
+    css = resolve_css(style, aesthetic_direction=aesthetic_direction)
     if title is None:
         title = _extract_h1(md_content) or input_path.stem.replace("_", " ").replace("-", " ").title()
 
@@ -172,7 +226,8 @@ def convert(input_path: Path, output_dir: Path, style: str,
     docx_path = None
     if generate_docx:
         from docx_generator import DOCXGenerator
-        docx_gen = DOCXGenerator(style=style, author=author)
+        docx_gen = DOCXGenerator(style=style, author=author,
+                                 aesthetic_direction=aesthetic_direction)
         docx_gen.render_from_markdown(
             md_content, title=title, domain=domain,
             author=author, show_cover=cover,
@@ -243,7 +298,26 @@ def main():
         default=None,
         help='JSON dict of label overrides (e.g. \'{"cover.author":"Autor"}\'). Overrides the --lang catalogue',
     )
+    parser.add_argument(
+        "--aesthetic",
+        type=Path,
+        default=None,
+        help="Path to an aesthetic.json file with the design-first decision "
+             "(keys: tone, palette_override, font_pair, motion_budget, "
+             "background_style). Applied to PDF, HTML and DOCX output.",
+    )
     args = parser.parse_args()
+
+    aesthetic_direction = None
+    if args.aesthetic is not None:
+        if not args.aesthetic.is_file():
+            print(f"ERROR: aesthetic file not found: {args.aesthetic}", file=sys.stderr)
+            sys.exit(1)
+        try:
+            aesthetic_direction = load_aesthetic(args.aesthetic)
+        except (ValueError, OSError) as e:
+            print(f"ERROR: {e}", file=sys.stderr)
+            sys.exit(1)
 
     labels_override = None
     if args.labels_json:
@@ -271,6 +345,7 @@ def main():
         also_save_html=args.html,
         lang=args.lang,
         labels=labels_override,
+        aesthetic_direction=aesthetic_direction,
     )
     if html_path:
         print(f"HTML: {html_path}")

@@ -318,21 +318,99 @@ def generate_markdown(data: dict, output_path: str,
 # PDF generation via WeasyPrint
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# Visual tones — optional stylistic direction for the report
+# ---------------------------------------------------------------------------
+#
+# Each tone is a small CSS override that changes type pairing and palette
+# without touching the HTML body. See `skill-guides/visual-craftsmanship.md`
+# for the shared aesthetic principles.
+
+TONES = {
+    "default": {
+        "body_font": "Arial, sans-serif",
+        "display_font": "Arial, sans-serif",
+        "mono_font": "monospace",
+        "ink": "#1a1a2e",
+        "accent": "#0f3460",
+        "accent_deep": "#16213e",
+        "rule_subtle": "#dddddd",
+        "surface_soft": "#f0f4ff",
+        "surface_alt": "#f8f9fa",
+    },
+    "technical-minimal": {
+        "body_font": "'IBM Plex Serif', Georgia, serif",
+        "display_font": "'IBM Plex Sans', Helvetica, sans-serif",
+        "mono_font": "'IBM Plex Mono', Consolas, monospace",
+        "ink": "#16191f",
+        "accent": "#0a4b6e",
+        "accent_deep": "#062b41",
+        "rule_subtle": "#dadfe4",
+        "surface_soft": "#eef3f7",
+        "surface_alt": "#f5f7f9",
+    },
+    "executive-editorial": {
+        "body_font": "'Crimson Pro', Georgia, serif",
+        "display_font": "'Instrument Serif', Georgia, serif",
+        "mono_font": "'JetBrains Mono', Consolas, monospace",
+        "ink": "#201a16",
+        "accent": "#8a3324",
+        "accent_deep": "#571c14",
+        "rule_subtle": "#dccfbf",
+        "surface_soft": "#f5ecdf",
+        "surface_alt": "#faf4ea",
+    },
+    "forensic": {
+        "body_font": "'IBM Plex Mono', Consolas, monospace",
+        "display_font": "'IBM Plex Serif', Georgia, serif",
+        "mono_font": "'IBM Plex Mono', Consolas, monospace",
+        "ink": "#121212",
+        "accent": "#5a1c1c",
+        "accent_deep": "#2f0f0f",
+        "rule_subtle": "#cccccc",
+        "surface_soft": "#f2ebe8",
+        "surface_alt": "#ecebe8",
+    },
+}
+
+
+def _tone_palette(tone: str | None) -> dict:
+    """Return the palette for a tone name, falling back to `default`."""
+    if not tone:
+        return TONES["default"]
+    return TONES.get(tone, TONES["default"])
+
+
 HTML_TEMPLATE = """<!DOCTYPE html>
 <html lang="{{ lang }}">
 <head>
 <meta charset="UTF-8">
 <style>
-  body { font-family: Arial, sans-serif; font-size: 11pt; color: #1a1a2e; margin: 40px; }
-  h1 { color: #16213e; border-bottom: 3px solid #0f3460; padding-bottom: 8px; font-size: 20pt; }
-  h2 { color: #16213e; border-left: 4px solid #0f3460; padding-left: 10px; font-size: 14pt; margin-top: 30px; }
-  h3 { color: #0f3460; font-size: 12pt; margin-top: 20px; }
+  :root {
+    --body-font: {{ body_font }};
+    --display-font: {{ display_font }};
+    --mono-font: {{ mono_font }};
+    --ink: {{ ink }};
+    --accent: {{ accent }};
+    --accent-deep: {{ accent_deep }};
+    --rule-subtle: {{ rule_subtle }};
+    --surface-soft: {{ surface_soft }};
+    --surface-alt: {{ surface_alt }};
+  }
+  body { font-family: var(--body-font); font-size: 11pt; color: var(--ink); margin: 40px; }
+  h1 { font-family: var(--display-font); color: var(--accent-deep); border-bottom: 3px solid var(--accent); padding-bottom: 8px; font-size: 20pt; }
+  h2 { font-family: var(--display-font); color: var(--accent-deep); border-left: 4px solid var(--accent); padding-left: 10px; font-size: 14pt; margin-top: 30px; }
+  h3 { font-family: var(--display-font); color: var(--accent); font-size: 12pt; margin-top: 20px; }
   .meta { color: #555; font-size: 10pt; margin-bottom: 20px; }
   .meta span { margin-right: 20px; }
   table { width: 100%; border-collapse: collapse; margin: 10px 0 20px 0; font-size: 10pt; }
-  th { background-color: #0f3460; color: white; padding: 7px 10px; text-align: left; }
-  td { padding: 6px 10px; border-bottom: 1px solid #ddd; }
-  tr:nth-child(even) { background-color: #f8f9fa; }
+  th { background-color: var(--accent); color: white; padding: 7px 10px; text-align: left; font-family: var(--display-font); }
+  td { padding: 6px 10px; border-bottom: 1px solid var(--rule-subtle); }
+  th, td { word-wrap: break-word; overflow-wrap: anywhere; hyphens: auto; vertical-align: top; }
+  td.num { font-family: var(--mono-font); font-variant-numeric: tabular-nums; }
+  tr:nth-child(even) { background-color: var(--surface-alt); }
+  .fixed-table { table-layout: fixed; }
+  .fixed-table td, .fixed-table th { font-size: 9.5pt; }
   .status-ok { color: #28a745; font-weight: bold; }
   .status-ko { color: #dc3545; font-weight: bold; }
   .status-warning { color: #ffc107; font-weight: bold; }
@@ -341,13 +419,13 @@ HTML_TEMPLATE = """<!DOCTYPE html>
   .priority-alto { color: #fd7e14; font-weight: bold; }
   .priority-medio { color: #ffc107; }
   .priority-bajo { color: #6c757d; }
-  .summary-box { background: #f0f4ff; border: 1px solid #c0d0f0; border-radius: 6px;
+  .summary-box { background: var(--surface-soft); border: 1px solid var(--rule-subtle); border-radius: 6px;
                  padding: 15px 20px; margin: 20px 0; }
   .summary-box table { margin: 0; }
-  .summary-box th { background-color: #0f3460; }
+  .summary-box th { background-color: var(--accent); }
   .rec-list { padding-left: 20px; }
   .rec-list li { margin-bottom: 6px; }
-  .footer { text-align: center; font-size: 9pt; color: #888; border-top: 1px solid #ddd;
+  .footer { text-align: center; font-size: 9pt; color: #888; border-top: 1px solid var(--rule-subtle);
             margin-top: 40px; padding-top: 10px; }
   @page { margin: 2cm; }
 </style>
@@ -358,6 +436,15 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 </body>
 </html>
 """
+
+
+def _apply_tone(html_template: str, tone: str | None) -> str:
+    """Substitute the tone palette placeholders in the HTML template."""
+    palette = _tone_palette(tone)
+    result = html_template
+    for key, value in palette.items():
+        result = result.replace("{{ " + key + " }}", value)
+    return result
 
 
 def _status_class(status: str) -> str:
@@ -442,7 +529,13 @@ def build_html_body(data: dict, labels: dict[str, str] | None = None) -> str:
                 continue
             parts.append(f"<h3>{t['name']}</h3>")
             parts.append(
-                f"<table><tr>"
+                f"<table class='fixed-table'>"
+                f"<colgroup>"
+                f"<col style='width:26%'><col style='width:14%'>"
+                f"<col style='width:10%'><col style='width:10%'>"
+                f"<col style='width:40%'>"
+                f"</colgroup>"
+                f"<tr>"
                 f"<th>{labels['quality.col.rule']}</th>"
                 f"<th>{labels['quality.col.dimension']}</th>"
                 f"<th>{labels['quality.col.status']}</th>"
@@ -471,7 +564,13 @@ def build_html_body(data: dict, labels: dict[str, str] | None = None) -> str:
             all_gaps.sort(key=lambda x: priority_order.get(x.get("priority", "BAJO"), 99))
             parts.append(f"<h2>{labels['quality.identified_gaps']}</h2>")
             parts.append(
-                f"<table><tr>"
+                f"<table class='fixed-table'>"
+                f"<colgroup>"
+                f"<col style='width:10%'><col style='width:18%'>"
+                f"<col style='width:18%'><col style='width:14%'>"
+                f"<col style='width:40%'>"
+                f"</colgroup>"
+                f"<tr>"
                 f"<th>{labels['quality.col.priority']}</th>"
                 f"<th>{labels['quality.col.table']}</th>"
                 f"<th>{labels['quality.col.column']}</th>"
@@ -521,7 +620,8 @@ def build_html_body(data: dict, labels: dict[str, str] | None = None) -> str:
 
 
 def generate_pdf(data: dict, output_path: str,
-                 labels: dict[str, str] | None = None) -> None:
+                 labels: dict[str, str] | None = None,
+                 tone: str | None = None) -> None:
     try:
         from weasyprint import HTML as WeasyprintHTML
     except ImportError:
@@ -534,7 +634,7 @@ def generate_pdf(data: dict, output_path: str,
     html_body = build_html_body(data, labels=labels)
     generated_at = data.get("generated_at", str(date.today()))
     html_full = (
-        HTML_TEMPLATE
+        _apply_tone(HTML_TEMPLATE, tone)
         .replace("{{ content_html }}", html_body)
         .replace("{{ generated_at }}", generated_at)
         .replace("{{ lang }}", labels["html.lang_attr"])
@@ -551,8 +651,15 @@ def generate_pdf(data: dict, output_path: str,
 # DOCX generation via python-docx
 # ---------------------------------------------------------------------------
 
+def _hex_to_rgbcolor(hex_str: str, rgb_color_cls):
+    """Convert '#rrggbb' to a python-docx RGBColor instance."""
+    h = hex_str.lstrip("#")
+    return rgb_color_cls(int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16))
+
+
 def generate_docx(data: dict, output_path: str,
-                  labels: dict[str, str] | None = None) -> None:
+                  labels: dict[str, str] | None = None,
+                  tone: str | None = None) -> None:
     try:
         from docx import Document
         from docx.shared import Pt, RGBColor, Inches
@@ -564,10 +671,12 @@ def generate_docx(data: dict, output_path: str,
     if labels is None:
         labels = resolve_labels_for_data(data)
 
+    palette = _tone_palette(tone)
+
     doc = Document()
 
-    # Basic styles
-    BLUE = RGBColor(15, 52, 96)    # #0f3460
+    # Basic styles — accent drawn from the chosen tone, status colours kept fixed
+    BLUE = _hex_to_rgbcolor(palette["accent_deep"], RGBColor)
     RED = RGBColor(220, 53, 69)
     GREEN = RGBColor(40, 167, 69)
     ORANGE = RGBColor(253, 126, 20)
@@ -727,6 +836,12 @@ def main():
     parser.add_argument("--labels-json", dest="labels_json", default=None,
                         help='Label overrides as JSON string (e.g. '
                              "'{\"quality.executive_summary\":\"...\"}'). Highest priority.")
+    parser.add_argument("--tone", default=None,
+                        choices=[None, "default", "technical-minimal",
+                                 "executive-editorial", "forensic"],
+                        help="Visual tone for PDF and DOCX output. "
+                             "Affects type pairing and accent palette. "
+                             "See skill-guides/visual-craftsmanship.md.")
     args = parser.parse_args()
 
     try:
@@ -750,9 +865,9 @@ def main():
     if args.format == "md":
         generate_markdown(data, args.output, labels=labels)
     elif args.format == "pdf":
-        generate_pdf(data, args.output, labels=labels)
+        generate_pdf(data, args.output, labels=labels, tone=args.tone)
     elif args.format == "docx":
-        generate_docx(data, args.output, labels=labels)
+        generate_docx(data, args.output, labels=labels, tone=args.tone)
 
 
 if __name__ == "__main__":

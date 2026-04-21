@@ -265,7 +265,7 @@ because the user needs context to make informed decisions.
 **Format** (exact text — place in the Communication style subsection of Overview and Role):
 
 ```markdown
-**Language**: ALWAYS respond in the same language the user uses to formulate their question
+**Language**: ALWAYS respond in the same language the user uses to formulate their question. This applies to **every** piece of text the agent emits: chat responses, questions, summaries, explanations, plan drafts, progress updates, AND any thinking / reasoning / planning traces that the runtime streams to the user (e.g. OpenCode's "thinking" channel, internal status notes). Never let a trace leak in a different language than the conversation. If your runtime exposes intermediate reasoning, write it in the user's language from the first token
 ```
 
 Expanded version (for the User Interaction section):

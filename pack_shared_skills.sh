@@ -122,6 +122,11 @@ find "$STAGING" \
 echo "    Path substitutions applied"
 
 # ---------------------------------------------------------------------------
+# Phase 3b — Non-runtime sweep (tests, caches, editor junk) BEFORE zipping
+# ---------------------------------------------------------------------------
+bash "$SCRIPT_DIR/bin/sweep-nonruntime.sh" "$STAGING"
+
+# ---------------------------------------------------------------------------
 # Phase 4 — Generate ZIP
 # ---------------------------------------------------------------------------
 REAL_DIST="$SCRIPT_DIR/dist"

@@ -117,14 +117,17 @@ Los tres formatos de archivo (PDF, DOCX, MD) usan el mismo generador Python y el
 bash setup_env.sh
 ```
 
-#### Paso 2 — Preparar report-input.json
+#### Paso 2 — Determinar la carpeta del informe
 
-Obtener la ruta absoluta del directorio output:
-```bash
-mkdir -p output/ && readlink -f output/
-```
+Se replica la convención de carpeta usada por los informes de análisis para que cada informe de calidad viva en su propio directorio autocontenido junto con su JSON de entrada y los artefactos generados.
 
-Escribir `<ruta-absoluta>/report-input.json` con el schema exacto que sigue. **Los nombres de campo son literales — el generador los lee con `data.get("campo")` y devuelve `-` si no existen.**
+1. Construir el nombre de carpeta: `YYYY-MM-DD_HHMM_quality_<slug>` donde `<slug>` es el dominio o scope normalizado (ASCII en minúsculas, acentos eliminados, espacios reemplazados por guion bajo, máximo 30 caracteres). Ejemplo: `2026-04-20_1530_quality_semantic_analiticabanca`.
+2. Crear el directorio: `mkdir -p "output/<carpeta>/"` y después `readlink -f "output/<carpeta>/"` para obtener la ruta absoluta. Todos los archivos producidos por esta skill (JSON de entrada, PDF, DOCX, Markdown) van dentro de esta carpeta — nunca directamente bajo `output/`.
+3. Si el usuario ya tiene una carpeta de análisis activa en esta sesión y pide expresamente almacenar el informe de calidad junto al análisis, reutilizar esa carpeta en lugar de crear una nueva.
+
+#### Paso 3 — Preparar report-input.json
+
+Escribir `<ruta-absoluta>/<carpeta>/report-input.json` con el schema exacto que sigue. **Los nombres de campo son literales — el generador los lee con `data.get("campo")` y devuelve `-` si no existen.**
 
 **Errores comunes a evitar (producen informe en blanco):**
 - NO `report_title` → `title`
@@ -205,32 +208,56 @@ Escribir `<ruta-absoluta>/report-input.json` con el schema exacto que sigue. **L
 - `tables[].gaps[].priority` ← `CRITICO` para PK/FK sin regla, `ALTO` para columnas clave, `MEDIO` para resto, `BAJO` para dimensiones opcionales
 - `rules_created[].status` ← usar `"created"` para reglas recién creadas en esta sesión sin validación; `OK|KO|WARNING|SIN_DATOS` si se ejecutó validación SQL
 
-#### Paso 3 — Determinar ruta de salida
+#### Paso 4 — Determinar los nombres de los artefactos
 
-- Si el usuario indicó un nombre: usar ese (con la extensión correcta)
+Todos los artefactos viven **dentro** de la carpeta del Paso 2. Los nombres llevan el `<slug>` descriptivo (la parte del nombre de carpeta tras el timestamp) como prefijo para que sigan siendo reconocibles tras la descarga.
+
+- Si el usuario indicó un nombre: usar ese (con la extensión correcta), siempre dentro de la carpeta.
 - Si no:
-  - PDF: `output/quality-report-[dominio]-[YYYY-MM-DD].pdf`
-  - DOCX: `output/quality-report-[dominio]-[YYYY-MM-DD].docx`
-  - MD: `output/quality-report-[dominio]-[YYYY-MM-DD].md`
+  - PDF: `output/<carpeta>/<slug>-quality-report.pdf`
+  - DOCX: `output/<carpeta>/<slug>-quality-report.docx`
+  - MD: `output/<carpeta>/<slug>-quality-report.md`
 
-#### Paso 4 — Validar el JSON (OBLIGATORIO antes de ejecutar el generador)
+#### Paso 5 — Validar el JSON (OBLIGATORIO antes de ejecutar el generador)
 
 ```bash
-.venv/bin/python scripts/validate_report_input.py output/report-input.json
+.venv/bin/python scripts/validate_report_input.py output/<carpeta>/report-input.json
 ```
 
-- Si termina con `[OK]`: continuar al paso 5.
+- Si termina con `[OK]`: continuar al paso 6.
 - Si termina con `[VALIDATION FAILED]`: leer cada error, corregir el `report-input.json` y volver a ejecutar la validación hasta que pase sin errores. **No ejecutar el generador con un JSON invalido** — producira un informe en blanco sin avisar.
 
-#### Paso 5 — Ejecutar el generador
+#### Paso 6 — Ejecutar el generador
 
 ```bash
 .venv/bin/python scripts/quality_report_generator.py \
   --format <pdf|docx|md> \
-  --output "output/quality-report-[dominio]-[fecha].<ext>" \
-  --input-file output/report-input.json \
+  --output "output/<carpeta>/<slug>-quality-report.<ext>" \
+  --input-file "output/<carpeta>/report-input.json" \
   --lang <código_idioma_usuario>
 ```
+
+**Opcional — tono visual** (afecta solo a PDF y DOCX; el formato Markdown es neutro e ignora este flag):
+
+```bash
+.venv/bin/python scripts/quality_report_generator.py \
+  --format pdf \
+  --output "output/<carpeta>/<slug>-quality-report.pdf" \
+  --input-file "output/<carpeta>/report-input.json" \
+  --lang <código_idioma_usuario> \
+  --tone <default|technical-minimal|executive-editorial|forensic>
+```
+
+Los tonos cambian la paleta de acento y el emparejamiento tipográfico del documento generado:
+
+- `default` — preserva la paleta histórica (Arial body, acento azul naval). Se usa cuando se omite `--tone`.
+- `technical-minimal` — IBM Plex Serif para body, IBM Plex Sans para display y IBM Plex Mono para datos tabulares; acento azul frío. Adecuado para audiencias de ingeniería o revisiones de incidencias.
+- `executive-editorial` — Crimson Pro body con Instrument Serif display; acento oxblood cálido sobre crema. Adecuado para resúmenes a nivel de comité o informes trimestrales.
+- `forensic` — IBM Plex Mono body con Plex Serif display; acento rojo profundo sobre hueso. Adecuado para documentación estilo auditoría donde cada cifra está para ser escrutada.
+
+Consulta `skills-guides/visual-craftsmanship.md` para los principios estéticos compartidos (roles de paleta, emparejamiento tipográfico, anti-patrones, checklist de artesanía).
+
+**Nota sobre disponibilidad de fuentes**: los tonos no-default referencian familias (IBM Plex Serif/Sans/Mono, Crimson Pro, Instrument Serif, JetBrains Mono). Deben estar instaladas a nivel de sistema o entregadas por el entorno; si WeasyPrint no puede resolver una familia hace fallback silencioso y el tono visible no cambia. En caso de duda, mantén `--tone default` (Arial) o instala la familia vía el entorno del agente.
 
 **Idioma de los labels estáticos** (títulos de sección, nombres de columnas de tabla, footer, atributo HTML `lang`). Orden de resolución (mayor prioridad primero):
 
@@ -248,8 +275,8 @@ Si el usuario pide PDF y DOCX en la misma sesión, el `report-input.json` puede 
 ## 5. Verificación Post-Generación
 
 Para formatos de archivo (PDF, DOCX, MD en disco):
-1. Verificar que el archivo existe: `ls -lh output/[nombre-archivo]`
-2. Informar al usuario: nombre del archivo, ruta completa, tamaño
+1. Verificar que los archivos existen: `ls -lh output/<carpeta>/`
+2. Informar al usuario: ruta de la carpeta, nombres de los artefactos y tamaño de cada uno
 3. Si la generación fallo: mostrar el error y ofrecer alternativa en chat
 
 ## 6. Mensaje Final al Usuario

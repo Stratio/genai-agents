@@ -11,10 +11,10 @@ Operational reference for the document pipeline within `/report`.
 3. If structure is **on the fly**: use `render_from_html()` with free HTML generated in the script. Only wraps with CSS, optional cover, base64, and metadata
 4. Both modes generate automatic cover page, page numbering, headers, and base64-embedded images
 5. Generate script: `output/[ANALYSIS_DIR]/scripts/generate_pdf.py` that imports and uses `PDFGenerator`
-6. Save in `output/[ANALYSIS_DIR]/report.pdf`
+6. Save in `output/[ANALYSIS_DIR]/<slug>-report.pdf` (the `<slug>` is the descriptive part of `[ANALYSIS_DIR]` after the timestamp — see `SKILL.md` §1.1)
 7. `save()` by default does not save the HTML (intermediate build artifact). Pass `also_save_html=True` only if a static web version of the document is needed in addition to the PDF
 8. Generate DOCX: instantiate `DOCXGenerator(style=style)` with the SAME data as the PDF. If scaffold → `render_scaffold()` with the same parameters. If on the fly → `render_from_markdown()` with the markdown source
-9. Save in `output/[ANALYSIS_DIR]/report.docx`
+9. Save in `output/[ANALYSIS_DIR]/<slug>-report.docx`
 
 ## DOCX Pitfalls
 

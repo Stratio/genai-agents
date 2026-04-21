@@ -1,36 +1,60 @@
-# Analisis de datos
+# === Data analysis core ===
 pandas>=3.0
 numpy>=2.1
 scipy>=1.14
 pymannkendall>=1.4
 
-# Visualizacion
+# === Visualization ===
 matplotlib>=3.9
 seaborn>=0.13
 plotly>=6.0
+# kaleido 1.x rewrote the API surface; stay on the 0.2.x line for Plotly static image export
 kaleido>=0.2,<1
 
-# Machine Learning (clustering, feature importance, tests estadisticos)
+# === Machine learning (clustering, feature importance, statistical tests) ===
 scikit-learn>=1.5
 statsmodels>=0.14.4
 
-# Generacion de informes
+# === Report generation (HTML -> PDF, DOCX, notebooks, PPTX) ===
 jinja2>=3.1
 markdown>=3.7
-weasyprint>=65.0
+weasyprint>=65
+beautifulsoup4>=4.12
 nbformat>=5.10
 nbclient>=0.10
 nbconvert>=7.16
 python-pptx>=1.0
 python-docx>=1.1
-beautifulsoup4>=4.12
 
-# Datos
+# === Spreadsheet IO ===
 openpyxl>=3.1
 
-# Testing
+# === PDF reading (shared-skill pdf-reader): diagnose then extract ===
+pypdf>=5.0
+pdfplumber>=0.11
+pdfminer.six>=20250000
+pypdfium2>=5.0
+# pdf2image requires the system Poppler package (poppler-utils on Debian/Ubuntu, poppler on Homebrew)
+pdf2image>=1.17
+# pytesseract requires the Tesseract binary (tesseract-ocr + language packs)
+pytesseract>=0.3.10
+# ocrmypdf requires Ghostscript + Tesseract + Poppler system-side
+ocrmypdf>=17.0
+
+# === PDF writing (shared-skills pdf-writer and canvas-craft) ===
+reportlab>=4.4
+# svglib 1.6+ pulls rlPyCairo → pycairo, which requires a C toolchain to build
+# from source. The CI builder image has no gcc, so pin below 1.6 until a wheel
+# or a toolchain is available.
+svglib>=1.5,<1.6
+pillow>=11.0
+
+# === Testing ===
 pytest>=8.0
 pytest-mock>=3.14
 
-# Utilidades
+# === Utilities ===
 tabulate>=0.9
+
+# Note: shared-skill web-craft emits HTML/CSS/JS only; it adds no Python runtime deps.
+# Note: pyhanko (digital signature inspection) is a niche, install-on-demand dep for pdf-reader.

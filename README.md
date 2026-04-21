@@ -109,6 +109,41 @@ Search locations (by priority order): `skills/` → `.claude/skills/` → `.open
 
 If an agent persists memory between sessions, its seed files live under `templates/memory/` (e.g. `templates/memory/MEMORY.md`). The agent's writing skills are responsible for copying the template into `output/` the first time they need to write — `**/output/` stays in `.gitignore` and pack scripts never create `output/` in the package. This keeps a single source of truth for the initial structure and avoids duplicating templates inline inside SKILL.md files.
 
+## System dependencies
+
+Several skills and Python libraries require OS-level packages that `pip` cannot install. The table below is the single source of truth — `setup_env.sh` in every agent verifies these and the rest of the docs references this section instead of duplicating the list.
+
+| System package | Provides | Python libs that depend on it | Agents that need it |
+|---|---|---|---|
+| `poppler-utils` (Debian/Ubuntu) / `poppler` (Homebrew) | `pdfinfo`, `pdftotext`, `pdftoppm`, `pdfimages`, `pdfdetach`, `pdffonts` | `pdf2image`, `ocrmypdf`; diagnostic commands used directly by `pdf-reader` | `data-analytics`, `data-quality`, `governance-officer` |
+| `qpdf` | CLI merge/split/rotate, repair | — (used as CLI fallback by `pdf-writer` and `pdf-reader`) | `data-analytics`, `data-quality`, `governance-officer` |
+| `pdftk` (Debian/Ubuntu) / `pdftk-java` (Homebrew) | Form-field inspection, robust flattening | — (used directly by `pdf-writer/FORMS.md` and `pdf-reader` forms flow) | `data-analytics`, `data-quality`, `governance-officer` |
+| `tesseract-ocr` + language packs (`tesseract-ocr-spa`, `-fra`, `-deu`, …) | OCR engine | `pytesseract`, `ocrmypdf` | `data-analytics`, `data-quality`, `governance-officer` |
+| `ghostscript` | PDF/A conversion, repair, last-resort flattening | `ocrmypdf`; also used directly by `pdf-writer` | `data-analytics`, `data-quality`, `governance-officer` |
+| `libcairo2` + `libpango-1.0-0` + `libpangoft2-1.0-0` (Debian/Ubuntu) / `cairo` + `pango` (Homebrew) | Cairo graphics + Pango text layout | `weasyprint` | `data-analytics`, `data-quality`, `governance-officer` |
+
+Install everything on Debian/Ubuntu:
+
+```bash
+sudo apt update && sudo apt install -y \
+    poppler-utils qpdf pdftk ghostscript \
+    tesseract-ocr tesseract-ocr-spa tesseract-ocr-fra tesseract-ocr-deu \
+    libcairo2 libpango-1.0-0 libpangoft2-1.0-0
+```
+
+Install on macOS (Homebrew):
+
+```bash
+brew install poppler qpdf pdftk-java ghostscript tesseract tesseract-lang cairo pango
+```
+
+Notes:
+
+- `data-analytics-light`, `semantic-layer`, `skill-creator` and `agent-creator` do not require any of these system packages — they do not declare `pdf-reader`, `pdf-writer`, `canvas-craft` or the WeasyPrint-based report skills.
+- `web-craft` emits HTML/CSS/JS only; it needs no system or Python dependencies at runtime.
+- For digital-signature inspection in `pdf-reader`, install `pyhanko` on demand (`pip install pyhanko`). It is not part of the baseline `requirements.txt`.
+- Each agent's `setup_env.sh` runs a check at startup and prints a warning with the exact install command if any binary is missing.
+
 ## Shared skills
 
 `shared-skills/` groups reusable skills across multiple agents in the monorepo. The pack scripts automatically include them in the output of each agent that declares them, without the need to duplicate code.

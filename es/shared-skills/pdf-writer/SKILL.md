@@ -46,15 +46,36 @@ Solo entonces abre reportlab.
 | Informe analítico | Editorial-serio | A4 / Letter | Crimson Pro (cuerpo) + Instrument Sans (display) |
 | Estado financiero | Técnico-minimalista | A4 / Letter | IBM Plex Serif (cuerpo) + IBM Plex Mono (datos) |
 | Factura / recibo | Limpio-utilitario | A4 / Letter | Instrument Sans (todo) + JetBrains Mono (cifras) |
-| Certificado / diploma | Formal-ceremonial | A4 apaisado | Young Serif (display) + Crimson Pro (cuerpo) |
 | Boletín | Revista-cálida | Letter | Lora (cuerpo) + Big Shoulders (display) |
 | Contrato / documento legal | Comedido-preciso | A4 / Letter | Libre Baskerville (cuerpo) + Instrument Sans (pies de foto) |
-| Póster / página única | Gráfico-impactante | A3 / Tabloide | Boldonse o Big Shoulders (display) + Work Sans (cuerpo) |
 | Folleto / fanzine | Editorial-lúdico | A5 | Crimson Pro (cuerpo) + Italiana o Erica One (display) |
 
 Estos son puntos de partida, no mandatos. Rómpelos cuando el encargo
 lo exija. Lo importante es **no recurrir nunca a la Helvetica
 integrada de reportlab**.
+
+### Cuándo esta skill no es la adecuada
+
+Esta skill produce documentos tipográficos multi-página donde la prosa,
+las tablas o los datos estructurados llevan el significado. Algunos
+encargos se parecen pero pertenecen a otra herramienta:
+
+- **Artefactos de una sola página en los que domina la composición** —
+  pósters, certificados, one-pagers de marketing, infografías. En esas
+  piezas, aproximadamente el setenta por ciento o más de la superficie
+  es composición visual más que prosa o datos. La tipografía se
+  convierte en elemento visual. Otra skill se ocupa de ese medio;
+  consulta `skills-guides/visual-craftsmanship.md` para el criterio de
+  selección.
+- **Interfaces web interactivas** — componentes, páginas, dashboards
+  que viven en un navegador. El PDF es estático; esos encargos piden
+  HTML/CSS.
+
+Para un informe que necesita una portada diseñada, produce la portada
+con la skill dedicada a artefactos visuales, ensambla aquí el cuerpo
+multi-página, y mergea ambos con `pypdf` como paso final. Mantén los
+márgenes de la última página de la portada consistentes con los de la
+primera página del cuerpo para una transición limpia.
 
 ## 2. Registro de fuentes personalizadas (hazlo primero)
 
@@ -190,6 +211,7 @@ def build(output_path, story):
         title="Annual Report 2026",
         author="Acme Analytics",
     )
+    doc._pdfVersion = (1, 4)  # reportlab usa 1.3 por defecto; subimos para que alpha/ExtGState renderice
     frame = Frame(
         doc.leftMargin, doc.bottomMargin,
         doc.width, doc.height,

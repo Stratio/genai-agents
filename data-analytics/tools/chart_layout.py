@@ -28,7 +28,7 @@ Usage:
 
 from __future__ import annotations
 
-from css_builder import get_palette
+from css_builder import get_palette, aesthetic_to_override_tokens
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -216,7 +216,8 @@ def to_rgba(color, alpha: float = 0.5) -> str:
     return f"rgba({r},{g},{b},{alpha})"
 
 
-def get_chart_colors(style: str = "corporate", n: int = 6) -> list[str]:
+def get_chart_colors(style: str = "corporate", n: int = 6,
+                     aesthetic_direction: dict | None = None) -> list[str]:
     """Return a list of n hex color strings from the given style palette.
 
     Wraps css_builder.get_palette() and extracts the chart-relevant colors
@@ -225,11 +226,16 @@ def get_chart_colors(style: str = "corporate", n: int = 6) -> list[str]:
     Args:
         style: Visual style name ("corporate", "modern", "academic").
         n: Number of colors needed.
+        aesthetic_direction: Optional dict with ``palette_override`` /
+            ``font_pair`` keys to apply a deliberate visual direction on
+            top of the base style. Propagates to ``get_palette`` so Plotly
+            charts stay coherent with the rest of the artifact.
 
     Returns:
         List of hex color strings (e.g., ["#1a365d", "#2b6cb0", ...]).
     """
-    palette = get_palette(style)
+    override_tokens = aesthetic_to_override_tokens(aesthetic_direction)
+    palette = get_palette(style, override_tokens=override_tokens or None)
 
     def _rgb_to_hex(rgb: tuple[int, int, int]) -> str:
         return f"#{rgb[0]:02x}{rgb[1]:02x}{rgb[2]:02x}"
