@@ -127,6 +127,8 @@ El Paso 0 corre dentro de la Fase 0 y por tanto no viola la regla "nunca avanzar
 | "Cómo funciona create_ontology?" | — | `stratio-semantic-layer` |
 | "Genera un documento sobre esta ontología/dominio/vistas" | — | `pdf-writer` |
 
+> **Indisponibilidad de OpenSearch**: si `search_domains`, `search_ontologies` o `search_data_dictionary` fallan por indisponibilidad del backend (no por resultado vacío), seguir §10 de `stratio-data-tools.md` (para `search_domains`) o `stratio-semantic-layer-tools.md` (para las tres) para el fallback determinístico.
+
 **Enrutamiento para pipeline semántico completo**: Cuando el usuario pide construir una capa semántica y no queda claro si tiene un dominio existente, preguntar antes de cargar ninguna skill: quiere usar un dominio técnico existente o crear una nueva data collection? Si necesita crear una nueva colección → cargar `/create-data-collection`. Una vez creada la colección, sugerir continuar con `/build-semantic-layer [nuevo_nombre_dominio]`.
 
 #### Peticiones de calidad del dato

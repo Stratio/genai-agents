@@ -115,6 +115,8 @@ Antes de cualquier operación, verificar que no exista ya:
 | SQL Mappings | `list_technical_domain_concepts(domain)` → estado de mapping por vista | `create_sql_mappings` sobrescribe mappings existentes |
 | Términos semánticos | `list_technical_domain_concepts(domain)` → estado de términos por vista | Informar. Opciones: saltar / regenerar (destructivo) / cancelar |
 
+> Cuando cualquiera de las tools `search_*` anteriores no esté disponible (no vacía, sino fallando), sustituir según §10 y continuar.
+
 ## 7. Manejo de Errores y Recuperación
 
 - Analizar el error → intentar diagnosticar la causa
@@ -143,3 +145,30 @@ Cualquier tool MCP puede tardar más de lo esperado en completarse. Cuando esto 
    - `"not_found"` — el task_id ha expirado o es desconocido. Reintentar la llamada original a la tool desde cero
 
 Esto aplica a TODAS las tools MCP de ambos servidores. Comprobar siempre si la respuesta contiene un campo `task_id` antes de procesar el resultado normalmente.
+
+## 10. Fallback por Indisponibilidad de OpenSearch
+
+`search_domains`, `search_ontologies` y `search_data_dictionary` consultan OpenSearch internamente. OpenSearch puede no estar disponible en todos los entornos. Esta sección define el fallback cuando cualquiera de estas tools no está disponible — distinto del fallback por *resultado vacío* ya descrito en §4.1 y §5.
+
+### 10.1 Detección del caso
+
+| Situación | Indicador | Ruta de fallback |
+|-----------|-----------|------------------|
+| Resultado vacío (ya documentado) | La tool devuelve una respuesta bien formada con cero coincidencias | §4.1 / §5 — llamar al `list_*` correspondiente y preguntar al usuario |
+| Indisponibilidad (nuevo) | Respuesta de error que menciona OpenSearch / index / connection / timeout, **o** dos reintentos sucesivos según §7 siguen fallando (no un `task_id` pendiente según §9) | §10.2 |
+
+### 10.2 Fallback determinístico
+
+| Tool OpenSearch | Alternativa determinística | Cobertura |
+|-----------------|----------------------------|-----------|
+| `search_domains(search_text, domain_type?)` | `list_domains(domain_type?)` + filtro local de substring sobre `name` y `description` | Completa |
+| `search_ontologies(search_text)` | `list_ontologies()` + filtro local de substring sobre `name` y `description` | Completa |
+| `search_data_dictionary(search_text, search_type?)` | Con hint de dominio: `list_domain_tables(domain)` + `get_tables_details(domain, tables)`. Sin hint de dominio: `list_domains(domain_type='technical')` → pedir al usuario que elija uno → continuar | Parcial — sin búsqueda cross-domain free-text sin OpenSearch |
+
+### 10.3 Procedimiento
+
+1. Al detectarse la indisponibilidad por primera vez en la sesión, avisar al usuario una sola vez — por tool, no por llamada.
+2. Invocar la alternativa determinística.
+3. Continuar el workflow (non-blocking). Las comprobaciones de detección de estado de §6 siguen aplicando: si se usa `search_ontologies(name)` para idempotencia, sustituir por `list_ontologies` + filtro local. El presupuesto de reintentos de §7 se agota antes de declarar indisponibilidad.
+4. Parar únicamente si la alternativa no cubre la necesidad del usuario — típicamente `search_data_dictionary` sin hint de dominio cuando el usuario no puede acotar el alcance. En ese caso, informar al usuario y detener la sub-tarea.
+5. Registrar la degradación en el resumen al final de la fase.

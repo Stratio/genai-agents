@@ -115,6 +115,8 @@ Before any operation, verify it does not already exist:
 | SQL Mappings | `list_technical_domain_concepts(domain)` -> mapping status per view | `create_sql_mappings` overwrites existing mappings |
 | Semantic terms | `list_technical_domain_concepts(domain)` -> term status per view | Inform. Options: skip / regenerate (destructive) / cancel |
 
+> When any `search_*` tool above is unavailable (not empty, but failing), substitute per §10 and continue.
+
 ## 7. Error Handling and Recovery
 
 - Analyze the error -> try to diagnose the cause
@@ -143,3 +145,30 @@ Any MCP tool may take longer than expected to complete. When this happens, inste
    - `"not_found"` — the task_id expired or is unknown. Retry the original tool call from scratch
 
 This applies to ALL MCP tools on both servers. Always check the response for a `task_id` field before processing the result normally.
+
+## 10. OpenSearch Availability Fallback
+
+`search_domains`, `search_ontologies` and `search_data_dictionary` consult OpenSearch internally. OpenSearch may not be available in every environment. This section defines the fallback when any of these tools is unavailable — distinct from the *empty result* fallback already described in §4.1 and §5.
+
+### 10.1 Case detection
+
+| Situation | Indicator | Fallback path |
+|-----------|-----------|---------------|
+| Empty result (already documented) | Tool returns a well-formed response with zero matches | §4.1 / §5 — call the corresponding `list_*` and ask the user |
+| Unavailability (new) | Error response mentioning OpenSearch / index / connection / timeout, **or** two successive retries per §7 still fail (not a `task_id` pending per §9) | §10.2 |
+
+### 10.2 Deterministic fallback
+
+| OpenSearch tool | Deterministic alternative | Coverage |
+|-----------------|---------------------------|----------|
+| `search_domains(search_text, domain_type?)` | `list_domains(domain_type?)` + local substring filter over `name` and `description` | Complete |
+| `search_ontologies(search_text)` | `list_ontologies()` + local substring filter over `name` and `description` | Complete |
+| `search_data_dictionary(search_text, search_type?)` | With a domain hint: `list_domain_tables(domain)` + `get_tables_details(domain, tables)`. Without a domain hint: `list_domains(domain_type='technical')` → ask the user to pick one → continue | Partial — no cross-domain free-text search without OpenSearch |
+
+### 10.3 Procedure
+
+1. On first detected unavailability in the session, announce the degradation to the user once — per tool, not per call.
+2. Invoke the deterministic alternative.
+3. Continue the workflow (non-blocking). The §6 state-detection checks still apply: if `search_ontologies(name)` is used for idempotency, substitute with `list_ontologies` + local filter. The §7 retry budget is consumed before declaring unavailability.
+4. Stop only if the alternative cannot cover the user's need — typically `search_data_dictionary` without a domain hint when the user cannot narrow the scope. In that case, inform the user and halt this sub-task.
+5. Note the degradation in the summary at the end of the phase.

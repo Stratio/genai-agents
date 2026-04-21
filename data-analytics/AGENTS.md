@@ -172,6 +172,8 @@ For quick domain exploration without a full analysis, see the `/explore-data` sk
 3. Get relevant column details (`get_table_columns_details`) and search business terminology (`search_domain_knowledge`) — launch in parallel, they are independent
 4. If you need clarification, ask the user
 
+> **OpenSearch unavailability**: if `search_domains` fails due to backend unavailability (not due to empty results), follow §10 of `stratio-data-tools.md` for the deterministic fallback.
+
 ### Phase 1.1 — EDA and Data Profiling (during planning phase, read-only)
 
 Run in parallel before asking the user about formats or depth:

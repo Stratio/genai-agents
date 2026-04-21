@@ -67,6 +67,8 @@ Before activating any skill, classify the user's intent:
 - **Semantic** (recommended): use `search_domains(search_text, domain_type="business")` or `list_domains(domain_type="business")`. Provides business descriptions, terminology, and full context for rich semantic analysis. Prefer `search_domains` when the user provides a search term; use `list_domains` to see all.
 - **Technical**: use `search_domains(search_text, domain_type="technical")` or `list_domains(domain_type="technical")`. Limitations: no business descriptions, no terminology — semantic analysis will be more limited (greater weight on EDA and column naming conventions).
 
+> **OpenSearch unavailability**: if `search_domains` fails due to backend unavailability (not due to empty results), follow §10 of `stratio-data-tools.md` for the deterministic fallback.
+
 **Skill activation**: Load the skill BEFORE continuing with the workflow. The skill contains the full operational detail.
 
 ### Phase 1 — Scope Determination

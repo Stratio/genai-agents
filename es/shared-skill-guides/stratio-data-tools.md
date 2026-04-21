@@ -179,3 +179,27 @@ Si el MCP tarda demasiado o devuelve error:
 4. **Queries de validación**: Cruces de datos, checks de consistencia → asegurar fiabilidad
 
 Este orden es para **planificar** las preguntas. En **ejecución**, lanzar en paralelo todas las queries independientes — típicamente las categorías 1, 2 y 3 se pueden ejecutar simultáneamente. Solo las de categoría 4 (validación cruzada) pueden requerir resultados previos.
+
+## 10. Fallback por Indisponibilidad de OpenSearch
+
+`search_domains` consulta OpenSearch internamente. OpenSearch puede no estar disponible en todos los entornos (despliegues on-premise, entornos aislados, incidencias de infraestructura). Esta sección define el fallback cuando la tool no está disponible — distinto del fallback por *resultado vacío* ya descrito en §4.1.
+
+### 10.1 Detección del caso
+
+| Situación | Indicador | Ruta de fallback |
+|-----------|-----------|------------------|
+| Resultado vacío (ya documentado) | La tool devuelve una respuesta bien formada con cero coincidencias | §4.1 — llamar a `list_domains()` y preguntar al usuario |
+| Indisponibilidad (nuevo) | Respuesta de error que menciona OpenSearch / index / connection / timeout, **o** dos reintentos sucesivos según §8.2 siguen fallando (no un `task_id` pendiente según §8.1) | §10.2 |
+
+### 10.2 Fallback determinístico
+
+| Tool OpenSearch | Alternativa determinística | Cobertura |
+|-----------------|----------------------------|-----------|
+| `search_domains(search_text, domain_type?)` | `list_domains(domain_type?)` + filtro local de substring sobre `name` y `description` | Dataset completo; sin ranking por relevancia |
+
+Procedimiento:
+1. Al detectarse la indisponibilidad por primera vez en la sesión, avisar al usuario una sola vez — p. ej. *"La búsqueda de dominios no está disponible ahora; usaré el listado completo de dominios."* No repetir en llamadas posteriores dentro de la misma sesión.
+2. Invocar la alternativa determinística.
+3. Continuar el workflow con normalidad (non-blocking).
+4. Parar únicamente si la alternativa no cubre la necesidad del usuario (el listado es demasiado grande para que el usuario elija, o se requiere realmente una búsqueda free-text). En ese caso, pedir al usuario que acote el alcance manualmente.
+5. Registrar la degradación en cualquier reasoning o resumen producido al final del turno.
