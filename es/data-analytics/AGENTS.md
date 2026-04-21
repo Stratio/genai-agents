@@ -138,19 +138,15 @@ Para detalle operativo completo (checklist de suficiencia, scoring, formato del 
 
 ### Fase 1.2 — Defaults
 
-- Default de estilo visual: **Corporativo** (si el usuario no elige otro en Bloque 2)
 - **Escalamiento durante ejecución**: Si se detecta anomalía (>30% desviación), inconsistencia o patrón crítico → informar al usuario y ofrecer profundizar. Detalle en skill `/analyze` sec 6.8
 
 ### Fase 2 — Preguntas al Usuario (en fase de planificación, solo lectura)
 
 Leer `output/MEMORY.md` sec Preferencias (si existe) para ofrecer defaults personalizados al usuario.
 
-Agrupar en máximo 2 bloques de preguntas al usuario con opciones seleccionables (detalle de opciones en skill `/analyze` sec 4):
+Hacer un único bloque de preguntas al usuario con opciones seleccionables (detalle de opciones en skill `/analyze` sec 4.1): Profundidad + Audiencia + Formato (permitir selección múltiple). En Estándar/Profundo, también Testing.
 
-**Bloque 1** (siempre): Profundidad + Audiencia + Formato (permitir selección múltiple). En Estándar/Profundo, también Testing
-**Bloque 2** (solo si seleccionó formato en Bloque 1): Estructura + Estilo
-
-Si no selecciona formato en Bloque 1 → Bloque 2 se omite. Resultado: de 6 a 1-2 interacciones.
+La skill `report` preguntará más tarde por estructura y estilo visual.
 
 **Nota**: SIEMPRE dar un resumen de hallazgos en la conversación, independientemente de los formatos seleccionados.
 
@@ -169,10 +165,10 @@ Si no selecciona formato en Bloque 1 → Bloque 2 se omite. Resultado: de 6 a 1-
 | Detección de anomalías (ver `/analyze` [advanced-analytics.md](advanced-analytics.md)) | Solo outliers del EDA | Temporal + estática | Completa (temporal, tendencia, categórica) |
 | Feature importance (sec 3.3) | NO | Solo si el usuario lo pide explícitamente | Proactivo si >5 variables candidatas |
 | Loop de iteración (Fase 4.8) | NO | Max 1 iteración | Max 2 iteraciones |
-| Testing de scripts (Fase 4.5-6) | NO (implícito, sin preguntar) | Según preferencia del usuario (Bloque 1, default SI) | Según preferencia del usuario (Bloque 1, default SI) |
+| Testing de scripts (Fase 4.5-6) | NO (implícito, sin preguntar) | Según preferencia del usuario (§4.1, default SI) | Según preferencia del usuario (§4.1, default SI) |
 | Reasoning (Fase 4.11) | No generar fichero (notas en chat) | Solo .md (completo) | Solo .md (completo + sugerencias) |
 | Validación de output (Fase 4.12) | Solo Bloque A en chat (sin fichero) | Solo .md (Bloques A + B + C) | Solo .md (Completo A + B + C + D) |
-| **Deliverables (Fase 4.10)** | **Según formatos seleccionados en Bloque 1 — sin restricción por profundidad** | **Según formatos seleccionados en Bloque 1** | **Según formatos seleccionados en Bloque 1** |
+| **Deliverables (Fase 4.10)** | **Según formatos seleccionados en §4.1 — sin restricción por profundidad** | **Según formatos seleccionados en §4.1** | **Según formatos seleccionados en §4.1** |
 
 ### Fase 3 — Planificación (en fase de planificación, solo lectura)
 
@@ -396,7 +392,7 @@ Para instrucciones detalladas de generación por formato, ver la skill `/report`
 
 | Formato | Cómo generarlo | Cuándo usarlo |
 |---------|---------------|---------------|
-| **Documento (PDF + DOCX)** | `tools/pdf_generator.py` + `tools/docx_generator.py` | Informes profesionales. Genera report.pdf y report.docx |
+| **Documento (PDF + DOCX)** | `tools/pdf_generator.py` + `tools/docx_generator.py` | Informes profesionales. Genera `<slug>-report.pdf` y `<slug>-report.docx` dentro de la carpeta del análisis (ver skill `/report` §1.1) |
 | **Web** | `tools/dashboard_builder.py` (`DashboardBuilder`) — HTML autónomo con filtros globales, KPI cards dinámicos, tablas ordenables, gráficas Plotly interactivas, datos JSON embebidos y CSS del estilo elegido | Dashboards interactivos, informes con filtros, compartir por navegador |
 | **PowerPoint** | `tools/pptx_layout.py` (helpers de layout) + `tools/css_builder.py` (colores) | Presentaciones ejecutivas, reuniones con stakeholders |
 | **Lectura de PDF** | Skill `pdf-reader` — extracción diagnóstico-primero con cadena de fallback (pdfplumber → pdfminer → pypdf → pdftotext), OCR para escaneos, lectura de campos de formulario, extracción de imágenes | Leer PDFs proporcionados por el usuario, extraer datos de fuentes PDF, ingerir contenido PDF para análisis |

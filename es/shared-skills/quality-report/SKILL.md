@@ -210,13 +210,13 @@ Escribir `<ruta-absoluta>/<carpeta>/report-input.json` con el schema exacto que 
 
 #### Paso 4 — Determinar los nombres de los artefactos
 
-Todos los artefactos viven **dentro** de la carpeta del Paso 2. Los nombres siguientes son los canónicos — no poner nada directamente bajo `output/`.
+Todos los artefactos viven **dentro** de la carpeta del Paso 2. Los nombres llevan el `<slug>` descriptivo (la parte del nombre de carpeta tras el timestamp) como prefijo para que sigan siendo reconocibles tras la descarga.
 
 - Si el usuario indicó un nombre: usar ese (con la extensión correcta), siempre dentro de la carpeta.
 - Si no:
-  - PDF: `output/<carpeta>/quality-report.pdf`
-  - DOCX: `output/<carpeta>/quality-report.docx`
-  - MD: `output/<carpeta>/quality-report.md`
+  - PDF: `output/<carpeta>/<slug>-quality-report.pdf`
+  - DOCX: `output/<carpeta>/<slug>-quality-report.docx`
+  - MD: `output/<carpeta>/<slug>-quality-report.md`
 
 #### Paso 5 — Validar el JSON (OBLIGATORIO antes de ejecutar el generador)
 
@@ -232,7 +232,7 @@ Todos los artefactos viven **dentro** de la carpeta del Paso 2. Los nombres sigu
 ```bash
 .venv/bin/python scripts/quality_report_generator.py \
   --format <pdf|docx|md> \
-  --output "output/<carpeta>/quality-report.<ext>" \
+  --output "output/<carpeta>/<slug>-quality-report.<ext>" \
   --input-file "output/<carpeta>/report-input.json" \
   --lang <código_idioma_usuario>
 ```
@@ -242,7 +242,7 @@ Todos los artefactos viven **dentro** de la carpeta del Paso 2. Los nombres sigu
 ```bash
 .venv/bin/python scripts/quality_report_generator.py \
   --format pdf \
-  --output "output/<carpeta>/quality-report.pdf" \
+  --output "output/<carpeta>/<slug>-quality-report.pdf" \
   --input-file "output/<carpeta>/report-input.json" \
   --lang <código_idioma_usuario> \
   --tone <default|technical-minimal|executive-editorial|forensic>

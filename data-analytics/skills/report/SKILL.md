@@ -41,6 +41,16 @@ Notes:
 - `output/[ANALYSIS_DIR]/report.md` is always generated automatically as internal documentation (no option needed).
 - If the format comes from the argument (`$ARGUMENTS`), skip directly to questions 2 and 3.
 
+### 1.1 Filename convention for deliverables
+
+User-facing deliverables are written with a descriptive prefix so they are recognisable after download, outside their folder:
+
+- `<slug>-report.pdf`, `<slug>-report.docx` (Document format)
+- `<slug>-dashboard.html` (Web format)
+- `<slug>-presentation.pptx` (PowerPoint format)
+
+`<slug>` is the descriptive part of `[ANALYSIS_DIR]` — the folder is `YYYY-MM-DD_HHMM_<slug>/`, so `<slug>` is everything after the timestamp prefix. Internal files (`plan.md`, `reasoning.md`, `report.md`, `validation.md`, `aesthetic.json`) stay without prefix.
+
 ## 2. Verify Available Data
 
 - Check if previous data exists in `output/[ANALYSIS_DIR]/data/` (CSVs, DataFrames)

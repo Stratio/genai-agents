@@ -57,7 +57,7 @@ function updateKPIs(filters) {
 }
 """)
 
-db.save("output/[ANALISIS_DIR]/dashboard.html")
+db.save("output/[ANALISIS_DIR]/<slug>-dashboard.html")  # <slug> = parte descriptiva de [ANALISIS_DIR] tras el timestamp — ver SKILL.md §1.1
 ```
 
 ## Capacidades del Dashboard
@@ -75,7 +75,7 @@ db.save("output/[ANALISIS_DIR]/dashboard.html")
 
 1. Generar script: `output/[ANALISIS_DIR]/scripts/generate_web.py --style modern`
 2. El script importa `DashboardBuilder` y construye el dashboard programáticamente
-3. Guardar en `output/[ANALISIS_DIR]/dashboard.html`
+3. Guardar en `output/[ANALISIS_DIR]/<slug>-dashboard.html`
 
 ## Pitfalls Comunes
 

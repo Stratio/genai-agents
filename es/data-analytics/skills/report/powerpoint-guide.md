@@ -24,7 +24,7 @@ Referencia operativa para el pipeline de PowerPoint dentro de `/report`.
    - Tipografia: títulos 36-44pt bold, cuerpo 14-16pt
    - Número orientativo de slides: 8-12 para ejecutiva, 15-20 para detallada
 10. Generar script: `output/[ANALISIS_DIR]/scripts/generate_pptx.py --style corporate`
-11. Guardar en `output/[ANALISIS_DIR]/presentation.pptx`
+11. Guardar en `output/[ANALISIS_DIR]/<slug>-presentation.pptx` (el `<slug>` es la parte descriptiva de `[ANALISIS_DIR]` tras el timestamp — ver `SKILL.md` §1.1)
 
 ## Slides con Imagen + Panel Lateral
 

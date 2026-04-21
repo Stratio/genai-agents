@@ -210,13 +210,13 @@ Write `<absolute-path>/<folder>/report-input.json` with the exact schema that fo
 
 #### Step 4 — Determine the artefact filenames
 
-All artefacts live **inside** the folder from Step 2. The filenames below are the canonical names — do not put anything directly under `output/`.
+All artefacts live **inside** the folder from Step 2. The filenames carry the descriptive `<slug>` (the part after the timestamp in the folder name) as a prefix so they stay recognisable after download.
 
 - If the user indicated a name: use that (with the correct extension), still inside the folder.
 - If not:
-  - PDF: `output/<folder>/quality-report.pdf`
-  - DOCX: `output/<folder>/quality-report.docx`
-  - MD: `output/<folder>/quality-report.md`
+  - PDF: `output/<folder>/<slug>-quality-report.pdf`
+  - DOCX: `output/<folder>/<slug>-quality-report.docx`
+  - MD: `output/<folder>/<slug>-quality-report.md`
 
 #### Step 5 — Validate the JSON (MANDATORY before running the generator)
 
@@ -232,7 +232,7 @@ All artefacts live **inside** the folder from Step 2. The filenames below are th
 ```bash
 .venv/bin/python scripts/quality_report_generator.py \
   --format <pdf|docx|md> \
-  --output "output/<folder>/quality-report.<ext>" \
+  --output "output/<folder>/<slug>-quality-report.<ext>" \
   --input-file "output/<folder>/report-input.json" \
   --lang <user_language_code>
 ```
@@ -242,7 +242,7 @@ All artefacts live **inside** the folder from Step 2. The filenames below are th
 ```bash
 .venv/bin/python scripts/quality_report_generator.py \
   --format pdf \
-  --output "output/<folder>/quality-report.pdf" \
+  --output "output/<folder>/<slug>-quality-report.pdf" \
   --input-file "output/<folder>/report-input.json" \
   --lang <user_language_code> \
   --tone <default|technical-minimal|executive-editorial|forensic>

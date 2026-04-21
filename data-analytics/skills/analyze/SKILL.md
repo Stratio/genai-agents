@@ -89,10 +89,7 @@ Before asking the user about formats and planning metrics, understand the realit
 
 Simple questions (point data, no slicing dimensions) are resolved in Triage (Phase 0 of the workflow) without invoking this skill. Everything else is an analysis and follows the question block flow described below.
 
-**General defaults:**
-- Visual style: **Corporate** (if the user does not choose another in Block 2)
-
-### 4.1 Block 1 — Depth, Audience, and Format
+### 4.1 Question Block — Depth, Audience, Format, Tests
 
 A single interaction:
 
@@ -112,16 +109,7 @@ A single interaction:
 - **If one or more formats are selected → deliverables ARE ALWAYS GENERATED, regardless of the chosen depth. Quick/Standard/Deep affects the analysis, not the deliverables.**
 - Additional requirements via "Other" option (time filters, segments, mandatory metrics)
 
-### 4.2 Block 2 — Structure and Style (only if format was selected in Block 1)
-
-A single interaction with 2 questions. Options are literal — do not invent, omit, or substitute:
-
-| # | Question | Options (literal) | Selection |
-|---|----------|-------------------|-----------|
-| 1 | What structure do you prefer for the report? | **Base scaffold** (Recommended): executive summary → methodology → data → analysis → conclusions · **On the fly**: free structure based on context | Single |
-| 2 | What visual style do you prefer? | **Corporate** (`corporate.css`, Recommended): clean, professional · **Formal/academic** (`academic.css`): serif, wide margins, paper style · **Modern/creative** (`modern.css`): colors, gradients, visually appealing | Single |
-
-If no format was selected in Block 1 → Block 2 is skipped entirely. Result: from 6 down to 1-2 interactions.
+Structure and visual style are not asked here — they are asked later by the `report` skill.
 
 ## 5. Planning
 
@@ -280,7 +268,7 @@ Apply the 7 validations from `skills-guides/stratio-data-tools.md` sec 7 to each
 
 ### 6.5 Testing
 
-> **Only if the depth is Standard/Deep AND the user chose "Yes" in the testing question of Block 1.** In Quick depth or if the user chose "No", skip this section and execute the script directly with real data.
+> **Only if the depth is Standard/Deep AND the user chose "Yes" in the testing question of §4.1.** In Quick depth or if the user chose "No", skip this section and execute the script directly with real data.
 
 - Generate `output/[ANALYSIS_DIR]/scripts/test_*.py` with unit tests BEFORE running with real data
 - Use mock DataFrames with structure similar to real data
@@ -322,7 +310,7 @@ If during execution a finding is detected that exceeds the scope of the current 
 
 ### 6.9 Deliverable generation
 
-> **MANDATORY if the user selected formats in Block 1.** The analysis depth (Quick/Standard/Deep) does NOT affect this step — if the user chose formats, all are generated.
+> **MANDATORY if the user selected formats in §4.1.** The analysis depth (Quick/Standard/Deep) does NOT affect this step — if the user chose formats, all are generated.
 
 1. Load the skill `report`
 2. Generate ALL selected formats (do not omit any)

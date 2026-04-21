@@ -41,6 +41,16 @@ Notas:
 - Siempre se genera `output/[ANALISIS_DIR]/report.md` automáticamente como documentación interna (no necesita opción).
 - Si el formato viene en el argumento (`$ARGUMENTS`), saltar directamente a las preguntas 2 y 3.
 
+### 1.1 Convención de nombres para deliverables
+
+Los entregables orientados al usuario se escriben con un prefijo descriptivo para que sean reconocibles tras descargarlos, fuera de su carpeta:
+
+- `<slug>-report.pdf`, `<slug>-report.docx` (formato Document)
+- `<slug>-dashboard.html` (formato Web)
+- `<slug>-presentation.pptx` (formato PowerPoint)
+
+`<slug>` es la parte descriptiva de `[ANALISIS_DIR]` — la carpeta es `YYYY-MM-DD_HHMM_<slug>/`, así que `<slug>` es todo lo que va después del prefijo de timestamp. Los ficheros internos (`plan.md`, `reasoning.md`, `report.md`, `validation.md`, `aesthetic.json`) se quedan sin prefijo.
+
 ## 2. Verificar Datos Disponibles
 
 - Comprobar si existen datos previos en `output/[ANALISIS_DIR]/data/` (CSVs, DataFrames)

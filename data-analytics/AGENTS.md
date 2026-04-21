@@ -138,19 +138,15 @@ For full operational detail (sufficiency checklist, scoring, mini-summary format
 
 ### Phase 1.2 — Defaults
 
-- Default visual style: **Corporate** (if the user does not choose another in Block 2)
 - **Escalation during execution**: If an anomaly (>30% deviation), inconsistency, or critical pattern is detected → inform the user and offer to drill deeper. Detail in skill `/analyze` sec 6.8
 
 ### Phase 2 — User Questions (during planning phase, read-only)
 
 Read `output/MEMORY.md` sec Preferences (if it exists) to offer personalized defaults to the user.
 
-Group into a maximum of 2 question blocks for the user with selectable options (option details in skill `/analyze` sec 4):
+Ask a single question block for the user with selectable options (option details in skill `/analyze` sec 4.1): Depth + Audience + Format (allow multiple selection). In Standard/Deep, also Testing.
 
-**Block 1** (always): Depth + Audience + Format (allow multiple selection). In Standard/Deep, also Testing
-**Block 2** (only if format was selected in Block 1): Structure + Style
-
-If no format is selected in Block 1 → Block 2 is skipped. Result: from 6 down to 1-2 interactions.
+The `report` skill will later ask about structure and visual style.
 
 **Note**: ALWAYS provide a summary of findings in the conversation, regardless of the selected formats.
 
@@ -169,10 +165,10 @@ If no format is selected in Block 1 → Block 2 is skipped. Result: from 6 down 
 | Anomaly detection (see `/analyze` [advanced-analytics.md](advanced-analytics.md)) | Only EDA outliers | Temporal + static | Full (temporal, trend, categorical) |
 | Feature importance (sec 3.3) | NO | Only if the user explicitly requests it | Proactive if >5 candidate variables |
 | Iteration loop (Phase 4.8) | NO | Max 1 iteration | Max 2 iterations |
-| Script testing (Phase 4.5-6) | NO (implicit, without asking) | Per user preference (Block 1, default YES) | Per user preference (Block 1, default YES) |
+| Script testing (Phase 4.5-6) | NO (implicit, without asking) | Per user preference (§4.1, default YES) | Per user preference (§4.1, default YES) |
 | Reasoning (Phase 4.11) | Do not generate file (notes in chat) | .md only (full) | .md only (full + suggestions) |
 | Output validation (Phase 4.12) | Block A only in chat (no file) | .md only (Blocks A + B + C) | .md only (Full A + B + C + D) |
-| **Deliverables (Phase 4.10)** | **Per formats selected in Block 1 — no restriction by depth** | **Per formats selected in Block 1** | **Per formats selected in Block 1** |
+| **Deliverables (Phase 4.10)** | **Per formats selected in §4.1 — no restriction by depth** | **Per formats selected in §4.1** | **Per formats selected in §4.1** |
 
 ### Phase 3 — Planning (during planning phase, read-only)
 
@@ -396,7 +392,7 @@ For detailed generation instructions per format, see the `/report` skill.
 
 | Format | How to generate | When to use |
 |--------|----------------|-------------|
-| **Document (PDF + DOCX)** | `tools/pdf_generator.py` + `tools/docx_generator.py` | Professional reports. Generates report.pdf and report.docx |
+| **Document (PDF + DOCX)** | `tools/pdf_generator.py` + `tools/docx_generator.py` | Professional reports. Generates `<slug>-report.pdf` and `<slug>-report.docx` inside the analysis folder (see `/report` skill §1.1) |
 | **Web** | `tools/dashboard_builder.py` (`DashboardBuilder`) — Self-contained HTML with global filters, dynamic KPI cards, sortable tables, interactive Plotly charts, embedded JSON data, and CSS from the chosen style | Interactive dashboards, reports with filters, browser sharing |
 | **PowerPoint** | `tools/pptx_layout.py` (layout helpers) + `tools/css_builder.py` (colors) | Executive presentations, stakeholder meetings |
 | **PDF reading** | Skill `pdf-reader` — diagnose-first extraction with fallback chain (pdfplumber → pdfminer → pypdf → pdftotext), OCR for scans, form field reading, image extraction | Reading user-provided PDFs, extracting data from PDF sources, ingesting PDF content for analysis |
