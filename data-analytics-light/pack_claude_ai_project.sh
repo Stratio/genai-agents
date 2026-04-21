@@ -183,9 +183,8 @@ fi
 # --- 4. Reference replacements in all copied .md files ---
 echo "Updating internal references..."
 
-# Pattern A: skills-guides/ paths
+# Pattern A: skills-guides/ paths (only stratio-data-tools — visualization lives under skills/analyze/, handled by Pattern C below)
 sed -i 's|skills-guides/stratio-data-tools\.md|skills-guides_stratio-data-tools.md|g' "$PROJECT_DIR"/*.md
-sed -i 's|skills-guides/visualization\.md|skills-guides_visualization.md|g' "$PROJECT_DIR"/*.md
 
 # Pattern B: markdown links to analyze subfiles — search with parentheses
 sed -i 's|(advanced-analytics\.md)|(analyze_advanced-analytics.md)|g' "$PROJECT_DIR"/*.md
