@@ -12,7 +12,7 @@ Lightweight Business Intelligence and Business Analytics agent. Same analytical 
 
 ## Requirements
 
-- Python 3.10+ with the dependencies listed in `requirements.txt`. In Stratio Cowork the sandbox image provides them; in dev local, `python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt`. No system packages needed (this agent has no PDF/OCR stack)
+- Python 3.10+ with the dependencies listed in `requirements.txt`. Install with `python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt`. No system packages needed (this agent has no PDF/OCR stack)
 - Access to two Stratio MCP servers (configured in `.mcp.json` for Claude Code / claude.ai and in `opencode.json` for OpenCode):
   - **Data MCP** (`stratio_data`): via `MCP_SQL_URL` and `MCP_SQL_API_KEY` env vars — mandatory for analytical workflows
   - **Governance MCP** (`stratio_gov`): via `MCP_GOV_URL` and `MCP_GOV_API_KEY` env vars — needed for quality coverage assessment (chat only). Only the read tool `get_quality_rule_dimensions` is allowed; write operations (rule creation/scheduling, AI metadata regeneration via `quality_rules_metadata`) are intentionally denied
@@ -82,7 +82,7 @@ The result is located in `dist/claude_cowork/data-analytics-light/`.
 
 ### Packaging as Claude AI Project (claude.ai)
 
-Generates the flattened files (skills, guides, requirements, setup):
+Generates the flattened files (skills, guides, requirements):
 
 ```bash
 bash pack_claude_ai_project.sh --name data-analytics-light
