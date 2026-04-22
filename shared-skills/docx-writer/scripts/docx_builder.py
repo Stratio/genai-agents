@@ -151,16 +151,30 @@ def _add_paragraph_border_bottom(paragraph, color_hex: str, size: int = 6) -> No
     borders.append(bottom)
 
 
-def _add_page_number_field(run) -> None:
-    """Insert a Word PAGE field into a run."""
+def _add_page_number_field(run, placeholder: str = "1") -> None:
+    """Insert a Word PAGE field into a run.
+
+    Emits the full ``begin → instrText → separate → placeholder → end``
+    sequence so LibreOffice, Word Online and Google Docs render a real
+    number (not the raw instruction) even before the reader triggers a
+    field update. The placeholder is the cached result; Word overwrites it
+    on update, but LibreOffice uses it as-is on open.
+    """
     fld_char_begin = OxmlElement("w:fldChar")
     fld_char_begin.set(qn("w:fldCharType"), "begin")
     instr = OxmlElement("w:instrText")
-    instr.text = "PAGE"
+    instr.set(qn("xml:space"), "preserve")
+    instr.text = " PAGE "
+    fld_char_sep = OxmlElement("w:fldChar")
+    fld_char_sep.set(qn("w:fldCharType"), "separate")
+    placeholder_text = OxmlElement("w:t")
+    placeholder_text.text = placeholder
     fld_char_end = OxmlElement("w:fldChar")
     fld_char_end.set(qn("w:fldCharType"), "end")
     run._r.append(fld_char_begin)
     run._r.append(instr)
+    run._r.append(fld_char_sep)
+    run._r.append(placeholder_text)
     run._r.append(fld_char_end)
 
 
@@ -803,15 +817,21 @@ class DOCXBuilder:
     def set_footer_page_numbers(self, lang: str | None = None) -> "DOCXBuilder":
         """Configure a centred "Page X" footer on the default section."""
         labels = get_labels(lang=lang)
+        font_main = str(self._palette.get("font_main", "Calibri"))
+        text_muted = self._palette.get("text_muted", (100, 100, 100))
         section = self._doc.sections[0]
         footer = section.footer
         para = footer.paragraphs[0] if footer.paragraphs else footer.add_paragraph()
         para.alignment = WD_ALIGN_PARAGRAPH.CENTER
         para.clear()
         run_label = para.add_run(f"{labels['page.footer_page_label']} ")
+        run_label.font.name = font_main
         run_label.font.size = Pt(9)
+        run_label.font.color.rgb = RGBColor(*text_muted)
         run_num = para.add_run()
+        run_num.font.name = font_main
         run_num.font.size = Pt(9)
+        run_num.font.color.rgb = RGBColor(*text_muted)
         _add_page_number_field(run_num)
         return self
 
