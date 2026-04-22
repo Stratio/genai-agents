@@ -39,6 +39,8 @@ La configuración de MCPs está en `.mcp.json` (Claude Code / claude.ai) y en `o
 | Informe de calidad | `/quality-report` | Generar informe formal de cobertura en chat, PDF, DOCX o Markdown |
 | Lectura de PDF | `/pdf-reader` | Extraer texto, tablas y datos de archivos PDF proporcionados por el usuario |
 | Escritura de PDF | `/pdf-writer` | Crear PDFs personalizados, combinar/dividir, marca de agua, cifrar, rellenar formularios |
+| Lectura de DOCX | `/docx-reader` | Extraer texto, tablas, imágenes, metadatos y cambios rastreados de ficheros `.docx` o `.doc` heredado |
+| Escritura de DOCX | `/docx-writer` | DOCX genéricos (cartas, memos, contratos, notas de política). Combinar/dividir, find-replace, convertir `.doc` a `.docx`, preview visual |
 
 ## Scripts de empaquetado
 

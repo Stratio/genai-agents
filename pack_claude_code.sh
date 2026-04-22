@@ -318,13 +318,20 @@ echo "    [7b] Placeholder TOOL_QUESTIONS -> AskUserQuestion"
 # skills/<name>/ (the in-repo path). This rewrite makes bash invocations,
 # sys.path.insert calls, docstrings, and all absolute references resolve in
 # the packaged layout. The regex matches `skills/<kebab-name>/` only when not
-# preceded by an alphanumeric / underscore / dot / slash — so relative md
-# references like `[file.md](file.md)` and python imports `from foo import X`
-# are not affected.
+# preceded by an alphanumeric / underscore / dot / slash / hyphen — the hyphen
+# exclusion prevents `shared-skills/<name>/` from being corrupted into
+# `shared-.claude/skills/<name>/`. Relative md references like
+# `[file.md](file.md)` and python imports `from foo import X` are also safe.
+# `shared-skills/<name>/` → `.claude/skills/<name>/` is handled by a dedicated
+# pass first so that shared-skills content ships with runnable paths.
 find "$OUTPUT_DIR" \
   -not -path '*/node_modules/*' -not -path '*/.venv/*' \
   -type f \( -name '*.md' -o -name '*.json' -o -name '*.sh' -o -name '*.py' -o -name '*.txt' \) \
-  -exec sed -i -E 's#(^|[^a-zA-Z0-9_./])skills/([a-z][a-z0-9-]*)/#\1.claude/skills/\2/#g' {} \;
+  -exec sed -i -E 's#(^|[^a-zA-Z0-9_./])shared-skills/([a-z][a-z0-9-]*)/#\1.claude/skills/\2/#g' {} \;
+find "$OUTPUT_DIR" \
+  -not -path '*/node_modules/*' -not -path '*/.venv/*' \
+  -type f \( -name '*.md' -o -name '*.json' -o -name '*.sh' -o -name '*.py' -o -name '*.txt' \) \
+  -exec sed -i -E 's#(^|[^-a-zA-Z0-9_./])skills/([a-z][a-z0-9-]*)/#\1.claude/skills/\2/#g' {} \;
 echo "    [7d] Rewrote skills/<name>/ → .claude/skills/<name>/ everywhere"
 
 # ---------------------------------------------------------------------------

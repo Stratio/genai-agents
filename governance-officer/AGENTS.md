@@ -101,9 +101,9 @@ Cases that should NOT trigger Step 0:
 
 Step 0 runs in Phase 0 and therefore does not violate the "never proceed to subsequent workflow phases without the skill loaded" rule; clarification questions are allowed pre-skill.
 
-**PDF/visual precedence rule**: When the request mentions "PDF" or a visual artifact and could match multiple rows, apply this priority: (1) **reading/extracting** content from an existing PDF → `pdf-reader`; (2) **single-page visual artifact** — composition-dominated, ≥70% visual (poster, cover, certificate, infographic, one-pager, ontology map) → `canvas-craft`; (3) **manipulating** an existing PDF (merge, split, rotate, watermark, encrypt, fill form, flatten) or **creating** a typographic/prose document (invoice, letter, newsletter, multi-page report) → `pdf-writer`; (4) **quality report** in PDF format → `quality-report`; (5) only if none apply, treat as a governance question.
+**Document/visual precedence rule**: When the request mentions "PDF", "DOCX", "Word doc" or a visual artifact and could match multiple rows, apply this priority: (1) **reading/extracting** content from an existing PDF → `pdf-reader`, or from an existing DOCX → `docx-reader`; (2) **single-page visual artifact** — composition-dominated, ≥70% visual (poster, cover, certificate, infographic, one-pager, ontology map) → `canvas-craft`; (3a) **manipulating** an existing PDF (merge, split, rotate, watermark, encrypt, fill form, flatten) or **creating** a typographic/prose PDF (invoice, letter, newsletter, multi-page report) → `pdf-writer`; (3b) **manipulating** an existing DOCX (merge, split, find-replace, convert `.doc`) or **creating** a governance DOCX (policy brief, compliance report, ontology documentation) → `docx-writer`; (4) **quality report** in PDF or DOCX format → `quality-report`; (5) only if none apply, treat as a governance question.
 
-**Multi-skill detection**: If the request involves multiple actions spanning different skills (e.g., "read this PDF and check its quality", "generate a document about this ontology and add a watermark"), execute in order: input skills first (`pdf-reader`) → processing skills (`assess-quality`, semantic skills) → output skills (`quality-report`, `pdf-writer`).
+**Multi-skill detection**: If the request involves multiple actions spanning different skills (e.g., "read this policy DOCX and check its quality", "generate a DOCX about this ontology"), execute in order: input skills first (`pdf-reader` / `docx-reader`) → processing skills (`assess-quality`, semantic skills) → output skills (`quality-report`, `pdf-writer`, `docx-writer`).
 
 #### Semantic layer requests
 
@@ -125,7 +125,9 @@ Step 0 runs in Phase 0 and therefore does not violate the "never proceed to subs
 | "What ontologies are there?" / "What views does domain X have?" | Direct triage (1-2 tools) | none |
 | "What does the semantic layer of X contain?" | `search_domains(text, domain_type='business')` or `list_domains(domain_type='business')` + sql tools | none |
 | "How does create_ontology work?" | — | `stratio-semantic-layer` |
-| "Generate a document about this ontology/domain/views" | — | `pdf-writer` |
+| "Generate a PDF document about this ontology/domain/views" | — | `pdf-writer` |
+| "Generate a DOCX / Word document about this ontology/domain/views" | — | `docx-writer` |
+| "Read this policy / ontology spec / business document (DOCX)" | — | `docx-reader` |
 
 > **OpenSearch unavailability**: if `search_domains`, `search_ontologies` or `search_data_dictionary` fail due to backend unavailability (not due to empty results), follow §10 of `stratio-data-tools.md` (for `search_domains`) or `stratio-semantic-layer-tools.md` (for all three) for the deterministic fallback.
 
@@ -153,7 +155,9 @@ Step 0 runs in Phase 0 and therefore does not violate the "never proceed to subs
 | "I want to configure how rule quality is measured" | — | Within `create-quality-rules` (section 3.4) |
 | "Use exact value / ranges / percentage / count for measurement" | — | Within `create-quality-rules` (section 3.4) |
 | Read/extract PDF content: "read this PDF", "extract text from PDF", "what does this PDF say", "get the content of this PDF", "parse this PDF" | — | `pdf-reader` |
-| PDF creation and manipulation: "merge PDFs", "split PDF", "add watermark", "encrypt PDF", "fill PDF form", "flatten form", "add cover page", "create invoice/certificate/letter/newsletter", "OCR to searchable PDF", "batch generate PDFs" — any PDF task not related to quality reports | — | `pdf-writer` |
+| Read/extract DOCX content: "read this DOCX", "extract text from this Word doc", "what does this .docx say", "ingest this policy DOCX", "convert .doc to text" | — | `docx-reader` |
+| PDF creation and manipulation: "merge PDFs", "split PDF", "add watermark", "encrypt PDF", "fill PDF form", "flatten form", "add cover page", "create invoice/certificate/letter/newsletter in PDF", "OCR to searchable PDF", "batch generate PDFs" — any PDF task not related to quality reports | — | `pdf-writer` |
+| DOCX creation and manipulation: "merge DOCX", "split DOCX by section", "find-replace in DOCX", "convert .doc to .docx", "create letter/memo/contract/policy brief in Word", "generate a DOCX governance compliance report" — any DOCX task not related to quality reports | — | `docx-writer` |
 
 #### Visual artifact requests
 
@@ -372,7 +376,9 @@ Python is used EXCLUSIVELY to generate file reports (PDF, DOCX, Markdown on disk
 | **DOCX** | User explicitly requests it | Skill `quality-report` + `scripts/quality_report_generator.py` |
 | **Markdown** | User explicitly requests it | Skill `quality-report` + `scripts/quality_report_generator.py` |
 | **PDF reading** | Reading user-provided PDF files | Skill `pdf-reader` — text extraction, table extraction, OCR, form fields |
+| **DOCX reading** | Reading user-provided DOCX / legacy `.doc` files | Skill `docx-reader` — text, tables, images, metadata, tracked changes |
 | **Ad-hoc PDF** | PDF tasks beyond quality reports | Skill `pdf-writer` — merge, split, watermark, encrypt, form filling, custom documents |
+| **Ad-hoc DOCX** | Governance DOCX (policy briefs, compliance reports, ontology documentation) | Skill `docx-writer` — letters/memos/contracts, merge, split, find-replace, `.doc` conversion |
 
 If the user does not specify a format, respond in chat. If they ask for "a report" without specifying format, ask which they prefer.
 

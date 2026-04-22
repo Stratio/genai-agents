@@ -101,9 +101,9 @@ Casos que NO deben disparar el Paso 0:
 
 El Paso 0 corre dentro de la Fase 0 y por tanto no viola la regla "nunca avanzar a fases posteriores del workflow sin la skill cargada"; las preguntas de clarificación se permiten pre-skill.
 
-**Regla de precedencia PDF/visual**: Cuando la petición menciona "PDF" o un artefacto visual y podría coincidir con múltiples filas, aplicar esta prioridad: (1) **leer/extraer** contenido de un PDF existente → `pdf-reader`; (2) **artefacto visual de una sola página** — dominado por composición, ≥70% visual (póster, portada, certificado, infografía, one-pager, mapa de ontología) → `canvas-craft`; (3) **manipular** un PDF existente (combinar, dividir, rotar, marca de agua, cifrar, rellenar formulario, aplanar) o **crear** un documento tipográfico/de prosa (factura, carta, newsletter, informe multi-página) → `pdf-writer`; (4) **informe de calidad** en formato PDF → `quality-report`; (5) solo si ninguno aplica, tratar como pregunta de gobernanza.
+**Regla de precedencia documento/visual**: Cuando la petición menciona "PDF", "DOCX", "Word" o un artefacto visual y podría coincidir con múltiples filas, aplicar esta prioridad: (1) **leer/extraer** contenido de un PDF existente → `pdf-reader`, o de un DOCX existente → `docx-reader`; (2) **artefacto visual de una sola página** — dominado por composición, ≥70% visual (póster, portada, certificado, infografía, one-pager, mapa de ontología) → `canvas-craft`; (3a) **manipular** un PDF existente (combinar, dividir, rotar, marca de agua, cifrar, rellenar formulario, aplanar) o **crear** un PDF tipográfico/de prosa (factura, carta, newsletter, informe multi-página) → `pdf-writer`; (3b) **manipular** un DOCX existente (combinar, dividir, find-replace, convertir `.doc`) o **crear** un DOCX de gobernanza (nota de política, informe de cumplimiento, documentación de ontología) → `docx-writer`; (4) **informe de calidad** en formato PDF o DOCX → `quality-report`; (5) solo si ninguno aplica, tratar como pregunta de gobernanza.
 
-**Detección multi-skill**: Si la petición involucra múltiples acciones que abarcan diferentes skills (ej: "lee este PDF y evalúa su calidad", "genera un documento sobre esta ontología y añade marca de agua"), ejecutar en orden: skills de entrada primero (`pdf-reader`) → skills de proceso (`assess-quality`, skills semánticas) → skills de salida (`quality-report`, `pdf-writer`).
+**Detección multi-skill**: Si la petición involucra múltiples acciones que abarcan diferentes skills (ej: "lee este DOCX de política y evalúa su calidad", "genera un DOCX sobre esta ontología"), ejecutar en orden: skills de entrada primero (`pdf-reader` / `docx-reader`) → skills de proceso (`assess-quality`, skills semánticas) → skills de salida (`quality-report`, `pdf-writer`, `docx-writer`).
 
 #### Peticiones de capa semántica
 
@@ -125,7 +125,9 @@ El Paso 0 corre dentro de la Fase 0 y por tanto no viola la regla "nunca avanzar
 | "Qué ontologías hay?" / "Qué vistas tiene el dominio X?" | Triage directo (1-2 tools) | ninguna |
 | "Qué contiene la capa semántica de X?" | `search_domains(text, domain_type='business')` o `list_domains(domain_type='business')` + sql tools | ninguna |
 | "Cómo funciona create_ontology?" | — | `stratio-semantic-layer` |
-| "Genera un documento sobre esta ontología/dominio/vistas" | — | `pdf-writer` |
+| "Genera un PDF sobre esta ontología/dominio/vistas" | — | `pdf-writer` |
+| "Genera un DOCX / documento Word sobre esta ontología/dominio/vistas" | — | `docx-writer` |
+| "Lee esta política / spec de ontología / documento de negocio (DOCX)" | — | `docx-reader` |
 
 > **Indisponibilidad de OpenSearch**: si `search_domains`, `search_ontologies` o `search_data_dictionary` fallan por indisponibilidad del backend (no por resultado vacío), seguir §10 de `stratio-data-tools.md` (para `search_domains`) o `stratio-semantic-layer-tools.md` (para las tres) para el fallback determinístico.
 
@@ -153,7 +155,9 @@ El Paso 0 corre dentro de la Fase 0 y por tanto no viola la regla "nunca avanzar
 | "Quiero configurar cómo se mide la calidad de las reglas" | — | Dentro de `create-quality-rules` (sección 3.4) |
 | "Usar valor exacto / rangos / porcentaje / conteo para la medición" | — | Dentro de `create-quality-rules` (sección 3.4) |
 | Leer/extraer contenido de PDF: "lee este PDF", "extrae el texto de este PDF", "qué dice este PDF", "dame el contenido de este PDF", "parsea este PDF" | — | `pdf-reader` |
-| Creación y manipulación de PDF: "combinar PDFs", "dividir PDF", "añadir marca de agua", "cifrar PDF", "rellenar formulario PDF", "aplanar formulario", "añadir portada", "crear factura/certificado/carta/newsletter", "OCR a PDF buscable", "generar PDFs en lote" — cualquier tarea PDF no relacionada con informes de calidad | — | `pdf-writer` |
+| Leer/extraer contenido de DOCX: "lee este DOCX", "extrae el texto de este Word", "qué dice este .docx", "ingiere esta política en DOCX", "convierte este .doc a texto" | — | `docx-reader` |
+| Creación y manipulación de PDF: "combinar PDFs", "dividir PDF", "añadir marca de agua", "cifrar PDF", "rellenar formulario PDF", "aplanar formulario", "añadir portada", "crear factura/certificado/carta/newsletter en PDF", "OCR a PDF buscable", "generar PDFs en lote" — cualquier tarea PDF no relacionada con informes de calidad | — | `pdf-writer` |
+| Creación y manipulación de DOCX: "combinar DOCX", "dividir DOCX por sección", "find-replace en DOCX", "convertir .doc a .docx", "crear carta/memo/contrato/nota de política en Word", "generar informe DOCX de gobernanza" — cualquier tarea DOCX no relacionada con informes de calidad | — | `docx-writer` |
 
 #### Peticiones de artefactos visuales
 
@@ -372,7 +376,9 @@ Python se usa EXCLUSIVAMENTE para generar informes en fichero (PDF, DOCX, Markdo
 | **DOCX** | El usuario lo pide explícitamente | Skill `quality-report` + `scripts/quality_report_generator.py` |
 | **Markdown** | El usuario lo pide explícitamente | Skill `quality-report` + `scripts/quality_report_generator.py` |
 | **Lectura de PDF** | Leer archivos PDF proporcionados por el usuario | Skill `pdf-reader` — extracción de texto, tablas, OCR, campos de formulario |
+| **Lectura de DOCX** | Leer `.docx` / `.doc` heredado proporcionados por el usuario | Skill `docx-reader` — texto, tablas, imágenes, metadatos, cambios rastreados |
 | **PDF ad-hoc** | Tareas PDF fuera de informes de calidad | Skill `pdf-writer` — combinar, dividir, marca de agua, cifrar, rellenar formularios, documentos personalizados |
+| **DOCX ad-hoc** | DOCX de gobernanza (notas de política, informes de cumplimiento, documentación de ontología) | Skill `docx-writer` — cartas/memos/contratos, combinar, dividir, find-replace, conversión de `.doc` |
 
 Si el usuario no específica formato, responder en chat. Si pide "un informe" sin especificar formato, preguntar cual prefiere.
 

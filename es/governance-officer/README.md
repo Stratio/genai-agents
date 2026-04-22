@@ -56,6 +56,8 @@ La configuración MCP está en `.mcp.json` (Claude Code / claude.ai) y en `openc
 | Informe de calidad | `/quality-report` | Generar informe formal de cobertura (PDF, DOCX, Markdown) |
 | Lectura de PDF | `/pdf-reader` | Extraer texto, tablas y datos de archivos PDF proporcionados por el usuario |
 | Escritura de PDF | `/pdf-writer` | Crear PDFs personalizados, combinar/dividir, marca de agua, cifrar, rellenar formularios |
+| Lectura de DOCX | `/docx-reader` | Extraer texto, tablas, imágenes y metadatos de ficheros `.docx` o `.doc` heredado (políticas, specs de ontología, documentos de negocio) |
+| Escritura de DOCX | `/docx-writer` | DOCX de gobernanza (notas de política, documentación de ontología, informes de cumplimiento). Combinar/dividir, find-replace, convertir `.doc` a `.docx` |
 
 ## Scripts de empaquetado
 

@@ -54,6 +54,8 @@ Pack scripts are only needed to distribute the agent outside the repository.
 | Knowledge | `/propose-knowledge` | **shared** | Propose discovered business terms to Stratio Governance |
 | PDF reading | `/pdf-reader` | **shared** | Extract text, tables, images and form data from PDF files |
 | PDF writing | `/pdf-writer` | **shared** | Designed multi-page or prose-dominated PDFs (data-light reports with ≤3 KPIs, invoices, letters, newsletters, certificates). Also merge/split/rotate, watermark, encrypt, fill forms |
+| DOCX reading | `/docx-reader` | **shared** | Extract text, tables, images, metadata, comments and tracked changes from `.docx` files (or legacy `.doc` via LibreOffice conversion) |
+| DOCX writing | `/docx-writer` | **shared** | Generic Word documents (letters, memos, contracts, policy briefs, multi-page prose reports). Also merge/split, find-replace, convert `.doc` to `.docx`, visual preview |
 | Visual artifact | `/canvas-craft` | **shared** | Single-page composition-dominated visuals: posters, infographics, covers, one-pagers (PDF or PNG) |
 | Web artifact | `/web-craft` | **shared** | Standalone interactive HTML: dashboards without analytical narrative, UI components, landing pages |
 
