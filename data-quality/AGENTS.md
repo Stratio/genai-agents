@@ -224,8 +224,8 @@ In addition to the tools listed in `skills-guides/stratio-data-tools.md`, this a
 
 Python is used EXCLUSIVELY to generate file reports (PDF, DOCX, Markdown on disk). Not for data analysis.
 
-- Verify/create the venv before executing: `bash setup_env.sh` (idempotent — safe to run always)
-- Use the venv interpreter directly, without activating: `.venv/bin/python skills/quality-report/scripts/quality_report_generator.py`
+- The Python stack is provided by the environment (Cowork sandbox image or local venv); no bootstrap script
+- Invoke the generator directly: `python3 skills/quality-report/scripts/quality_report_generator.py`
 - Save the JSON payload to `output/report-input.json` before calling the script; use `--input-file` instead of `--input-json`
 - Only execute Python if the user has explicitly requested a file report
 - See skill `quality-report` for full details

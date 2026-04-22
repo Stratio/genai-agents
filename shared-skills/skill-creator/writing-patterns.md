@@ -407,7 +407,7 @@ The explicit exclusion prevents the skill from triggering when the user just wan
 
 Run the report generator:
 ```bash
-.venv/bin/python scripts/quality_report_generator.py \
+python3 scripts/quality_report_generator.py \
   --format pdf \
   --output "output/quality-report-${domain}-${date}.pdf" \
   --input-file output/report-input.json

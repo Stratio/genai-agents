@@ -25,20 +25,9 @@ while IFS= read -r module; do
 
   echo "  [$module] Tests found — running pytest..."
 
-  # Activate venv if setup_env.sh exists
-  if [[ -f "$MODULE_DIR/setup_env.sh" ]]; then
-    echo "  [$module] Setting up environment with setup_env.sh..."
-    (cd "$MODULE_DIR" && bash setup_env.sh)
-    if [[ -f "$MODULE_DIR/.venv/bin/activate" ]]; then
-      (cd "$MODULE_DIR" && source .venv/bin/activate && python -m pytest $TEST_FILES -v)
-    else
-      echo "  [$module] WARN: setup_env.sh did not create .venv — running global pytest"
-      (cd "$MODULE_DIR" && python -m pytest $TEST_FILES -v) || true
-    fi
-  else
-    echo "  [$module] No setup_env.sh — running global pytest"
-    (cd "$MODULE_DIR" && python -m pytest $TEST_FILES -v) || true
-  fi
+  # Run pytest against the current Python environment (sandbox: /opt/venv via PATH;
+  # dev local: user-managed venv or system Python). No bootstrap from the script.
+  (cd "$MODULE_DIR" && python3 -m pytest $TEST_FILES -v) || true
 
 done < "$REPO_ROOT/release-modules"
 

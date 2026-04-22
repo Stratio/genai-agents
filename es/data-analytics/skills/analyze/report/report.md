@@ -62,12 +62,9 @@ Leer y seguir [../visualization.md](../visualization.md) para:
 
 **Específico de report — Layout anti-solapamiento**: Título como insight arriba, contexto como subtítulo, leyenda posicionada debajo del gráfico o a la derecha exterior. Usar `tools/chart_layout.py` para layout estándar.
 
-## 3. Setup del Entorno
+## 3. Entorno
 
-```bash
-bash setup_env.sh
-```
-Verificar que las dependencias del formato están disponibles (weasyprint para PDF, python-pptx para PowerPoint, etc.).
+El stack Python (`weasyprint` para PDF, `python-pptx` para PowerPoint, `python-docx` para DOCX, `reportlab`, etc.) lo provee el entorno (imagen del sandbox Cowork o venv local); `python3` resuelve automáticamente. Si falta alguna dependencia de formato, `pip install <pkg>` en el entorno actual o añadirla a `requirements.txt` para casos recurrentes.
 
 **Imports Python desde scripts generados**: los módulos generadores viven en `skills/analyze/report/tools/`. Cuando el agente escriba un script generador (ej: `output/[ANALYSIS_DIR]/scripts/make_report.py`), añadir esa carpeta a `sys.path` al inicio del script para que imports como `from pdf_generator import PDFGenerator` resuelvan correctamente:
 
@@ -79,7 +76,7 @@ from pdf_generator import PDFGenerator
 from css_builder import build_css, get_palette
 ```
 
-Invocaciones CLI (ej: `md_to_report.py`) se llaman por ruta completa desde la raíz del agente: `python skills/analyze/report/tools/md_to_report.py ...`.
+Invocaciones CLI (ej: `md_to_report.py`) se llaman por ruta completa desde la raíz del agente: `python3 skills/analyze/report/tools/md_to_report.py ...`.
 
 ## 3.1 Idioma de los Deliverables Generados
 

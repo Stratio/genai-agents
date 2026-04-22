@@ -12,7 +12,7 @@ Checklist de validación del producto terminado antes de reportar al usuario. La
 
 **Override del usuario**: Si el usuario pide explícitamente validación en otros formatos (PDF, HTML, DOCX), generar el .md primero y luego convertir con:
 ```bash
-bash -c "source .venv/bin/activate && python skills/analyze/report/tools/md_to_report.py output/[ANALISIS_DIR]/validation/validation.md --style corporate"
+python3 skills/analyze/report/tools/md_to_report.py output/[ANALISIS_DIR]/validation/validation.md --style corporate
 ```
 Añadir `--html` si solicitó HTML. Añadir `--docx` si solicitó DOCX.
 

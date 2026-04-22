@@ -238,7 +238,7 @@ Load `/analyze` §4.1 to run the question block (Depth + Audience + Format + Tes
 ### Phase 4 — Execution (post-approval)
 
 0. **Determine analysis folder**: Generate name `YYYY-MM-DD_HHMM_descriptive_name` (lowercase, no accents, underscores, max 30 chars in the name). Announce in chat. Create subdirectories: `output/[ANALYSIS_DIR]/scripts/`, `output/[ANALYSIS_DIR]/data/`, `output/[ANALYSIS_DIR]/assets/`. If depth >= Standard, also create `output/[ANALYSIS_DIR]/reasoning/` and `output/[ANALYSIS_DIR]/validation/`. Persist the approved plan in `output/[ANALYSIS_DIR]/plan.md` with the full content of the plan formulated in Phase 3
-1. Environment setup: run `setup_env.sh`. If there are additional libraries, update `requirements.txt` and reinstall
+1. Environment: the Python stack is provided by the current environment (Stratio Cowork sandbox image or, in dev local, your own venv). Use `python3` directly — no bootstrap script. If a runtime-only library is needed, `pip install <pkg>`; if recurring, add it to `requirements.txt` so the sandbox image picks it up on next rebuild
 2. Query data via MCP (`query_data` with natural language questions and `output_format="dict"`). Launch all independent queries from the plan in parallel
 3. **Validate received data** (see section 4 — Post-query Validation)
 4. Write Python scripts in `output/[ANALYSIS_DIR]/scripts/` with descriptive names
@@ -381,8 +381,8 @@ Then offer to export the gap inventory (chat summary or Markdown) so the user ca
 Quality reports use their own generator (bundled with the `quality-report` skill), **not** the analytical deliverable infrastructure in `skills/analyze/report/` (no CSS themes, no Jinja2 templates, no DashboardBuilder). Full operational detail lives in the `/quality-report` skill. Indicative commands:
 
 ```bash
-.venv/bin/python skills/quality-report/scripts/validate_report_input.py output/report-input.json
-.venv/bin/python skills/quality-report/scripts/quality_report_generator.py \
+python3 skills/quality-report/scripts/validate_report_input.py output/report-input.json
+python3 skills/quality-report/scripts/quality_report_generator.py \
   --format <pdf|docx|md> \
   --output "output/quality-report-[domain]-[YYYY-MM-DD].<ext>" \
   --input-file output/report-input.json \
@@ -395,11 +395,11 @@ Quality reports use their own generator (bundled with the `quality-report` skill
 
 ## 5. Python Code Generation and Execution
 
-- Verify/create venv: run `bash setup_env.sh` at the start of execution
-- During planning: if the analysis requires libraries not included in `requirements.txt`, add them and reinstall the venv
+- Environment: `python3` resolves to the Python stack provided by the environment (Cowork sandbox image or local venv); no bootstrap needed
+- During planning: if the analysis requires libraries not included in `requirements.txt`, `pip install <pkg>` in the current environment. For recurring deps, also add them to `requirements.txt` so the sandbox image picks them up on next rebuild
 - **Never install or use `playwright`, `selenium`, `pyppeteer` or any headless-browser library**. Every supported output is covered by the stack already in `requirements.txt`: HTML→PDF via `weasyprint`, Plotly chart→PNG via `kaleido`, PDF generation via `reportlab`, PDF manipulation via `pypdf`/`qpdf`. If a task seems to need a headless browser, pick the equivalent from that list instead
 - Write scripts in `output/[ANALYSIS_DIR]/scripts/` with descriptive names that include analysis context (e.g.: `ventas_q4_regional.py`, `churn_segmentacion.py`)
-- Run scripts: `bash -c "source .venv/bin/activate && python output/[ANALYSIS_DIR]/scripts/my_script.py"`
+- Run scripts: `python3 output/[ANALYSIS_DIR]/scripts/my_script.py`
 - If a script fails, analyze the error, fix, and retry
 - Save charts in `output/[ANALYSIS_DIR]/assets/` with descriptive names (e.g.: `ventas_por_region.png`, `tendencia_q4.png`)
 - Save intermediate data in `output/[ANALYSIS_DIR]/data/` (CSVs, pickles, JSONs)
@@ -419,7 +419,7 @@ Quality reports use their own generator (bundled with the `quality-report` skill
 - Use `pytest` + `pytest-mock` (already included in requirements.txt)
 - **What to test**: The functions you create in your scripts — transformations, calculations, output formats. The agent decides which functions to test based on the generated script
 - **Approach**: Fixture with mock DataFrame (same structure as real data) → import function → validate result
-- Run tests: `bash -c "source .venv/bin/activate && pytest output/[ANALYSIS_DIR]/scripts/test_*.py -v"`
+- Run tests: `python3 -m pytest output/[ANALYSIS_DIR]/scripts/test_*.py -v`
 - Only run the main script if tests pass
 
 ---

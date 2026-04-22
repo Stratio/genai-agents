@@ -12,7 +12,7 @@ Agente ligero de Business Intelligence y Business Analytics. Mismo motor analít
 
 ## Requisitos
 
-- Python 3.10+ (dependencias en `requirements.txt`; instalar con `bash setup_env.sh`)
+- Python 3.10+ con las dependencias listadas en `requirements.txt`. En Stratio Cowork la imagen del sandbox las provee; en dev local, `python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt`. No requiere paquetes del sistema (este agente no tiene stack PDF/OCR)
 - Acceso a dos servidores MCP de Stratio (configurados en `.mcp.json` para Claude Code / claude.ai y en `opencode.json` para OpenCode):
   - **MCP de datos** (`stratio_data`): vía variables de entorno `MCP_SQL_URL` y `MCP_SQL_API_KEY` — obligatorio para flujos analíticos
   - **MCP de gobernanza** (`stratio_gov`): vía variables de entorno `MCP_GOV_URL` y `MCP_GOV_API_KEY` — necesario para la evaluación de cobertura de calidad (solo chat). Solo se permite la tool de lectura `get_quality_rule_dimensions`; las operaciones de escritura (creación/planificación de reglas, regeneración de metadata IA vía `quality_rules_metadata`) están intencionadamente denegadas
@@ -43,7 +43,6 @@ El script de cowork acepta también `--url <MCP_URL>` y `--key <API_KEY>`. Si se
 |---|---|---|---|---|
 | `AGENTS.md` | ✅ → `CLAUDE.md` | ✅ → `CLAUDE.md`¹ | ✅ → `CLAUDE.md` | ✅ → `AGENTS.md` |
 | `requirements.txt` | ✅ | ❌ | ✅ | ✅ |
-| `setup_env.sh` | ✅ | ❌ | ✅ | ✅ |
 | `skills/` | ✅² | ✅ (en ZIP) | ✅ (en `.claude/skills/`) | ✅ (en `.opencode/skills/`) |
 | `skills-guides/` | ✅³ | ✅ (en ZIP) | ✅⁴ | ✅⁴ |
 | `.mcp.json` | ❌ | ✅ (en ZIP) | ✅ | ❌ |

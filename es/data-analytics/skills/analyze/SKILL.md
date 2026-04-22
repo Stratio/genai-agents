@@ -243,11 +243,8 @@ Escribir el plan tal como fue formulado en la Fase 3 (sección 5) y aprobado por
 hipótesis, métricas/KPIs, queries de datos, visualizaciones, estructura del deliverable,
 complejidad, profundidad, formatos y estilo.
 
-### 6.1 Setup del entorno
-```bash
-bash setup_env.sh
-```
-Si hay librerías adicionales, actualizar `requirements.txt` y re-ejecutar setup.
+### 6.1 Entorno
+El stack Python lo provee el entorno (imagen del sandbox Cowork o venv local); `python3` resuelve automáticamente. Si el análisis necesita una librería no incluida en `requirements.txt`, `pip install <pkg>` en el entorno actual. Para deps recurrentes, añadirlas también a `requirements.txt` para que la imagen del sandbox las recoja en el siguiente rebuild.
 
 ### 6.2 Obtención de datos
 - Usar `query_data(data_question=..., domain_name=..., output_format="dict")` para cada pregunta de datos. **Lanzar en paralelo** todas las queries independientes definidas en el plan (paso 5.5). Solo serializar si una query necesita el resultado de otra para formularse
@@ -273,12 +270,12 @@ Aplicar las 7 validaciones de `skills-guides/stratio-data-tools.md` sec 7 a cada
 - Generar `output/[ANALISIS_DIR]/scripts/test_*.py` con tests unitarios ANTES de ejecutar con datos reales
 - Usar DataFrames mock con estructura similar a los datos reales
 - Validar transformaciones, cálculos y formatos de salida
-- Ejecutar: `bash -c "source .venv/bin/activate && pytest output/[ANALISIS_DIR]/scripts/test_*.py -v"`
+- Ejecutar: `python3 -m pytest output/[ANALISIS_DIR]/scripts/test_*.py -v`
 - Solo proceder si los tests pasan
 
 ### 6.6 Ejecución con datos reales
 ```bash
-bash -c "source .venv/bin/activate && python output/[ANALISIS_DIR]/scripts/mi_script.py"
+python3 output/[ANALISIS_DIR]/scripts/mi_script.py
 ```
 
 ### 6.7 Loop de iteración

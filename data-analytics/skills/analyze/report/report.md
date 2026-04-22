@@ -62,12 +62,9 @@ Read and follow [../visualization.md](../visualization.md) for:
 
 **Report-specific — Anti-overlap layout**: Title as insight on top, context as subtitle, legend positioned below the chart or to the right exterior. Use `tools/chart_layout.py` for standard layout.
 
-## 3. Environment Setup
+## 3. Environment
 
-```bash
-bash setup_env.sh
-```
-Verify that format dependencies are available (weasyprint for PDF, python-pptx for PowerPoint, etc.).
+The Python stack (`weasyprint` for PDF, `python-pptx` for PowerPoint, `python-docx` for DOCX, `reportlab`, etc.) is provided by the environment (Cowork sandbox image or local venv); `python3` resolves automatically. If a format dependency is missing, `pip install <pkg>` in the current environment or add it to `requirements.txt` for recurring cases.
 
 **Python imports from generator scripts**: the generator modules live in `skills/analyze/report/tools/`. When the agent writes a generator script (e.g. `output/[ANALYSIS_DIR]/scripts/make_report.py`), add that folder to `sys.path` at the top of the script so imports like `from pdf_generator import PDFGenerator` resolve correctly:
 
@@ -79,7 +76,7 @@ from pdf_generator import PDFGenerator
 from css_builder import build_css, get_palette
 ```
 
-CLI invocations (e.g. `md_to_report.py`) are called by full path from the agent root: `python skills/analyze/report/tools/md_to_report.py ...`.
+CLI invocations (e.g. `md_to_report.py`) are called by full path from the agent root: `python3 skills/analyze/report/tools/md_to_report.py ...`.
 
 ## 3.1 Language of Generated Deliverables
 

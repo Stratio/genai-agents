@@ -355,8 +355,8 @@ Ejemplos: `dq-account-completeness-id`, `dq-card-uniqueness-card-id`, `dq-transa
 
 Python se usa EXCLUSIVAMENTE para generar informes en fichero (PDF, DOCX, Markdown en disco). No para análisis de datos.
 
-- Verificar/crear el venv antes de ejecutar: `bash setup_env.sh` (idempotente — seguro de ejecutar siempre)
-- Usar el intérprete del venv directamente, sin activar: `.venv/bin/python skills/quality-report/scripts/quality_report_generator.py`
+- El stack Python lo provee el entorno (imagen del sandbox Cowork o venv local); sin script de bootstrap
+- Invocar el generador directamente: `python3 skills/quality-report/scripts/quality_report_generator.py`
 - Guardar el payload JSON en `output/report-input.json` antes de llamar al script; usar `--input-file` en lugar de `--input-json`
 - Solo ejecutar Python si el usuario ha pedido explícitamente un informe en fichero
 - Ver skill `quality-report` para detalles completos

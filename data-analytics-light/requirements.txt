@@ -7,7 +7,7 @@ pymannkendall>=1.4
 # Visualizacion
 matplotlib>=3.9
 seaborn>=0.13
-plotly>=6.0
+plotly>=6.0,<6.2
 
 # Estadistica avanzada
 statsmodels>=0.14.4

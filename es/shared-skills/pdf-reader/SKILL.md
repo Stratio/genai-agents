@@ -509,7 +509,7 @@ El script de modo rápido puede instalar `pdfminer.six` al vuelo cuando no hay n
 más disponible:
 
 ```bash
-python scripts/quick_extract.py document.pdf --auto-install
+python3 scripts/quick_extract.py document.pdf --auto-install
 ```
 
 Esto es una red de seguridad, no el camino normal. Para flujos de trabajo en modo profundo, la

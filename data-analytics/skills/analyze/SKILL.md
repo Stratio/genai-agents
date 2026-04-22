@@ -243,11 +243,8 @@ Write the plan as formulated in Phase 3 (section 5) and approved by the user:
 hypotheses, metrics/KPIs, data queries, visualizations, deliverable structure,
 complexity, depth, formats, and style.
 
-### 6.1 Environment setup
-```bash
-bash setup_env.sh
-```
-If there are additional libraries, update `requirements.txt` and re-run setup.
+### 6.1 Environment
+The Python stack is provided by the environment (Cowork sandbox image or local venv); `python3` resolves automatically. If the analysis needs a library not in `requirements.txt`, `pip install <pkg>` in the current environment. For recurring deps, also add them to `requirements.txt` so the sandbox image picks them up on next rebuild.
 
 ### 6.2 Data retrieval
 - Use `query_data(data_question=..., domain_name=..., output_format="dict")` for each data question. **Launch in parallel** all independent queries defined in the plan (step 5.5). Only serialize if one query needs another's result to be formulated
@@ -273,12 +270,12 @@ Apply the 7 validations from `skills-guides/stratio-data-tools.md` sec 7 to each
 - Generate `output/[ANALYSIS_DIR]/scripts/test_*.py` with unit tests BEFORE running with real data
 - Use mock DataFrames with structure similar to real data
 - Validate transformations, calculations, and output formats
-- Run: `bash -c "source .venv/bin/activate && pytest output/[ANALYSIS_DIR]/scripts/test_*.py -v"`
+- Run: `python3 -m pytest output/[ANALYSIS_DIR]/scripts/test_*.py -v`
 - Only proceed if tests pass
 
 ### 6.6 Execution with real data
 ```bash
-bash -c "source .venv/bin/activate && python output/[ANALYSIS_DIR]/scripts/my_script.py"
+python3 output/[ANALYSIS_DIR]/scripts/my_script.py
 ```
 
 ### 6.7 Iteration loop
