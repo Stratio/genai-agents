@@ -450,20 +450,6 @@ Para instrucciones detalladas de generación por formato, ver `skills/analyze/re
 
 **Formato automático:** Además de los formatos seleccionados, siempre se genera `output/[ANALISIS_DIR]/report.md` (Markdown con tablas y bloques mermaid) como documentación interna del análisis.
 
-**Estilos visuales** — Arquitectura CSS en 3 capas (tokens -> theme -> target):
-
-| Capa | Directorio | Contenido |
-|------|-----------|-----------|
-| **Tokens** | `skills/analyze/report/styles/tokens/` | `@font-face` + `:root` variables — identidad visual |
-| **Theme** | `skills/analyze/report/styles/themes/` | Componentes estilizados con `var()` — funciona igual en PDF y web |
-| **Target** | `skills/analyze/report/styles/pdf/` o `skills/analyze/report/styles/web/` | Reglas exclusivas del destino — UN solo `base.css` por target |
-
-Estilos disponibles: **Corporativo** (`corporate`), **Formal/académico** (`academic`), **Moderno/creativo** (`modern`). Si el estilo no existe, cae a `corporate` sin error.
-
-Para API de estilos (`build_css`, `get_palette` de `skills/analyze/report/tools/css_builder.py`), ver `report/report.md` sección 6.
-
-**Recursos adicionales**: `skills/analyze/report/templates/pdf/` contiene templates Jinja2 (base.html, cover.html, components/, reports/scaffold.html). `skills/analyze/report/styles/fonts/` contiene fuentes locales woff2 (DM Sans, Inter, JetBrains Mono).
-
 ---
 
 ## 9. Reasoning (Documentación del Proceso)
