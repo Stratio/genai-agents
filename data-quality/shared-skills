@@ -4,4 +4,6 @@ create-quality-schedule
 quality-report
 pdf-reader
 pdf-writer
+docx-reader
+docx-writer
 web-craft

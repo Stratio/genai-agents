@@ -680,7 +680,36 @@ def generate_docx(data: dict, output_path: str,
     RED = RGBColor(220, 53, 69)
     GREEN = RGBColor(40, 167, 69)
     ORANGE = RGBColor(253, 126, 20)
+    AMBER = RGBColor(255, 193, 7)
     GRAY = RGBColor(108, 117, 125)
+
+    # Status → colour map used to tint OK / KO / WARNING / Gap / Parcial values
+    # in the coverage table. Priorities (CRITICO / ALTO / MEDIO / BAJO) use their
+    # own map. Applied in-place to the first run of the target cell.
+    _STATUS_CELL_COLOURS = {
+        "OK": GREEN,
+        "KO": RED,
+        "WARNING": ORANGE,
+        "Parcial": ORANGE,
+        "Gap": GRAY,
+    }
+    _PRIORITY_CELL_COLOURS = {
+        "CRITICO": RED,
+        "ALTO": ORANGE,
+        "MEDIO": AMBER,
+        "BAJO": GRAY,
+    }
+
+    def _tint_cell(cell, value: str, mapping: dict) -> None:
+        """If ``value`` has an entry in ``mapping``, make the cell's first run
+        bold and coloured accordingly. No-op otherwise."""
+        colour = mapping.get(value)
+        if colour is None:
+            return
+        for para in cell.paragraphs:
+            for run in para.runs:
+                run.font.bold = True
+                run.font.color.rgb = colour
 
     s = data.get("summary", {})
 
@@ -748,6 +777,11 @@ def generate_docx(data: dict, output_path: str,
                     t.get("validity", "-"), t.get("consistency", "-"), t.get("coverage_estimate", "-")]
             for i, v in enumerate(vals):
                 row[i].text = v
+            # Tint the four dimension-status columns (completeness, uniqueness,
+            # validity, consistency). The coverage column is a percentage and
+            # stays neutral.
+            for i in range(1, 5):
+                _tint_cell(row[i], vals[i], _STATUS_CELL_COLOURS)
 
         # Gaps
         all_gaps = []
@@ -776,6 +810,8 @@ def generate_docx(data: dict, output_path: str,
                         g.get("column", "-"), g.get("dimension", "-"), g.get("description", "-")]
                 for i, v in enumerate(vals):
                     row[i].text = v
+                # Tint the priority column (col 0) so CRITICO/ALTO stand out.
+                _tint_cell(row[0], vals[0], _PRIORITY_CELL_COLOURS)
 
     # Rules created
     rules_created = data.get("rules_created", [])
@@ -794,8 +830,11 @@ def generate_docx(data: dict, output_path: str,
             tbl4.rows[0].cells[i].paragraphs[0].runs[0].bold = True
         for r in rules_created:
             row = tbl4.add_row().cells
-            for i, v in enumerate([r["name"], r.get("table", "-"), r.get("dimension", "-"), r.get("status", "-")]):
+            vals = [r["name"], r.get("table", "-"), r.get("dimension", "-"), r.get("status", "-")]
+            for i, v in enumerate(vals):
                 row[i].text = v
+            # Tint the status column (col 3) when the value is a known status.
+            _tint_cell(row[3], vals[3], _STATUS_CELL_COLOURS)
 
     # Recommendations
     recommendations = data.get("recommendations", [])
