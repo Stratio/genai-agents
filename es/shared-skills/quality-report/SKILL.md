@@ -113,9 +113,7 @@ Los tres formatos de archivo (PDF, DOCX, MD) usan el mismo generador Python y el
 
 #### Paso 1 — Verificar entorno
 
-```bash
-bash setup_env.sh
-```
+El stack Python (`weasyprint`, `jinja2`, `markdown`, `beautifulsoup4`, `python-docx`) lo provee el entorno (imagen del sandbox Stratio Cowork o, en dev local, tu venv). Verificar con `python3 -c "import weasyprint, jinja2, markdown, bs4, docx"`. Si algún import falla, ejecutar `pip install <pkg>` en el entorno actual.
 
 #### Paso 2 — Determinar la carpeta del informe
 
@@ -221,7 +219,7 @@ Todos los artefactos viven **dentro** de la carpeta del Paso 2. Los nombres llev
 #### Paso 5 — Validar el JSON (OBLIGATORIO antes de ejecutar el generador)
 
 ```bash
-.venv/bin/python scripts/validate_report_input.py output/<carpeta>/report-input.json
+python3 scripts/validate_report_input.py output/<carpeta>/report-input.json
 ```
 
 - Si termina con `[OK]`: continuar al paso 6.
@@ -230,7 +228,7 @@ Todos los artefactos viven **dentro** de la carpeta del Paso 2. Los nombres llev
 #### Paso 6 — Ejecutar el generador
 
 ```bash
-.venv/bin/python scripts/quality_report_generator.py \
+python3 scripts/quality_report_generator.py \
   --format <pdf|docx|md> \
   --output "output/<carpeta>/<slug>-quality-report.<ext>" \
   --input-file "output/<carpeta>/report-input.json" \
@@ -240,7 +238,7 @@ Todos los artefactos viven **dentro** de la carpeta del Paso 2. Los nombres llev
 **Opcional — tono visual** (afecta solo a PDF y DOCX; el formato Markdown es neutro e ignora este flag):
 
 ```bash
-.venv/bin/python scripts/quality_report_generator.py \
+python3 scripts/quality_report_generator.py \
   --format pdf \
   --output "output/<carpeta>/<slug>-quality-report.pdf" \
   --input-file "output/<carpeta>/report-input.json" \

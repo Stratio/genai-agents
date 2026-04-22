@@ -1,6 +1,6 @@
 # === Report generation (HTML -> PDF, DOCX, Markdown, templating) ===
 jinja2>=3.1
-markdown>=3.6
+markdown>=3.7
 weasyprint>=65
 python-docx>=1.1
 beautifulsoup4>=4.12

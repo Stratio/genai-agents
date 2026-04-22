@@ -5,8 +5,8 @@ Validates that report-input.json matches the exact schema expected by quality_re
 If there are errors, displays them with the correct field name and exits with code 1.
 
 Usage:
-    python scripts/validate_report_input.py [path-to-json]
-    python scripts/validate_report_input.py output/report-input.json
+    python3 scripts/validate_report_input.py [path-to-json]
+    python3 scripts/validate_report_input.py output/report-input.json
 """
 import json
 import sys

@@ -7,10 +7,10 @@ about which library to use or whether it's installed. The script tries
 several extractors in order and returns the first successful result.
 
 USAGE
-    python quick_extract.py <path/to/file.pdf>
-    python quick_extract.py <path/to/file.pdf> --pages 1-5
-    python quick_extract.py <path/to/file.pdf> --no-tables
-    cat file.pdf | python quick_extract.py -
+    python3 quick_extract.py <path/to/file.pdf>
+    python3 quick_extract.py <path/to/file.pdf> --pages 1-5
+    python3 quick_extract.py <path/to/file.pdf> --no-tables
+    cat file.pdf | python3 quick_extract.py -
 
 OUTPUT
     stdout — Markdown-structured text (metadata + pages + tables)

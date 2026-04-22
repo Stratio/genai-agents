@@ -50,7 +50,6 @@ mkdir -p "$PROJECT_DIR"
 echo "Copying root files..."
 cp AGENTS.md "$PROJECT_DIR/CLAUDE.md"
 cp requirements.txt "$PROJECT_DIR/requirements.txt"
-cp setup_env.sh "$PROJECT_DIR/setup_env.sh"
 
 # --- 1b. User README ---
 if [ -f "USER_README.md" ]; then

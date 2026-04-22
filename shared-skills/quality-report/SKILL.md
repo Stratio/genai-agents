@@ -113,9 +113,7 @@ All three file formats (PDF, DOCX, MD) use the same Python generator and the sam
 
 #### Step 1 — Verify environment
 
-```bash
-bash setup_env.sh
-```
+The Python stack (`weasyprint`, `jinja2`, `markdown`, `beautifulsoup4`, `python-docx`) is provided by the environment (Stratio Cowork sandbox image or, in dev local, your venv). Verify with `python3 -c "import weasyprint, jinja2, markdown, bs4, docx"`. If any import fails, run `pip install <pkg>` in the current environment.
 
 #### Step 2 — Determine the report folder
 
@@ -221,7 +219,7 @@ All artefacts live **inside** the folder from Step 2. The filenames carry the de
 #### Step 5 — Validate the JSON (MANDATORY before running the generator)
 
 ```bash
-.venv/bin/python scripts/validate_report_input.py output/<folder>/report-input.json
+python3 scripts/validate_report_input.py output/<folder>/report-input.json
 ```
 
 - If it ends with `[OK]`: continue to step 6.
@@ -230,7 +228,7 @@ All artefacts live **inside** the folder from Step 2. The filenames carry the de
 #### Step 6 — Run the generator
 
 ```bash
-.venv/bin/python scripts/quality_report_generator.py \
+python3 scripts/quality_report_generator.py \
   --format <pdf|docx|md> \
   --output "output/<folder>/<slug>-quality-report.<ext>" \
   --input-file "output/<folder>/report-input.json" \
@@ -240,7 +238,7 @@ All artefacts live **inside** the folder from Step 2. The filenames carry the de
 **Optional — visual tone** (affects PDF and DOCX only; the Markdown format is language-neutral and ignores this flag):
 
 ```bash
-.venv/bin/python scripts/quality_report_generator.py \
+python3 scripts/quality_report_generator.py \
   --format pdf \
   --output "output/<folder>/<slug>-quality-report.pdf" \
   --input-file "output/<folder>/report-input.json" \

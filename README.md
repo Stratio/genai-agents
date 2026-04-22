@@ -111,23 +111,27 @@ If an agent persists memory between sessions, its seed files live under `templat
 
 ## System dependencies
 
-Several skills and Python libraries require OS-level packages that `pip` cannot install. The table below is the single source of truth — `setup_env.sh` in every agent verifies these and the rest of the docs references this section instead of duplicating the list.
+Several skills and Python libraries require OS-level packages that `pip` cannot install. The table below is the single source of truth. Each agent's `README.md` and each skill's `README.md` references this section instead of duplicating the list.
+
+**In Stratio Cowork**, the sandbox image (`genai-agents-sandbox`) provides all of these plus the Python stack. No action is needed.
+
+**In dev local**, install them yourself with the commands below.
 
 | System package | Provides | Python libs that depend on it | Agents that need it |
 |---|---|---|---|
 | `poppler-utils` (Debian/Ubuntu) / `poppler` (Homebrew) | `pdfinfo`, `pdftotext`, `pdftoppm`, `pdfimages`, `pdfdetach`, `pdffonts` | `pdf2image`, `ocrmypdf`; diagnostic commands used directly by `pdf-reader` | `data-analytics`, `data-quality`, `governance-officer` |
 | `qpdf` | CLI merge/split/rotate, repair | — (used as CLI fallback by `pdf-writer` and `pdf-reader`) | `data-analytics`, `data-quality`, `governance-officer` |
-| `pdftk` (Debian/Ubuntu) / `pdftk-java` (Homebrew) | Form-field inspection, robust flattening | — (used directly by `pdf-writer/FORMS.md` and `pdf-reader` forms flow) | `data-analytics`, `data-quality`, `governance-officer` |
-| `tesseract-ocr` + language packs (`tesseract-ocr-spa`, `-fra`, `-deu`, …) | OCR engine | `pytesseract`, `ocrmypdf` | `data-analytics`, `data-quality`, `governance-officer` |
+| `pdftk-java` (Debian/Ubuntu, provides `pdftk` via update-alternatives) / `pdftk-java` (Homebrew) | Form-field inspection, robust flattening | — (used directly by `pdf-writer/FORMS.md` and `pdf-reader` forms flow) | `data-analytics`, `data-quality`, `governance-officer` |
+| `tesseract-ocr` + language packs (`tesseract-ocr-eng`, `tesseract-ocr-spa`, `-fra`, `-deu`, …) | OCR engine | `pytesseract`, `ocrmypdf` | `data-analytics`, `data-quality`, `governance-officer` |
 | `ghostscript` | PDF/A conversion, repair, last-resort flattening | `ocrmypdf`; also used directly by `pdf-writer` | `data-analytics`, `data-quality`, `governance-officer` |
 | `libcairo2` + `libpango-1.0-0` + `libpangoft2-1.0-0` (Debian/Ubuntu) / `cairo` + `pango` (Homebrew) | Cairo graphics + Pango text layout | `weasyprint` | `data-analytics`, `data-quality`, `governance-officer` |
 
-Install everything on Debian/Ubuntu:
+Install everything on Debian/Ubuntu (24.04):
 
 ```bash
 sudo apt update && sudo apt install -y \
-    poppler-utils qpdf pdftk ghostscript \
-    tesseract-ocr tesseract-ocr-spa tesseract-ocr-fra tesseract-ocr-deu \
+    poppler-utils qpdf pdftk-java ghostscript \
+    tesseract-ocr tesseract-ocr-eng tesseract-ocr-spa tesseract-ocr-fra tesseract-ocr-deu \
     libcairo2 libpango-1.0-0 libpangoft2-1.0-0
 ```
 
@@ -137,12 +141,21 @@ Install on macOS (Homebrew):
 brew install poppler qpdf pdftk-java ghostscript tesseract tesseract-lang cairo pango
 ```
 
+Install Python stack (dev local, Ubuntu 24.04 — use a venv, PEP 668 rejects system-wide installs):
+
+```bash
+cd <agent-dir>
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
 Notes:
 
 - `data-analytics-light`, `semantic-layer`, `skill-creator` and `agent-creator` do not require any of these system packages — they do not declare `pdf-reader`, `pdf-writer`, `canvas-craft` or the WeasyPrint-based report skills.
 - `web-craft` emits HTML/CSS/JS only; it needs no system or Python dependencies at runtime.
 - For digital-signature inspection in `pdf-reader`, install `pyhanko` on demand (`pip install pyhanko`). It is not part of the baseline `requirements.txt`.
-- Each agent's `setup_env.sh` runs a check at startup and prints a warning with the exact install command if any binary is missing.
+- Each skill's `README.md` lists its own Python and system dependencies — useful when declaring a new agent as a subset.
 
 ## Shared skills
 

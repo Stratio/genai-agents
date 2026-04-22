@@ -252,8 +252,8 @@ fi
 # (alongside templates/pdf/ and others). The agent skills initialize output/
 # from these templates on first write.
 rsync -a \
-  --exclude=README.md \
-  --exclude=USER_README.md \
+  --exclude=/README.md \
+  --exclude=/USER_README.md \
   --exclude=mcps \
   --exclude=CLAUDE.md \
   --exclude=AGENTS.md \

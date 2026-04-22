@@ -22,7 +22,7 @@ Agente governance officer que combina la construcción de capas semánticas y la
 
 ## Requisitos
 
-- Python 3.10+ (dependencias en `requirements.txt`; instalar con `bash setup_env.sh`)
+- Python 3.10+ con las dependencias listadas en `requirements.txt`. En Stratio Cowork la imagen del sandbox las provee; en dev local, `python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt`. Paquetes del sistema (poppler-utils, tesseract-ocr, ghostscript, qpdf, pdftk-java, libcairo2, libpango-1.0-0, libpangoft2-1.0-0) — ver la sección "System dependencies" del `README.md` del monorepo
 - Acceso a dos servidores MCP de Stratio:
   - `gov` (gobierno): herramientas de capa semántica, dimensiones de calidad, creación de reglas
   - `sql` (exploración): descubrimiento, generación SQL, profiling, ejecución
@@ -86,8 +86,8 @@ export MCP_SQL_API_KEY="my-sql-api-key"
 export MCP_GOV_URL="https://my-governance-server.example.com/mcp"
 export MCP_GOV_API_KEY="my-governance-api-key"
 
-# 2. Instalar dependencias (para generación de informes PDF/DOCX)
-bash setup_env.sh
+# 2. Instalar dependencias (para generación de informes PDF/DOCX) — solo dev local
+python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt
 
 # 3. Empaquetar para la plataforma deseada
 bash ../pack_opencode.sh --agent governance-officer

@@ -38,7 +38,6 @@
       "Bash(export *)",
       "Bash(xargs *)",
       "Bash(echo *)",
-      "Bash(bash setup_env.sh *)",
       "WebFetch(domain:skills.sh)",
       "Bash(file:*)",
       "Bash(bash:*)",

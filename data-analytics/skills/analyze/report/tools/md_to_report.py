@@ -2,7 +2,7 @@
 """Convert a Markdown file to PDF, and optionally HTML and DOCX.
 
 Usage (run from the agent root):
-    python skills/analyze/report/tools/md_to_report.py <input.md> [--output-dir DIR] [--style STYLE]
+    python3 skills/analyze/report/tools/md_to_report.py <input.md> [--output-dir DIR] [--style STYLE]
            [--author AUTHOR] [--no-embed-images] [--cover] [--domain DOMAIN]
            [--title TITLE] [--html] [--docx]
 

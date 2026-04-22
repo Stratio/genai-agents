@@ -508,7 +508,7 @@ The quick-mode script can install `pdfminer.six` on the fly when nothing
 else is available:
 
 ```bash
-python scripts/quick_extract.py document.pdf --auto-install
+python3 scripts/quick_extract.py document.pdf --auto-install
 ```
 
 This is a safety net, not the normal path. For deep-mode workflows, the

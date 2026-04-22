@@ -159,6 +159,11 @@ fi
 
 echo "    [3] $N_REMOVED skill(s) removed from clone"
 
+# Remove root-level files that should not travel in the Cowork bundle:
+# - requirements.txt: the sandbox image provides the Python stack
+# - setup_env.sh: the sandbox does not invoke it; defensive in case it ever reappears
+find "$STAGING_NO_SHARED" -maxdepth 1 \( -name 'requirements.txt' -o -name 'setup_env.sh' \) -delete
+
 # ---------------------------------------------------------------------------
 # Phase 4 — Sub-ZIP of agent without shared skills
 # ---------------------------------------------------------------------------

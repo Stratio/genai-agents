@@ -238,7 +238,7 @@ Cargar `/analyze` §4.1 para ejecutar el bloque de preguntas (Profundidad + Audi
 ### Fase 4 — Ejecución (post-aprobación)
 
 0. **Determinar carpeta del análisis**: Generar nombre `YYYY-MM-DD_HHMM_nombre_descriptivo` (minusculas, sin tildes, guiones bajos, max 30 chars en el nombre). Declarar en chat. Crear subdirectorios: `output/[ANALISIS_DIR]/scripts/`, `output/[ANALISIS_DIR]/data/`, `output/[ANALISIS_DIR]/assets/`. Si profundidad >= Estándar, crear también `output/[ANALISIS_DIR]/reasoning/` y `output/[ANALISIS_DIR]/validation/`. Persistir el plan aprobado en `output/[ANALISIS_DIR]/plan.md` con el contenido completo del plan formulado en la Fase 3
-1. Setup del entorno: ejecutar `setup_env.sh`. Si hay librerías adicionales, actualizar `requirements.txt` y reinstalar
+1. Entorno: el stack Python lo provee el entorno actual (en Stratio Cowork, la imagen del sandbox; en dev local, tu propio venv). Usar `python3` directamente — sin script de bootstrap. Si hace falta una librería sólo-runtime, `pip install <pkg>`; si es recurrente, añadirla a `requirements.txt` para que la imagen del sandbox la recoja en el siguiente rebuild
 2. Consultar datos vía MCP (`query_data` con preguntas en lenguaje natural y `output_format="dict"`). Lanzar en paralelo todas las queries independientes del plan
 3. **Validar datos recibidos** (ver sección 4 — Validación post-query)
 4. Escribir scripts Python en `output/[ANALISIS_DIR]/scripts/` con nombres descriptivos
@@ -381,8 +381,8 @@ Después, ofrecer exportar el inventario de gaps (resumen en chat o Markdown) pa
 Los informes de calidad usan su propio generador (incluido en la skill `quality-report`), **no** la infraestructura de entregables analíticos en `skills/analyze/report/` (sin CSS themes, sin Jinja2 templates, sin DashboardBuilder). El detalle operativo completo vive en la skill `/quality-report`. Comandos indicativos:
 
 ```bash
-.venv/bin/python skills/quality-report/scripts/validate_report_input.py output/report-input.json
-.venv/bin/python skills/quality-report/scripts/quality_report_generator.py \
+python3 skills/quality-report/scripts/validate_report_input.py output/report-input.json
+python3 skills/quality-report/scripts/quality_report_generator.py \
   --format <pdf|docx|md> \
   --output "output/quality-report-[dominio]-[YYYY-MM-DD].<ext>" \
   --input-file output/report-input.json \
@@ -395,11 +395,11 @@ Los informes de calidad usan su propio generador (incluido en la skill `quality-
 
 ## 5. Generación y Ejecución de Código Python
 
-- Verificar/crear venv: ejecutar `bash setup_env.sh` al inicio de la ejecución
-- En planificación: si el análisis requiere librerías no incluidas en `requirements.txt`, añadirlas y reinstalar el venv
+- Entorno: `python3` resuelve al stack Python provisto por el entorno (imagen del sandbox Cowork o venv local); sin script de bootstrap
+- En planificación: si el análisis requiere librerías no incluidas en `requirements.txt`, `pip install <pkg>` en el entorno actual. Para deps recurrentes, añadirlas también a `requirements.txt` para que la imagen del sandbox las recoja en el siguiente rebuild
 - **Nunca instalar ni usar `playwright`, `selenium`, `pyppeteer` ni ninguna librería de navegador headless**. Todas las salidas soportadas ya están cubiertas por el stack en `requirements.txt`: HTML→PDF vía `weasyprint`, gráfico Plotly→PNG vía `kaleido`, generación de PDF vía `reportlab`, manipulación de PDF vía `pypdf`/`qpdf`. Si una tarea parece pedir un navegador headless, escoger el equivalente de esa lista
 - Escribir scripts en `output/[ANALISIS_DIR]/scripts/` con nombres descriptivos que incluyan contexto del análisis (ej: `ventas_q4_regional.py`, `churn_segmentacion.py`)
-- Ejecutar scripts: `bash -c "source .venv/bin/activate && python output/[ANALISIS_DIR]/scripts/mi_script.py"`
+- Ejecutar scripts: `python3 output/[ANALISIS_DIR]/scripts/mi_script.py`
 - Si un script falla, analizar el error, corregir y reintentar
 - Guardar gráficas en `output/[ANALISIS_DIR]/assets/` con nombres descriptivos (ej: `ventas_por_region.png`, `tendencia_q4.png`)
 - Guardar datos intermedios en `output/[ANALISIS_DIR]/data/` (CSVs, pickles, JSONs)
@@ -419,7 +419,7 @@ Los informes de calidad usan su propio generador (incluido en la skill `quality-
 - Usar `pytest` + `pytest-mock` (ya incluidos en requirements.txt)
 - **Qué testear**: Las funciones que creas en tus scripts — transformaciones, cálculos, formatos de salida. El agente decide qué funciones testear según el script generado
 - **Enfoque**: Fixture con DataFrame mock (misma estructura que datos reales) → importar función → validar resultado
-- Ejecutar tests: `bash -c "source .venv/bin/activate && pytest output/[ANALISIS_DIR]/scripts/test_*.py -v"`
+- Ejecutar tests: `python3 -m pytest output/[ANALISIS_DIR]/scripts/test_*.py -v`
 - Solo ejecutar el script principal si los tests pasan
 
 ---
