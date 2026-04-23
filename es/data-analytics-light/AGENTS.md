@@ -146,7 +146,10 @@ Cuando el mensaje del usuario sea genuinamente ambiguo (p. ej., "¿cómo está l
 
 Para exploración rápida de dominios sin análisis completo, ver la skill `/explore-data`.
 
-1. Si el dominio de datos no es evidente, preguntar al usuario. Si da pistas sobre el dominio, buscar con `search_domains(pista)`. Si no, listar con `list_domains()`
+1. Si el dominio de datos no es evidente, preguntar al usuario. Si da pistas sobre el dominio, buscar con `search_domains(pista, prefer_semantic=true)`. Si no, listar con `list_domains(prefer_semantic=true)`.
+   - **Defecto — preferencia semántica**: pasar siempre `prefer_semantic=true` para que cuando una colección exista en ambas capas (semántica — prefijo `semantic_` — y técnica), solo se devuelva la entrada semántica. El usuario suele referirse al dominio por su nombre desnudo (`Ventas`); resolverlo a la versión semántica (`semantic_Ventas`) es el comportamiento esperado.
+   - **Override explícito a técnico**: cambiar a `prefer_semantic=false` (o a `domain_type='technical'` si el usuario quiere solo entradas técnicas) cuando la redacción del usuario apunta explícitamente a la capa técnica. Lista cerrada de disparadores: *"dominio técnico"*, *"capa técnica"*, *"dominio crudo"*, *"raw"*, *"tabla física"*, *"la versión técnica de X"*, *"el no semántico"* — y sus equivalentes en inglés: *"technical domain"*, *"technical layer"*, *"raw domain"*, *"raw"*, *"physical table"*, *"the technical version of X"*, *"the non-semantic one"*.
+   - **Regla de nombre literal (sin cambios)**: si el usuario escribe el nombre exacto del dominio (ya sea `semantic_X` o el nombre técnico desnudo), respetarlo tal cual según la regla de inmutabilidad del § 3 de `stratio-data-tools.md`. El defecto semántico solo aplica cuando el usuario se refiere al dominio por su nombre desnudo sin prefijo.
 2. Explorar tablas del dominio (`list_domain_tables`)
 3. Obtener detalles de columnas relevantes (`get_table_columns_details`) y buscar terminología de negocio (`search_domain_knowledge`) — lanzar en paralelo, son independientes
 4. Si necesitas aclarar algo, preguntar al usuario

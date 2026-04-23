@@ -12,7 +12,7 @@ Guide for quickly exploring available data in governed domains.
 
 Read and follow `skills-guides/stratio-data-tools.md` sec 4 for domain discovery steps (search or list domains, select, explore tables, columns and terminology).
 
-If the user provides an argument ($ARGUMENTS), search with `search_domains($ARGUMENTS)`. If it matches a domain, skip directly to exploring tables. If it does not match, ask the user which domain to explore following the user question convention (adaptive to the environment: interactive if available, numbered list in chat otherwise). Ask if they want to drill into a specific table or see all of them.
+If the user provides an argument ($ARGUMENTS), search with `search_domains($ARGUMENTS, prefer_semantic=true)` (default: collapse technical entries when a semantic counterpart with prefix `semantic_` exists — the user's bare name resolves to the semantic version). Switch to `prefer_semantic=false` only if the user's wording explicitly targets the technical layer (see the agent's Discovery instructions for the closed list of trigger phrases). If the argument matches a domain, skip directly to exploring tables. If it does not match, ask the user which domain to explore following the user question convention (adaptive to the environment: interactive if available, numbered list in chat otherwise). Ask if they want to drill into a specific table or see all of them.
 
 ## 2. Prior Domain Context
 

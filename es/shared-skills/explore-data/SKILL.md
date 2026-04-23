@@ -12,7 +12,7 @@ Guía para explorar rapidamente los datos disponibles en los dominios gobernados
 
 Leer y seguir `skills-guides/stratio-data-tools.md` sec 4 para los pasos de descubrimiento del dominio (buscar o listar dominios, seleccionar, explorar tablas, columnas y terminología).
 
-Si el usuario proporciona un argumento ($ARGUMENTS), buscar con `search_domains($ARGUMENTS)`. Si coincide con un dominio, saltar directamente a explorar tablas. Si no coincide, preguntar al usuario cual dominio explorar siguiendo la convención de preguntas al usuario (adaptativa al entorno: interactivas si disponibles, lista numerada en chat si no). Preguntar si quiere profundizar en alguna tabla específica o ver todas.
+Si el usuario proporciona un argumento ($ARGUMENTS), buscar con `search_domains($ARGUMENTS, prefer_semantic=true)` (defecto: colapsar entradas técnicas cuando existe una contraparte semántica con prefijo `semantic_` — el nombre desnudo del usuario se resuelve a la versión semántica). Cambiar a `prefer_semantic=false` solo si la redacción del usuario apunta explícitamente a la capa técnica (ver las instrucciones de Descubrimiento del agente para la lista cerrada de disparadores). Si el argumento coincide con un dominio, saltar directamente a explorar tablas. Si no coincide, preguntar al usuario cual dominio explorar siguiendo la convención de preguntas al usuario (adaptativa al entorno: interactivas si disponibles, lista numerada en chat si no). Preguntar si quiere profundizar en alguna tabla específica o ver todas.
 
 ## 2. Contexto Previo del Dominio
 

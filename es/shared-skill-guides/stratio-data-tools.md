@@ -8,8 +8,8 @@
 
 | Paso | Herramienta MCP | Propósito |
 |------|----------------|-----------|
-| 1a | `search_domains(search_text, domain_type?, refresh?)` | **Preferir sobre `list_domains`**. Buscar dominios por texto libre (nombre o descripción). Resultados ordenados por relevancia. Usar cuando se conoce parte del nombre o tema del dominio. `domain_type`: `'business'` (dominios semánticos publicados, con nombres de negocio), `'technical'` (dominios de datos crudos, con identificadores de base de datos) o `'both'` (defecto — todos). `refresh`: bypass de cache |
-| 1b | `list_domains(domain_type?, refresh?)` | Listar todos los dominios disponibles. Usar solo cuando se necesita ver todos los dominios sin filtro o cuando `search_domains` no devuelve resultados. Mismos parámetros `domain_type` y `refresh` que `search_domains` |
+| 1a | `search_domains(search_text, domain_type?, refresh?, prefer_semantic?)` | **Preferir sobre `list_domains`**. Buscar dominios por texto libre (nombre o descripción). Resultados ordenados por relevancia. Usar cuando se conoce parte del nombre o tema del dominio. `domain_type`: `'business'` (dominios semánticos publicados, con nombres de negocio), `'technical'` (dominios de datos crudos, con identificadores de base de datos) o `'both'` (defecto — todos). `refresh`: bypass de cache. `prefer_semantic` (defecto `false`, solo aplica cuando `domain_type='both'`): deduplica los resultados por colección, devolviendo la entrada business/semántica cuando existe y cayendo al técnico en caso contrario |
+| 1b | `list_domains(domain_type?, refresh?, prefer_semantic?)` | Listar todos los dominios disponibles. Usar solo cuando se necesita ver todos los dominios sin filtro o cuando `search_domains` no devuelve resultados. Mismos parámetros `domain_type`, `refresh` y `prefer_semantic` que `search_domains` |
 | 2 | `list_domain_tables` | Conocer tablas del dominio |
 | 3 | `get_tables_details` | Entender reglas de negocio y contexto |
 | 4 | `get_table_columns_details` | Conocer columnas, tipos y significado |
@@ -55,6 +55,8 @@ Si el usuario proporciona un dominio o da pistas sobre el tema:
 Si no hay dominio claro, preguntar al usuario cuál le interesa. Si el usuario no da pistas, ejecutar `list_domains()` para mostrar todos los dominios disponibles (presentar como opciones seleccionables).
 
 Si un dominio recién publicado o creado no aparece, reintentar con `refresh=true` (bypass de cache).
+
+Cuando una colección está expuesta en ambas capas (semántica + técnica), `domain_type='both'` devuelve ambas entradas por defecto. Si solo necesitas una entrada por colección y prefieres el nombre semántico (business) cuando exista, cayendo al técnico en caso contrario, pasar `prefer_semantic=true`.
 
 ### 4.2 Explorar Tablas
 

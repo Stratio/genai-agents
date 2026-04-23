@@ -174,7 +174,10 @@ When the user's phrasing is genuinely ambiguous (e.g., "¿cómo está la calidad
 
 For quick domain exploration without a full analysis, see the `/explore-data` skill.
 
-1. If the data domain is not obvious, ask the user. If they give hints about the domain, search with `search_domains(hint)`. If not, list with `list_domains()`
+1. If the data domain is not obvious, ask the user. If they give hints about the domain, search with `search_domains(hint, prefer_semantic=true)`. If not, list with `list_domains(prefer_semantic=true)`.
+   - **Default — semantic preference**: always pass `prefer_semantic=true` so that when a collection exists in both the semantic (prefix `semantic_`) and technical layers, only the semantic entry is returned. Users typically refer to a domain by its bare name (`Ventas`); resolving it to the semantic version (`semantic_Ventas`) is the expected behaviour.
+   - **Explicit technical override**: switch to `prefer_semantic=false` (or `domain_type='technical'` if the user wants technical entries only) when the user's wording explicitly targets the technical layer. Trigger phrases (closed list): *"dominio técnico"*, *"capa técnica"*, *"dominio crudo"*, *"raw"*, *"tabla física"*, *"la versión técnica de X"*, *"el no semántico"* — and their English equivalents: *"technical domain"*, *"technical layer"*, *"raw domain"*, *"raw"*, *"physical table"*, *"the technical version of X"*, *"the non-semantic one"*.
+   - **Literal name rule (unchanged)**: if the user writes the exact domain name (either `semantic_X` or the bare technical name), honour it verbatim per the immutability rule in § 3 of `stratio-data-tools.md`. The semantic default only applies when the user refers to the domain by its bare name without a prefix.
 2. Explore domain tables (`list_domain_tables`)
 3. Get relevant column details (`get_table_columns_details`) and search business terminology (`search_domain_knowledge`) — launch in parallel, they are independent
 4. If you need clarification, ask the user
