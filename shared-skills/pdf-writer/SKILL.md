@@ -477,45 +477,9 @@ fiddly. OCRmyPDF handles all the edge cases.
   TOC generation, bookmarks, page numbering, batch rendering
 - **`fonts/`** — the TTF files themselves, with OFL license notices
 
-## 11. Installation
+## 11. Bundled fonts
 
-This skill requires reportlab and a few supporting libraries. If you
-already installed `pdf-reader`, most of this is already in place.
-
-### One-shot install (Debian / Ubuntu)
-
-```bash
-sudo apt update && sudo apt install -y poppler-utils qpdf pdftk ghostscript
-pip install reportlab pypdf pdfplumber svglib pillow
-```
-
-### One-shot install (macOS)
-
-```bash
-brew install poppler qpdf pdftk-java ghostscript
-pip install reportlab pypdf pdfplumber svglib pillow
-```
-
-### What each dependency provides
-
-| Package | Purpose |
-|---|---|
-| `reportlab` | The main engine for generating PDFs from scratch |
-| `pypdf` | Merge, split, rotate, watermark, encrypt, form filling |
-| `pdfplumber` | Reading tables from source PDFs when you're repurposing them |
-| `svglib` | Embedding SVG vector graphics into reportlab PDFs |
-| `pillow` | Image handling for `Image()` flowables |
-| `qpdf` | Command-line structural operations, faster than pypdf for large files |
-| `pdftk` | `FORMS.md`: robust flattening of filled forms, field inspection |
-| `ghostscript` | PDF/A conversion, last-resort flattening |
-| `poppler-utils` | `pdfinfo`, `pdftotext` for inspecting source PDFs |
-
-### Bundled fonts
-
-The `fonts/` directory ships with TTF files under the SIL Open Font
-License. No additional font installation is needed — the skill
-registers them directly from that directory. See `fonts/README.md`
-for the complete list and licensing notes.
+The `fonts/` directory ships with TTF files under the SIL Open Font License. Register them directly from that directory when you build a PDF — no system-wide install needed. See `fonts/README.md` for the complete list, available weights and licensing notes.
 
 
 

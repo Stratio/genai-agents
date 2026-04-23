@@ -497,45 +497,9 @@ es posible pero engorroso. OCRmyPDF gestiona todos los casos límite.
   generación de índices, marcadores, numeración de páginas, renderizado por lotes
 - **`fonts/`** — los propios archivos TTF, con los avisos de licencia OFL
 
-## 11. Instalación
+## 11. Fuentes incluidas
 
-Esta skill requiere reportlab y algunas bibliotecas de apoyo. Si ya
-instalaste `pdf-reader`, la mayor parte ya está en su lugar.
-
-### Instalación de una sola vez (Debian / Ubuntu)
-
-```bash
-sudo apt update && sudo apt install -y poppler-utils qpdf pdftk ghostscript
-pip install reportlab pypdf pdfplumber svglib pillow
-```
-
-### Instalación de una sola vez (macOS)
-
-```bash
-brew install poppler qpdf pdftk-java ghostscript
-pip install reportlab pypdf pdfplumber svglib pillow
-```
-
-### Qué proporciona cada dependencia
-
-| Paquete | Propósito |
-|---|---|
-| `reportlab` | Motor principal para generar PDFs desde cero |
-| `pypdf` | Combinar, dividir, rotar, marcas de agua, cifrar, rellenar formularios |
-| `pdfplumber` | Leer tablas de PDFs fuente cuando se reutiliza su contenido |
-| `svglib` | Incrustar gráficos vectoriales SVG en PDFs de reportlab |
-| `pillow` | Gestión de imágenes para los flowables `Image()` |
-| `qpdf` | Operaciones estructurales en línea de comandos, más rápido que pypdf para archivos grandes |
-| `pdftk` | `FORMS.md`: aplanado robusto de formularios rellenos, inspección de campos |
-| `ghostscript` | Conversión a PDF/A, aplanado de último recurso |
-| `poppler-utils` | `pdfinfo`, `pdftotext` para inspeccionar PDFs fuente |
-
-### Fuentes incluidas
-
-El directorio `fonts/` incluye archivos TTF bajo la licencia SIL Open
-Font License. No se necesita ninguna instalación adicional de fuentes —
-la skill las registra directamente desde ese directorio. Consulta
-`fonts/README.md` para ver la lista completa y las notas de licencia.
+El directorio `fonts/` incluye archivos TTF bajo la SIL Open Font License. Regístralas directamente desde ese directorio al construir un PDF — no hace falta instalación a nivel de sistema. Consulta `fonts/README.md` para la lista completa, los pesos disponibles y las notas de licencia.
 
 
 

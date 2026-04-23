@@ -101,9 +101,9 @@ Casos que NO deben disparar el Paso 0:
 
 El Paso 0 corre dentro de la Fase 0 y por tanto no viola la regla "nunca avanzar a fases posteriores del workflow sin la skill cargada"; las preguntas de clarificación se permiten pre-skill.
 
-**Regla de precedencia documento/visual**: Cuando la petición menciona "PDF", "DOCX", "Word" o un artefacto visual y podría coincidir con múltiples filas, aplicar esta prioridad: (1) **leer/extraer** contenido de un PDF existente → `pdf-reader`, o de un DOCX existente → `docx-reader`; (2) **artefacto visual de una sola página** — dominado por composición, ≥70% visual (póster, portada, certificado, infografía, one-pager, mapa de ontología) → `canvas-craft`; (3a) **manipular** un PDF existente (combinar, dividir, rotar, marca de agua, cifrar, rellenar formulario, aplanar) o **crear** un PDF tipográfico/de prosa (factura, carta, newsletter, informe multi-página) → `pdf-writer`; (3b) **manipular** un DOCX existente (combinar, dividir, find-replace, convertir `.doc`) o **crear** un DOCX de gobernanza (nota de política, informe de cumplimiento, documentación de ontología) → `docx-writer`; (4) **informe de calidad** en formato PDF o DOCX → `quality-report`; (5) solo si ninguno aplica, tratar como pregunta de gobernanza.
+**Regla de precedencia documento/visual**: Cuando la petición menciona "PDF", "DOCX", "Word", "PPT", "PowerPoint", "deck" o un artefacto visual y podría coincidir con múltiples filas, aplicar esta prioridad: (1) **leer/extraer** contenido de un PDF existente → `pdf-reader`, de un DOCX existente → `docx-reader`, o de un PPTX existente → `pptx-reader`; (2) **artefacto visual de una sola página** — dominado por composición, ≥70% visual (póster, portada, certificado, infografía, one-pager, mapa de ontología) → `canvas-craft`; (3a) **manipular** un PDF existente (combinar, dividir, rotar, marca de agua, cifrar, rellenar formulario, aplanar) o **crear** un PDF tipográfico/de prosa (factura, carta, newsletter, informe multi-página) → `pdf-writer`; (3b) **manipular** un DOCX existente (combinar, dividir, find-replace, convertir `.doc`) o **crear** un DOCX de gobernanza (nota de política, informe de cumplimiento, documentación de ontología) → `docx-writer`; (3c) **manipular** un PPTX existente (combinar, dividir, reordenar, borrar, find-replace en slides o notas, convertir `.ppt`) o **crear** un deck de gobernanza (briefing de cumplimiento, presentación de política, walkthrough de ontología, deck para steering-committee) → `pptx-writer`; (4) **informe de calidad** en formato PDF o DOCX → `quality-report`; (5) solo si ninguno aplica, tratar como pregunta de gobernanza.
 
-**Detección multi-skill**: Si la petición involucra múltiples acciones que abarcan diferentes skills (ej: "lee este DOCX de política y evalúa su calidad", "genera un DOCX sobre esta ontología"), ejecutar en orden: skills de entrada primero (`pdf-reader` / `docx-reader`) → skills de proceso (`assess-quality`, skills semánticas) → skills de salida (`quality-report`, `pdf-writer`, `docx-writer`).
+**Detección multi-skill**: Si la petición involucra múltiples acciones que abarcan diferentes skills (ej: "lee este DOCX de política y evalúa su calidad", "genera un DOCX sobre esta ontología", "lee este deck de gobernanza y conviértelo en una nota de política"), ejecutar en orden: skills de entrada primero (`pdf-reader` / `docx-reader` / `pptx-reader`) → skills de proceso (`assess-quality`, skills semánticas) → skills de salida (`quality-report`, `pdf-writer`, `docx-writer`, `pptx-writer`).
 
 #### Peticiones de capa semántica
 
@@ -127,7 +127,9 @@ El Paso 0 corre dentro de la Fase 0 y por tanto no viola la regla "nunca avanzar
 | "Cómo funciona create_ontology?" | — | `stratio-semantic-layer` |
 | "Genera un PDF sobre esta ontología/dominio/vistas" | — | `pdf-writer` |
 | "Genera un DOCX / documento Word sobre esta ontología/dominio/vistas" | — | `docx-writer` |
+| "Genera un PPT / deck de PowerPoint sobre esta ontología/dominio/vistas" / "Deck de briefing de cumplimiento" | — | `pptx-writer` |
 | "Lee esta política / spec de ontología / documento de negocio (DOCX)" | — | `docx-reader` |
+| "Lee este deck de gobernanza / cumplimiento / ontología (PPTX)" | — | `pptx-reader` |
 
 > **Indisponibilidad de OpenSearch**: si `search_domains`, `search_ontologies` o `search_data_dictionary` fallan por indisponibilidad del backend (no por resultado vacío), seguir §10 de `stratio-data-tools.md` (para `search_domains`) o `stratio-semantic-layer-tools.md` (para las tres) para el fallback determinístico.
 
@@ -156,8 +158,10 @@ El Paso 0 corre dentro de la Fase 0 y por tanto no viola la regla "nunca avanzar
 | "Usar valor exacto / rangos / porcentaje / conteo para la medición" | — | Dentro de `create-quality-rules` (sección 3.4) |
 | Leer/extraer contenido de PDF: "lee este PDF", "extrae el texto de este PDF", "qué dice este PDF", "dame el contenido de este PDF", "parsea este PDF" | — | `pdf-reader` |
 | Leer/extraer contenido de DOCX: "lee este DOCX", "extrae el texto de este Word", "qué dice este .docx", "ingiere esta política en DOCX", "convierte este .doc a texto" | — | `docx-reader` |
+| Leer/extraer contenido de PPTX: "lee este deck de gobernanza", "extrae las notas del presentador", "qué dice esta presentación de cumplimiento", "parsea este walkthrough de ontología", "convierte este .ppt a texto" | — | `pptx-reader` |
 | Creación y manipulación de PDF: "combinar PDFs", "dividir PDF", "añadir marca de agua", "cifrar PDF", "rellenar formulario PDF", "aplanar formulario", "añadir portada", "crear factura/certificado/carta/newsletter en PDF", "OCR a PDF buscable", "generar PDFs en lote" — cualquier tarea PDF no relacionada con informes de calidad | — | `pdf-writer` |
 | Creación y manipulación de DOCX: "combinar DOCX", "dividir DOCX por sección", "find-replace en DOCX", "convertir .doc a .docx", "crear carta/memo/contrato/nota de política en Word", "generar informe DOCX de gobernanza" — cualquier tarea DOCX no relacionada con informes de calidad | — | `docx-writer` |
+| Creación y manipulación de PPTX: "combinar decks PPT", "dividir PPT", "reordenar slides", "borrar slides", "find-replace en notas del presentador", "convertir .ppt a .pptx", "crear un deck de briefing de cumplimiento", "crear una presentación de política", "crear un deck de walkthrough de ontología", "crear un deck para steering-committee" — cualquier tarea PPTX no relacionada con informes de calidad | — | `pptx-writer` |
 
 #### Peticiones de artefactos visuales
 
@@ -377,8 +381,10 @@ Python se usa EXCLUSIVAMENTE para generar informes en fichero (PDF, DOCX, Markdo
 | **Markdown** | El usuario lo pide explícitamente | Skill `quality-report` + `scripts/quality_report_generator.py` |
 | **Lectura de PDF** | Leer archivos PDF proporcionados por el usuario | Skill `pdf-reader` — extracción de texto, tablas, OCR, campos de formulario |
 | **Lectura de DOCX** | Leer `.docx` / `.doc` heredado proporcionados por el usuario | Skill `docx-reader` — texto, tablas, imágenes, metadatos, cambios rastreados |
+| **Lectura de PPTX** | Leer decks `.pptx` / `.ppt` heredado proporcionados por el usuario | Skill `pptx-reader` — texto, bullets, tablas, notas del presentador, datos de chart nativo, rasterización |
 | **PDF ad-hoc** | Tareas PDF fuera de informes de calidad | Skill `pdf-writer` — combinar, dividir, marca de agua, cifrar, rellenar formularios, documentos personalizados |
 | **DOCX ad-hoc** | DOCX de gobernanza (notas de política, informes de cumplimiento, documentación de ontología) | Skill `docx-writer` — cartas/memos/contratos, combinar, dividir, find-replace, conversión de `.doc` |
+| **PPTX ad-hoc** | PPTX de gobernanza (briefings de cumplimiento, presentaciones de política, walkthroughs de ontología, decks para steering-committee) | Skill `pptx-writer` — autoría design-first con charts nativos, combinar, dividir, reordenar, find-replace, conversión `.ppt` |
 
 Si el usuario no específica formato, responder en chat. Si pide "un informe" sin especificar formato, preguntar cual prefiere.
 

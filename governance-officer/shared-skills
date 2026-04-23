@@ -15,5 +15,7 @@ pdf-reader
 pdf-writer
 docx-reader
 docx-writer
+pptx-reader
+pptx-writer
 web-craft
 canvas-craft
