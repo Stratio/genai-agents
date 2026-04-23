@@ -157,11 +157,3 @@ python3 shared-skills/docx-writer/scripts/visual_validate.py \
 ```
 
 Si la salida se ve mal (desborde, márgenes apretados, acento escapado), ajusta `aesthetic_direction` y regenera. Itera hasta que la preview coincida con la intención declarada en las cinco decisiones de diseño.
-
-## 11. Dependencias
-
-Python: `python-docx`, `lxml`, `markdown`, `beautifulsoup4`, `pillow` — todas en el `requirements.txt` base de los agentes que cargan esta skill.
-
-Sistema: `libreoffice` (opcional — necesario para conversión de `.doc` y preview visual), `poppler-utils` (necesario para el paso PDF → PNG del preview; ya forma parte de las deps de `pdf-reader`).
-
-Sin `libreoffice` pierdes la conversión de `.doc` y el preview visual; la creación DOCX y las operaciones estructurales siguen funcionando.

@@ -27,6 +27,8 @@ genai-agents/
     pdf-writer/
     docx-reader/
     docx-writer/
+    pptx-reader/
+    pptx-writer/
     web-craft/
     canvas-craft/
     skill-creator/
@@ -81,19 +83,19 @@ genai-agents/
 ## Agent summary
 
 ### data-analytics
-Full BI/BA agent: queries governed data via MCP, analysis with Python (pandas, scipy, scikit-learn), visualizations (matplotlib, seaborn, plotly), report generation (PDF, DOCX, web, PowerPoint), PDF reading and extraction (`pdf-reader`), ad-hoc PDF creation and manipulation (`pdf-writer`: merge, split, watermark, encrypt, forms), DOCX reading (`docx-reader`) and ad-hoc DOCX authoring / manipulation (`docx-writer`: merge, split, find-replace, convert `.doc` to `.docx`), read-only data quality coverage assessment and reporting (uses shared skills `assess-quality` and `quality-report`; does not create rules), reasoning documentation, validation, cross-session memory management.
+Full BI/BA agent: queries governed data via MCP, analysis with Python (pandas, scipy, scikit-learn), visualizations (matplotlib, seaborn, plotly), report generation (PDF, DOCX, web, PowerPoint), PDF reading and extraction (`pdf-reader`), ad-hoc PDF creation and manipulation (`pdf-writer`: merge, split, watermark, encrypt, forms), DOCX reading (`docx-reader`) and ad-hoc DOCX authoring / manipulation (`docx-writer`: merge, split, find-replace, convert `.doc` to `.docx`), PPTX reading (`pptx-reader`) and ad-hoc PPTX authoring / manipulation (`pptx-writer`: merge, split, reorder, find-replace in slides and notes, convert `.ppt` to `.pptx`) for decks outside the analytical pipeline, read-only data quality coverage assessment and reporting (uses shared skills `assess-quality` and `quality-report`; does not create rules), reasoning documentation, validation, cross-session memory management.
 
 ### data-analytics-light
 Lightweight BI/BA agent: same analytical engine but chat-oriented. Includes read-only data quality coverage assessment with chat-only summaries (uses `assess-quality` and `quality-report` forcing the Chat format; no file generation, no rule creation). No formal report generation — the primary output is the chat. Includes packaging scripts for Claude AI Projects and Claude Cowork.
 
 ### semantic-layer
-Agent specialized in building and maintaining semantic layers in Stratio Governance. Orchestrates the creation of data collections (technical domains), technical terms, ontologies, business views, SQL mappings, view publishing, semantic terms and business terms via governance MCPs. Does not execute data queries or generate files — its output is MCP tool interaction + chat summaries. Can read local user files to enrich planning, including DOCX specifications via `docx-reader`.
+Agent specialized in building and maintaining semantic layers in Stratio Governance. Orchestrates the creation of data collections (technical domains), technical terms, ontologies, business views, SQL mappings, view publishing, semantic terms and business terms via governance MCPs. Does not execute data queries or generate files — its output is MCP tool interaction + chat summaries. Can read local user files to enrich planning, including DOCX specifications via `docx-reader` and PPTX specification decks via `pptx-reader`.
 
 ### data-quality
-Agent specialized in data governance and quality. Evaluates quality coverage by domain, collection, table or column, identifies gaps (uncovered dimensions), proposes and creates quality rules with mandatory human approval, and generates coverage reports in multiple formats (PDF, DOCX, Markdown). Includes PDF reading (`pdf-reader`) and ad-hoc PDF manipulation (`pdf-writer`: merge, split, watermark, encrypt, forms), plus DOCX reading (`docx-reader`) and ad-hoc DOCX authoring (`docx-writer`: merge, split, find-replace, `.doc` conversion). Operates on governed data via SQL and governance MCPs.
+Agent specialized in data governance and quality. Evaluates quality coverage by domain, collection, table or column, identifies gaps (uncovered dimensions), proposes and creates quality rules with mandatory human approval, and generates coverage reports in multiple formats (PDF, DOCX, Markdown). Includes PDF reading (`pdf-reader`) and ad-hoc PDF manipulation (`pdf-writer`: merge, split, watermark, encrypt, forms), DOCX reading (`docx-reader`) and ad-hoc DOCX authoring (`docx-writer`: merge, split, find-replace, `.doc` conversion), plus PPTX reading (`pptx-reader`) and ad-hoc PPTX authoring (`pptx-writer`) for executive quality summary decks and training decks on rules. Operates on governed data via SQL and governance MCPs.
 
 ### governance-officer
-Combined governance agent with the full capabilities of both semantic-layer and data-quality. Builds and maintains semantic layers (ontologies, views, mappings, terms) AND manages data quality (assessment, rule creation, scheduling, reports). Includes PDF reading (`pdf-reader`) and ad-hoc PDF creation and manipulation (`pdf-writer`: merge, split, watermark, encrypt, forms, ontology documentation), plus DOCX reading (`docx-reader`) and DOCX authoring (`docx-writer`) for policy briefs, compliance reports and ontology documentation. Has full access to all governance and data MCP tools with no restrictions.
+Combined governance agent with the full capabilities of both semantic-layer and data-quality. Builds and maintains semantic layers (ontologies, views, mappings, terms) AND manages data quality (assessment, rule creation, scheduling, reports). Includes PDF reading (`pdf-reader`) and ad-hoc PDF creation and manipulation (`pdf-writer`: merge, split, watermark, encrypt, forms, ontology documentation), DOCX reading (`docx-reader`) and DOCX authoring (`docx-writer`) for policy briefs, compliance reports and ontology documentation, plus PPTX reading (`pptx-reader`) and PPTX authoring (`pptx-writer`) for compliance briefings, policy presentations, ontology walkthroughs and steering-committee decks. Has full access to all governance and data MCP tools with no restrictions.
 
 ### skill-creator
 Agent for designing and generating AI agent skills (SKILL.md files). Interactive workflow: requirements gathering, skill design following proven principles, SKILL.md generation with supporting files, quality review with checklist, and ZIP packaging for download. No MCPs — works purely with conversation and file generation.
@@ -119,7 +121,7 @@ All pack scripts accept `--lang <code>` to generate output in a specific languag
 
 ### Reference rules
 
-Shared-skills must stay self-contained — no SKILL.md in `shared-skills/` references another shared-skill by name, so any shared-skill can be packaged standalone. Documented exceptions: `pdf-reader` ↔ `pdf-writer` and `docx-reader` ↔ `docx-writer` (companion skills) and the `visual-craftsmanship.md` guide (the only place where `web-craft`, `canvas-craft` and `pdf-writer` are compared side by side).
+Shared-skills must stay self-contained — no SKILL.md in `shared-skills/` references another shared-skill by name, so any shared-skill can be packaged standalone. Documented exceptions: `pdf-reader` ↔ `pdf-writer`, `docx-reader` ↔ `docx-writer` and `pptx-reader` ↔ `pptx-writer` (companion skills) and the `visual-craftsmanship.md` guide (the only place where `web-craft`, `canvas-craft` and `pdf-writer` are compared side by side).
 
 Skills inside `<agent>/skills/` and any `AGENTS.md` may reference directly any skill the agent declares (local or shared). Prefer `load /skill-x and follow its §Y` over duplicating instructions.
 

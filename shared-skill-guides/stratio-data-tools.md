@@ -8,8 +8,8 @@
 
 | Step | MCP Tool | Purpose |
 |------|----------|---------|
-| 1a | `search_domains(search_text, domain_type?, refresh?)` | **Prefer over `list_domains`**. Search domains by free text (name or description). Results sorted by relevance. Use when part of the domain name or topic is known. `domain_type`: `'business'` (published semantic domains, with business names), `'technical'` (raw data domains, with database identifiers) or `'both'` (default — all). `refresh`: cache bypass |
-| 1b | `list_domains(domain_type?, refresh?)` | List all available domains. Use only when you need to see all domains without filtering or when `search_domains` returns no results. Same `domain_type` and `refresh` parameters as `search_domains` |
+| 1a | `search_domains(search_text, domain_type?, refresh?, prefer_semantic?)` | **Prefer over `list_domains`**. Search domains by free text (name or description). Results sorted by relevance. Use when part of the domain name or topic is known. `domain_type`: `'business'` (published semantic domains, with business names), `'technical'` (raw data domains, with database identifiers) or `'both'` (default — all). `refresh`: cache bypass. `prefer_semantic` (default `false`, only applies when `domain_type='both'`): deduplicates results by collection, returning the business (semantic) entry when available and falling back to technical otherwise |
+| 1b | `list_domains(domain_type?, refresh?, prefer_semantic?)` | List all available domains. Use only when you need to see all domains without filtering or when `search_domains` returns no results. Same `domain_type`, `refresh` and `prefer_semantic` parameters as `search_domains` |
 | 2 | `list_domain_tables` | Get the domain's tables |
 | 3 | `get_tables_details` | Understand business rules and context |
 | 4 | `get_table_columns_details` | Get columns, types, and meanings |
@@ -54,6 +54,8 @@ If the user provides a domain or gives hints about the topic:
 If there is no clear domain, ask the user which one they are interested in. If the user gives no hints, execute `list_domains()` to show all available domains (present as selectable options).
 
 If a recently published or created domain does not appear, retry with `refresh=true` (cache bypass).
+
+When a collection is exposed in both layers (semantic + technical), `domain_type='both'` returns both entries by default. If you only need one entry per collection and prefer the business-friendly semantic name when it exists (falling back to the technical name otherwise), pass `prefer_semantic=true`.
 
 ### 4.2 Explore Tables
 
