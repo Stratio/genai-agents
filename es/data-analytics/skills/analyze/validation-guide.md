@@ -10,11 +10,7 @@ Checklist de validación del producto terminado antes de reportar al usuario. La
 | Estándar | Bloques A + B + C | Generar `validation/validation.md` + resumen en chat |
 | Profundo | Bloques A + B + C + D | Generar `validation/validation.md` + resumen en chat |
 
-**Override del usuario**: Si el usuario pide explícitamente validación en otros formatos (PDF, HTML, DOCX), generar el .md primero y luego convertir con:
-```bash
-python3 skills/analyze/report/tools/md_to_report.py output/[ANALISIS_DIR]/validation/validation.md --style corporate
-```
-Añadir `--html` si solicitó HTML. Añadir `--docx` si solicitó DOCX.
+**Override del usuario**: Si el usuario pide explícitamente validación en otro formato (PDF, DOCX, PPTX, HTML), generar el `.md` primero y luego enrutar a la skill correspondiente según el contrato formato→skill del agente (AGENTS.md §8): `pdf-writer` para PDF, `docx-writer` para DOCX, `pptx-writer` para deck, `web-craft` para HTML autónomo. `brand-kit` NO aplica a la validación — documentación interna.
 
 ## Bloques de Validación
 

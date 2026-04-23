@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 import pytest
 
-# Ensure tools/ is importable
+# Ensure this folder is importable
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 
@@ -94,7 +94,6 @@ class TestApplyChartLayout:
 
         legend = ax.get_legend()
         assert legend is not None
-        # Legend should be anchored below the axes
         bbox = legend.get_bbox_to_anchor()
         assert bbox is not None
 
@@ -221,32 +220,67 @@ class TestApplyPlotlyLayout:
 
 
 # ---------------------------------------------------------------------------
+# Tests: to_rgba
+# ---------------------------------------------------------------------------
+
+class TestToRgba:
+    def test_hex_input(self):
+        from chart_layout import to_rgba
+        assert to_rgba("#1a365d", 0.3) == "rgba(26,54,93,0.3)"
+
+    def test_hex_short(self):
+        from chart_layout import to_rgba
+        assert to_rgba("#123", 0.5) == "rgba(17,34,51,0.5)"
+
+    def test_hex_no_hash(self):
+        from chart_layout import to_rgba
+        assert to_rgba("1a365d", 0.5) == "rgba(26,54,93,0.5)"
+
+    def test_rgb_tuple(self):
+        from chart_layout import to_rgba
+        assert to_rgba((26, 54, 93), 0.3) == "rgba(26,54,93,0.3)"
+
+    def test_default_alpha(self):
+        from chart_layout import to_rgba
+        assert to_rgba("#000000") == "rgba(0,0,0,0.5)"
+
+
+# ---------------------------------------------------------------------------
 # Tests: get_chart_colors
 # ---------------------------------------------------------------------------
 
 class TestGetChartColors:
-    def test_returns_correct_count(self):
+    def test_returns_requested_count(self):
         from chart_layout import get_chart_colors
-
-        colors = get_chart_colors("corporate", n=5)
-        assert len(colors) == 5
-
-    def test_returns_hex_strings(self):
-        from chart_layout import get_chart_colors
-
-        colors = get_chart_colors("corporate", n=3)
-        for c in colors:
-            assert c.startswith("#")
-            assert len(c) == 7  # #rrggbb
+        colors = get_chart_colors(["#111111", "#222222", "#333333"], n=3)
+        assert len(colors) == 3
+        assert colors == ["#111111", "#222222", "#333333"]
 
     def test_cycles_when_n_exceeds_palette(self):
         from chart_layout import get_chart_colors
+        colors = get_chart_colors(["#111111", "#222222", "#333333"], n=7)
+        assert len(colors) == 7
+        assert colors[0] == colors[3]
+        assert colors[1] == colors[4]
+        assert colors[2] == colors[5]
+        assert colors[0] == colors[6]
 
-        colors = get_chart_colors("corporate", n=20)
-        assert len(colors) == 20
-
-    def test_default_style(self):
+    def test_fallback_when_palette_is_none(self):
         from chart_layout import get_chart_colors
-
-        colors = get_chart_colors(n=4)
+        colors = get_chart_colors(None, n=4)
         assert len(colors) == 4
+        for c in colors:
+            assert c.startswith("#")
+            assert len(c) == 7
+
+    def test_fallback_when_palette_is_empty(self):
+        from chart_layout import get_chart_colors
+        colors = get_chart_colors([], n=3)
+        assert len(colors) == 3
+        for c in colors:
+            assert c.startswith("#")
+
+    def test_single_color_palette(self):
+        from chart_layout import get_chart_colors
+        colors = get_chart_colors(["#ff0000"], n=5)
+        assert colors == ["#ff0000"] * 5

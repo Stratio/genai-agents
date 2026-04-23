@@ -1,8 +1,0 @@
-{# Figure Component
-   Usage: {% include "components/figure.html" with context %}
-   Expects: fig = {"path": "assets/chart.png", "caption": "Description"}
-#}
-<figure>
-    <img src="{{ fig.path }}" alt="{{ fig.caption | default('') }}">
-    {% if fig.caption %}<figcaption>{{ fig.caption }}</figcaption>{% endif %}
-</figure>

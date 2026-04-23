@@ -10,11 +10,7 @@ Guía detallada para generar el reasoning de cada análisis. El reasoning docume
 | Estándar | Generar en `output/[ANALISIS_DIR]/reasoning/reasoning.md` | Solo .md |
 | Profundo | Generar en `output/[ANALISIS_DIR]/reasoning/reasoning.md` | Solo .md (completo + sugerencias detalladas) |
 
-**Override del usuario**: Si el usuario pide explícitamente reasoning en otros formatos (PDF, HTML, DOCX), generar el .md primero y luego convertir con:
-```bash
-python3 skills/analyze/report/tools/md_to_report.py output/[ANALISIS_DIR]/reasoning/reasoning.md --style corporate
-```
-Añadir `--html` si solicitó HTML. Añadir `--docx` si solicitó DOCX.
+**Override del usuario**: Si el usuario pide explícitamente reasoning en otro formato (PDF, DOCX, PPTX, HTML), generar el `.md` primero y luego enrutar a la skill correspondiente según el contrato formato→skill del agente (AGENTS.md §8): `pdf-writer` para PDF, `docx-writer` para DOCX, `pptx-writer` para deck, `web-craft` para HTML autónomo. `brand-kit` NO aplica al reasoning — documentación interna.
 
 ## Contenido obligatorio
 

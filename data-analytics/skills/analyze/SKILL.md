@@ -97,19 +97,19 @@ A single interaction:
 |---|----------|-------------------|-----------|-----------|
 | 1 | What analysis depth do you prefer? | **Quick** · **Standard** (Recommended) · **Deep** | Single | Always |
 | 2 | What audience is the analysis for? | **C-level/Executive** · **Manager/Lead** · **Technical/Data team** · **Mixed/General** | Single | Always |
-| 3 | In what formats do you want the deliverables? | **Document** (PDF + DOCX) · **Web** (Interactive HTML with Plotly) · **PowerPoint** (.pptx) | Multiple | Always |
+| 3 | In what formats do you want the deliverables? | **PDF** · **DOCX** · **PowerPoint** (.pptx) · **Dashboard web** (Interactive HTML with Plotly) · **Poster/Infographic** (single-page visual) | Multiple | Always |
 | 4 | Do you want unit tests to be generated and run on the Python code? | **Yes** (Recommended): improves precision and quality, but consumes more time, cost, and context · **No**: direct execution without tests | Single | Standard/Deep only |
 
 **Adaptive rule**: If the user's request already specifies information that answers any of these questions, pre-fill that answer and do not ask it again. For example: if the user said "give me a PDF report", pre-fill format as Document; if the user said "quick analysis", pre-fill depth as Quick; if the user said "executive dashboard", pre-fill audience as C-level/Executive and format as Web. Only ask questions whose answers cannot be inferred from the request.
 
 - Tests validate transformations and calculations before running with real data. They improve precision but consume more tokens, time, and cost. **In Quick depth, testing is automatically disabled without asking the user.**
 - The format question ALWAYS allows multiple selection
-- The format options are EXACTLY 3: Document (PDF + DOCX), Web, PowerPoint. Do not invent, omit, or substitute
+- The format options are EXACTLY 5: PDF, DOCX, PowerPoint, Dashboard web, Poster/Infographic. Each routes to its dedicated writer skill (see agent instructions §8). Do not invent, omit, or substitute
 - If no format is selected → no deliverables, the analysis is delivered only in chat + automatic report.md
 - **If one or more formats are selected → deliverables ARE ALWAYS GENERATED, regardless of the chosen depth. Quick/Standard/Deep affects the analysis, not the deliverables.**
 - Additional requirements via "Other" option (time filters, segments, mandatory metrics)
 
-Structure and visual style are not asked here — they are asked later when loading `report/report.md`.
+Structure defaults to the analytical scaffold (executive summary → methodology → data → analysis → conclusions). If the user signals "free structure", "rompe el molde" or similar, writer skills operate with full freedom. Visual identity is proposed as an item inside the plan (§5.11), not asked here — see agent instructions §8.3 for the branding cascade.
 
 ## 5. Planning
 
@@ -228,6 +228,20 @@ Sections, content of each, format. Apply data storytelling principles (section 7
 ### 5.11 Present plan
 Present the complete plan to the user and request approval before executing.
 
+**Visual identity (only when at least one visual format was selected in §4.1)**: include as an item in the plan a proposed theme with alternatives and discards, following the branding cascade in the agent instructions §8.3. Render the labels in the user's language; the structure is:
+
+> **Visual identity**:
+> - Chosen: `<theme>` — <why it fits this context, in one short line>.
+> - Close alternatives: `<theme_a>`, `<theme_b>`.
+> - Discarded: the rest (<grouped reason>).
+
+The user approves the full plan or corrects the theme in the same turn. If no formats were selected, skip this item entirely. If the cascade resolved silently (levels 1-4 of §8.3), either hide the item (silent) or show a one-line note stating which theme was applied and why — agent discretion based on whether it helps user review.
+
+**Dashboard guide disclosure (only when Dashboard web was selected)**: include a short line (in the user's language) stating whether the analytical dashboard guide will be applied. Example pattern:
+> The dashboard will apply the standard analytical pattern (KPIs, filters, sortable tables). If you prefer something more free or narrative, let me know.
+
+If the user signalled design freedom in the brief, state the opposite: "The dashboard will NOT apply the standard guide because you asked for a free design."
+
 At the end of the plan presentation, include a brief note:
 > If you have additional documentation, reference benchmarks, previous reports, or complementary data that could enrich the analysis, you can share them now.
 
@@ -307,11 +321,18 @@ If during execution a finding is detected that exceeds the scope of the current 
 
 ### 6.9 Deliverable generation
 
-> **MANDATORY if the user selected formats in §4.1.** The analysis depth (Quick/Standard/Deep) does NOT affect this step — if the user chose formats, all are generated.
+> **MANDATORY if the user selected formats in §4.1.** Depth does NOT gate this step.
 
-1. Load `report/report.md` for deliverable packaging instructions
-2. Generate ALL selected formats (do not omit any)
-3. Verify existence of each file with `ls -lh` before reporting to the user (see Phase 4, step 10 of AGENTS.md)
+1. **Brand tokens (once, before any visual format)**: load `brand-kit` and resolve the token bundle for the theme fixed in the approved plan (§5.11). The theme was decided per the agent's branding cascade (§8.3) — here you just read its token definition so subsequent writer skills apply a coherent palette. If the user corrected the theme during plan approval, use the corrected one. The same tokens apply to every downstream deliverable, so the whole analysis stays visually coherent.
+2. For each selected format, load its dedicated writer skill and produce the deliverable. The deliverable must incorporate the analytical content (`report.md`, charts from `assets/`, tables), apply the brand tokens from step 1, and be written in the user's language:
+   - **PDF** → `pdf-writer`. Output: `<slug>-report.pdf`.
+   - **DOCX** → `docx-writer`. Output: `<slug>-report.docx`.
+   - **PowerPoint** → `pptx-writer`. 16:9 by default; 4:3 only if the user asked explicitly. Output: `<slug>-presentation.pptx`.
+   - **Dashboard web** → `web-craft`. **Also load `analytical-dashboard.md`** (from this same skill folder) as input to web-craft, UNLESS the user signalled design freedom at the plan approval step (§5.11 dashboard guide disclosure). Output: `<slug>-dashboard.html`.
+   - **Poster/Infographic** → `canvas-craft`. Output: `<slug>-poster.pdf` or `<slug>-poster.png`.
+3. Write `output/[ANALYSIS_DIR]/report.md` (tables + mermaid) as internal documentation, always — regardless of which formats were selected. This is the source of truth that writer skills consume.
+4. Filename convention: `<slug>` = descriptive part of `[ANALYSIS_DIR]` (everything after `YYYY-MM-DD_HHMM_`). Internal files (`plan.md`, `reasoning/`, `validation/`) stay unprefixed.
+5. Verify each file exists on disk with `ls -lh output/[ANALYSIS_DIR]/` after the deliverable is produced. Regenerate if missing BEFORE reporting to the user.
 
 ### 6.10 Reasoning
 
@@ -320,7 +341,7 @@ Generate reasoning according to depth (see defaults in sec "Reasoning" of AGENTS
 - **Quick**: Do not generate file. Key notes are included in the chat report (sec 7.1).
 - **Standard/Deep**: Follow the complete guide in [reasoning-guide.md](reasoning-guide.md). Generate `.md` only.
 
-If the user requested a format override, apply their preference.
+If the user requests reasoning in another format, route to the corresponding skill per the agent's format→skill contract (§8); `reasoning.md` is the content source. `brand-kit` does NOT apply to reasoning — internal documentation. Record the applied theme (if any was used for visual deliverables in this analysis) as a one-line note inside `reasoning.md`: `theme applied: <name>`.
 
 ### 6.11 Final output validation
 
@@ -332,7 +353,7 @@ Run validation according to depth (see defaults in sec "Reasoning" of AGENTS.md)
 
 For detail on each block, thresholds, and PASS/WARNING/FAIL criteria, see [validation-guide.md](validation-guide.md).
 
-If the user requested a format override, apply their preference.
+If the user requests validation in another format, route to the corresponding skill per the agent's format→skill contract (§8); `validation.md` is the content source. `brand-kit` does NOT apply to validation — internal documentation.
 
 ## 7. Final Report
 
@@ -392,6 +413,7 @@ Create `output/[ANALYSIS_DIR]/analysis_memory.md` with the full content:
 - **KPIs**: KPI1: value (period), KPI2: value (period)
 - **Insights**: Finding 1 (confidence), Finding 2 (confidence)
 - **Data Profiling Score**: HIGH/MEDIUM/LOW (N%)
+- **Theme applied** (if visual deliverables were generated): <theme_name>
 ```
 
 ### 8.2 Add compact entry to the index

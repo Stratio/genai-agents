@@ -5,7 +5,7 @@ ensuring no visual overlap between insight titles, context subtitles, and legend
 
 Usage:
     # Matplotlib
-    from chart_layout import apply_chart_layout, get_chart_colors
+    from chart_layout import apply_chart_layout
     fig, ax = plt.subplots()
     ax.plot(x, y, label="Series A")
     apply_chart_layout(fig, ax, insight="North accounts for 45%",
@@ -17,41 +17,40 @@ Usage:
     apply_plotly_layout(fig, insight="North accounts for 45%",
                         context="Sales by region, Q4 2025")
 
-    # Colors
-    colors = get_chart_colors("corporate", n=5)
+    # Colors — pass the chart palette from the active brand theme
+    from chart_layout import get_chart_colors
+    colors = get_chart_colors(brand_palette, n=5)
 
     # Transparency (Plotly-safe — never use hex+alpha like "#1a365d80")
     from chart_layout import to_rgba
     fill_color = to_rgba("#1a365d", 0.3)   # "rgba(26,54,93,0.3)"
-    fill_color = to_rgba((26, 54, 93), 0.3)  # same result from RGB tuple
+    fill_color = to_rgba((26, 54, 93), 0.3)  # same from RGB tuple
 """
 
 from __future__ import annotations
-
-from css_builder import get_palette, aesthetic_to_override_tokens
 
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
 
-# Default font sizes
 SUPTITLE_FONTSIZE = 14
 SUBTITLE_FONTSIZE = 10
 SUBTITLE_COLOR = "#666666"
 SUBTITLE_PAD = 12
 
-# Margins for matplotlib (fraction of figure height)
 MPL_TOP_MARGIN = 0.88
 MPL_BOTTOM_MARGIN = 0.18
 
-# Legend defaults
 LEGEND_MAX_COLS = 4
 LEGEND_BOTTOM_Y = -0.12
 LEGEND_RIGHT_X = 1.05
 LEGEND_INSIDE_ALPHA = 0.8
 
-# Plotly margins (pixels)
 PLOTLY_MARGIN = dict(t=100, b=80, l=60, r=40)
+
+# Neutral fallback palette — NOT a theme substitute.
+# Callers should pass the chart palette from the active brand theme.
+_FALLBACK_PALETTE = ["#1a365d", "#2b6cb0", "#38a169", "#d69e2e", "#e53e3e", "#805ad5"]
 
 
 # ---------------------------------------------------------------------------
@@ -64,7 +63,6 @@ def apply_chart_layout(
     insight: str,
     context: str = "",
     legend_position: str = "bottom",
-    style: str = "corporate",
 ) -> None:
     """Apply anti-overlap layout to a matplotlib figure.
 
@@ -77,19 +75,14 @@ def apply_chart_layout(
         insight: Main insight text (displayed as bold suptitle).
         context: Contextual subtitle (period, filters, etc.).
         legend_position: "bottom" (default), "right", or "inside".
-        style: Visual style name for palette lookup (unused here but
-            kept for API consistency with get_chart_colors).
     """
-    # --- Title zone ---
     fig.suptitle(insight, fontsize=SUPTITLE_FONTSIZE, fontweight="bold", y=0.98)
 
     if context:
         ax.set_title(context, fontsize=SUBTITLE_FONTSIZE, color=SUBTITLE_COLOR, pad=SUBTITLE_PAD)
 
-    # --- Legend zone ---
     handles, labels = ax.get_legend_handles_labels()
     if handles:
-        # Remove any existing legend first
         existing = ax.get_legend()
         if existing:
             existing.remove()
@@ -117,7 +110,6 @@ def apply_chart_layout(
                 framealpha=LEGEND_INSIDE_ALPHA,
             )
 
-    # --- Reserve space for title and legend ---
     fig.subplots_adjust(top=MPL_TOP_MARGIN, bottom=MPL_BOTTOM_MARGIN)
 
 
@@ -142,14 +134,12 @@ def apply_plotly_layout(
         context: Contextual subtitle (smaller, gray).
         legend_position: "bottom" (default), "right", or "inside".
     """
-    # --- Title zone (combined HTML) ---
     title_html = f"<b>{insight}</b>"
     if context:
         title_html += f"<br><span style='font-size:11px;color:gray'>{context}</span>"
 
     title_config = dict(text=title_html, y=0.95, x=0.5, xanchor="center", yanchor="top")
 
-    # --- Legend zone ---
     if legend_position == "bottom":
         legend_config = dict(
             orientation="h",
@@ -196,7 +186,7 @@ def apply_plotly_layout(
 def to_rgba(color, alpha: float = 0.5) -> str:
     """Convert a hex string or (R,G,B) tuple to an rgba() string.
 
-    Works with both Plotly and matplotlib.  Use this instead of appending
+    Works with both Plotly and matplotlib. Use this instead of appending
     alpha digits to hex strings (Plotly rejects ``#RRGGBBAA``).
 
     Args:
@@ -216,48 +206,22 @@ def to_rgba(color, alpha: float = 0.5) -> str:
     return f"rgba({r},{g},{b},{alpha})"
 
 
-def get_chart_colors(style: str = "corporate", n: int = 6,
-                     aesthetic_direction: dict | None = None) -> list[str]:
-    """Return a list of n hex color strings from the given style palette.
+def get_chart_colors(palette: list[str] | None, n: int) -> list[str]:
+    """Cycle N hex colors from the given palette.
 
-    Wraps css_builder.get_palette() and extracts the chart-relevant colors
-    in a consistent order.
+    The caller passes the chart categorical palette from the active brand
+    theme (see AGENTS.md §8.3). If None or empty, a neutral fallback is
+    used — this is NOT a theme substitute, just a safety net.
 
     Args:
-        style: Visual style name ("corporate", "modern", "academic").
+        palette: Ordered list of hex strings (e.g. ["#1a365d", "#2b6cb0", ...]).
+            Typically comes from the ``chart_categorical`` token of the
+            active brand theme.
         n: Number of colors needed.
-        aesthetic_direction: Optional dict with ``palette_override`` /
-            ``font_pair`` keys to apply a deliberate visual direction on
-            top of the base style. Propagates to ``get_palette`` so Plotly
-            charts stay coherent with the rest of the artifact.
 
     Returns:
-        List of hex color strings (e.g., ["#1a365d", "#2b6cb0", ...]).
+        List of n hex color strings, cycling through palette if n exceeds
+        its length.
     """
-    override_tokens = aesthetic_to_override_tokens(aesthetic_direction)
-    palette = get_palette(style, override_tokens=override_tokens or None)
-
-    def _rgb_to_hex(rgb: tuple[int, int, int]) -> str:
-        return f"#{rgb[0]:02x}{rgb[1]:02x}{rgb[2]:02x}"
-
-    # Build ordered color list from palette keys
-    color_keys = ["primary", "secondary", "accent", "success", "warning", "danger",
-                  "primary_light", "text_muted"]
-    colors = []
-    seen = set()
-    for key in color_keys:
-        val = palette.get(key)
-        if val and isinstance(val, tuple) and len(val) == 3:
-            hex_color = _rgb_to_hex(val)
-            if hex_color not in seen:
-                colors.append(hex_color)
-                seen.add(hex_color)
-
-    # If we need more colors than available, cycle
-    if not colors:
-        colors = ["#1a365d", "#2b6cb0", "#38a169", "#d69e2e", "#e53e3e", "#805ad5"]
-
-    result = []
-    for i in range(n):
-        result.append(colors[i % len(colors)])
-    return result
+    p = palette if palette else _FALLBACK_PALETTE
+    return [p[i % len(p)] for i in range(n)]

@@ -1,9 +1,0 @@
-<div class="cover-page">
-    <div class="cover-title">{{ title }}</div>
-    {% if subtitle %}<div class="cover-subtitle">{{ subtitle }}</div>{% endif %}
-    <div class="cover-meta">
-        {% if author %}<strong>{{ labels['cover.author'] if labels else 'Author' }}:</strong> {{ author }}<br>{% endif %}
-        {% if domain %}<strong>{{ labels['cover.domain'] if labels else 'Domain' }}:</strong> {{ domain }}<br>{% endif %}
-        <strong>{{ labels['cover.date'] if labels else 'Date' }}:</strong> {{ date }}
-    </div>
-</div>

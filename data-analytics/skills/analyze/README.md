@@ -1,8 +1,8 @@
 # analyze
 
-Local skill of the `data-analytics` agent. Drives the full analytical workflow: intake, clarifying questions, plan, querying governed data via MCP, Python analysis, visualizations, optional testing, iteration, reasoning and validation documentation, and deliverable generation (PDF, DOCX, notebook, PPTX).
+Local skill of the `data-analytics` agent. Drives the full analytical workflow: intake, clarifying questions, plan, querying governed data via MCP, Python analysis, visualizations, optional testing, iteration, reasoning and validation documentation, and orchestration of deliverable generation via the writer skills declared in `AGENTS.md §8`.
 
-This is the single analytical engine of the agent; every other agent skill (`update-memory`, sub-guides `report/`, `reasoning-guide.md`, `validation-guide.md`) is orchestrated from here.
+This is the single analytical engine of the agent; every other local skill (`update-memory`) is orchestrated from here. Deliverable generation is delegated to `pdf-writer`, `docx-writer`, `pptx-writer`, `web-craft`, `canvas-craft` + `brand-kit`.
 
 ## What it does
 
@@ -12,7 +12,7 @@ This is the single analytical engine of the agent; every other agent skill (`upd
 - Trend / seasonality with `pymannkendall`
 - Visualizations with `matplotlib`, `seaborn`, `plotly`
 - Static PNG export of Plotly charts via `kaleido`
-- Multi-format reports (HTML → PDF via `weasyprint`, DOCX via `python-docx`, PPTX via `python-pptx`, Markdown, notebook via `nbconvert`)
+- Writes the internal analytical markdown (`report.md`) and hands off to the writer skills for each selected format
 - Optional per-script `pytest`+`pytest-mock` testing
 
 ## Python dependencies
@@ -27,28 +27,23 @@ This is the single analytical engine of the agent; every other agent skill (`upd
 - `seaborn>=0.13`
 - `plotly>=6.0,<6.2` (upper-bound aligned with `kaleido 0.2.x`)
 - `kaleido>=0.2,<1`
-- `jinja2>=3.1`
-- `markdown>=3.7`
-- `weasyprint>=65`
-- `beautifulsoup4>=4.12`
-- `nbformat>=5.10`
-- `nbclient>=0.10`
-- `nbconvert>=7.16`
-- `python-pptx>=1.0`
-- `python-docx>=1.1`
 - `openpyxl>=3.1`
 - `tabulate>=0.9`
 
+Writer skills (`pdf-writer`, `docx-writer`, `pptx-writer`) bring their own Python stack when invoked.
+
 ## System dependencies (apt)
 
-- `libcairo2` + `libpango-1.0-0` + `libpangoft2-1.0-0` + `libgdk-pixbuf2.0-0` — backing `weasyprint`
-- `shared-mime-info` + `fonts-liberation` — MIME and TrueType for rendering
-
-In Stratio Cowork the sandbox image (`genai-agents-sandbox`) provides all of the above. In dev local, see the monorepo `README.md` "System dependencies" section.
+None specific to `/analyze` itself. The writer skills declare their own system dependencies.
 
 ## Sub-guides
 
-- `report/report.md` — multi-format deliverable generation
+- `visualization.md` — chart type selection, storytelling, anti-overlap principles
+- `analytical-dashboard.md` — composition patterns for analytical dashboards (loaded by `web-craft` when the format is Dashboard web)
 - `reasoning-guide.md` — how and when to document reasoning
 - `validation-guide.md` — validation blocks and formats
+- `analytical-patterns.md` — operationalised patterns (Pareto, cohorts, funnel, RFM, etc.)
+- `advanced-analytics.md` — statistical rigor, prospective analysis, anomaly detection, root cause
+- `clustering-guide.md` — segmentation, clustering, feature importance
+- `chart_layout.py` — Python utility for anti-overlap layout on matplotlib/Plotly charts
 - `skills-guides/stratio-data-tools.md` — MCP-first data retrieval (inherited from the agent)

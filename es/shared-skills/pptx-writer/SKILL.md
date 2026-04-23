@@ -63,11 +63,6 @@ sobre-blanco de python-pptx**.
 
 ### Cuándo esta skill no es la adecuada
 
-- **Reports analíticos dentro de `/analyze`** — el agente
-  `data-analytics` tiene su propio pipeline de PPT opinionado en
-  `skills/analyze/report/tools/pptx_layout.py`. Dentro de la
-  Phase 4 de `/analyze`, importa los helpers de ese módulo. Esta
-  skill es para decks fuera del pipeline analítico.
 - **Posters / portadas / certificados de una página** — artefactos
   estáticos dominados por composición pertenecen a `canvas-craft`.
 - **Dashboards interactivos en navegador** — `web-craft` los cubre.
@@ -202,8 +197,7 @@ Tres reglas que el scaffold hace cumplir:
 - **Siempre `text_frame.word_wrap = True`**. Está off por defecto;
   sin él, python-pptx recorta silenciosamente el overflow.
 - **Siempre calcula safe-area desde `prs.slide_width / slide_height`.**
-  Constantes 4:3 hardcoded (como las del pipeline de `/analyze`)
-  rompen sobre un scaffold 16:9.
+  Constantes 4:3 hardcoded rompen sobre un scaffold 16:9 y viceversa.
 
 ## 5. Fuentes
 

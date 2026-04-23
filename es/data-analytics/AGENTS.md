@@ -96,7 +96,7 @@ El Paso 0 corre dentro de la Fase 0 y por tanto no viola la regla crítica "nunc
 
 **Paso 1 — Comprobar activación de skill primero.** Asume que el Paso 0 ya resolvió un nombre de dominio a secas. Si la petición del usuario coincide con alguno de estos patrones, cargar la skill INMEDIATAMENTE — no evaluar triage:
 
-**Regla de precedencia documento/visual**: Cuando la petición menciona "PDF", "DOCX", "Word", "PPT", "PowerPoint", "deck" o un artefacto visual y podría coincidir con múltiples filas, aplicar esta prioridad: (1) **leer/extraer** contenido de un PDF existente → `pdf-reader`, de un DOCX existente → `docx-reader`, o de un PPTX existente → `pptx-reader`; (2) **artefacto visual de una sola página** — dominado por composición, ≥70% visual (póster, portada, certificado, infografía, one-pager) → `canvas-craft`; (3a) **manipular** un PDF existente (combinar, dividir, rotar, marca de agua, cifrar, rellenar formulario, aplanar) o **crear** un PDF tipográfico/de prosa (factura, carta, newsletter, informe multi-página, PDF ligero con ≤3 KPIs sin hipótesis) → `pdf-writer`; (3b) **manipular** un DOCX existente (combinar, dividir, find-replace, convertir `.doc`) o **crear** un DOCX no analítico (carta, memo, contrato, nota de política, informe multipágina en prosa) → `docx-writer`; (3c) **manipular** un PPTX existente (combinar, dividir, reordenar, borrar slides, find-replace en slides o notas, convertir `.ppt`) o **crear** un deck no analítico (pitch, briefing de ventas, briefing ejecutivo, formación, académico, town-hall, PPT ligero con ≤3 KPIs sin hipótesis) → `pptx-writer`; (4) **informe de calidad** en formato PDF o DOCX → `quality-report`; (5) solo si ninguno de los anteriores aplica → `analyze`. **Nota**: las gates del Paso 1.1 (especialmente gate de conteo y gate de keywords) se aplican *antes* que esta regla. Si hay alguna señal analítica (multi-KPI con dimensiones, hipótesis, periodo comparativo, verbo analítico), la Gate 4 (desempate) re-enruta a `analyze` independientemente del tier de arriba. **Reempaquetar desde un `output/[ANALISIS_DIR]/` previo** (ej: "regenera el análisis de ayer como PDF, DOCX o PPT en otro estilo") enruta a `pdf-writer` / `docx-writer` / `pptx-writer` / `canvas-craft` / `web-craft` según el artefacto deseado — el pipeline analítico no tiene un entry point standalone de reempaquetado. **Nota sobre PPT dentro de `/analyze`**: la generación analítica de decks desde `/analyze` Phase 4 sigue usando los helpers locales del pipeline en `skills/analyze/report/tools/pptx_layout.py` (el pipeline está cableado al layout 4:3 de ahí). `pptx-writer` solo se invoca para decks fuera del pipeline analítico.
+**Regla de precedencia documento/visual**: Cuando la petición menciona "PDF", "DOCX", "Word", "PPT", "PowerPoint", "deck" o un artefacto visual y podría coincidir con múltiples filas, aplicar esta prioridad: (1) **leer/extraer** contenido de un PDF existente → `pdf-reader`, de un DOCX existente → `docx-reader`, o de un PPTX existente → `pptx-reader`; (2) **artefacto visual de una sola página** — dominado por composición, ≥70% visual (póster, portada, certificado, infografía, one-pager) → `canvas-craft`; (3a) **manipular** un PDF existente (combinar, dividir, rotar, marca de agua, cifrar, rellenar formulario, aplanar) o **crear** un PDF tipográfico/de prosa (factura, carta, newsletter, informe multi-página, PDF ligero con ≤3 KPIs sin hipótesis) → `pdf-writer`; (3b) **manipular** un DOCX existente (combinar, dividir, find-replace, convertir `.doc`) o **crear** un DOCX no analítico (carta, memo, contrato, nota de política, informe multipágina en prosa) → `docx-writer`; (3c) **manipular** un PPTX existente (combinar, dividir, reordenar, borrar slides, find-replace en slides o notas, convertir `.ppt`) o **crear** un deck no analítico (pitch, briefing de ventas, briefing ejecutivo, formación, académico, town-hall, PPT ligero con ≤3 KPIs sin hipótesis) → `pptx-writer`; (4) **informe de calidad** en formato PDF o DOCX → `quality-report`; (5) solo si ninguno de los anteriores aplica → `analyze`. **Nota**: las gates del Paso 1.1 (especialmente gate de conteo y gate de keywords) se aplican *antes* que esta regla. Si hay alguna señal analítica (multi-KPI con dimensiones, hipótesis, periodo comparativo, verbo analítico), la Gate 4 (desempate) re-enruta a `analyze` independientemente del tier de arriba. **Reempaquetar desde un `output/[ANALISIS_DIR]/` previo** (ej: "regenera el análisis de ayer como PDF, DOCX o PPT en otro estilo") enruta a `pdf-writer` / `docx-writer` / `pptx-writer` / `canvas-craft` / `web-craft` según el artefacto deseado — el pipeline analítico no tiene un entry point standalone de reempaquetado.
 
 **Detección multi-skill**: Si la petición involucra múltiples acciones que abarcan diferentes skills (ej: "lee este PDF y analiza los datos", "combina estos decks PPT y añade un slide de portada", "lee este deck y conviértelo en un briefing en documento"), identificar las skills necesarias y ejecutarlas en orden lógico: skills de entrada primero (`pdf-reader`, `docx-reader`, `pptx-reader`) → skills de proceso (`analyze`, `assess-quality`) → skills de salida (`pdf-writer`, `docx-writer`, `pptx-writer`, `canvas-craft`, `web-craft`, `quality-report`). Cargar la primera skill de la secuencia; al completar, reevaluar para la siguiente.
 
@@ -124,7 +124,7 @@ El Paso 0 corre dentro de la Fase 0 y por tanto no viola la regla crítica "nunc
 | Contribución de conocimiento a gobernanza: "propón a gobernanza", "añade este término de negocio", "guarda esta definición como conocimiento gobernado", "enriquece la capa semántica", "sube el término", "propose to governance", "add business term" | `propose-knowledge` |
 | Persistencia en memoria: "recuerda esto para la próxima vez", "guarda mi preferencia", "la próxima vez haz X", "actualiza la memoria con", "persiste esta preferencia", "remember this", "save my preference" | `update-memory` |
 
-**Nota sobre routing a artefactos con datos**: cuando el Paso 1 enruta a `pdf-writer` (ligero), `canvas-craft` o `web-craft` con una petición que implica datos del dominio gobernado (p. ej., "póster con las ventas del trimestre", "PDF con 3 KPIs de churn"), el **agente** pre-fetchea los datos necesarios vía MCP (usando las tools de Triage del Paso 2: `list_domain_tables`, `query_data`) **antes** de invocar la skill de artefacto. La skill de artefacto recibe los datos como input y se centra en la producción visual — estas skills no obtienen datos por sí mismas.
+**Nota sobre routing a artefactos con datos**: cuando el Paso 1 enruta a `pdf-writer` (ligero), `canvas-craft` o `web-craft` con una petición que implica datos del dominio gobernado (p. ej., "póster con las ventas del trimestre", "PDF con 3 KPIs de churn"), el **agente** pre-obtiene los datos necesarios vía MCP (usando las tools de Triage del Paso 2: `list_domain_tables`, `query_data`) **antes** de cargar la skill de artefacto. Al cargar la skill, los datos ya están disponibles en contexto y la skill se centra en producir el visual a partir de ellos — estas skills no obtienen datos por sí mismas.
 
 **Nota sobre invocación directa de `propose-knowledge`**: si se invoca cold-start sin contexto previo de conversación, `propose-knowledge` degrada con elegancia a pedir al usuario el dominio y el contenido a proponer. Preferir invocación natural mid-conversación tras haber discutido un término, definición o segmentación — ahí es donde la skill produce los candidatos más fuertes.
 
@@ -202,7 +202,7 @@ Para detalle operativo completo (checklist de suficiencia, umbrales de scoring, 
 
 Leer `output/MEMORY.md` sec Preferencias (si existe) para ofrecer defaults personalizados.
 
-Cargar `/analyze` §4.1 para ejecutar el bloque de preguntas (Profundidad + Audiencia + Formato + Tests). Tras la aprobación del análisis, `/analyze` Fase 4 carga `report/report.md` §1 para ejecutar el siguiente bloque de preguntas (Estructura + Estilo visual). Al volver, continuar con la siguiente Fase debajo.
+Cargar `/analyze` §4.1 para ejecutar el bloque de preguntas (Profundidad + Audiencia + Formato + Tests). Formato es una única pregunta de selección múltiple con 5 opciones (PDF / DOCX / PowerPoint / Dashboard web / Póster-Infografía). No hay un segundo bloque de preguntas — la estructura por defecto es el scaffold analítico (con opt-out por señal si el usuario pide estructura libre), y la identidad visual se propone como un ítem dentro del plan (ver `/analyze` Fase 3 y §8.3). Al volver, continuar con la siguiente Fase debajo.
 
 **Nota**: SIEMPRE dar un resumen de hallazgos en la conversación, independientemente de los formatos seleccionados.
 
@@ -256,11 +256,7 @@ Cargar `/analyze` §4.1 para ejecutar el bloque de preguntas (Profundidad + Audi
 7. Ejecutar scripts con datos reales
 8. **Loop de iteración**: Si un hallazgo contradice hipótesis o revela patrón inesperado, iterar (nuevas queries + actualizar análisis). Max 2 iteraciones; detalle en skill `/analyze` sec 6.7
 9. Generar visualizaciones en `output/[ANALISIS_DIR]/assets/`
-10. Generar deliverables en el formato solicitado en `output/[ANALISIS_DIR]/`. Tras generar cada fichero, verificar su existencia con:
-    ```bash
-    ls -lh output/[ANALISIS_DIR]/<fichero>
-    ```
-    Si el comando devuelve error o el fichero no aparece → regenerar antes de continuar. No reportar al usuario hasta que todos los ficheros estén confirmados en disco.
+10. Generar deliverables según el contrato formato→skill en §8. Aplicar el tema aprobado en el plan (resuelto por §8.3). Honrar las expectativas del entregable (§8.2) para cada skill writer que cargues. Una vez producido cada entregable, verificar con `ls -lh output/[ANALISIS_DIR]/<fichero>`; si falta, regenerar antes de continuar. No reportar al usuario hasta que todos los ficheros estén confirmados en disco.
 11. **(Si profundidad >= Estándar — ver sec 9)** Generar reasoning en `output/[ANALISIS_DIR]/reasoning/reasoning.md`
 12. **Validación de output final**: Ejecutar checklist según profundidad (Rápido: Bloque A en chat; Estándar: A+B+C en .md; Profundo: A+B+C+D en .md). No bloquea la entrega. Ver skill `/analyze` [validation-guide.md](validation-guide.md)
 13. Reportar resultados en el chat: resumen de hallazgos + rutas de archivos generados + resumen de validación
@@ -435,32 +431,101 @@ python3 skills/quality-report/scripts/quality_report_generator.py \
 
 ## 7. Visualizaciones y Narrativa
 
-Tres principios core (ver `skills/analyze/visualization.md` y `/analyze` Fase 4 → `report/report.md` para guía completa):
+Tres principios core (ver `skills/analyze/visualization.md` para la guía completa; patrones específicos de dashboard en `skills/analyze/analytical-dashboard.md`):
 1. **Títulos como insight** ("Norte concentra el 45%"), no como descripción ("Ventas por región")
 2. **Números con contexto**: Siempre vs periodo anterior, vs objetivo, o vs media
-3. **Accesibilidad**: Paletas colorblind-friendly vía `get_palette()`, no depender solo del color
+3. **Accesibilidad**: Paletas colorblind-friendly (el token `chart_categorical` del tema de marca activo), no depender solo del color
 
 ---
 
 ## 8. Formatos de Salida
 
-**Marca / identidad visual (ejecutar ANTES de cualquier entregable visual):** si la shared-skill `brand-kit` está disponible, invoca su flujo primero para fijar los tokens de diseño que cada skill de output aplicará. El usuario elige uno de los temas predefinidos, aporta colores y fuentes ad-hoc, o apunta a un fichero externo de marca como scaffold. Consulta el `SKILL.md` de `brand-kit` para el flujo. Si `brand-kit` no está declarada para este agente, las skills de output improvisan tokens siguiendo `skills-guides/visual-craftsmanship.md` — sigue siendo coherente, solo que no centralizado.
+Cuando el agente necesita escribir un entregable, el formato dicta la skill. Este contrato es global y aplica siempre que el agente produzca una salida — durante `/analyze` Fase 4, al reempaquetar salidas previas, al convertir `reasoning.md` o `validation.md`, o al generar documentos ad-hoc.
 
-Para instrucciones detalladas de generación por formato, ver `skills/analyze/report/report.md` (cargado desde `/analyze` Fase 4).
+### 8.1 Formato → Skill
 
-| Formato | Cómo generarlo | Cuándo usarlo |
-|---------|---------------|---------------|
-| **Documento (PDF + DOCX)** | `skills/analyze/report/tools/pdf_generator.py` + `skills/analyze/report/tools/docx_generator.py` | Informes profesionales. Genera `<slug>-report.pdf` y `<slug>-report.docx` dentro de la carpeta del análisis (ver `report/report.md` §1.1) |
-| **Web** | `skills/analyze/report/tools/dashboard_builder.py` (`DashboardBuilder`) — HTML autónomo con filtros globales, KPI cards dinámicos, tablas ordenables, gráficas Plotly interactivas, datos JSON embebidos y CSS del estilo elegido | Dashboards interactivos, informes con filtros, compartir por navegador |
-| **PowerPoint (analítico)** | `skills/analyze/report/tools/pptx_layout.py` (helpers de layout) + `skills/analyze/report/tools/css_builder.py` (colores) | Presentaciones ejecutivas dentro de `/analyze` Phase 4. Cableado al safe-area 4:3. |
-| **Lectura de PDF** | Skill `pdf-reader` — extracción diagnóstico-primero con cadena de fallback (pdfplumber → pdfminer → pypdf → pdftotext), OCR para escaneos, lectura de campos de formulario, extracción de imágenes | Leer PDFs proporcionados por el usuario, extraer datos de fuentes PDF, ingerir contenido PDF para análisis |
-| **PDF ad-hoc** | Skill `pdf-writer` — generación basada en reportlab con tipografía personalizada, workflow design-first. También maneja combinar, dividir, rotar, marca de agua, cifrar, rellenar formularios | Documentos fuera del pipeline de informes estándar: facturas, certificados, cartas, newsletters. También post-procesamiento de PDFs existentes |
-| **Lectura de DOCX** | Skill `docx-reader` — extracción diagnóstico-primero con cadena de fallback (python-docx → zipfile XML walk → soffice text), texto, tablas, imágenes, metadatos, control de cambios, conversión `.doc` legacy | Leer DOCX proporcionados por el usuario, extraer datos de fuentes DOCX, ingerir contenido DOCX para análisis |
-| **DOCX ad-hoc** | Skill `docx-writer` — autoría design-first basada en python-docx, operaciones estructurales (merge/split/find-replace, conversión `.doc`), validación visual, export a PDF | Documentos no analíticos: cartas, memos, contratos, notas de política, whitepapers, manuales. También post-procesamiento de DOCX existentes |
-| **Lectura de PPTX** | Skill `pptx-reader` — extracción diagnóstico-primero con cadena de fallback (python-pptx → zipfile XML walk → soffice text), notas del presentador, datos de chart nativo, rasterización para modelos de visión, conversión `.ppt` legacy | Leer decks proporcionados por el usuario, extraer notas del presentador, ingerir contenido de deck para análisis |
-| **PPTX ad-hoc** | Skill `pptx-writer` — autoría design-first basada en python-pptx, scaffold 16:9, charts OOXML nativos, validación visual, export PDF, operaciones estructurales (combinar/dividir/reordenar/borrar/find-replace, conversión `.ppt`) | Decks no analíticos: pitches, briefings de ventas, briefings ejecutivos, formación, académicos, town-hall. También post-procesamiento de decks existentes |
+| Formato | Skill | Notas |
+|---|---|---|
+| PDF (informe, documento, tipográfico multipágina) | `pdf-writer` | También maneja merge/split/watermark/cifrado/relleno de formularios de PDFs existentes. |
+| DOCX (documento Word) | `docx-writer` | También maneja merge/split/find-replace/conversión legacy `.doc`. |
+| PPTX (presentación, deck) | `pptx-writer` | 16:9 por defecto; 4:3 solo si el usuario lo pide explícitamente. También merge/split/reordenar/find-replace en decks existentes. |
+| HTML (dashboard interactivo, landing, artefacto web) | `web-craft` | Cuando el artefacto es un dashboard analítico de `/analyze`, cargar `skills/analyze/analytical-dashboard.md` como input salvo que el brief del usuario señale libertad de diseño (ver escape rule en §8.3). |
+| Visual de una página (póster, portada, certificado, infografía, one-pager) | `canvas-craft` | Piezas dominadas por composición (~70 %+ de superficie visual). |
+| Tokens de marca (colores, tipografía, paletas de gráficos) | `brand-kit` | Invocar ANTES de cualquier formato visual. Flujo de usuario descrito en §8.3. |
+| Lectura de PDF (extraer texto, tablas, imágenes, OCR) | `pdf-reader` | Extracción diagnóstico-primero. |
+| Lectura de DOCX (extraer texto, tablas, metadatos, tracked changes) | `docx-reader` | Maneja legacy `.doc` también. |
+| Lectura de PPTX (extraer texto, notas del presentador, datos de chart) | `pptx-reader` | Maneja legacy `.ppt` también. |
 
-**Formato automático:** Además de los formatos seleccionados, siempre se genera `output/[ANALISIS_DIR]/report.md` (Markdown con tablas y bloques mermaid) como documentación interna del análisis.
+### 8.2 Expectativas del entregable
+
+Cuando cargas una skill writer para producir un entregable, el output resultante debe:
+
+- Estar redactado en el idioma del usuario (encabezados, strings de UI y el atributo `<html lang>` para HTML).
+- Honrar los tokens de marca resueltos según §8.3 para entregables visuales.
+- Usar nombres de fichero descriptivos: `<slug>-report.pdf`, `<slug>-report.docx`, `<slug>-presentation.pptx`, `<slug>-dashboard.html`, `<slug>-poster.pdf` (o `.png`). `<slug>` es la parte descriptiva del directorio de análisis (todo lo que va después del prefijo `YYYY-MM-DD_HHMM_`). Los ficheros internos (`plan.md`, `report.md`, `reasoning/`, `validation/`) se quedan sin prefijo.
+
+Una vez producido el entregable, verificar el fichero en disco con `ls -lh`; regenerar si falta antes de reportar al usuario.
+
+### 8.3 Decisiones de branding
+
+Antes de invocar cualquier skill writer que produzca un entregable visual (PDF, DOCX, PPTX, Dashboard web, Póster/Infografía), fija el tema aplicando esta cascada. La primera regla que resuelva gana — no se aplican más.
+
+1. **Pin en instrucciones** — si este AGENTS.md (o una instrucción de skill downstream) fija un tema único para este rol, cárgalo silenciosamente.
+2. **Señal explícita en el brief del usuario** — si el usuario nombra un tema por nombre o un atributo unívoco (`corporate-formal`, `luxury`, `brutalist`, `technical-minimal`, `editorial`, `forensic`), pre-rellena y aplica silenciosamente. Adjetivos vagos (`bonito`, `profesional`) NO cuentan — pasan a la siguiente regla.
+3. **Continuidad intra-sesión** — si `brand-kit` ya produjo un tema antes en esta conversación y el usuario no ha indicado cambio, reutilizar silenciosamente.
+4. **Preferencia en MEMORY.md** — si `output/MEMORY.md` contiene una preferencia de marca coherente con el contexto actual, aplicar silenciosamente.
+5. **Propuesta curada por contexto** — proponer UN tema por defecto con lista corta de alternativos, basándose en el contexto actual.
+
+**Cómo construir la propuesta curada (regla 5)**:
+
+Lee el catálogo vigente expuesto por `brand-kit` — cada tema declara un descriptor legible (típicamente una línea `Best for`). NO codifiques mapeos audiencia→tema en estas instrucciones; razona dimensionalmente contra el catálogo vivo para que cualquier tema que se añada después a `brand-kit` se considere automáticamente.
+
+Dimensiones a contrastar con el descriptor de cada tema:
+
+- **Audiencia** (ejecutiva / gestora / técnica / mixta) — si se declara en la conversación o se infiere de la pregunta.
+- **Tipo de entregable** (prosa larga, deck, póster, dashboard interactivo, documento formal, documentación técnica).
+- **Tono implícito en el brief** (sobrio, cálido, técnico, dramático, decorativo, restrained).
+- **Semántica del dominio** (finanzas, operaciones, marketing, auditoría, compliance, producto, investigación, etc.).
+
+Escoge el tema cuyo descriptor mejor encaje en estas dimensiones. Identifica 2-3 alternativos que también encajan (runners-up con un match más débil en al menos una dimensión). El resto se descartan — agrúpalos por razón (ej. `"no encaja con audiencia ejecutiva y prosa larga"`) en lugar de enumerar uno por uno.
+
+**Dónde se presenta la propuesta al usuario**:
+
+- **Dentro de `/analyze`**: incluye la propuesta como un ítem del plan presentado en la Fase 3, con esta estructura:
+
+  > **Identidad visual**:
+  > - Elegido: `<tema>` — <por qué encaja en este contexto, refiriendo al descriptor del tema>.
+  > - Alternativos cercanos: `<tema_a>` (<nota corta>), `<tema_b>` (<nota corta>).
+  > - Descartados: los demás (<razón agrupada>).
+
+  El usuario aprueba el plan completo o corrige el tema en el mismo turno (ej. "mejor `luxury-refined`", "prefiero uno descartado, `brutalist-raw`"). No se hace una pregunta separada.
+
+- **Fuera de `/analyze`** (flujos single-format — reempaquetado de `/explore-data` o `/assess-quality`, documento ad-hoc, override de reasoning/validation): presenta un one-liner antes de invocar la skill writer. Ejemplo:
+
+  > Genero el PDF con tema `editorial-serious` (encaja con informe prosa multipágina). Alternativos: `luxury-refined` o `corporate-formal`. Confirma o dime otro.
+
+  Si el usuario confirma, pide un alternativo, o sigue con contenido no relacionado, procede con el tema propuesto. Solo un cambio específico de tema dispara sustitución.
+
+**Ruta neutra**: si el usuario dice "no me importa el diseño", "hazlo neutro", "sin branding" o equivalente, aplicar `technical-minimal` — es el default sobrio del catálogo y produce salida predecible. NO caer en "las skills improvisan" — siempre resolver a un tema concreto.
+
+**Mostrar catálogo completo**: si el usuario pide explícitamente "muéstrame todos los temas" o equivalente, muestra el catálogo entero y deja que elija. Esta es una acción explícita del usuario, no una ruta por defecto.
+
+**Guía analítica de dashboard — escape rule**: cuando cargas `web-craft` desde `/analyze` para producir un dashboard, carga también `skills/analyze/analytical-dashboard.md` en tu contexto por defecto. Saltarse esa guía (dejando a `web-craft` operar con sus propias cinco decisiones) cuando el brief del usuario contiene señales de libertad de diseño como `"rompe el molde"`, `"dashboard creativo"`, `"experimental"`, `"narrativo"`, `"más libre"`, o equivalentes. Cuando la guía se aplica silenciosamente, menciona brevemente al presentar el plan para que el usuario pueda corregir en el mismo turno de aprobación.
+
+**Regla cross-format**: un tema por petición de entregable. Si el usuario mezcla temas explícitamente ("PDF `corporate-formal`, póster `brutalist-raw`"), resolver brand-kit una vez por formato, cada vez con el tema que el usuario le haya asignado explícitamente.
+
+**Persistencia**:
+
+- Registrar el tema aplicado como línea en `reasoning.md` y `analysis_memory.md` (ej. `theme: editorial-serious`). Informativo, no contrato.
+- NO escribir el tema en `MEMORY.md` automáticamente. Solo persistir allí si el usuario lo pide explícitamente ("recuerda este tema para la próxima").
+
+### 8.4 Informes de calidad (excepción)
+
+`quality-report` tiene su propio generador dedicado para informes de cobertura de gobernanza y se invoca vía `/assess-quality` → `/quality-report`, no vía este contrato formato→skill. Ver §4.1.
+
+### 8.5 Markdown interno
+
+`/analyze` Fase 4 siempre escribe `output/[ANALISIS_DIR]/report.md` (tablas + mermaid) como documentación interna, independientemente de qué formatos se seleccionaron. Es la fuente de verdad que consumen las skills writer.
 
 ---
 
@@ -474,7 +539,7 @@ La generación de reasoning varía según la profundidad:
 | Estándar | Generar en `output/[ANALISIS_DIR]/reasoning/` | Solo .md |
 | Profundo | Generar en `output/[ANALISIS_DIR]/reasoning/` | Solo .md (completo + sugerencias) |
 
-El usuario puede hacer override indicandolo en su petición (ej: "sin reasoning", "reasoning también en PDF"). Si pide PDF, usar `skills/analyze/report/tools/md_to_report.py --style corporate`. Si pide HTML, añadir `--html`. Si pide DOCX, añadir `--docx`.
+El usuario puede hacer override indicandolo en su petición (ej: "sin reasoning", "reasoning también en PDF"). Si el usuario pide un override (reasoning en PDF, DOCX, PPTX o HTML), enruta a la skill correspondiente según el contrato formato→skill en §8, con `reasoning.md` como fuente de contenido. `brand-kit` NO aplica al reasoning — es documentación interna (usa la tipografía por defecto de la skill writer; no se resuelve tema).
 
 Para contenido obligatorio y plantilla, ver skill `/analyze` [reasoning-guide.md](reasoning-guide.md).
 
@@ -485,7 +550,7 @@ Para contenido obligatorio y plantilla, ver skill `/analyze` [reasoning-guide.md
 **Convención de preguntas**: Siempre que estas instrucciones digan "preguntar al usuario con opciones", presentar las opciones de forma clara y estructurada. Si el entorno dispone de una tool para preguntas interactivas{{TOOL_QUESTIONS}}, invocarla obligatoriamente — nunca escribir las preguntas en el chat cuando una tool de preguntar al usuario esté disponible. Si no, presentar las opciones como lista numerada en el chat, con formato legible, e indicar al usuario que responda con el número o nombre de su elección. Para selección múltiple, indicar que puede elegir varias separadas por coma. Aplicar esta convención en toda referencia a "preguntas al usuario con opciones" en skills y guías.
 
 - **Idioma de respuesta y deliverables**: Responder en el mismo idioma que usa el usuario. Lo siguiente debe redactarse en el idioma del usuario, salvo que este indique explícitamente otro idioma:
-  - Informes analíticos (PDF, DOCX, Web/HTML, PowerPoint, Markdown) generados por `/analyze` (que carga `report/report.md` para el empaquetado del entregable)
+  - Informes analíticos (PDF, DOCX, Web/HTML, PowerPoint, Póster/Infografía, Markdown) generados por `/analyze` Fase 4 vía las skills writer (ver contrato formato→skill en §8)
   - **Informes de cobertura de calidad de datos** (Chat, PDF, DOCX, Markdown) generados por `/assess-quality` + `/quality-report`
   - Mini-resumen de la Fase 1.1 (Data Profiling Score + Governance Quality Status)
   - Ficheros de reasoning y validación
@@ -493,7 +558,6 @@ Para contenido obligatorio y plantilla, ver skill `/analyze` [reasoning-guide.md
   - Resúmenes en chat, preguntas al usuario, recomendaciones y cualquier otro contenido generado
 - SIEMPRE preguntar el dominio si no está claro
 - Formato de salida: capturado vía `/analyze` §4.1 Q3 — confirmar que está respondido antes de planificar
-- Estructura y estilo visual: gestionados por `report/report.md` §1 — cargado por `/analyze` Fase 4 cuando se seleccionó al menos un formato de salida
 - SIEMPRE dar resumen de hallazgos en el chat aunque se generen deliverables
 - Preguntar al usuario con opciones estructuradas (no preguntas abiertas ni texto libre). Usar la convención de preguntas definida arriba
 - Al presentar una pregunta con opciones predefinidas, listar **todas** las opciones literalmente — una por línea — aunque alguna parezca avanzada o secundaria. Nunca agrupar, resumir ni descartar opciones en silencio. Mantener los labels literales para que el routing downstream reconozca la elección

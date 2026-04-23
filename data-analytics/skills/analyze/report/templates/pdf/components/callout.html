@@ -1,7 +1,0 @@
-{# Callout Component
-   Usage: {% include "components/callout.html" with context %}
-   Expects: callout = {"type": "info|success|warning|danger", "content": "<p>HTML content</p>"}
-#}
-<div class="callout callout-{{ callout.type | default('info') }}">
-    {{ callout.content }}
-</div>

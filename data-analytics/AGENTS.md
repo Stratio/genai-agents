@@ -96,7 +96,7 @@ Step 0 runs in Phase 0 and therefore does not violate the "never proceed to Phas
 
 **Step 1 — Check for skill activation first.** Assumes Step 0 has already cleared a bare domain name. If the user's request matches any of these patterns, load the skill IMMEDIATELY — do not evaluate triage:
 
-**Document/visual precedence rule**: When the request mentions "PDF", "DOCX", "Word doc", "PPT", "PowerPoint", "deck" or a visual artifact and could match multiple rows, apply this priority: (1) **reading/extracting** content from an existing PDF → `pdf-reader`, from an existing DOCX → `docx-reader`, or from an existing PPTX → `pptx-reader`; (2) **single-page visual artifact** — composition-dominated, ≥70% visual (poster, cover, certificate, infographic, one-pager) → `canvas-craft`; (3a) **manipulating** an existing PDF (merge, split, rotate, watermark, encrypt, fill form, flatten) or **creating** a typographic/prose PDF (invoice, letter, newsletter, multi-page report, data-light PDF with ≤3 KPIs and no hypothesis) → `pdf-writer`; (3b) **manipulating** an existing DOCX (merge, split, find-replace, convert `.doc` to `.docx`) or **creating** a non-analytical DOCX (letter, memo, contract, policy brief, multi-page prose report) → `docx-writer`; (3c) **manipulating** an existing PPTX (merge, split, reorder, delete slides, find-replace in slides or notes, convert `.ppt` to `.pptx`) or **creating** a non-analytical deck (pitch, sales briefing, executive briefing, training, academic, town-hall, data-light PPT with ≤3 KPIs and no hypothesis) → `pptx-writer`; (4) **quality report** in PDF or DOCX format → `quality-report`; (5) only if none of the above apply → `analyze`. **Note**: Step 1.1 gates (count gate and keyword gate especially) apply *before* this rule. If an analytical signal is present (multi-KPI with dimensions, hypothesis, comparative period, analytical verb), Gate 4 (tie-breaker) re-routes to `analyze` regardless of the tier above. **Repackaging from a previous `output/[ANALYSIS_DIR]/`** (e.g., "regenerate yesterday's analysis as a PDF, DOCX or PPT in another style") routes to `pdf-writer` / `docx-writer` / `pptx-writer` / `canvas-craft` / `web-craft` based on the desired artifact — the analytical pipeline does not have a standalone repackaging entry point. **Note on PPT inside `/analyze`**: analytical deck generation from `/analyze` Phase 4 keeps using the pipeline-local helpers at `skills/analyze/report/tools/pptx_layout.py` (the `/analyze` pipeline is hardwired to the 4:3 layout there). `pptx-writer` is only invoked for decks outside the analytical pipeline.
+**Document/visual precedence rule**: When the request mentions "PDF", "DOCX", "Word doc", "PPT", "PowerPoint", "deck" or a visual artifact and could match multiple rows, apply this priority: (1) **reading/extracting** content from an existing PDF → `pdf-reader`, from an existing DOCX → `docx-reader`, or from an existing PPTX → `pptx-reader`; (2) **single-page visual artifact** — composition-dominated, ≥70% visual (poster, cover, certificate, infographic, one-pager) → `canvas-craft`; (3a) **manipulating** an existing PDF (merge, split, rotate, watermark, encrypt, fill form, flatten) or **creating** a typographic/prose PDF (invoice, letter, newsletter, multi-page report, data-light PDF with ≤3 KPIs and no hypothesis) → `pdf-writer`; (3b) **manipulating** an existing DOCX (merge, split, find-replace, convert `.doc` to `.docx`) or **creating** a non-analytical DOCX (letter, memo, contract, policy brief, multi-page prose report) → `docx-writer`; (3c) **manipulating** an existing PPTX (merge, split, reorder, delete slides, find-replace in slides or notes, convert `.ppt` to `.pptx`) or **creating** a non-analytical deck (pitch, sales briefing, executive briefing, training, academic, town-hall, data-light PPT with ≤3 KPIs and no hypothesis) → `pptx-writer`; (4) **quality report** in PDF or DOCX format → `quality-report`; (5) only if none of the above apply → `analyze`. **Note**: Step 1.1 gates (count gate and keyword gate especially) apply *before* this rule. If an analytical signal is present (multi-KPI with dimensions, hypothesis, comparative period, analytical verb), Gate 4 (tie-breaker) re-routes to `analyze` regardless of the tier above. **Repackaging from a previous `output/[ANALYSIS_DIR]/`** (e.g., "regenerate yesterday's analysis as a PDF, DOCX or PPT in another style") routes to `pdf-writer` / `docx-writer` / `pptx-writer` / `canvas-craft` / `web-craft` based on the desired artifact — the analytical pipeline does not have a standalone repackaging entry point.
 
 **Multi-skill detection**: If the request involves multiple distinct actions spanning different skills (e.g., "read this PDF and analyze the data", "merge these PPT decks and add a cover slide", "read this deck and turn the bullets into a briefing document"), identify the required skills and execute them in logical order: input skills first (`pdf-reader`, `docx-reader`, `pptx-reader`) → processing skills (`analyze`, `assess-quality`) → output skills (`pdf-writer`, `docx-writer`, `pptx-writer`, `canvas-craft`, `web-craft`, `quality-report`). Load the first skill in the sequence; upon completion, re-evaluate for the next.
 
@@ -124,7 +124,7 @@ Step 0 runs in Phase 0 and therefore does not violate the "never proceed to Phas
 | Governance knowledge contribution: "propose to governance", "add this as a business term", "save this definition as governed knowledge", "enrich semantic layer", "upload term", "propón este término", "súbelo a gobernanza" | `propose-knowledge` |
 | Memory persistence: "remember this for next time", "save my preference", "next time do X", "update memory with", "persist this preference", "recuerda esto", "guarda esta preferencia" | `update-memory` |
 
-**Note on data-driven artifact routing**: when Step 1 routes to `pdf-writer` (data-light), `canvas-craft` or `web-craft` with a request that implies governed-domain data (e.g., "póster con las ventas del trimestre", "PDF con 3 KPIs de churn"), the **agent** pre-fetches the needed data via MCP (using Step 2 Triage tools such as `list_domain_tables`, `query_data`) **before** invoking the artifact skill. The artifact skill receives the data as input and focuses on visual production — these skills do not fetch data themselves.
+**Note on data-driven artifact routing**: when Step 1 routes to `pdf-writer` (data-light), `canvas-craft` or `web-craft` with a request that implies governed-domain data (e.g., "póster con las ventas del trimestre", "PDF con 3 KPIs de churn"), the **agent** pre-fetches the needed data via MCP (using Step 2 Triage tools such as `list_domain_tables`, `query_data`) **before** loading the artifact skill. By the time the skill is loaded, the data is already in context and the skill focuses on producing the visual from it — these skills do not fetch data themselves.
 
 **Note on `propose-knowledge` direct invocation**: if invoked cold-start with no prior conversation context, `propose-knowledge` gracefully degrades to asking the user for the domain and content to propose. Prefer natural mid-conversation invocation after a term, definition, or segmentation has been discussed — that is where the skill produces the strongest candidates.
 
@@ -202,7 +202,7 @@ For full operational detail (sufficiency checklist, scoring thresholds, mini-sum
 
 Read `output/MEMORY.md` sec Preferences (if it exists) for personalised defaults.
 
-Load `/analyze` §4.1 to run the question block (Depth + Audience + Format + Tests). After the analysis is approved, `/analyze` Phase 4 loads `report/report.md` §1 to run the next question block (Structure + Visual style). Upon return, continue with the next Phase below.
+Load `/analyze` §4.1 to run the question block (Depth + Audience + Format + Tests). Format is one multi-select question with 5 options (PDF / DOCX / PowerPoint / Dashboard web / Poster-Infographic). There is no second question block — structure defaults to the analytical scaffold (with signal-based opt-out if the user asks for free structure), and visual identity is proposed as an item inside the plan (see `/analyze` Phase 3 and §8.3). Upon return, continue with the next Phase below.
 
 **Note**: ALWAYS provide a summary of findings in chat, regardless of the selected formats.
 
@@ -256,11 +256,7 @@ Load `/analyze` §4.1 to run the question block (Depth + Audience + Format + Tes
 7. Run scripts with real data
 8. **Iteration loop**: If a finding contradicts hypotheses or reveals an unexpected pattern, iterate (new queries + update analysis). Max 2 iterations; detail in skill `/analyze` sec 6.7
 9. Generate visualizations in `output/[ANALYSIS_DIR]/assets/`
-10. Generate deliverables in the requested format in `output/[ANALYSIS_DIR]/`. After generating each file, verify its existence with:
-    ```bash
-    ls -lh output/[ANALYSIS_DIR]/<file>
-    ```
-    If the command returns an error or the file does not appear → regenerate before continuing. Do not report to the user until all files are confirmed on disk.
+10. Generate deliverables per the format→skill contract in §8. Apply the theme approved in the plan (resolved per §8.3). Honour the deliverable expectations (§8.2) for each writer skill you load. After each deliverable is produced, verify with `ls -lh output/[ANALYSIS_DIR]/<file>`; if the file is missing, regenerate before continuing. Do not report to the user until all files are confirmed on disk.
 11. **(If depth >= Standard — see sec 9)** Generate reasoning in `output/[ANALYSIS_DIR]/reasoning/reasoning.md`
 12. **Final output validation**: Run checklist according to depth (Quick: Block A in chat; Standard: A+B+C in .md; Deep: A+B+C+D in .md). Does not block delivery. See skill `/analyze` [validation-guide.md](validation-guide.md)
 13. Report results in chat: summary of findings + generated file paths + validation summary
@@ -435,32 +431,101 @@ python3 skills/quality-report/scripts/quality_report_generator.py \
 
 ## 7. Visualizations and Narrative
 
-Three core principles (see `skills/analyze/visualization.md` and `/analyze` Phase 4 → `report/report.md` for the full guide):
+Three core principles (see `skills/analyze/visualization.md` for the full guide; dashboard-specific patterns in `skills/analyze/analytical-dashboard.md`):
 1. **Titles as insights** ("North concentrates 45%"), not descriptions ("Sales by region")
 2. **Numbers with context**: Always vs previous period, vs target, or vs average
-3. **Accessibility**: Colorblind-friendly palettes via `get_palette()`, do not rely on color alone
+3. **Accessibility**: Colorblind-friendly palettes (the `chart_categorical` token from the active brand theme), do not rely on color alone
 
 ---
 
 ## 8. Output Formats
 
-**Brand / visual identity (run BEFORE any visual deliverable):** if the `brand-kit` shared skill is available, invoke its workflow first to fix the design tokens every output skill will apply. The user picks one of the predefined themes, supplies ad-hoc colors and fonts, or points to an external brand file as scaffold. See the `brand-kit` SKILL.md for the flow. If `brand-kit` is not declared for this agent, the output skills improvise tokens following `skills-guides/visual-craftsmanship.md` — still coherent, just not centralized.
+When the agent needs to write a deliverable, the format dictates the skill. This contract is global and applies whenever the agent produces an output — during `/analyze` Phase 4, when repackaging prior output, when converting `reasoning.md` or `validation.md`, or when generating ad-hoc documents.
 
-For detailed generation instructions per format, see `skills/analyze/report/report.md` (loaded from `/analyze` Phase 4).
+### 8.1 Format → Skill
 
-| Format | How to generate | When to use |
-|--------|----------------|-------------|
-| **Document (PDF + DOCX)** | `skills/analyze/report/tools/pdf_generator.py` + `skills/analyze/report/tools/docx_generator.py` | Professional reports. Generates `<slug>-report.pdf` and `<slug>-report.docx` inside the analysis folder (see `report/report.md` §1.1) |
-| **Web** | `skills/analyze/report/tools/dashboard_builder.py` (`DashboardBuilder`) — Self-contained HTML with global filters, dynamic KPI cards, sortable tables, interactive Plotly charts, embedded JSON data, and CSS from the chosen style | Interactive dashboards, reports with filters, browser sharing |
-| **PowerPoint (analytical)** | `skills/analyze/report/tools/pptx_layout.py` (layout helpers) + `skills/analyze/report/tools/css_builder.py` (colors) | Executive presentations inside `/analyze` Phase 4. Hardwired to the 4:3 safe-area layout. |
-| **PDF reading** | Skill `pdf-reader` — diagnose-first extraction with fallback chain (pdfplumber → pdfminer → pypdf → pdftotext), OCR for scans, form field reading, image extraction | Reading user-provided PDFs, extracting data from PDF sources, ingesting PDF content for analysis |
-| **Ad-hoc PDF** | Skill `pdf-writer` — reportlab-based generation with custom typography, design-first workflow. Also handles merge, split, rotate, watermark, encrypt, form filling | Documents outside the standard report pipeline: invoices, certificates, letters, newsletters. Also post-processing of existing PDFs |
-| **DOCX reading** | Skill `docx-reader` — diagnose-first extraction with fallback chain (python-docx → zipfile XML walk → soffice text), text, tables, images, metadata, tracked changes, legacy `.doc` conversion | Reading user-provided DOCXes, extracting data from DOCX sources, ingesting DOCX content for analysis |
-| **Ad-hoc DOCX** | Skill `docx-writer` — python-docx-based design-first authoring, structural operations (merge/split/find-replace, `.doc` conversion), visual validation, PDF export | Non-analytical documents: letters, memos, contracts, policy briefs, whitepapers, manuals. Also post-processing of existing DOCXes |
-| **PPTX reading** | Skill `pptx-reader` — diagnose-first extraction with fallback chain (python-pptx → zipfile XML walk → soffice text), speaker notes, native chart data, rasterization for vision models, legacy `.ppt` conversion | Reading user-provided decks, extracting speaker notes, ingesting deck content for analysis |
-| **Ad-hoc PPTX** | Skill `pptx-writer` — python-pptx-based design-first authoring, 16:9 scaffold, native OOXML charts, visual validation, PDF export, structural operations (merge/split/reorder/delete/find-replace, `.ppt` conversion) | Non-analytical decks: pitches, sales briefings, executive briefings, training, academic, town-hall. Also post-processing of existing decks |
+| Format | Skill | Notes |
+|---|---|---|
+| PDF (report, document, typographic multi-page) | `pdf-writer` | Also handles merge/split/watermark/encrypt/form-fill of existing PDFs. |
+| DOCX (Word document) | `docx-writer` | Also handles merge/split/find-replace/legacy `.doc` conversion. |
+| PPTX (presentation, deck) | `pptx-writer` | 16:9 default; 4:3 only if the user asks for it explicitly. Also handles merge/split/reorder/find-replace in existing decks. |
+| HTML (interactive dashboard, landing, web artifact) | `web-craft` | When the artifact is an analytical dashboard from `/analyze`, load `skills/analyze/analytical-dashboard.md` as input unless the user's brief signals design freedom (see §8.3 escape rule). |
+| Single-page visual (poster, cover, certificate, infographic, one-pager) | `canvas-craft` | Composition-dominated pieces (~70 %+ visual surface). |
+| Brand tokens (colors, typography, chart palettes) | `brand-kit` | Invoke BEFORE any visual format. User flow described in §8.3. |
+| PDF reading (extract text, tables, images, OCR) | `pdf-reader` | Diagnose-first extraction. |
+| DOCX reading (extract text, tables, metadata, tracked changes) | `docx-reader` | Handles legacy `.doc` too. |
+| PPTX reading (extract text, speaker notes, chart data) | `pptx-reader` | Handles legacy `.ppt` too. |
 
-**Automatic format:** In addition to the selected formats, `output/[ANALYSIS_DIR]/report.md` (Markdown with tables and mermaid blocks) is always generated as internal analysis documentation.
+### 8.2 Deliverable expectations
+
+When you load a writer skill to produce a deliverable, the resulting output must:
+
+- Be written in the user's language (headings, UI strings, and the `<html lang>` attribute for HTML).
+- Honour the brand tokens resolved per §8.3 for visual deliverables.
+- Use descriptive filenames: `<slug>-report.pdf`, `<slug>-report.docx`, `<slug>-presentation.pptx`, `<slug>-dashboard.html`, `<slug>-poster.pdf` (or `.png`). `<slug>` is the descriptive part of the analysis directory (everything after the `YYYY-MM-DD_HHMM_` prefix). Internal files (`plan.md`, `report.md`, `reasoning/`, `validation/`) stay without prefix.
+
+After the deliverable is produced, verify the file on disk with `ls -lh`; regenerate if missing before reporting to the user.
+
+### 8.3 Branding decisions
+
+Before invoking any writer skill that produces a visual deliverable (PDF, DOCX, PPTX, Dashboard web, Poster/Infographic), fix the theme using this cascade. The first rule that resolves wins — no further rules apply.
+
+1. **Pin in instructions** — if this AGENTS.md (or a downstream skill instruction) fixes a single theme for this role, load it silently.
+2. **Explicit signal in the user's brief** — if the user names a theme by name or an unambiguous attribute (`corporate-formal`, `luxury`, `brutalist`, `technical-minimal`, `editorial`, `forensic`), pre-fill and apply silently. Vague adjectives (`nice`, `professional`, `bonito`) do NOT count — fall through to the next rule.
+3. **Intra-session continuity** — if `brand-kit` already produced a theme earlier in this conversation and the user has not indicated a change, reuse silently.
+4. **MEMORY.md preference** — if `output/MEMORY.md` contains a brand preference coherent with the current context, apply silently.
+5. **Curated proposal by context** — propose ONE theme as default with a short list of alternatives, based on the current context.
+
+**How to build the curated proposal (rule 5)**:
+
+Read the live catalog exposed by `brand-kit` — every theme declares a human-readable descriptor (typically a `Best for` line). Do NOT hardcode audience→theme mappings in these instructions; reason dimensionally against the live catalog so any theme added to `brand-kit` later is considered automatically.
+
+Dimensions to contrast against each theme's descriptor:
+
+- **Audience** (executive / manager / technical / mixed) — if stated in the conversation or inferrable from the question.
+- **Deliverable type** (long-form prose, deck, poster, interactive dashboard, formal document, technical documentation).
+- **Tone implied by the brief** (sober, warm, technical, dramatic, decorative, restrained).
+- **Domain semantics** (finance, operations, marketing, audit, compliance, product, research, etc.).
+
+Pick the theme whose descriptor best fits these dimensions. Identify 2-3 alternatives that also fit (runners-up with a weaker match on at least one dimension). The rest are discarded — group them by reason (e.g. `"not a fit for executive audience and long-form prose"`) rather than enumerating one by one.
+
+**Where the proposal is presented to the user**:
+
+- **Inside `/analyze`**: include the proposal as an item in the plan presented in Phase 3. Render the labels in the user's language; the structure is:
+
+  > **Visual identity**:
+  > - Chosen: `<theme>` — <why it fits this context, referencing the theme's descriptor>.
+  > - Close alternatives: `<theme_a>` (<short note>), `<theme_b>` (<short note>).
+  > - Discarded: the rest (<grouped reason>).
+
+  The user approves the full plan or corrects the theme in the same turn (e.g. "let's go with `luxury-refined`", "actually, pick a discarded one: `brutalist-raw`"). No separate question is asked.
+
+- **Outside `/analyze`** (single-format flows — repackaging from `/explore-data` or `/assess-quality`, ad-hoc document, reasoning/validation override): present a one-liner before invoking the writer skill, in the user's language. Example pattern:
+
+  > I'll generate the PDF with theme `editorial-serious` (fits a prose-heavy multi-page report). Alternatives: `luxury-refined` or `corporate-formal`. Confirm or name another.
+
+  If the user confirms, asks for an alternative, or continues with unrelated content, proceed with the proposed theme. Only a specific theme change triggers substitution.
+
+**Neutral path**: if the user says "no me importa el diseño", "hazlo neutro", "sin branding" or equivalent, apply `technical-minimal` — it is the sober default in the catalog and produces predictable output. Do NOT fall back to "the skills improvise" — always resolve to a concrete theme.
+
+**Show full catalog**: if the user explicitly asks "muéstrame todos los temas" or equivalent, surface the entire catalog and let them pick. This is an explicit user action, not a default path.
+
+**Dashboard analytical guide — escape rule**: when you load `web-craft` from `/analyze` to produce a dashboard, also load `skills/analyze/analytical-dashboard.md` into your context by default. Skip that guide (let `web-craft` operate with its own five decisions) when the user's brief contains design-freedom signals such as `"rompe el molde"`, `"dashboard creativo"`, `"experimental"`, `"narrativo"`, `"más libre"`, or equivalent. When the guide is applied silently, mention it briefly when presenting the plan so the user can override at the same approval turn.
+
+**Cross-format rule**: one theme per deliverable request. If the user explicitly mixes themes ("PDF `corporate-formal`, poster `brutalist-raw`"), resolve brand-kit once per format, each with the theme the user has specified for it.
+
+**Persistence**:
+
+- Record the theme applied as a one-line note in `reasoning.md` and `analysis_memory.md` (e.g. `theme: editorial-serious`). Informational, not a contract.
+- Do NOT write the theme to `MEMORY.md` automatically. Only persist there if the user explicitly asks ("recuerda este tema para la próxima").
+
+### 8.4 Quality reports (exception)
+
+`quality-report` has its own dedicated generator for governance coverage reports and is invoked via `/assess-quality` → `/quality-report`, not via this format→skill contract. See §4.1.
+
+### 8.5 Internal Markdown
+
+`/analyze` Phase 4 always writes `output/[ANALYSIS_DIR]/report.md` (tables + mermaid) as internal documentation, regardless of which formats were selected. It is the source of truth that writer skills consume.
 
 ---
 
@@ -474,7 +539,7 @@ Reasoning generation varies by depth:
 | Standard | Generate in `output/[ANALYSIS_DIR]/reasoning/` | .md only |
 | Deep | Generate in `output/[ANALYSIS_DIR]/reasoning/` | .md only (full + suggestions) |
 
-The user can override by indicating in their request (e.g.: "no reasoning", "reasoning also in PDF"). If they request PDF, use `skills/analyze/report/tools/md_to_report.py --style corporate`. If they request HTML, add `--html`. If they request DOCX, add `--docx`.
+The user can override by indicating in their request (e.g.: "no reasoning", "reasoning also in PDF"). If the user requests an override (reasoning as PDF, DOCX, PPTX, or HTML), route to the corresponding skill per the format→skill contract in §8, with `reasoning.md` as content source. `brand-kit` does NOT apply to reasoning — it is internal documentation (use the writer skill's default typography; no theme is resolved).
 
 For mandatory content and template, see skill `/analyze` [reasoning-guide.md](reasoning-guide.md).
 
@@ -485,7 +550,7 @@ For mandatory content and template, see skill `/analyze` [reasoning-guide.md](re
 **Question convention**: Whenever these instructions say "ask the user with options", present the options clearly and in a structured manner. If the environment provides a tool for interactive questions{{TOOL_QUESTIONS}}, invoke it mandatorily — never write the questions in chat when a user-questioning tool is available. If not, present the options as a numbered list in chat, in a readable format, and indicate to the user to respond with the number or name of their choice. For multiple selection, indicate they can choose several separated by comma. Apply this convention to every reference to "user questions with options" in skills and guides.
 
 - **Response and deliverable language**: Respond in the same language the user uses. The following must be written in the user's language, unless the user explicitly indicates a different language:
-  - Analytical reports (PDF, DOCX, Web/HTML, PowerPoint, Markdown) generated by `/analyze` (which loads `report/report.md` for deliverable packaging)
+  - Analytical reports (PDF, DOCX, Web/HTML, PowerPoint, Poster/Infographic, Markdown) generated by `/analyze` Phase 4 via the writer skills (see §8 format→skill contract)
   - **Data quality coverage reports** (Chat, PDF, DOCX, Markdown) generated by `/assess-quality` + `/quality-report`
   - Phase 1.1 mini-summary (Data Profiling Score + Governance Quality Status)
   - Reasoning files, validation files
@@ -493,7 +558,6 @@ For mandatory content and template, see skill `/analyze` [reasoning-guide.md](re
   - Chat summaries, user questions, recommendations, and any other generated content
 - ALWAYS ask about the domain if it is not clear
 - Output format: captured via `/analyze` §4.1 Q3 — confirm it is answered before planning
-- Structure and visual style: handled by `report/report.md` §1 — loaded by `/analyze` Phase 4 when at least one output format was selected
 - ALWAYS provide a summary of findings in chat even when deliverables are generated
 - Ask the user with structured options (not open-ended or free-text questions). Use the question convention defined above
 - When presenting a question with predefined options, list **every** option literally — one per line — even when an option looks advanced or secondary. Never collapse, summarise or silently drop options. Keep label strings verbatim so the routing logic downstream can recognise the choice

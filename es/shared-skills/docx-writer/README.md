@@ -2,7 +2,7 @@
 
 Skill compartida que crea documentos Word (`.docx`) con diseño intencional y realiza operaciones estructurales sobre los existentes. Cubre dos públicos: (1) documentos genéricos dominados por prosa (cartas, memos, contratos, notas de política, whitepapers, newsletters, manuales, informes multipágina) autorizados con un flujo *design-first*, y (2) operaciones estructurales sobre `.docx` ya existentes (fusionar, dividir, buscar-y-reemplazar, convertir `.doc` → `.docx`, previsualización visual).
 
-La skill hermana `docx-reader` cubre la ingesta de DOCX de entrada. Para informes analíticos dentro de `data-analytics`, la skill `analyze` mantiene su propio `DOCXGenerator` opinado con un esqueleto analítico (resumen ejecutivo / metodología / análisis / conclusiones). `docx-writer` es la herramienta de autoría de propósito general.
+La skill hermana `docx-reader` cubre la ingesta de DOCX de entrada.
 
 ## Qué hace
 
