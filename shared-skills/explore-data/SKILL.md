@@ -1,6 +1,6 @@
 ---
 name: explore-data
-description: "Quick exploration of data domains, tables, columns, statistical profiling and business terminology using the governed data MCPs. Use when the user wants to discover what data is available, understand a domain's structure, or explore tables and columns before an analysis."
+description: "Quick exploration of data domains, tables, columns, statistical profiling, governance quality coverage and business terminology using the governed data MCPs. Use when the user wants to discover what data is available, understand a domain's structure, or explore tables and columns before an analysis."
 argument-hint: "[domain (optional)]"
 ---
 
@@ -10,7 +10,7 @@ Guide for quickly exploring available data in governed domains.
 
 ## 1. Domain Discovery
 
-Read and follow `skills-guides/stratio-data-tools.md` sec 4-5 for domain discovery steps (search or list domains, select, explore tables, columns, terminology and profiling).
+Read and follow `skills-guides/stratio-data-tools.md` sec 4 for domain discovery steps (search or list domains, select, explore tables, columns and terminology).
 
 If the user provides an argument ($ARGUMENTS), search with `search_domains($ARGUMENTS)`. If it matches a domain, skip directly to exploring tables. If it does not match, ask the user which domain to explore following the user question convention (adaptive to the environment: interactive if available, numbered list in chat otherwise). Ask if they want to drill into a specific table or see all of them.
 
@@ -18,7 +18,21 @@ If the user provides an argument ($ARGUMENTS), search with `search_domains($ARGU
 
 If `output/MEMORY.md` exists, read the "Known Data Patterns" section for the domain being explored. If there are registered patterns, inform the user before profiling (e.g.: "In previous analyses it was detected that column X has ~35% nulls").
 
-## 3. Summary and Proactive Suggestions
+## 3. Deepening (when scope is focused)
+
+When the user is focused on a specific domain or a small subset of tables, add a lightweight enrichment step after exploring columns. Skip this for broad multi-domain exploration — profiling is costly.
+
+For each key table identified, launch **in parallel**:
+- `profile_data` per table — follow `skills-guides/stratio-data-tools.md` sec 5.1 (SQL generated with `generate_sql`, adaptive thresholds by size, `limit` parameter).
+- `get_tables_quality_details(domain_name, [tables])` — see `skills-guides/stratio-data-tools.md` sec 5.2.
+
+Summarize lightly (descriptive, do not turn this into an analysis):
+- From `profile_data`: notable null percentages, temporal range if date columns exist, anomalous cardinalities or outliers worth flagging.
+- From `get_tables_quality_details`: number of rules per table, status breakdown (OK / KO / WARNING / not-executed), dimensions with failing rules.
+
+Feed both findings into the summary of section 4. If `profile_data` flags an anomaly that no governance rule tracks (uncovered dimension), call it out as a candidate for the `assess-quality` skill.
+
+## 4. Summary and Proactive Suggestions
 
 Present a structured summary:
 - Domain explored and its purpose
@@ -26,9 +40,10 @@ Present a structured summary:
 - Main tables with their description
 - Key columns identified
 - Relevant business terms
-- Data quality observations (if profiling was performed)
+- Statistical highlights (if profiling was performed in section 3)
+- Governance quality coverage (if quality details were retrieved in section 3)
 
-### Suggested analyses based on the domain structure
+### Suggested analyses based on the domain structure and findings
 
 After exploring, automatically detect analytical opportunities and present them to the user:
 
