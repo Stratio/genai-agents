@@ -97,19 +97,19 @@ Una sola interacción:
 |---|----------|---------------------|-----------|-----------|
 | 1 | ¿Qué profundidad de análisis prefieres? | **Rápido** · **Estándar** (Recomendado) · **Profundo** | Única | Siempre |
 | 2 | ¿Para que audiencia es el análisis? | **C-level/Direccion** · **Manager/Responsable** · **Equipo técnico/Data** · **Mixta/General** | Única | Siempre |
-| 3 | ¿En que formatos quieres los deliverables? | **Documento** (PDF + DOCX) · **Web** (HTML interactivo con Plotly) · **PowerPoint** (.pptx) | Múltiple | Siempre |
+| 3 | ¿En que formatos quieres los deliverables? | **PDF** · **DOCX** · **PowerPoint** (.pptx) · **Dashboard web** (HTML interactivo con Plotly) · **Póster/Infografía** (visual de una página) | Múltiple | Siempre |
 | 4 | ¿Quieres que se generen y ejecuten tests unitarios sobre el código Python? | **Sí** (Recomendado): mejora precisión y calidad, pero consume más tiempo, coste y contexto · **No**: ejecución directa sin tests | Única | Solo Estándar/Profundo |
 
 **Regla adaptativa**: Si la petición del usuario ya especifica información que responde a alguna de estas preguntas, pre-rellenar esa respuesta y no volver a preguntarla. Por ejemplo: si el usuario dijo "dame un informe en PDF", pre-rellenar formato como Document; si dijo "análisis rápido", pre-rellenar profundidad como Quick; si dijo "dashboard ejecutivo", pre-rellenar audiencia como C-level/Executive y formato como Web. Solo preguntar aquello cuya respuesta no pueda inferirse de la petición.
 
 - Los tests validan transformaciones y cálculos antes de ejecutar con datos reales. Mejoran la precisión pero consumen más tokens, tiempo y coste. **En profundidad Rápido, testing se desactiva automáticamente sin preguntar al usuario.**
 - La pregunta de formato SIEMPRE permite selección múltiple
-- Las opciones de formato son EXACTAMENTE 3: Documento (PDF + DOCX), Web, PowerPoint. No inventar, no omitir, no sustituir
+- Las opciones de formato son EXACTAMENTE 5: PDF, DOCX, PowerPoint, Dashboard web, Póster/Infografía. Cada una enruta a su skill writer dedicada (ver instrucciones del agente §8). No inventar, no omitir, no sustituir
 - Si no selecciona formato → no hay deliverables, el análisis se entrega solo en chat + report.md automático
 - **Si selecciona uno o más formatos → los deliverables SE GENERAN SIEMPRE, independientemente de la profundidad elegida. Rápido/Estándar/Profundo afecta al análisis, no a los entregables.**
 - Requisitos adicionales vía opción "Other" (filtros temporales, segmentos, métricas obligatorias)
 
-La estructura y el estilo visual no se preguntan aquí — se preguntan después al cargar `report/report.md`.
+La estructura por defecto es el scaffold analítico (resumen ejecutivo → metodología → datos → análisis → conclusiones). Si el usuario señala "estructura libre", "rompe el molde" o similar, las skills writer operan con plena libertad. La identidad visual se propone como un ítem dentro del plan (§5.11), no se pregunta aquí — ver las instrucciones del agente §8.3 para la cascada de branding.
 
 ## 5. Planificación
 
@@ -228,6 +228,20 @@ Secciones, contenido de cada una, formato. Aplicar principios de data storytelli
 ### 5.11 Presentar plan
 Presentar plan completo al usuario y solicitar aprobación antes de ejecutar.
 
+**Identidad visual (solo cuando al menos un formato visual fue seleccionado en §4.1)**: incluir como ítem en el plan un tema propuesto con alternativos y descartados, siguiendo la cascada de branding en las instrucciones del agente §8.3. Formato:
+
+> **Identidad visual**:
+> - Elegido: `<tema>` — <por qué encaja en este contexto, una línea corta>.
+> - Alternativos cercanos: `<tema_a>`, `<tema_b>`.
+> - Descartados: los demás (<razón agrupada>).
+
+El usuario aprueba el plan completo o corrige el tema en el mismo turno. Si no se seleccionaron formatos, saltarse este ítem entero. Si la cascada se resolvió silenciosamente (niveles 1-4 de §8.3), ocultar el ítem o mostrar una línea corta indicando qué tema se aplicó y por qué — a discreción del agente según ayude o no a la revisión del usuario.
+
+**Disclosure de la guía de dashboard (solo cuando se seleccionó Dashboard web)**: incluir una línea corta indicando si la guía analítica de dashboard se aplicará. Ejemplo:
+> Dashboard aplicará el patrón analítico estándar (KPIs, filtros, tablas ordenables). Si prefieres algo más libre o narrativo, avísame.
+
+Si el usuario señaló libertad de diseño en el brief, indicarlo: "Dashboard NO aplicará la guía estándar porque pediste diseño libre."
+
 Al final de la presentación del plan, incluir una nota breve:
 > Si dispones de documentación adicional, benchmarks de referencia, informes previos o datos complementarios que puedan enriquecer el análisis, puedes compartirlos ahora.
 
@@ -307,11 +321,18 @@ Si durante la ejecución se detecta un hallazgo que excede el alcance del nivel 
 
 ### 6.9 Generación de deliverables
 
-> **OBLIGATORIO si el usuario seleccionó formatos en §4.1.** La profundidad del análisis (Rápido/Estándar/Profundo) NO afecta a este paso — si el usuario eligió formatos, todos se generan.
+> **OBLIGATORIO si el usuario seleccionó formatos en §4.1.** La profundidad NO afecta a este paso.
 
-1. Cargar `report/report.md` con las instrucciones de empaquetado del entregable
-2. Generar TODOS los formatos seleccionados (no omitir ninguno)
-3. Verificar existencia de cada fichero con `ls -lh` antes de reportar al usuario (ver Fase 4, paso 10 de AGENTS.md)
+1. **Tokens de marca (una vez, antes de cualquier formato visual)**: cargar `brand-kit` y resolver el bundle de tokens del tema fijado en el plan aprobado (§5.11). El tema se decidió según la cascada de branding del agente (§8.3) — aquí solo lees su definición para que las skills writer siguientes apliquen una paleta coherente. Si el usuario corrigió el tema al aprobar el plan, usa el corregido. Los mismos tokens aplican a cada entregable posterior, así que todo el análisis se mantiene visualmente coherente.
+2. Para cada formato seleccionado, cargar su skill writer dedicada y producir el entregable. El entregable debe incorporar el contenido analítico (`report.md`, gráficas de `assets/`, tablas), aplicar los tokens de marca del paso 1 y estar redactado en el idioma del usuario:
+   - **PDF** → `pdf-writer`. Salida: `<slug>-report.pdf`.
+   - **DOCX** → `docx-writer`. Salida: `<slug>-report.docx`.
+   - **PowerPoint** → `pptx-writer`. 16:9 por defecto; 4:3 solo si el usuario lo pidió explícitamente. Salida: `<slug>-presentation.pptx`.
+   - **Dashboard web** → `web-craft`. **También cargar `analytical-dashboard.md`** (de esta misma carpeta de skill) como input a web-craft, SALVO que el usuario señalara libertad de diseño al aprobar el plan (disclosure de §5.11). Salida: `<slug>-dashboard.html`.
+   - **Póster/Infografía** → `canvas-craft`. Salida: `<slug>-poster.pdf` o `<slug>-poster.png`.
+3. Escribir `output/[ANALISIS_DIR]/report.md` (tablas + mermaid) como documentación interna, siempre — independientemente de los formatos seleccionados. Es la fuente de verdad que consumen las skills writer.
+4. Convención de nombres: `<slug>` = parte descriptiva de `[ANALISIS_DIR]` (todo lo que va después de `YYYY-MM-DD_HHMM_`). Los ficheros internos (`plan.md`, `reasoning/`, `validation/`) se quedan sin prefijo.
+5. Verificar cada fichero en disco con `ls -lh output/[ANALISIS_DIR]/` una vez producido el entregable. Regenerar si falta ANTES de reportar al usuario.
 
 ### 6.10 Reasoning
 
@@ -320,7 +341,7 @@ Generar reasoning según la profundidad (ver defaults en sec "Reasoning" de AGEN
 - **Rápido**: No generar fichero. Las notas clave se incluyen en el reporte del chat (sec 7.1).
 - **Estándar/Profundo**: Seguir la guía completa en [reasoning-guide.md](reasoning-guide.md). Generar solo `.md`.
 
-Si el usuario solicitó override de formatos, aplicar su preferencia.
+Si el usuario pide el reasoning en otro formato, enrutar a la skill correspondiente según el contrato formato→skill del agente (§8); `reasoning.md` es la fuente de contenido. `brand-kit` NO aplica al reasoning — documentación interna. Registrar el tema aplicado (si se usó alguno para entregables visuales en este análisis) como línea dentro de `reasoning.md`: `theme applied: <nombre>`.
 
 ### 6.11 Validación de output final
 
@@ -332,7 +353,7 @@ Ejecutar validación según la profundidad (ver defaults en sec "Reasoning" de A
 
 Para detalle de cada bloque, umbrales y criterios PASS/WARNING/FAIL, ver [validation-guide.md](validation-guide.md).
 
-Si el usuario solicitó override de formatos, aplicar su preferencia.
+Si el usuario pide la validación en otro formato, enrutar a la skill correspondiente según el contrato formato→skill del agente (§8); `validation.md` es la fuente de contenido. `brand-kit` NO aplica a la validación — documentación interna.
 
 ## 7. Reporte Final
 
@@ -392,6 +413,7 @@ Crear `output/[ANALISIS_DIR]/analysis_memory.md` con el contenido completo:
 - **KPIs**: KPI1: valor (periodo), KPI2: valor (periodo)
 - **Insights**: Hallazgo 1 (confianza), Hallazgo 2 (confianza)
 - **Data Profiling Score**: ALTO/MEDIO/BAJO (N%)
+- **Tema aplicado** (si se generaron entregables visuales): <nombre_tema>
 ```
 
 ### 8.2 Añadir entrada compacta al índice

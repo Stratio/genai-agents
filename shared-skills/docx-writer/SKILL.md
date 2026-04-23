@@ -1,6 +1,6 @@
 ---
 name: docx-writer
-description: "Create Word documents (.docx) with intentional design, and perform structural operations on existing ones. Use this skill whenever you need to generate a polished Word document (letter, memo, contract, policy brief, whitepaper, newsletter, manual, multi-page report) or manipulate existing DOCX files (merge, split, find-replace, convert legacy .doc, render a visual preview). This skill treats design seriously — every document it produces has intentional typography, colour and rhythm, never the generic Calibri-everywhere default. Do NOT use for: data-heavy or single-visual outputs (pdf-writer / canvas-craft), interactive web (web-craft), or analytical reports generated inside /analyze (which has its own DOCXGenerator). For advanced patterns (TOC, font embedding, multi-section, numbered headings, batch), load REFERENCE.md. For merge / split / find-replace / legacy .doc conversion, load STRUCTURAL_OPS.md."
+description: "Create Word documents (.docx) with intentional design, and perform structural operations on existing ones. Use this skill whenever you need to generate a polished Word document (letter, memo, contract, policy brief, whitepaper, newsletter, manual, multi-page report, analytical report) or manipulate existing DOCX files (merge, split, find-replace, convert legacy .doc, render a visual preview). This skill treats design seriously — every document it produces has intentional typography, colour and rhythm, never the generic Calibri-everywhere default. Do NOT use for: data-heavy or single-visual outputs (pdf-writer / canvas-craft), or interactive web (web-craft). For advanced patterns (TOC, font embedding, multi-section, numbered headings, batch), load REFERENCE.md. For merge / split / find-replace / legacy .doc conversion, load STRUCTURAL_OPS.md."
 argument-hint: "[document type or description]"
 ---
 
@@ -61,12 +61,6 @@ Calibri 11 pt template**.
 
 ### When this skill is not the right fit
 
-- **Analytical reports inside `/analyze`** — the `data-analytics`
-  agent has its own opinionated DOCX pipeline at
-  `skills/analyze/report/tools/docx_generator.py` with an analytical
-  scaffold (executive summary → methodology → analysis → conclusions).
-  Inside Phase 4 of `/analyze`, use that pipeline. This skill is for
-  documents outside the analytical flow.
 - **Multi-page typographic PDF** (invoice, contract to be delivered,
   long prose report where fidelity matters) — `pdf-writer` preserves
   fonts and layout exactly; DOCX cannot match that fidelity once the

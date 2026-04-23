@@ -2,7 +2,7 @@
 
 Shared skill that creates Word documents (`.docx`) with intentional design, and performs structural operations on existing ones. Covers two audiences: (1) generic prose-dominated documents (letters, memos, contracts, policy briefs, whitepapers, manuals, newsletters, multi-page reports) authored with a design-first workflow, and (2) structural operations on existing `.docx` files (merge, split, find-replace, convert `.doc` → `.docx`, visual preview).
 
-The companion skill `docx-reader` covers ingestion of DOCX inputs. For analytical reports inside `data-analytics`, the `analyze` skill keeps its own opinionated `DOCXGenerator` with an analytical scaffold (executive summary / methodology / analysis / conclusions). `docx-writer` is the general-purpose authoring tool.
+The companion skill `docx-reader` covers ingestion of DOCX inputs.
 
 ## What it does
 

@@ -59,11 +59,6 @@ Calibri-on-white template**.
 
 ### When this skill is not the right fit
 
-- **Analytical reports inside `/analyze`** — the `data-analytics`
-  agent has its own opinionated PPT pipeline at
-  `skills/analyze/report/tools/pptx_layout.py`. Inside Phase 4 of
-  `/analyze`, import helpers from that module. This skill is for
-  decks outside the analytical pipeline.
 - **Single-page posters / covers / certificates** — composition-
   dominated static artifacts belong to `canvas-craft`, not here.
 - **Interactive dashboards in a browser** — `web-craft` handles those.
@@ -197,8 +192,7 @@ Three rules the scaffold enforces:
 - **Always `text_frame.word_wrap = True`**. It's off by default;
   without it, python-pptx silently clips overflow.
 - **Always compute safe-area from `prs.slide_width / slide_height`.**
-  Hardcoded 4:3 constants (like the ones in the `/analyze` pipeline)
-  will break on a 16:9 scaffold.
+  Hardcoded 4:3 constants will break on a 16:9 scaffold and vice versa.
 
 ## 5. Fonts
 

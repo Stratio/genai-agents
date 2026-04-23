@@ -8,7 +8,7 @@ Agente completo de Business Intelligence y Business Analytics para Claude Code y
 - Análisis avanzado con Python (pandas, numpy, scipy)
 - Segmentación y clustering (scikit-learn)
 - Visualizaciones profesionales (matplotlib, seaborn, plotly)
-- **Entregables analíticos** (multi-formato) — PDF, DOCX, web interactiva, PowerPoint, generados por `/analyze` Fase 4 a partir de los resultados del análisis
+- **Entregables analíticos** (multi-formato) — PDF, DOCX, dashboard web interactivo, PowerPoint, póster/infografía, generados por `/analyze` Fase 4 vía las skills writer (`pdf-writer`, `docx-writer`, `pptx-writer`, `web-craft`, `canvas-craft`) + `brand-kit` para los tokens de diseño
 - **Entregables visuales ligeros sin análisis** — pósteres / infografías / portadas de una sola página (`canvas-craft`), dashboards interactivos standalone (`web-craft`), PDFs ligeros con ≤3 KPIs o documentos tipográficos como facturas y cartas (`pdf-writer`)
 - **Lectura de PDF** — extraer texto, tablas, imágenes y datos de formulario de PDFs (`pdf-reader`)
 - **Evaluación y reporte de cobertura de calidad de datos** (solo lectura) — evaluar reglas de calidad existentes, identificar gaps de cobertura, generar informes de calidad en Chat/PDF/DOCX/Markdown. La creación y planificación de reglas queda reservada a los agentes Data Quality / Governance Officer.
@@ -46,7 +46,7 @@ Los pack scripts solo son necesarios para distribuir el agente fuera del reposit
 
 | Skill | Comando | Origen | Descripción |
 |-------|---------|--------|-------------|
-| Análisis | `/analyze` | local | Análisis completo de datos BI/BA: descubrimiento de dominio, EDA, planificación de KPIs, queries MCP, análisis Python, visualizaciones y entregables multi-formato (PDF, DOCX, web, PowerPoint — gestionados internamente vía `report/report.md`) |
+| Análisis | `/analyze` | local | Análisis completo de datos BI/BA: descubrimiento de dominio, EDA, planificación de KPIs, queries MCP, análisis Python, visualizaciones y entregables multi-formato (PDF, DOCX, dashboard web, PowerPoint, póster) — delega en las skills writer según el contrato formato→skill en `AGENTS.md §8` |
 | Exploración | `/explore-data` | **shared** | Exploración rápida de dominios, tablas, columnas y terminología de negocio |
 | Evaluación de calidad | `/assess-quality` | **shared** | Evaluación de cobertura de calidad para un dominio, tabla o columna; identifica dimensiones cubiertas, gaps y prioridades |
 | Informe de calidad | `/quality-report` | **shared** | Generar un informe formal de cobertura de calidad de datos (Chat / PDF / DOCX / Markdown) |
@@ -56,25 +56,17 @@ Los pack scripts solo son necesarios para distribuir el agente fuera del reposit
 | Escritura de PDF | `/pdf-writer` | **shared** | PDFs multi-página o dominados por prosa (informes ligeros con ≤3 KPIs, facturas, cartas, newsletters, certificados). También combinar/dividir/rotar, marca de agua, cifrar, rellenar formularios |
 | Lectura de DOCX | `/docx-reader` | **shared** | Extraer texto, tablas, imágenes, metadatos y cambios rastreados de ficheros `.docx` (o `.doc` heredado vía conversión con LibreOffice) |
 | Escritura de DOCX | `/docx-writer` | **shared** | Documentos Word genéricos (cartas, memos, contratos, notas de política, informes multipágina en prosa). También combinar/dividir, find-replace, convertir `.doc` a `.docx`, preview visual |
+| Lectura de PPTX | `/pptx-reader` | **shared** | Extraer texto, notas del presentador, datos de chart de ficheros `.pptx` (o `.ppt` heredado vía conversión con LibreOffice) |
+| Escritura de PPTX | `/pptx-writer` | **shared** | Decks PowerPoint diseñados (pitch, ventas, briefing ejecutivo, formación, académico). También combinar/dividir/reordenar, find-replace en slides y notas, conversión legacy `.ppt` |
 | Artefacto visual | `/canvas-craft` | **shared** | Visuales de una sola página dominados por composición: pósteres, infografías, portadas, one-pagers (PDF o PNG) |
-| Artefacto web | `/web-craft` | **shared** | HTML interactivo standalone: dashboards sin narrativa analítica, componentes UI, landing pages |
+| Artefacto web | `/web-craft` | **shared** | HTML interactivo standalone: dashboards, componentes UI, landing pages |
+| Tokens de marca | `/brand-kit` | **shared** | Catálogo centralizado de temas de identidad visual (colores, tipografía, paletas de gráficos). Se invoca antes de cualquier entregable visual. Ver AGENTS.md §8.3 para la cascada de decisión |
 
 Las skills marcadas como **shared** viven en `shared-skills/` en la raíz del monorepo y se comparten con otros agentes. Las locales viven en `skills/` de este agente.
 
 ## Herramientas de generación
 
-Scripts reutilizables en `skills/analyze/report/tools/` (propiedad de la skill `analyze`, usados durante su Fase 4 de empaquetado) para generar deliverables:
-
-| Herramienta | Descripción |
-|-------------|-------------|
-| `css_builder.py` | Ensamblador CSS de 3 capas (tokens + theme + target) y extraccion de paleta |
-| `chart_layout.py` | Anti-overlap para gráficas matplotlib y Plotly (títulos, leyendas, márgenes) |
-| `pdf_generator.py` | Generador de PDFs con Jinja2 + WeasyPrint (scaffold y modo libre) |
-| `docx_generator.py` | Generador de DOCX con estilos y scaffold |
-| `pptx_layout.py` | Helpers de layout para PowerPoint (safe areas, posicionamiento) |
-| `dashboard_builder.py` | Generador de dashboards web interactivos (filtros, KPI cards, tablas ordenables, Plotly) |
-| `md_to_report.py` | Conversor Markdown a HTML/PDF/DOCX con estilos y portada |
-| `image_utils.py` | Utilidades para embeber imágenes como base64 en HTML |
+Este agente delega la generación de deliverables en las skills writer (`pdf-writer`, `docx-writer`, `pptx-writer`, `web-craft`, `canvas-craft` + `brand-kit`) según el contrato formato→skill en `AGENTS.md §8`. La única utilidad local es `skills/analyze/chart_layout.py` (helpers anti-solapamiento para gráficas matplotlib y Plotly generadas durante el análisis — títulos, subtítulos, leyendas, márgenes, más conversión hex/RGB a `rgba()` compatible con Plotly).
 
 ## Memoria persistente
 

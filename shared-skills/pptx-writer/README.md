@@ -1,8 +1,8 @@
 # pptx-writer
 
-Shared skill that creates PowerPoint (`.pptx`) decks with intentional design, and performs structural operations on existing ones. Covers two audiences: (1) generic decks outside the analytical pipeline (pitches, executive briefings, training, academic, sales, town-hall), and (2) structural operations on existing `.pptx` files (merge, split, reorder, delete slides, find-replace across slides and speaker notes, convert legacy `.ppt` → `.pptx`, rasterize slides, export to PDF).
+Shared skill that creates PowerPoint (`.pptx`) decks with intentional design, and performs structural operations on existing ones. Covers: (1) decks authored with a design-first workflow (pitches, executive briefings, training, academic, sales, town-hall, analytical decks), and (2) structural operations on existing `.pptx` files (merge, split, reorder, delete slides, find-replace across slides and speaker notes, convert legacy `.ppt` → `.pptx`, rasterize slides, export to PDF).
 
-The companion skill `pptx-reader` covers ingestion of PPTX inputs. For analytical reports inside `data-analytics`, the `/analyze` skill keeps its own opinionated PPT pipeline at `skills/analyze/report/tools/pptx_layout.py` with a fixed 4:3 safe-area; `pptx-writer` is the general-purpose authoring tool for everything else.
+The companion skill `pptx-reader` covers ingestion of PPTX inputs.
 
 ## What it does
 

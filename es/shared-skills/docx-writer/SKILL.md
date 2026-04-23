@@ -1,6 +1,6 @@
 ---
 name: docx-writer
-description: "Crea documentos Word (.docx) con diseño intencional y realiza operaciones estructurales sobre los existentes. Usa esta skill siempre que necesites producir un documento Word pulido (carta, memo, contrato, nota de política, whitepaper, newsletter, manual, informe multipágina) o manipular DOCX existentes (fusionar, dividir, buscar-y-reemplazar, convertir .doc heredados, renderizar una previsualización visual). Esta skill se toma el diseño en serio — cada documento que produce tiene tipografía, color y ritmo intencionales, nunca el Calibri-por-defecto genérico. NO la uses para: salidas data-heavy o single-visual (pdf-writer / canvas-craft), web interactiva (web-craft), ni informes analíticos generados dentro de /analyze (que tiene su propio DOCXGenerator). Para patrones avanzados (TOC, embedding de fuentes, multi-sección, títulos numerados, batch), carga REFERENCE.md. Para merge / split / find-replace / conversión .doc heredada, carga STRUCTURAL_OPS.md."
+description: "Crea documentos Word (.docx) con diseño intencional y realiza operaciones estructurales sobre los existentes. Usa esta skill siempre que necesites producir un documento Word pulido (carta, memo, contrato, nota de política, whitepaper, newsletter, manual, informe multipágina, informe analítico) o manipular DOCX existentes (fusionar, dividir, buscar-y-reemplazar, convertir .doc heredados, renderizar una previsualización visual). Esta skill se toma el diseño en serio — cada documento que produce tiene tipografía, color y ritmo intencionales, nunca el Calibri-por-defecto genérico. NO la uses para: salidas data-heavy o single-visual (pdf-writer / canvas-craft), ni web interactiva (web-craft). Para patrones avanzados (TOC, embedding de fuentes, multi-sección, títulos numerados, batch), carga REFERENCE.md. Para merge / split / find-replace / conversión .doc heredada, carga STRUCTURAL_OPS.md."
 argument-hint: "[tipo o descripción del documento]"
 ---
 
@@ -66,12 +66,6 @@ por defecto de python-docx**.
 
 ### Cuándo esta skill no es la indicada
 
-- **Informes analíticos dentro de `/analyze`** — el agente
-  `data-analytics` tiene su propio pipeline DOCX opinionado en
-  `skills/analyze/report/tools/docx_generator.py` con un scaffold
-  analítico (resumen ejecutivo → metodología → análisis →
-  conclusiones). Dentro de la Fase 4 de `/analyze`, usa ese pipeline.
-  Esta skill es para documentos fuera del flujo analítico.
 - **PDF tipográfico multipágina** (factura, contrato para entregar,
   informe largo de prosa donde la fidelidad importa) — `pdf-writer`
   preserva fuentes y layout exactamente; DOCX no puede igualar esa
