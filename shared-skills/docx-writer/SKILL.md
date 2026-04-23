@@ -1,159 +1,548 @@
 ---
 name: docx-writer
-description: "Create Word documents (.docx) with intentional design, and perform structural operations on existing ones. Use this skill whenever you need to produce a polished Word document (letter, memo, contract, policy brief, multi-page report) or manipulate existing DOCX files (merge, split, find-replace, convert legacy .doc, render a visual preview). Do NOT use for: data-light or PDF outputs (pdf-writer), single-page visual artefacts (canvas-craft), interactive web (web-craft), or analytical reports generated inside /analyze (which has its own DOCXGenerator)."
-argument-hint: "[brief describing what DOCX to build or modify]"
+description: "Create Word documents (.docx) with intentional design, and perform structural operations on existing ones. Use this skill whenever you need to generate a polished Word document (letter, memo, contract, policy brief, whitepaper, newsletter, manual, multi-page report) or manipulate existing DOCX files (merge, split, find-replace, convert legacy .doc, render a visual preview). This skill treats design seriously — every document it produces has intentional typography, colour and rhythm, never the generic Calibri-everywhere default. Do NOT use for: data-heavy or single-visual outputs (pdf-writer / canvas-craft), interactive web (web-craft), or analytical reports generated inside /analyze (which has its own DOCXGenerator). For advanced patterns (TOC, font embedding, multi-section, numbered headings, batch), load REFERENCE.md. For merge / split / find-replace / legacy .doc conversion, load STRUCTURAL_OPS.md."
+argument-hint: "[document type or description]"
 ---
 
 # Skill: DOCX Writer
 
-Word is what many stakeholders open by default. A DOCX generated without design attention looks like a word-processor accident — Calibri everywhere, no hierarchy, grey-on-grey borders. This skill treats DOCX as an output surface that deserves the same deliberation as a PDF.
+Word is the surface most stakeholders open by default. A DOCX generated
+without design attention looks like a word-processor accident — Calibri
+at every size, grey-on-grey borders, no hierarchy, the same 2.54 cm
+margin on every side. That's the baseline this skill actively resists.
+
+Before writing a single line of code, commit to a design direction.
+The code serves the design, not the other way around.
 
 ## 1. Design-first workflow
 
-Make five decisions before touching the builder:
+Every DOCX generation task, regardless of size, follows five decisions:
 
-1. **What kind of document is this?** Letter, memo, contract, policy brief, newsletter, multi-page report, template. The answer decides tone, rhythm, weight.
-2. **Which tone?** Editorial-serious, technical-minimal, warm-magazine, restrained-legal, friendly-modern. Commit to one. Uncommitted tone is the single biggest cause of generic output.
-3. **Which typographic pairing?** Body face that reads at 10–11 pt, display face that earns attention on page 1. Because DOCX fonts do not travel unless embedded (§2), choose pairings that degrade gracefully: Calibri / Aptos / Arial are safe defaults; Crimson Pro + Instrument Sans or IBM Plex Serif + IBM Plex Mono require an embedded-font step.
-4. **Palette.** One dominant accent (5–15% of surface), one deep neutral for body, one pale neutral for backgrounds, and state colours (success / warning / danger) kept sparingly. Declared in `palette.py` presets or overridden via `aesthetic_direction.palette_override`.
-5. **Rhythm.** Margins (default 2.5 cm is ISO), section spacing, how much whitespace breathes between blocks. Cramped DOCX reads as a first draft; generous margins read as the final thing.
+1. **Classify the document** — what category is it? (See the taxonomy
+   below.) This governs page size, margins, tone and weight downstream.
+2. **Pick a visual tone** — editorial-serious, technical-minimal,
+   warm-magazine, restrained-legal, corporate-formal, friendly-modern.
+   Pick one and execute it confidently. An uncommitted "a bit of
+   everything" document is the worst outcome.
+3. **Select a type pairing** — one display face for headings, one
+   body face for prose. Two typefaces is almost always enough. Because
+   DOCX uses the reader's system fonts unless you embed (§4), choose
+   pairings that degrade gracefully — Calibri / Aptos / Arial / Times
+   New Roman / Georgia / Cambria are universal safe defaults.
+4. **Define a palette** — one dominant accent colour (used for 5–15%
+   of surface: headings, header rules, callouts), one deep neutral
+   for body text (rarely pure black — `#1f2937` is kinder), one pale
+   neutral for table bands or sidebars, plus state colours
+   (success/warning/danger) used sparingly. Real saturation, not
+   washed-out pastels by default.
+5. **Set the rhythm** — margins (2.5 cm ISO default; 3 cm for generous
+   editorial; 2 cm for dense reference manuals), paragraph spacing,
+   heading air, line-height. Cramped DOCX reads as a first draft;
+   generous whitespace reads as the final thing.
 
-## 2. Fonts
+Only then open `python-docx`.
 
-DOCX uses the reader's installed fonts unless you embed yours inside `word/fontTable.xml`. Consequences:
+### Document taxonomy and starting points
 
-- **Default path**: use widely-installed typefaces (Calibri, Aptos, Arial, Times New Roman, Georgia, Cambria). Works everywhere without extra steps.
-- **Embed path**: pick any OFL display or body face, embed it via python-docx or by editing `fontTable.xml` after building. Increases file size (~80–150 KB per face) and only fully honoured by Word 2016+ on Windows/macOS. LibreOffice and Word Online may substitute.
+| Category | Typical tone | Page size | Display face | Body face | Margins |
+|---|---|---|---|---|---|
+| Policy brief / whitepaper | Editorial-serious | A4 | Crimson Pro / IBM Plex Serif | Crimson Pro / Inter | 2.5 cm |
+| Contract / legal | Restrained-precise | A4 / Letter | Libre Baskerville | Libre Baskerville | 2.5 cm |
+| Letter / memo | Corporate-formal | A4 / Letter | Calibri / Aptos | Calibri / Aptos | 2.5 cm |
+| Newsletter / internal briefing | Warm-magazine | A4 | Big Shoulders / Lora | Lora / Inter | 2.0 cm |
+| Manual / how-to | Technical-minimal | A4 / Letter | IBM Plex Sans | IBM Plex Sans | 2.0 cm |
+| Multi-page report | Editorial-serious | A4 | Instrument Serif / Crimson Pro | Crimson Pro / Inter | 2.5 cm |
+| Academic / research | Academic-sober | A4 | Libre Baskerville | Libre Baskerville | 2.5 cm |
 
-`DOCXBuilder` wires the `font_main` key of the palette into `Normal` style and uses `aesthetic_direction.font_pair[0]` (when provided) for headings. That is the minimum contract.
+These are starting points, not mandates. Break them when the brief
+calls for it. The point is **never default to python-docx's blank
+Calibri 11 pt template**.
 
-## 3. Starting template
+### When this skill is not the right fit
+
+- **Analytical reports inside `/analyze`** — the `data-analytics`
+  agent has its own opinionated DOCX pipeline at
+  `skills/analyze/report/tools/docx_generator.py` with an analytical
+  scaffold (executive summary → methodology → analysis → conclusions).
+  Inside Phase 4 of `/analyze`, use that pipeline. This skill is for
+  documents outside the analytical flow.
+- **Multi-page typographic PDF** (invoice, contract to be delivered,
+  long prose report where fidelity matters) — `pdf-writer` preserves
+  fonts and layout exactly; DOCX cannot match that fidelity once the
+  reader opens it on a different machine.
+- **Single-page visual piece** (poster, cover, certificate, one-page
+  flyer) — `canvas-craft`.
+- **Interactive frontend** — `web-craft`.
+- **Quality coverage report** — the `quality-report` skill has a
+  fixed-layout generator tuned for that content.
+
+## 2. Page size, margins, orientation
+
+DOCX supports A4 (21 × 29.7 cm) and Letter (21.59 × 27.94 cm). Pick
+based on the delivery geography — A4 for most of the world, Letter
+for US-based readers. Do not silently ship A4 content to a Letter
+printer: the last line of every page will drop off.
+
+Landscape is legitimate for wide tables or dashboards embedded in a
+mostly-portrait document. Use a dedicated section (§Multi-section
+documents in `REFERENCE.md`) so the landscape pages live in their own
+section and the portrait pages keep their own geometry.
+
+Set margins by document intent, not by python-docx's 2.54 cm (1 inch)
+default — that is a US-centric legacy that rarely suits intentional
+design. Generous editorial: 3 cm. ISO default: 2.5 cm. Dense manual:
+2 cm. Newsletter with sidebar: asymmetric (left 2 cm, right 4 cm).
+
+## 3. A proper starting template
+
+Instead of reaching for `Document()` and hoping, use this scaffold
+and adapt:
 
 ```python
-import sys
-sys.path.insert(0, "shared-skills/docx-writer/scripts")
+from pathlib import Path
+from docx import Document
+from docx.enum.text import WD_BREAK
+from docx.oxml import OxmlElement
+from docx.oxml.ns import qn
+from docx.shared import Cm, Pt, RGBColor
 
-from docx_builder import DOCXBuilder
+# 1. Commit to the design tokens up front — they never change mid-doc.
+DESIGN = {
+    # Palette (hex strings — convert to RGBColor at use site)
+    "primary":  "#0a2540",   # deep navy (accent / headings)
+    "ink":      "#1f2937",   # body text (not pure black)
+    "muted":    "#6b7280",   # captions, metadata
+    "rule":     "#d1d5db",   # dividers, table bottom rules
+    "bg_alt":   "#f3f4f6",   # pale neutral for table bands
+    "state_danger":  "#b91c1c",
+    "state_warn":    "#b45309",
+    "state_ok":      "#047857",
+    # Typography
+    "display":  "Instrument Serif",  # headings; falls back to Times
+    "body":     "Crimson Pro",       # prose; falls back to Georgia
+    "mono":     "JetBrains Mono",    # code; falls back to Consolas
+    # Sizes (pt)
+    "size_h1":    22,
+    "size_h2":    16,
+    "size_h3":    13,
+    "size_body":  11,
+    "size_small":  9,
+    # Page
+    "page_size":  "A4",              # "A4" or "Letter"
+    "margin_cm":  2.5,
+}
 
-b = DOCXBuilder(
-    page_size="A4",
-    aesthetic_direction={
-        "tone": "corporate",
-        "font_pair": ["Instrument Serif", "Crimson Pro"],  # display, body
-        "palette_override": {"primary": "#0a2540"},
-    },
-    author="Compliance Team",
-)
 
-b.add_cover(
+def hex_to_rgb(h: str) -> RGBColor:
+    h = h.lstrip("#")
+    return RGBColor(int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16))
+
+
+# 2. Build the document and set page geometry.
+doc = Document()
+section = doc.sections[0]
+if DESIGN["page_size"] == "A4":
+    section.page_width = Cm(21.0)
+    section.page_height = Cm(29.7)
+else:  # Letter
+    section.page_width = Cm(21.59)
+    section.page_height = Cm(27.94)
+section.left_margin = section.right_margin = Cm(DESIGN["margin_cm"])
+section.top_margin = section.bottom_margin = Cm(DESIGN["margin_cm"])
+
+
+# 3. Redefine the built-in styles so every paragraph inherits the
+#    design tokens. Never rename: Word looks up "Heading 1", "Normal"
+#    and "Caption" by their exact IDs for TOC and interoperability.
+styles = doc.styles
+normal = styles["Normal"]
+normal.font.name = DESIGN["body"]
+normal.font.size = Pt(DESIGN["size_body"])
+normal.font.color.rgb = hex_to_rgb(DESIGN["ink"])
+
+for level, size_key in [(1, "size_h1"), (2, "size_h2"), (3, "size_h3")]:
+    h = styles[f"Heading {level}"]
+    h.font.name = DESIGN["display"]
+    h.font.size = Pt(DESIGN[size_key])
+    h.font.bold = True
+    h.font.color.rgb = hex_to_rgb(DESIGN["primary"])
+
+
+# 4. Small helpers for the compositions you'll repeat.
+def add_cover(doc, title: str, subtitle: str | None = None,
+              metadata: dict | None = None) -> None:
+    # Accent rule above the title.
+    rule = doc.add_paragraph()
+    pPr = rule._p.get_or_add_pPr()
+    pBdr = OxmlElement("w:pBdr")
+    bottom = OxmlElement("w:bottom")
+    bottom.set(qn("w:val"), "single")
+    bottom.set(qn("w:sz"), "24")
+    bottom.set(qn("w:space"), "1")
+    bottom.set(qn("w:color"), DESIGN["primary"].lstrip("#"))
+    pBdr.append(bottom)
+    pPr.append(pBdr)
+
+    p = doc.add_paragraph()
+    p.paragraph_format.space_before = Pt(60)
+    run = p.add_run(title)
+    run.font.name = DESIGN["display"]
+    run.font.size = Pt(DESIGN["size_h1"] + 12)
+    run.font.bold = True
+    run.font.color.rgb = hex_to_rgb(DESIGN["primary"])
+
+    if subtitle:
+        p = doc.add_paragraph()
+        run = p.add_run(subtitle)
+        run.font.name = DESIGN["body"]
+        run.font.size = Pt(DESIGN["size_h2"])
+        run.font.color.rgb = hex_to_rgb(DESIGN["muted"])
+
+    if metadata:
+        p = doc.add_paragraph()
+        p.paragraph_format.space_before = Pt(36)
+        for key, value in metadata.items():
+            run = p.add_run(f"{key}: ")
+            run.bold = True
+            run.font.size = Pt(DESIGN["size_small"])
+            run = p.add_run(f"{value}    ")
+            run.font.size = Pt(DESIGN["size_small"])
+
+    # Force a page break after the cover.
+    doc.add_paragraph().add_run().add_break(WD_BREAK.PAGE)
+
+
+# 5. Compose the document.
+add_cover(
+    doc,
     title="Data Retention Policy",
     subtitle="Governing customer records under the 2026 framework",
-    metadata={"Ref": "POL-042", "Version": "1.0"},
+    metadata={"Ref": "POL-042", "Version": "1.0", "Author": "Compliance Team"},
 )
 
-b.add_heading("Scope", level=1)
-b.add_paragraph(
+doc.add_heading("Scope", level=1)
+doc.add_paragraph(
     "This document defines how customer records are retained, archived, "
     "and deleted across the governed data domains."
 )
 
-b.add_heading("Dimensions", level=2)
-b.add_table(
-    headers=["Dimension", "Commitment"],
-    rows=[
-        ["Retention window", "36 months rolling"],
-        ["Encryption at rest", "AES-256"],
-        ["Access audit", "Quarterly review"],
-    ],
-    caption="Summary of the top-level commitments.",
-)
+doc.add_heading("Dimensions", level=2)
+# Tables, callouts, figures: see REFERENCE.md for ready-to-adapt snippets.
 
-b.add_callout(
-    "All clauses in this policy require explicit legal approval.",
-    kind="warning",
-)
-
-b.set_footer_page_numbers(lang="en")
-b.save("output/retention_policy.docx")
+out_path = Path("output/retention_policy.docx")
+out_path.parent.mkdir(parents=True, exist_ok=True)
+doc.save(out_path)
 ```
 
-## 4. Tables that do not look like Excel
+Four rules the scaffold enforces:
 
-A DOCX table without design choices reads as a spreadsheet screenshot. The `shaded-header` style used by default applies:
+- **Always redefine `Normal`, `Heading 1–3` and `Caption` styles by ID.**
+  Don't invent new style names — Word's TOC, accessibility tooling and
+  round-trips to Google Docs / LibreOffice all look up the exact IDs.
+- **Always set page geometry explicitly.** python-docx defaults to
+  Letter with 1-inch margins — rarely what you want.
+- **Compute sizes and colours from design tokens**, never inline
+  literals mid-document. If the accent colour changes, only `DESIGN`
+  changes.
+- **Compose with primitives + small helpers**. Reach for a small
+  module-local helper the moment you repeat a pattern three times;
+  don't build an abstraction up-front.
 
-- Header row filled with the primary colour, text in white, bold, 10 pt.
-- Alternating body rows with a very light background.
-- Single bottom rule per row in a subtle border colour.
-- Monospaced column content when you pass numeric data (callers handle that inline via formatting on the strings).
-- `cantSplit` on every row to prevent mid-row page breaks.
-- The header row marked as repeat-on-page-break (`<w:tblHeader>`).
+## 4. Fonts
 
-Prefer `style="minimal"` when a shaded header is too loud (legal / academic contexts).
+DOCX uses the reader's installed fonts unless you embed them inside
+`word/fontTable.xml`. Consequences:
 
-## 5. Pitfalls
+- **Default path**: use widely-installed typefaces (Calibri, Aptos,
+  Arial, Times New Roman, Georgia, Cambria, Courier New). Works
+  everywhere without extra steps.
+- **Embed path**: pick any OFL display or body face, embed it via the
+  font-embedding procedure in `REFERENCE.md` §Font embedding. File
+  size grows by 80–150 KB per face. Only fully honoured by Word 2016+
+  on Windows/macOS; LibreOffice and Word Online substitute silently.
 
-Reality-checked against `python-docx` and the ECMA-376 spec:
+Recommendation: stick to safe defaults unless the document is only
+going to be opened on Word 2016+ Windows/macOS. Inform the user if a
+chosen pairing requires a non-standard face.
 
-- **Set page size explicitly** — builder exposes it as the first constructor argument. A4 and Letter are not interchangeable; produce documents for the destination.
-- **Pagination is the viewer's choice**. Do not try to force pixel-perfect breaks. Use `cantSplit` on atomic rows and `keep_with_next` / `keep_together` on figure + caption pairs (the builder already does this for figures).
-- **Repeat the header row on long tables**: the builder does this by default via `<w:tblHeader>`. If you disable it, readers lose context on page two.
-- **PNG only for images embedded in a DOCX**: `python-docx` does not accept SVG. Convert with `cairosvg` or `pillow` before calling `add_figure`.
-- **Never insert Unicode bullet characters manually** (`•`, `\u2022`). Use `add_list(..., ordered=False)` which uses Word's native numbering — bullets survive round-trips to Google Docs and Word Online.
-- **Page breaks must live inside a paragraph**. `add_page_break()` emits a paragraph containing `<w:br w:type="page"/>`.
-- **Use `ShadingType.CLEAR` for cell backgrounds**. `SOLID` renders as a black fill on some viewers (this is the source of the "why is my cell black?" bug). The builder always uses `CLEAR`.
-- **Do not use tables as horizontal rules**. Cells have minimum height and render as empty boxes in headers / footers. Call `add_horizontal_rule()` instead, which emits a paragraph-level bottom border.
-- **Override built-in heading styles with their exact IDs** (`Heading 1`, `Heading 2`, `Heading 3`, `Normal`, `Caption`). Custom style names with alternative IDs break TOC generation and interoperability.
-- **Include `outlineLevel`** on every heading style if you want automatic TOC generation. The builder emits this for H1-H3 (levels 0-2).
-- **Figures need `keep_with_next`** so the caption never orphans on a new page. The builder sets this automatically inside `add_figure`.
-- **`xml:space="preserve"` on `<w:t>` with leading/trailing whitespace**: relevant when using `find_replace_docx` on strings that start or end with a space. The builder sets it when needed inside the replace routine.
+## 5. Palette guidance
 
-## 6. Structural operations
+A designed document has at most three colour families on any given
+page: primary (one accent colour, saturated, used for 5–15% of
+surface: headings, table header fill, accent rules), neutral (body
+text and backgrounds), and state colours (success/warning/danger)
+used sparingly for callouts.
 
-Merging multiple DOCX files, splitting one by section, find-replace with regex, converting legacy binary `.doc`. See `STRUCTURAL_OPS.md` for commands and examples.
+When you make up a palette, pick concrete hex values up front and
+stick to them. Don't mix two different blues, two different reds, or
+two different accent saturations in the same document. If the brief
+suggests a tone ("corporate" / "editorial" / "legal"), pick values
+that actually sell that tone — corporate navy is `#0a2540`, not a
+pastel sky blue; academic is a restrained charcoal and warm beige,
+not saturated colour at all.
 
-## 7. Headers, footers, page numbers
+Reference palettes for the most common tones live in `REFERENCE.md`
+§Palette reference. Copy one verbatim or use it as a seed and adjust.
+
+## 6. Document blocks you'll compose
+
+These are the building blocks worth mastering. Snippets for each live
+in `REFERENCE.md`; here is the menu.
+
+- **Cover** — title, subtitle, metadata (ref, version, author, date),
+  accent rule. Page-break after.
+- **Heading** (levels 1–3) — styled via the redefined built-in styles.
+  Use `outlineLevel` so automatic TOCs pick them up.
+- **Paragraph** — prose body with justify or left alignment, inline
+  bold / italic / inline code.
+- **Table** — shaded header row, alternating body bands, no vertical
+  rules, `cantSplit` per row so rows don't break mid-page.
+- **Figure** — centred image with `keep_with_next` so the caption
+  never orphans on the next page.
+- **Callout** — a shaded box with a short block of text; `info`,
+  `warning`, `success`, `danger` variants tint the left rule.
+- **List** — native Word numbering for ordered, native bullet for
+  unordered. Never insert `•` characters manually.
+- **Code block** — monospace, soft background, preserve whitespace.
+- **Horizontal rule** — paragraph-level bottom border, not an empty
+  table.
+- **Page break** — explicit `<w:br w:type="page"/>` inside a paragraph.
+
+## 7. Tables
+
+A DOCX table without design choices reads as a spreadsheet screenshot.
+**Always override the default style.** The baseline override, in words:
+
+- Header row: filled with the primary colour, text white, bold, body
+  or display face at 10 pt, left-aligned for prose columns and
+  right-aligned for numeric columns.
+- Body rows: no vertical rules, a subtle horizontal rule between rows
+  using `rule` colour, alternating band fill (`bg_alt` on even rows)
+  for readability at a glance.
+- Row height: slightly generous (2–3 mm of padding inside cells);
+  cramped rows read as first-draft exports from Excel.
+- `cantSplit="true"` on every row so rows never break mid-page.
+- `<w:tblHeader/>` on the header row so it repeats on page-break.
+- `<w:shd w:val="clear">` for cell fills — **never** `solid`, which
+  renders as black on some viewers (the notorious "why is my cell
+  black?" bug).
+
+Full snippet in `REFERENCE.md` §Table with style override; copy it
+verbatim for every table-producing document.
+
+## 8. Figures
+
+Embedded via `doc.add_picture(path, width=Cm(...))`. Two rules:
+
+- **PNG only.** `python-docx` does not accept SVG. Convert with
+  `cairosvg` or `pillow` before calling `add_picture`.
+- **Pair figure + caption with `keep_with_next`** so the caption
+  never orphans on a new page. Snippet in `REFERENCE.md` §Figure
+  with caption.
+
+For figure numbering ("Figure 3 — Retention cohort curve") use a
+module-local counter or hand-crafted sequence fields. Auto-numbered
+fields require `seq` in `document.xml` — see `REFERENCE.md`
+§Sequence fields for figure numbering.
+
+## 9. Headers, footers, page numbers
+
+Every page-long document benefits from running chrome — a title
+header, a page counter in the footer, occasionally a logo. The
+baseline:
 
 ```python
-b.set_footer_page_numbers(lang="en")  # "Page N" centred in the footer
-```
+from docx.enum.text import WD_ALIGN_PARAGRAPH
 
-For richer headers (logos, running titles), access the underlying section:
-
-```python
-section = b.document.sections[0]
+section = doc.sections[0]
 header = section.header
-header.paragraphs[0].text = "Retention Policy — Confidential"
+p = header.paragraphs[0]
+p.text = "Data Retention Policy — Confidential"
+p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+for run in p.runs:
+    run.font.size = Pt(DESIGN["size_small"])
+    run.font.color.rgb = hex_to_rgb(DESIGN["muted"])
 ```
 
-## 8. A4 vs Letter, landscape
+For centred `Page N of M`, and logo-plus-title headers, see
+`REFERENCE.md` §Headers, footers, page numbers.
 
-Constructor arguments:
+Skip running chrome on the cover page by marking the first section
+`different_first_page_header_footer = True` and leaving its header /
+footer paragraphs empty (snippet also in REFERENCE.md).
+
+## 10. Post-build validation and PDF export
+
+After building, always verify the result. Three snippets in
+`REFERENCE.md`:
+
+- **Structural validation** (§Structural validation): reopen the saved
+  DOCX and emit a manifest — pages, paragraphs, tables, figures,
+  heading counts by level, OOXML invariants (`xml:space="preserve"`
+  on whitespace-leading runs). Catches corruption, lost sections or
+  broken invariants *before* the file is delivered. Runs in ~100 ms;
+  do it on every build.
+- **Visual validation** (§Visual validation pipeline): convert to PDF
+  via LibreOffice and rasterize per-page PNGs with `pdftoppm`.
+  Inspect each PNG for overflow, awkward contrast, cramped spacing,
+  broken figures. Regenerate and re-validate; 2–3 iterations is
+  normal.
+- **PDF export** (§Export PDF): one-liner via
+  `soffice --headless --convert-to pdf`. Default deliverable is the
+  DOCX on its own. Only add a sibling PDF when the user explicitly
+  asks for it or when the brief clearly implies distribution outside
+  Word (external share, email attachment, audience without Office,
+  "I'll send it around", publication). If you're not sure, deliver
+  only the DOCX — the user can ask for the PDF afterwards.
+
+Visual validation and PDF export require `libreoffice` and
+`poppler-utils`. Structural validation only needs `python-docx` and
+`lxml`.
+
+## 11. User-provided templates
+
+When a user provides a corporate template — with their logo, letterhead,
+styles and colour palette — ignore the scaffold in §3 and load their
+file:
 
 ```python
-DOCXBuilder(page_size="A4")              # default
-DOCXBuilder(page_size="Letter")          # US
-DOCXBuilder(page_size="A4", orientation="landscape")
+from docx import Document
+
+doc = Document("templates/company_letterhead.docx")
+# Inspect the styles the template provides.
+for style in doc.styles:
+    if style.type is not None:
+        print(style.name, style.type)
+
+# Use the template's built-in styles by name — don't redefine them.
+doc.add_heading("Subject: Policy Update", level=1)
+doc.add_paragraph("Dear recipient, ...")
+doc.save("output/letter.docx")
 ```
 
-Landscape does not swap `page_width` / `page_height` silently — the builder assigns them explicitly so `python-docx` emits the right XML regardless of the reader's default orientation resolution.
+When using a client template:
 
-## 9. When NOT to use this skill
+- **Do not redefine `Normal` or `Heading 1–3`.** The template's
+  designer picked those fonts and colours for a reason.
+- **Do reuse the template's custom styles** if they exist
+  (`Quote`, `Sidebar`, `Signature Block`). Look them up by name.
+- **Still validate visually** — a template can be out-of-date or
+  partially broken; you'll catch it only by rendering and inspecting.
 
-- **Analytical report DOCX inside `/analyze`**: use the analyse skill's own `DOCXGenerator` — it has an opinionated scaffold (executive summary → methodology → analysis → conclusions) this builder does not reproduce.
-- **Multi-page typographic PDF** (invoice, contract, long prose report): `pdf-writer` is the right surface. PDFs preserve fonts and layout exactly; DOCX cannot match that fidelity.
-- **Single-page visual piece** (poster, cover, certificate): `canvas-craft`.
-- **Interactive frontend**: `web-craft`.
-- **Quality coverage report**: `quality-report` skill has a fixed-layout generator tuned for that content.
+For a fill-in-the-blank pattern (`{{recipient}}` → real name), see
+`REFERENCE.md` §Working with an existing DOCX as a starting point.
 
-## 10. Visual validation
+## 12. Structural operations
 
-After building, render a PNG-per-page preview and inspect it multimodally:
+For manipulating existing documents (merge several DOCX files, split
+by heading level or page break, find-replace with regex across body /
+headers / footers, convert legacy binary `.doc` to `.docx`), see
+`STRUCTURAL_OPS.md`. Those are copy-paste snippets; run them from a
+small script, don't try to import them as a module.
 
-```bash
-python3 shared-skills/docx-writer/scripts/visual_validate.py \
-  output/retention_policy.docx \
-  --out /tmp/preview --dpi 150
-# stdout: list of PNG paths
-```
+## 13. Pitfalls
 
-If the output looks wrong (overflow, cramped margins, accent leaking), adjust `aesthetic_direction` and regenerate. Iterate until the preview matches the intent declared in the five design decisions.
+Reality-checked against `python-docx` 1.1 and the ECMA-376 spec:
+
+- **Set page size explicitly.** python-docx defaults to Letter with
+  1-inch margins. A4 ≠ Letter — produce documents for the destination
+  geography.
+- **Pagination is the viewer's choice.** Do not try to force
+  pixel-perfect breaks. Use `cantSplit` on atomic rows and
+  `keep_with_next` / `keep_together` on figure + caption pairs.
+- **Repeat the header row on long tables** via `<w:tblHeader/>`. Without
+  it, readers lose context on page two.
+- **PNG only for embedded images.** `python-docx` does not accept
+  SVG. Convert beforehand with `cairosvg` or `pillow`.
+- **Never insert Unicode bullet characters manually** (`•`, `\u2022`).
+  Use `doc.add_paragraph(..., style="List Bullet")`. Bullets survive
+  round-trips only through Word's native numbering.
+- **Page breaks must live inside a paragraph.** Emit them as
+  `paragraph.add_run().add_break(WD_BREAK.PAGE)`.
+- **Use `w:shd w:val="clear"` for cell fills.** `solid` renders as
+  black on some viewers. This is the source of the "why is my cell
+  black?" bug.
+- **Do not use tables as horizontal rules.** Cells have a minimum
+  height and render as visible boxes inside headers / footers. Use a
+  paragraph-level bottom border instead (snippet in REFERENCE.md).
+- **Override built-in heading styles by their exact IDs**
+  (`Heading 1`, `Heading 2`, `Heading 3`, `Normal`, `Caption`). Custom
+  style names break TOC generation.
+- **Include `outlineLevel`** on every heading style if you want
+  automatic TOC generation. H1 → `outlineLevel="0"`, H2 → `"1"`,
+  H3 → `"2"`.
+- **Figures need `keep_with_next`** so the caption never orphans. Set
+  it on the paragraph that contains the image, not on the caption.
+- **`xml:space="preserve"` on `<w:t>` with leading/trailing whitespace**
+  matters when using find-replace on strings that start or end with a
+  space; without it the whitespace collapses.
+
+## 14. Known limitations
+
+`python-docx` covers ~85% of real-world document authoring cleanly.
+The remaining 15% either needs raw OOXML manipulation or is not
+supported at all:
+
+- **Comments and tracked changes** — not supported. Insert them with
+  Word or LibreOffice after the fact.
+- **Content controls (`<w:sdt>`)** — read-only. Filling form templates
+  requires XML-level work; see REFERENCE.md §Content controls for the
+  pattern.
+- **Equations** — not supported natively. Render as PNG via LaTeX or
+  Mathpix and embed as a figure.
+- **Charts** — `python-docx` does not expose chart creation. Render
+  with matplotlib / plotly, export to PNG at `dpi=200`, and embed as
+  a figure.
+- **Automatic TOC with numbered entries and page numbers** — the TOC
+  field is inserted correctly, but Word fills it only when the user
+  opens the file (or accepts the "update fields" dialog). Show the
+  user how to trigger it.
+- **Exact-font rendering on every machine** — see §4.
+
+Document the limitation in a short appendix or in a call-out when it
+affects the deliverable.
+
+## 15. Quick-reference cheat sheet
+
+| Task | Approach |
+|---|---|
+| Create document | `Document()` then set page geometry on `doc.sections[0]` |
+| Redefine built-in styles | by exact ID: `styles["Normal"]`, `"Heading 1"` |
+| Cover page | see `REFERENCE.md` §Cover page |
+| Heading | `doc.add_heading(text, level=N)` where styles are pre-defined |
+| Paragraph | `doc.add_paragraph(text)` with inline runs for formatting |
+| Bullet / numbered list | `add_paragraph(..., style="List Bullet")` / `"List Number"` |
+| Table with design override | see `REFERENCE.md` §Table with style override |
+| Figure with caption | see `REFERENCE.md` §Figure with caption |
+| Callout box | see `REFERENCE.md` §Callout box |
+| Code block | see `REFERENCE.md` §Code block |
+| Horizontal rule | paragraph-level bottom border; see REFERENCE.md |
+| Headers / footers / page numbers | see `REFERENCE.md` §Headers, footers, page numbers |
+| TOC | see `REFERENCE.md` §Table of Contents |
+| Landscape pages mid-document | see `REFERENCE.md` §Multi-section documents |
+| Visual preview | `soffice --convert-to pdf` + `pdftoppm -r 150` |
+| Export PDF | `soffice --headless --convert-to pdf out.docx` |
+| Merge / split / find-replace | see `STRUCTURAL_OPS.md` |
+| Convert `.doc` legacy | `soffice --headless --convert-to docx old.doc` |
+| User-provided template | load `.docx` / `.dotx` directly; reuse its styles |
+
+## 16. When to load REFERENCE.md
+
+- Full snippets for each document block (cover, headings, paragraphs,
+  tables with overrides, figures, callouts, lists, code blocks,
+  horizontal rules)
+- Palette reference (editorial-serious, corporate-formal,
+  technical-minimal, warm-magazine, restrained-legal,
+  academic-sober)
+- Table of Contents field
+- Headers / footers / page numbers (centred, logo+title, skip-first-page)
+- Multi-section documents (mixed portrait / landscape)
+- Numbered headings (`1.`, `1.1`, `1.1.1`)
+- Font embedding procedure (for pixel-exact Word 2016+ delivery)
+- Working with an existing DOCX as a starting point
+- Visual validation pipeline (DOCX → PDF → PNG per page)
+- PDF export one-liner
+- i18n labels (English / Spanish) for cover / footer labels
+- Sequence fields for figure / table numbering
+- Content controls (read-only inspection)
+- Batch generation (N documents from a dataset)

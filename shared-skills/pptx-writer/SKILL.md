@@ -330,16 +330,23 @@ python-pptx's default font; you rarely need to style them.
 For pitch and training decks, treat "generate speaker notes"
 as part of the task definition, not a bonus.
 
-## 11. Visual validation and PDF export
+## 11. Post-build validation and PDF export
 
-After building, always eyeball the rendered output. Two snippets:
+After building, always verify the result. Three snippets in
+`REFERENCE.md`:
 
-- **Visual validation** (`REFERENCE.md` §Visual validation): convert
-  to PDF via LibreOffice and rasterize per-slide PNGs with
-  `pdftoppm`. Inspect each PNG for overflow, awkward contrast,
-  cramped spacing, broken images. Regenerate and re-validate; 2–3
-  iterations is normal.
-- **PDF export** (`REFERENCE.md` §Export PDF): one-liner via
+- **Structural validation** (§Structural validation): reopen the
+  saved PPTX and emit a manifest — slides, aspect ratio, shapes by
+  type (text / picture / table / chart / other), speaker-notes
+  coverage, and whether every text frame has `word_wrap=True`
+  (overflow safety). Catches corruption, clipped text frames or
+  missing slides *before* the deck ships. Runs in ~100 ms; do it on
+  every build.
+- **Visual validation** (§Visual validation): convert to PDF via
+  LibreOffice and rasterize per-slide PNGs with `pdftoppm`. Inspect
+  each PNG for overflow, awkward contrast, cramped spacing, broken
+  images. Regenerate and re-validate; 2–3 iterations is normal.
+- **PDF export** (§Export PDF): one-liner via
   `soffice --headless --convert-to pdf`. Default deliverable is the
   PPTX on its own. Only add a sibling PDF when the user explicitly
   asks for it or when the brief clearly implies distribution outside
@@ -347,9 +354,8 @@ After building, always eyeball the rendered output. Two snippets:
   Office, "I'll send it around", publication). If you're not sure,
   deliver only the PPTX — the user can ask for the PDF afterwards.
 
-Both commands depend on `libreoffice` and `poppler-utils` being
-installed. Pre-installed in the Stratio Cowork sandbox; see
-README.md for dev-local setup.
+Visual validation and PDF export require `libreoffice` and
+`poppler-utils`. Structural validation only needs `python-pptx`.
 
 ## 12. User-provided templates (`.potx` / `.pptx`)
 

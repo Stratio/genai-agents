@@ -85,9 +85,8 @@ python <skill-root>/scripts/rasterize_slides.py deck.pptx --out-dir /tmp/slides 
 python <skill-root>/scripts/rasterize_slides.py deck.pptx --out-dir /tmp/slides --pages 3-7
 ```
 
-Runs `soffice --headless --convert-to pdf` followed by `pdftoppm`. Both
-are pre-installed in the Stratio Cowork sandbox; see README.md for dev
-local setup.
+Runs `soffice --headless --convert-to pdf` followed by `pdftoppm`.
+Both must be available on `$PATH`.
 
 ## 2. Golden rule for deep mode: diagnose before you extract
 

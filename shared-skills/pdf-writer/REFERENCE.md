@@ -18,6 +18,8 @@ conditional typography.
 10. PDF/A compliance and archival output
 11. Attaching files inside a PDF
 12. Merging while preserving bookmarks
+13. Structural validation
+14. Visual validation pipeline
 
 ---
 
@@ -378,3 +380,133 @@ When the document category isn't in the main SKILL.md taxonomy:
 | Retro / techy | Tektur | Outfit | JetBrains Mono |
 
 Always embed; never rely on viewer substitution.
+
+---
+
+## 13. Structural validation
+
+Reopen the saved PDF and emit a manifest of what it actually contains.
+Catches corruption, blank pages, missing outline, or loss of metadata
+*before* the file is delivered. Runs in ~100–300 ms; call it
+immediately after `doc.build(...)` / `canvas.save()` on every build.
+
+```python
+from pathlib import Path
+
+from pypdf import PdfReader
+
+
+def validate_structure(pdf_path) -> dict:
+    """Reopen the PDF and emit a structural manifest."""
+    path = Path(pdf_path)
+    manifest: dict = {
+        "path": str(path),
+        "size_bytes": path.stat().st_size,
+        "reopens": False,
+    }
+    try:
+        reader = PdfReader(str(path))
+        manifest["reopens"] = True
+        manifest["pages"] = len(reader.pages)
+    except Exception as exc:
+        manifest["error"] = f"{type(exc).__name__}: {exc}"
+        return manifest
+
+    info = reader.metadata
+    manifest["metadata"] = {
+        "title":  getattr(info, "title", None) if info else None,
+        "author": getattr(info, "author", None) if info else None,
+    }
+
+    total_chars = 0
+    for page in reader.pages:
+        try:
+            total_chars += len(page.extract_text() or "")
+        except Exception:
+            pass
+    manifest["text_chars"] = total_chars
+
+    try:
+        outline = reader.outline
+        manifest["has_outline"] = bool(outline)
+        manifest["outline_entries"] = len(outline) if outline else 0
+    except Exception:
+        manifest["has_outline"] = False
+
+    # Optional deeper inspection — requires pdfplumber
+    try:
+        import pdfplumber
+        images = 0
+        tables = 0
+        with pdfplumber.open(path) as pdf:
+            for page in pdf.pages:
+                images += len(page.images or [])
+                tables += len(page.find_tables() or [])
+        manifest["images"] = images
+        manifest["tables"] = tables
+    except ImportError:
+        pass
+    except Exception:
+        pass
+
+    return manifest
+
+
+# Usage
+manifest = validate_structure("output/report.pdf")
+print(manifest)
+# {"path": "output/report.pdf", "size_bytes": 182347, "reopens": True,
+#  "pages": 12, "metadata": {"title": "2026 retention report", "author": "Compliance"},
+#  "text_chars": 18432, "has_outline": True, "outline_entries": 6,
+#  "images": 3, "tables": 2}
+```
+
+What to do with the manifest:
+
+- `reopens: False` or `error` present — the file is corrupted. Fix the
+  generator, don't deliver.
+- `text_chars` near zero on a prose-dominant build — pages are
+  rendering as images or the flow is empty. Regenerate.
+- `pages` does not match the brief — check pagination (overflow or
+  missing `PageBreak` calls).
+- `has_outline: False` on a long report — bookmarks were not emitted.
+  Add `canvas.bookmarkPage(...)` and `canvas.addOutlineEntry(...)`
+  inside the page template (see §2 Bookmarks).
+
+---
+
+## 14. Visual validation pipeline
+
+Rasterize the PDF to per-page PNGs for layout inspection. Useful after
+any build — especially when iterating on typography or chart
+placement.
+
+```bash
+# PNG per page via poppler-utils.
+pdftoppm -r 150 -png output/report.pdf /tmp/preview/page
+# → /tmp/preview/page-1.png, /tmp/preview/page-2.png, ...
+```
+
+Wrap in a small helper when iterating:
+
+```python
+import subprocess
+from pathlib import Path
+
+
+def visual_validate(pdf_path, out_dir, dpi=150):
+    out = Path(out_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    stem = Path(pdf_path).stem
+    subprocess.run(
+        ["pdftoppm", "-r", str(dpi), "-png",
+         str(pdf_path), str(out / stem)],
+        check=True,
+    )
+    return sorted(out.glob(f"{stem}-*.png"))
+```
+
+Iterate: generate → rasterize at dpi=100 → inspect → adjust tokens →
+regenerate. Bump to dpi=150–200 only for the final QA pass.
+
+Requires `poppler-utils` on `$PATH`.

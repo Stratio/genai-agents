@@ -1,8 +1,9 @@
-# === Report generation (HTML -> PDF, DOCX, Markdown, templating) ===
+# === Report generation (HTML -> PDF, DOCX, PPTX, Markdown, templating) ===
 jinja2>=3.1
 markdown>=3.7
 weasyprint>=65
 python-docx>=1.1
+python-pptx>=1.0
 beautifulsoup4>=4.12
 
 # === PDF reading (shared-skill pdf-reader): diagnose then extract ===

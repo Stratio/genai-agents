@@ -340,28 +340,34 @@ fuente por defecto de python-pptx; raramente necesitas estilarlas.
 Para pitch y formación, trata "generar notas del presentador" como
 parte de la definición de la tarea, no como bonus.
 
-## 11. Validación visual y export a PDF
+## 11. Validación post-build y export a PDF
 
-Tras construir, inspecciona siempre visualmente el output renderizado.
-Dos snippets:
+Tras construir, verifica siempre el resultado. Tres snippets en
+`REFERENCE.md`:
 
-- **Validación visual** (`REFERENCE.md` §Validación visual):
-  convierte a PDF vía LibreOffice y rasteriza PNGs por slide con
-  `pdftoppm`. Inspecciona cada PNG por overflow, contraste
-  awkward, espaciado apretado, imágenes rotas. Regenera y
-  re-valida; 2–3 iteraciones es normal.
-- **Export PDF** (`REFERENCE.md` §Export PDF): one-liner vía
+- **Validación estructural** (§Validación estructural): reabre el
+  PPTX guardado y emite un manifest — slides, aspect ratio, shapes
+  por tipo (text / picture / table / chart / other), cobertura de
+  speaker notes, y si cada text frame tiene `word_wrap=True`
+  (seguridad frente a overflow). Detecta corrupción, text frames
+  recortados o slides faltantes *antes* de entregar el deck. Corre
+  en ~100 ms; hazlo en cada build.
+- **Validación visual** (§Pipeline de validación visual): convierte a
+  PDF vía LibreOffice y rasteriza PNGs por slide con `pdftoppm`.
+  Inspecciona cada PNG por overflow, contraste awkward, espaciado
+  apretado, imágenes rotas. Regenera y re-valida; 2–3 iteraciones es
+  normal.
+- **Export a PDF** (§Export PDF): one-liner vía
   `soffice --headless --convert-to pdf`. El entregable por defecto
-  es solo el PPTX. Añade un PDF hermano únicamente cuando el
-  usuario lo pida explícitamente o cuando el brief implique
-  distribución fuera de PowerPoint (compartir en externo, adjunto
-  de email, audiencia sin Office, "lo mando por ahí", publicación).
-  Si tienes dudas, entrega solo el PPTX — el usuario siempre puede
-  pedir el PDF después.
+  es solo el PPTX. Añade un PDF hermano únicamente cuando el usuario
+  lo pida explícitamente o cuando el brief implique distribución
+  fuera de PowerPoint (compartir en externo, adjunto de email,
+  audiencia sin Office, "lo mando por ahí", publicación). Si tienes
+  dudas, entrega solo el PPTX — el usuario siempre puede pedir el
+  PDF después.
 
-Ambos comandos dependen de `libreoffice` y `poppler-utils` instalados.
-Pre-instalados en el sandbox Stratio Cowork; ver README.md para
-setup local.
+La validación visual y el export a PDF requieren `libreoffice` y
+`poppler-utils`. La validación estructural solo necesita `python-pptx`.
 
 ## 12. Plantillas del usuario (`.potx` / `.pptx`)
 
