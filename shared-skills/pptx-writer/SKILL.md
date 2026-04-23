@@ -85,7 +85,21 @@ If the user provides their own corporate `.pptx` or `.potx` template
 (see §12), load that instead; the template's master sets the aspect
 ratio.
 
-## 3. A proper starting template
+## 3. Theme application
+
+Design tokens (colors, typography, sizes) do not live in this skill —
+they come from the theme chosen for the deck.
+
+- If a centralized theming skill is available (brand-kit-style),
+  run its workflow BEFORE authoring; it returns a token set that maps
+  onto the `DESIGN` dict below.
+- Otherwise, improvise tokens coherent with the deliverable following
+  the tonal palette roles in `skills-guides/visual-craftsmanship.md`.
+
+The `DESIGN` dict in the scaffold uses placeholders — fill them from
+the theme, don't hard-code.
+
+## 4. A proper starting template
 
 Instead of reaching for `python-pptx` defaults, use this scaffold
 and adapt:
@@ -99,26 +113,27 @@ from pptx.enum.text import PP_ALIGN
 from pptx.util import Inches, Pt, Emu
 
 # 1. Commit to the design tokens up front — they never change mid-deck.
+#    Fill these from the chosen theme (see §3).
 SCAFFOLD = Path(__file__).parent / "assets" / "blank.pptx"
 
 DESIGN = {
     # Palette (hex — convert to RGBColor at use site)
-    "primary":     "#0a2540",   # deep navy
-    "accent":      "#d9472b",   # warm red
-    "ink":         "#1f2937",   # body text
-    "muted":       "#6b7280",   # captions, metadata
-    "rule":        "#d1d5db",   # dividers
-    "bg":          "#ffffff",
-    "bg_alt":      "#f9fafb",   # pale neutral for table bands
+    "primary":     "<hex>",   # titles, rules, primary accents
+    "accent":      "<hex>",   # pops, CTAs, highlight bars
+    "ink":         "<hex>",   # body text
+    "muted":       "<hex>",   # captions, metadata
+    "rule":        "<hex>",   # dividers
+    "bg":          "<hex>",   # slide background
+    "bg_alt":      "<hex>",   # secondary surfaces, table bands
     # Typography
-    "display":     "IBM Plex Sans",
-    "body":        "Inter",
+    "display":     "<font-family>",
+    "body":        "<font-family>",
     # Sizes (pt)
-    "size_title":        40,
-    "size_subtitle":     22,
-    "size_heading":      28,
-    "size_body":         18,
-    "size_small":        14,
+    "size_title":    <pt>,
+    "size_subtitle": <pt>,
+    "size_heading":  <pt>,
+    "size_body":     <pt>,
+    "size_small":    <pt>,
 }
 
 def hex_to_rgb(h: str) -> RGBColor:
@@ -185,7 +200,7 @@ Three rules the scaffold enforces:
   Hardcoded 4:3 constants (like the ones in the `/analyze` pipeline)
   will break on a 16:9 scaffold.
 
-## 4. Fonts
+## 5. Fonts
 
 PPT uses the reader's system fonts unless you embed them in
 `ppt/fonts/`. Consequences:
@@ -203,26 +218,26 @@ to be opened by Windows PowerPoint. Inform the user if a chosen
 pairing requires a non-standard face (e.g. "IBM Plex Serif + IBM
 Plex Mono works on Windows, renders as substitution on Mac").
 
-## 5. Palette guidance
+## 6. Palette guidance
 
 A designed deck has at most three colour families on any given slide:
 primary (one accent colour, saturated, used for 5–15% of surface),
 neutral (body text and backgrounds), and state colours
 (success/warning/danger) used sparingly for KPIs or callouts.
 
-When you make up a palette for a deck, pick concrete hex values up
-front and stick to them. Don't mix two different blues, two
-different reds, or two different accent saturations in the same
-deck. If the brief suggests a tone ("corporate" / "playful" /
-"academic"), pick values that actually sell that tone — corporate
-navy is `#0a2540`, not a pastel sky blue; academic is a restrained
-charcoal and warm beige, not saturated colour at all.
+Never mix two different blues, two different reds, or two different
+accent saturations in the same deck. Commit to concrete values up
+front and apply them uniformly across every slide.
 
-The `pptx_layout.py` module inside `/analyze` carries three
-reference palettes (`corporate`, `academic`, `modern`) if you want
-prior art; otherwise invent a palette that serves the brief.
+Where those concrete values come from depends on what the agent has:
 
-## 6. Slide types you'll build
+- If a centralized theming skill is available, the chosen theme
+  supplies a complete, coherent token set (primary, accent, ink,
+  muted, rule, bg, bg_alt, typography, sizes). Use it verbatim.
+- Otherwise, improvise from the tonal palette roles in
+  `skills-guides/visual-craftsmanship.md`.
+
+## 7. Slide types you'll build
 
 Below are the compositions worth mastering. Snippets for each live
 in `REFERENCE.md`; here is the menu.
@@ -254,7 +269,7 @@ in `REFERENCE.md`; here is the menu.
   next-step line. Avoid "Thank you" as the final slide; end on the
   message.
 
-## 7. Tables
+## 8. Tables
 
 `python-pptx` tables inherit a pastel theme style by default that
 looks like Microsoft's 2003-era default. **Always override it
@@ -272,7 +287,7 @@ aggressively**. The baseline override, in words:
 The full snippet lives in `REFERENCE.md` §Table with style override;
 call it from every table-producing slide.
 
-## 8. Images
+## 9. Images
 
 Placed via `slide.shapes.add_picture(path, left, top, width, height)`.
 Two rules:
@@ -286,7 +301,7 @@ Two rules:
   rectangle. Render charts from matplotlib / plotly with
   `dpi=200, facecolor="none"` before inserting.
 
-## 9. Charts
+## 10. Charts
 
 PPT charts have a huge quality-of-life advantage over images: the
 user can double-click them and edit the underlying data in an
@@ -312,7 +327,7 @@ Not supported (use pre-rendered image instead):
 
 Snippet in `REFERENCE.md` §Native OOXML chart — bar / column / line.
 
-## 10. Speaker notes
+## 11. Speaker notes
 
 Pitch decks, executive briefings, training decks and academic
 presentations all live by their speaker notes — the verbal script
@@ -330,7 +345,7 @@ python-pptx's default font; you rarely need to style them.
 For pitch and training decks, treat "generate speaker notes"
 as part of the task definition, not a bonus.
 
-## 11. Post-build validation and PDF export
+## 12. Post-build validation and PDF export
 
 After building, always verify the result. Three snippets in
 `REFERENCE.md`:
@@ -357,7 +372,7 @@ After building, always verify the result. Three snippets in
 Visual validation and PDF export require `libreoffice` and
 `poppler-utils`. Structural validation only needs `python-pptx`.
 
-## 12. User-provided templates (`.potx` / `.pptx`)
+## 13. User-provided templates (`.potx` / `.pptx`)
 
 When a user provides a corporate template — with their logo, master
 slide, fonts and colour palette — ignore the scaffold and load
@@ -398,14 +413,14 @@ When using a client template:
 
 Snippet in `REFERENCE.md` §Using a client template.
 
-## 13. Structural operations
+## 14. Structural operations
 
 For manipulating existing decks (merge, split, reorder, delete,
 find-replace across slides and notes, convert legacy `.ppt`), see
 `STRUCTURAL_OPS.md`. Those are copy-paste snippets; run them from
 a small script, don't try to import them as a module.
 
-## 14. Known limitations
+## 15. Known limitations
 
 `python-pptx` covers ~80% of real-world deck authoring cleanly. The
 remaining 20% either needs raw OOXML manipulation or is not
@@ -428,7 +443,7 @@ supported at all:
 Document the limitation in the deck's speaker notes or a brief
 appendix slide when it affects the deliverable.
 
-## 15. Quick-reference cheat sheet
+## 16. Quick-reference cheat sheet
 
 | Task | Approach |
 |---|---|
@@ -447,7 +462,7 @@ appendix slide when it affects the deliverable.
 | Convert `.ppt` legacy | `soffice --headless --convert-to pptx old.ppt` |
 | User template | load `.pptx`/`.potx` directly as scaffold |
 
-## 16. When to load REFERENCE.md
+## 17. When to load REFERENCE.md
 
 - Full snippets for each slide type (cover, agenda, section divider,
   title+content, bullets, two-column, image-with-text, KPI,

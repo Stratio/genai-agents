@@ -377,6 +377,8 @@ El agente light no incluye modelado ML formal. Para segmentación, usar RFM por 
 
 ## 9. Output del Análisis
 
+**Marca / identidad visual:** aunque el output primario de este agente es la conversación, las visualizaciones embebidas se benefician igualmente de un branding consistente. Si la shared-skill `brand-kit` está disponible, invoca su flujo una vez al inicio de la sesión para fijar los tokens (paleta categórica de charts, accent, tipografía) que usarán los charts inline. Consulta el `SKILL.md` de `brand-kit` para el flujo.
+
 El output primario de este agente es la **conversación**: hallazgos, insights, tablas, visualizaciones y recomendaciones se presentan directamente en el chat.
 
 - **En el chat** (siempre): Resumen de hallazgos con insights accionables, tablas comparativas, visualizaciones inline y recomendaciones priorizadas. Esta es la entrega principal del agente

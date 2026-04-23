@@ -115,7 +115,35 @@ Registra solo lo que vayas a usar — cada registro incrusta la fuente
 en el PDF de salida y añade aproximadamente 80–150 KB al tamaño del
 archivo.
 
-## 3. Una plantilla de partida adecuada
+## 3. Aplicación del tema
+
+Los tokens de diseño (colores, tipografía, tamaños) no viven en esta
+skill — vienen del tema elegido para el PDF.
+
+- Si hay una skill de theming centralizada disponible (tipo brand-kit),
+  ejecuta su flujo ANTES de autorar; devuelve un set de tokens que se
+  mapea sobre los tokens `HexColor` de abajo.
+- Si no, improvisa tokens coherentes con el entregable siguiendo los
+  roles de paleta tonal en `skills-guides/visual-craftsmanship.md`.
+
+### Sensibilidades específicas para impresión
+
+Los temas están escritos para servir varios medios. Si el tema elegido
+declara un bloque `## Print variant`, úsalo tal cual — el autor ya
+afinó papel-vs-pantalla. Si no, adapta al mapear los tokens de pantalla
+sobre el PDF:
+
+- `PAPER` no debería ser blanco puro `#FFFFFF` — prefiere un blanco
+  roto ligeramente cálido (bone, paper, cream).
+- `INK` no debería ser negro puro `#000000` — un casi negro cálido lee
+  más amable.
+- `RULE` más fino y cálido que el de un tema web.
+
+La plantilla de abajo usa placeholders — rellénalos desde el tema
+(ajustados para impresión según las notas de arriba). Ver §2 para el
+registro de fuentes.
+
+## 4. Una plantilla de partida adecuada
 
 En lugar de recurrir a los valores por defecto de reportlab, usa esto
 como base y adáptala:
@@ -134,18 +162,20 @@ from reportlab.platypus import (
 )
 
 # === FONTS ===
+# El tema nombra las familias; empareja cada familia con un TTF incluido.
 FONTS = Path(__file__).parent / "fonts"
-pdfmetrics.registerFont(TTFont("Body",        FONTS / "CrimsonPro-Regular.ttf"))
-pdfmetrics.registerFont(TTFont("Body-Bold",   FONTS / "CrimsonPro-Bold.ttf"))
-pdfmetrics.registerFont(TTFont("Display",     FONTS / "InstrumentSans-Bold.ttf"))
-pdfmetrics.registerFont(TTFont("Mono",        FONTS / "JetBrainsMono-Regular.ttf"))
+pdfmetrics.registerFont(TTFont("Body",        FONTS / "<body-regular>.ttf"))
+pdfmetrics.registerFont(TTFont("Body-Bold",   FONTS / "<body-bold>.ttf"))
+pdfmetrics.registerFont(TTFont("Display",     FONTS / "<display-bold>.ttf"))
+pdfmetrics.registerFont(TTFont("Mono",        FONTS / "<mono-regular>.ttf"))
 
 # === DESIGN TOKENS ===
-INK    = HexColor("#1A1A1A")   # near-black for body copy
-ACCENT = HexColor("#B84C2C")   # terracotta accent
-MUTED  = HexColor("#6E6E6E")   # captions, metadata
-RULE   = HexColor("#E5E0D8")   # hairlines, subtle dividers
-PAPER  = HexColor("#FAF8F4")   # warm off-white background (optional)
+# Rellenar desde el tema elegido (ver §3). No hardcodear valores aquí.
+INK    = HexColor("<hex>")   # texto cuerpo (rara vez negro puro)
+ACCENT = HexColor("<hex>")   # color de acento, CTAs, highlights
+MUTED  = HexColor("<hex>")   # captions, metadata
+RULE   = HexColor("<hex>")   # hairlines, divisores sutiles
+PAPER  = HexColor("<hex>")   # fondo de página (suele mapear a bg o bg_alt)
 
 MARGIN_X = 22 * mm
 MARGIN_Y = 25 * mm
@@ -254,7 +284,7 @@ Esta plantilla ya te proporciona:
 
 Adapta la plantilla; no la fuerces.
 
-## 4. Tablas que no parecen capturas de pantalla de Excel
+## 5. Tablas que no parecen capturas de pantalla de Excel
 
 Las tablas por defecto de reportlab son horribles. Una tabla con diseño
 necesita:
@@ -298,7 +328,7 @@ tbl.setStyle(TableStyle([
 ]))
 ```
 
-## 5. Problemas frecuentes con reportlab
+## 6. Problemas frecuentes con reportlab
 
 ### Subíndices y superíndices Unicode
 
@@ -344,7 +374,7 @@ tbl = LongTable(data, colWidths=[...], repeatRows=1)
 `repeatRows=1` mantiene la fila de cabecera en la parte superior de
 cada página.
 
-## 6. Combinar, dividir y rotar PDFs
+## 7. Combinar, dividir y rotar PDFs
 
 Para operaciones estructurales, `pypdf` es la herramienta adecuada.
 No uses reportlab para esto — es para crear contenido, no para
@@ -416,7 +446,7 @@ qpdf input.pdf --pages . 5-9 -- section.pdf
 qpdf input.pdf --rotate=+90:1 rotated.pdf
 ```
 
-## 7. Marcas de agua
+## 8. Marcas de agua
 
 Una marca de agua es un PDF superpuesto sobre otro PDF, página a página.
 El enfoque más sencillo: crea la marca de agua con reportlab y luego
@@ -454,7 +484,7 @@ with open("/tmp/report_watermarked.pdf", "wb") as f:
 Para una marca de agua visible pero menos intrusiva, reduce el valor
 de alpha a 0,06–0,10.
 
-## 8. Cifrado y permisos
+## 9. Cifrado y permisos
 
 ```python
 from pypdf import PdfReader, PdfWriter
@@ -478,7 +508,7 @@ Nota: El cifrado PDF no es una barrera de seguridad real. Cualquiera
 puede eliminarlo con la herramienta adecuada. Es una barrera de cortesía,
 no una caja fuerte.
 
-## 9. Convertir PDFs escaneados a PDFs con texto buscable
+## 10. Convertir PDFs escaneados a PDFs con texto buscable
 
 Usa OCRmyPDF cuando esté disponible — preserva el escaneo original y
 añade una capa de texto invisible:
@@ -490,7 +520,7 @@ ocrmypdf --language spa+eng scanned.pdf scanned_searchable.pdf
 El equivalente en Python hecho a mano — rasterizar + OCR + reconstruir —
 es posible pero engorroso. OCRmyPDF gestiona todos los casos límite.
 
-## 10. Validación post-build
+## 11. Validación post-build
 
 Tras construir, verifica siempre el resultado. Dos snippets en
 `REFERENCE.md`:
@@ -510,14 +540,14 @@ La validación estructural solo necesita `pypdf` (y opcionalmente
 `pdfplumber` para conteos de imágenes / tablas). La validación visual
 requiere `poppler-utils` para `pdftoppm`.
 
-## 11. Cuándo cargar archivos adicionales
+## 12. Cuándo cargar archivos adicionales
 
 - **`FORMS.md`** — rellenar campos AcroForm interactivos en PDFs existentes
 - **`REFERENCE.md`** — patrones avanzados de reportlab, incrustación de SVG,
   generación de índices, marcadores, numeración de páginas, renderizado por lotes
 - **`fonts/`** — los propios archivos TTF, con los avisos de licencia OFL
 
-## 12. Fuentes incluidas
+## 13. Fuentes incluidas
 
 El directorio `fonts/` incluye archivos TTF bajo la SIL Open Font License. Regístralas directamente desde ese directorio al construir un PDF — no hace falta instalación a nivel de sistema. Consulta `fonts/README.md` para la lista completa, los pesos disponibles y las notas de licencia.
 

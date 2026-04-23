@@ -111,71 +111,31 @@ if [ -f "shared-skills" ]; then
       continue
     fi
     cp -r "$skill_src" "$skill_dst"
-    # Remove skill-guides file from output
-    rm -f "$skill_dst/skill-guides"
     echo "  Shared skill '$skill_name' included"
   done < "shared-skills"
 fi
 
-# --- Collect and copy skills-guides (inline: inside each skill) ---
-GUIDES_NEEDED=()
-# From shared-skills/*/skill-guides
-if [ -f "shared-skills" ]; then
-  while IFS= read -r skill_name || [ -n "$skill_name" ]; do
-    [ -z "$skill_name" ] || [[ "$skill_name" == \#* ]] && continue
-    skill_src="$MONOREPO_ROOT/shared-skills/$skill_name"
-    if [ -f "$skill_src/skill-guides" ]; then
-      while IFS= read -r guide || [ -n "$guide" ]; do
-        [ -z "$guide" ] || [[ "$guide" == \#* ]] && continue
-        GUIDES_NEEDED+=("shared:$guide")
-      done < "$skill_src/skill-guides"
-    fi
-  done < "shared-skills"
-fi
-# From agent's shared-guides
-if [ -f "shared-guides" ]; then
+# --- Copy skills-guides inside each skill that declares them ---
+# Self-contained: iterates over ALL skills in the plugin (both local and
+# shared) and uses each skill's own `skill-guides` manifest to copy the
+# declared guides alongside SKILL.md. Then rewrites `skills-guides/X.md`
+# references to `X.md` so they resolve locally to the skill folder, and
+# removes the manifest from the output.
+for skill_dir in "$PLUGIN_BUILD/skills"/*/; do
+  [ -d "$skill_dir" ] || continue
+  [ -f "$skill_dir/skill-guides" ] || continue
   while IFS= read -r guide || [ -n "$guide" ]; do
     [ -z "$guide" ] || [[ "$guide" == \#* ]] && continue
-    GUIDES_NEEDED+=("shared:$guide")
-  done < "shared-guides"
-fi
-# Local guides
-if [ -d "skills-guides" ]; then
-  for f in skills-guides/*.md; do
-    [ -f "$f" ] || continue
-    GUIDES_NEEDED+=("local:$(basename "$f")")
-  done
-fi
-
-# Build deduplicated list
-declare -A _GUIDES_MAP=()
-for entry in "${GUIDES_NEEDED[@]}"; do
-  src_type="${entry%%:*}"
-  guide_name="${entry#*:}"
-  _GUIDES_MAP["$guide_name"]="$src_type"
-done
-
-if [ ${#_GUIDES_MAP[@]} -gt 0 ]; then
-  echo "Copying skills-guides into skills..."
-  for skill_dir in "$PLUGIN_BUILD/skills/analyze" "$PLUGIN_BUILD/skills/explore-data"; do
-    if [ -d "$skill_dir" ]; then
-      for guide_name in "${!_GUIDES_MAP[@]}"; do
-        src_type="${_GUIDES_MAP[$guide_name]}"
-        if [ "$src_type" = "shared" ]; then
-          guide_src="$MONOREPO_ROOT/shared-skill-guides/$guide_name"
-        else
-          guide_src="skills-guides/$guide_name"
-        fi
-        if [ -d "$guide_src" ]; then
-          cp -r "$guide_src" "$skill_dir/$guide_name"
-        elif [ -f "$guide_src" ]; then
-          cp "$guide_src" "$skill_dir/$guide_name"
-        fi
-      done
+    guide_src="$MONOREPO_ROOT/shared-skill-guides/$guide"
+    if [ -d "$guide_src" ]; then
+      cp -r "$guide_src" "$skill_dir/$guide"
+    elif [ -f "$guide_src" ]; then
+      cp "$guide_src" "$skill_dir/$guide"
     fi
-  done
-  sed -i 's|`skills-guides/stratio-data-tools\.md`|`stratio-data-tools.md`|g' "$PLUGIN_BUILD/skills/"*/SKILL.md 2>/dev/null || true
-fi
+  done < "$skill_dir/skill-guides"
+  find "$skill_dir" -type f -name '*.md' -exec sed -i 's|skills-guides/||g' {} \;
+  rm -f "$skill_dir/skill-guides"
+done
 
 # --- Placeholder substitution ---
 sed -i 's/{{TOOL_QUESTIONS}}/ (`AskUserQuestion`)/g' "$PLUGIN_BUILD/skills/"*/SKILL.md 2>/dev/null || true

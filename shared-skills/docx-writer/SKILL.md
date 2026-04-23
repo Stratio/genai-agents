@@ -26,15 +26,16 @@ Every DOCX generation task, regardless of size, follows five decisions:
    everything" document is the worst outcome.
 3. **Select a type pairing** — one display face for headings, one
    body face for prose. Two typefaces is almost always enough. Because
-   DOCX uses the reader's system fonts unless you embed (§4), choose
+   DOCX uses the reader's system fonts unless you embed (§5), choose
    pairings that degrade gracefully — Calibri / Aptos / Arial / Times
    New Roman / Georgia / Cambria are universal safe defaults.
 4. **Define a palette** — one dominant accent colour (used for 5–15%
    of surface: headings, header rules, callouts), one deep neutral
-   for body text (rarely pure black — `#1f2937` is kinder), one pale
-   neutral for table bands or sidebars, plus state colours
+   for body text (rarely pure black — a warm mid-slate reads better),
+   one pale neutral for table bands or sidebars, plus state colours
    (success/warning/danger) used sparingly. Real saturation, not
-   washed-out pastels by default.
+   washed-out pastels by default. Concrete values come from the
+   theme (§3), not from this skill.
 5. **Set the rhythm** — margins (2.5 cm ISO default; 3 cm for generous
    editorial; 2 cm for dense reference manuals), paragraph spacing,
    heading air, line-height. Cramped DOCX reads as a first draft;
@@ -93,7 +94,21 @@ default — that is a US-centric legacy that rarely suits intentional
 design. Generous editorial: 3 cm. ISO default: 2.5 cm. Dense manual:
 2 cm. Newsletter with sidebar: asymmetric (left 2 cm, right 4 cm).
 
-## 3. A proper starting template
+## 3. Theme application
+
+Design tokens (colors, typography, sizes) do not live in this skill —
+they come from the theme chosen for the deliverable.
+
+- If a centralized theming skill is available (brand-kit-style),
+  run its workflow BEFORE authoring; it returns a token set that maps
+  onto the `DESIGN` dict below.
+- Otherwise, improvise tokens coherent with the deliverable following
+  the tonal palette roles in `skills-guides/visual-craftsmanship.md`.
+
+The `DESIGN` dict in the scaffold uses placeholders (`<hex>`,
+`<font-family>`, `<pt>`) — fill them from the theme, don't hard-code.
+
+## 4. A proper starting template
 
 Instead of reaching for `Document()` and hoping, use this scaffold
 and adapt:
@@ -107,27 +122,29 @@ from docx.oxml.ns import qn
 from docx.shared import Cm, Pt, RGBColor
 
 # 1. Commit to the design tokens up front — they never change mid-doc.
+#    Fill these from the chosen theme (see §3). Do not hard-code values
+#    here; the skeleton is what stays stable, the values are branding.
 DESIGN = {
     # Palette (hex strings — convert to RGBColor at use site)
-    "primary":  "#0a2540",   # deep navy (accent / headings)
-    "ink":      "#1f2937",   # body text (not pure black)
-    "muted":    "#6b7280",   # captions, metadata
-    "rule":     "#d1d5db",   # dividers, table bottom rules
-    "bg_alt":   "#f3f4f6",   # pale neutral for table bands
-    "state_danger":  "#b91c1c",
-    "state_warn":    "#b45309",
-    "state_ok":      "#047857",
+    "primary":       "<hex>",   # headings, top rules, accents
+    "ink":           "<hex>",   # body text (rarely pure black)
+    "muted":         "<hex>",   # captions, metadata
+    "rule":          "<hex>",   # dividers, table bottom rules
+    "bg_alt":        "<hex>",   # pale neutral for table bands
+    "state_danger":  "<hex>",
+    "state_warn":    "<hex>",
+    "state_ok":      "<hex>",
     # Typography
-    "display":  "Instrument Serif",  # headings; falls back to Times
-    "body":     "Crimson Pro",       # prose; falls back to Georgia
-    "mono":     "JetBrains Mono",    # code; falls back to Consolas
+    "display":  "<font-family>",  # headings
+    "body":     "<font-family>",  # prose
+    "mono":     "<font-family>",  # code
     # Sizes (pt)
-    "size_h1":    22,
-    "size_h2":    16,
-    "size_h3":    13,
-    "size_body":  11,
-    "size_small":  9,
-    # Page
+    "size_h1":    <pt>,
+    "size_h2":    <pt>,
+    "size_h3":    <pt>,
+    "size_body":  <pt>,
+    "size_small": <pt>,
+    # Page (document decision, not theme)
     "page_size":  "A4",              # "A4" or "Letter"
     "margin_cm":  2.5,
 }
@@ -248,7 +265,7 @@ Four rules the scaffold enforces:
   module-local helper the moment you repeat a pattern three times;
   don't build an abstraction up-front.
 
-## 4. Fonts
+## 5. Fonts
 
 DOCX uses the reader's installed fonts unless you embed them inside
 `word/fontTable.xml`. Consequences:
@@ -265,7 +282,7 @@ Recommendation: stick to safe defaults unless the document is only
 going to be opened on Word 2016+ Windows/macOS. Inform the user if a
 chosen pairing requires a non-standard face.
 
-## 5. Palette guidance
+## 6. Palette guidance
 
 A designed document has at most three colour families on any given
 page: primary (one accent colour, saturated, used for 5–15% of
@@ -273,18 +290,20 @@ surface: headings, table header fill, accent rules), neutral (body
 text and backgrounds), and state colours (success/warning/danger)
 used sparingly for callouts.
 
-When you make up a palette, pick concrete hex values up front and
-stick to them. Don't mix two different blues, two different reds, or
-two different accent saturations in the same document. If the brief
-suggests a tone ("corporate" / "editorial" / "legal"), pick values
-that actually sell that tone — corporate navy is `#0a2540`, not a
-pastel sky blue; academic is a restrained charcoal and warm beige,
-not saturated colour at all.
+Never mix two different blues, two different reds, or two different
+accent saturations in the same document. Commit to concrete values up
+front and apply them uniformly.
 
-Reference palettes for the most common tones live in `REFERENCE.md`
-§Palette reference. Copy one verbatim or use it as a seed and adjust.
+Where those concrete values come from depends on what the agent has:
 
-## 6. Document blocks you'll compose
+- If a centralized theming skill is available, the chosen theme
+  supplies a complete, coherent token set (primary, ink, muted, rule,
+  bg_alt, accent, state colours, typography, sizes). Use it verbatim.
+- Otherwise, improvise from the tonal palette roles in
+  `skills-guides/visual-craftsmanship.md`. For a handful of editorial
+  token seeds you can adapt, see `REFERENCE.md` §Palette guidance.
+
+## 7. Document blocks you'll compose
 
 These are the building blocks worth mastering. Snippets for each live
 in `REFERENCE.md`; here is the menu.
@@ -308,7 +327,7 @@ in `REFERENCE.md`; here is the menu.
   table.
 - **Page break** — explicit `<w:br w:type="page"/>` inside a paragraph.
 
-## 7. Tables
+## 8. Tables
 
 A DOCX table without design choices reads as a spreadsheet screenshot.
 **Always override the default style.** The baseline override, in words:
@@ -330,7 +349,7 @@ A DOCX table without design choices reads as a spreadsheet screenshot.
 Full snippet in `REFERENCE.md` §Table with style override; copy it
 verbatim for every table-producing document.
 
-## 8. Figures
+## 9. Figures
 
 Embedded via `doc.add_picture(path, width=Cm(...))`. Two rules:
 
@@ -345,7 +364,7 @@ module-local counter or hand-crafted sequence fields. Auto-numbered
 fields require `seq` in `document.xml` — see `REFERENCE.md`
 §Sequence fields for figure numbering.
 
-## 9. Headers, footers, page numbers
+## 10. Headers, footers, page numbers
 
 Every page-long document benefits from running chrome — a title
 header, a page counter in the footer, occasionally a logo. The
@@ -371,7 +390,7 @@ Skip running chrome on the cover page by marking the first section
 `different_first_page_header_footer = True` and leaving its header /
 footer paragraphs empty (snippet also in REFERENCE.md).
 
-## 10. Post-build validation and PDF export
+## 11. Post-build validation and PDF export
 
 After building, always verify the result. Three snippets in
 `REFERENCE.md`:
@@ -399,10 +418,10 @@ Visual validation and PDF export require `libreoffice` and
 `poppler-utils`. Structural validation only needs `python-docx` and
 `lxml`.
 
-## 11. User-provided templates
+## 12. User-provided templates
 
 When a user provides a corporate template — with their logo, letterhead,
-styles and colour palette — ignore the scaffold in §3 and load their
+styles and colour palette — ignore the scaffold in §4 and load their
 file:
 
 ```python
@@ -432,7 +451,7 @@ When using a client template:
 For a fill-in-the-blank pattern (`{{recipient}}` → real name), see
 `REFERENCE.md` §Working with an existing DOCX as a starting point.
 
-## 12. Structural operations
+## 13. Structural operations
 
 For manipulating existing documents (merge several DOCX files, split
 by heading level or page break, find-replace with regex across body /
@@ -440,7 +459,7 @@ headers / footers, convert legacy binary `.doc` to `.docx`), see
 `STRUCTURAL_OPS.md`. Those are copy-paste snippets; run them from a
 small script, don't try to import them as a module.
 
-## 13. Pitfalls
+## 14. Pitfalls
 
 Reality-checked against `python-docx` 1.1 and the ECMA-376 spec:
 
@@ -477,7 +496,7 @@ Reality-checked against `python-docx` 1.1 and the ECMA-376 spec:
   matters when using find-replace on strings that start or end with a
   space; without it the whitespace collapses.
 
-## 14. Known limitations
+## 15. Known limitations
 
 `python-docx` covers ~85% of real-world document authoring cleanly.
 The remaining 15% either needs raw OOXML manipulation or is not
@@ -497,12 +516,12 @@ supported at all:
   field is inserted correctly, but Word fills it only when the user
   opens the file (or accepts the "update fields" dialog). Show the
   user how to trigger it.
-- **Exact-font rendering on every machine** — see §4.
+- **Exact-font rendering on every machine** — see §5.
 
 Document the limitation in a short appendix or in a call-out when it
 affects the deliverable.
 
-## 15. Quick-reference cheat sheet
+## 16. Quick-reference cheat sheet
 
 | Task | Approach |
 |---|---|
@@ -526,7 +545,7 @@ affects the deliverable.
 | Convert `.doc` legacy | `soffice --headless --convert-to docx old.doc` |
 | User-provided template | load `.docx` / `.dotx` directly; reuse its styles |
 
-## 16. When to load REFERENCE.md
+## 17. When to load REFERENCE.md
 
 - Full snippets for each document block (cover, headings, paragraphs,
   tables with overrides, figures, callouts, lists, code blocks,

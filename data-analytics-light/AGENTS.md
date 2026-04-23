@@ -377,6 +377,8 @@ The light agent does not include formal ML modeling. For segmentation, use RFM b
 
 ## 9. Analysis Output
 
+**Brand / visual identity:** although this agent's primary deliverable is the conversation, the embedded visualizations still benefit from consistent branding. If the `brand-kit` shared skill is available, invoke its workflow once at the start of a session to fix the tokens (chart categorical palette, accent, typography) that inline charts will use. See the `brand-kit` SKILL.md for the flow.
+
 The primary output of this agent is the **conversation**: findings, insights, tables, visualizations, and recommendations are presented directly in chat.
 
 - **In the chat** (always): Summary of findings with actionable insights, comparative tables, inline visualizations, and prioritized recommendations. This is the agent's main deliverable

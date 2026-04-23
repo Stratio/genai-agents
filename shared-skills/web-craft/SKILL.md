@@ -68,14 +68,21 @@ Serve fonts through `@import` from Google Fonts or the foundry's official delive
 ### 2.4 Commit to a palette
 One dominant accent, one deep neutral for text (rarely pure black), one pale neutral for backgrounds (not pure white), optional accent colours. Declare the palette in CSS custom properties; never hand-type the same hex twice.
 
+Concrete values come from the theme, not from this skill.
+
+- **If the agent has a centralized theming skill available** (a brand-kit-style skill that ships a catalog of themes plus a workflow for the user to pick or define one), run that workflow BEFORE coding. The chosen theme supplies the token set that maps onto the `:root` below.
+- **If no such skill is present**, improvise tokens coherent with the deliverable context, following the tonal palette roles in `skills-guides/visual-craftsmanship.md`.
+
+The `:root` block below uses placeholders to make it clear where the values come from:
+
 ```css
 :root {
-    --accent: #d9472b;             /* dominant — sparing, 5–15% of surface */
-    --text: #1a1a1f;               /* deep neutral */
-    --surface: #f6f1e7;            /* pale neutral */
-    --rule: #1a1a1f14;             /* subtle dividers, derived from text */
-    --positive: #1f6b3a;           /* state accent — use only for state */
-    --negative: #a3281a;
+    --accent: <hex>;               /* dominant — sparing, 5–15% of surface */
+    --text: <hex>;                 /* deep neutral */
+    --surface: <hex>;              /* pale neutral */
+    --rule: <hex>;                 /* subtle dividers (often derived from text) */
+    --positive: <hex>;             /* state accent — use only for state */
+    --negative: <hex>;
 }
 ```
 

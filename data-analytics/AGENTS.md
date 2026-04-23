@@ -444,6 +444,8 @@ Three core principles (see `skills/analyze/visualization.md` and `/analyze` Phas
 
 ## 8. Output Formats
 
+**Brand / visual identity (run BEFORE any visual deliverable):** if the `brand-kit` shared skill is available, invoke its workflow first to fix the design tokens every output skill will apply. The user picks one of the predefined themes, supplies ad-hoc colors and fonts, or points to an external brand file as scaffold. See the `brand-kit` SKILL.md for the flow. If `brand-kit` is not declared for this agent, the output skills improvise tokens following `skills-guides/visual-craftsmanship.md` — still coherent, just not centralized.
+
 For detailed generation instructions per format, see `skills/analyze/report/report.md` (loaded from `/analyze` Phase 4).
 
 | Format | How to generate | When to use |

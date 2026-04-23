@@ -90,7 +90,21 @@ Si el usuario provee su propia plantilla corporativa `.pptx` o
 `.potx` (ver §12), cárgala en su lugar; el master de la plantilla
 fija el aspect ratio.
 
-## 3. Una plantilla de inicio apropiada
+## 3. Aplicación del tema
+
+Los tokens de diseño (colores, tipografía, tamaños) no viven en esta
+skill — vienen del tema elegido para el deck.
+
+- Si hay una skill de theming centralizada disponible (tipo brand-kit),
+  ejecuta su flujo ANTES de autorar; devuelve un set de tokens que se
+  mapea sobre el dict `DESIGN` de abajo.
+- Si no, improvisa tokens coherentes con el entregable siguiendo los
+  roles de paleta tonal en `skills-guides/visual-craftsmanship.md`.
+
+El dict `DESIGN` del scaffold usa placeholders — rellénalos desde el
+tema, no hardcodees.
+
+## 4. Una plantilla de inicio apropiada
 
 En vez de caer en los defaults de `python-pptx`, usa este scaffold
 y adáptalo:
@@ -104,26 +118,27 @@ from pptx.enum.text import PP_ALIGN
 from pptx.util import Inches, Pt, Emu
 
 # 1. Compromete tus tokens de diseño desde el principio — no cambian.
+#    Rellénalos desde el tema elegido (ver §3).
 SCAFFOLD = Path(__file__).parent / "assets" / "blank.pptx"
 
 DESIGN = {
     # Paleta (hex — convierte a RGBColor en el uso)
-    "primary":     "#0a2540",   # azul navy profundo
-    "accent":      "#d9472b",   # rojo cálido
-    "ink":         "#1f2937",   # texto body
-    "muted":       "#6b7280",   # captions, metadata
-    "rule":        "#d1d5db",   # divisores
-    "bg":          "#ffffff",
-    "bg_alt":      "#f9fafb",   # pálido para bandas de tabla
+    "primary":     "<hex>",   # títulos, reglas, acentos primarios
+    "accent":      "<hex>",   # pops, CTAs, barras de highlight
+    "ink":         "<hex>",   # texto body
+    "muted":       "<hex>",   # captions, metadata
+    "rule":        "<hex>",   # divisores
+    "bg":          "<hex>",   # fondo de slide
+    "bg_alt":      "<hex>",   # superficies secundarias, bandas de tabla
     # Tipografía
-    "display":     "IBM Plex Sans",
-    "body":        "Inter",
+    "display":     "<font-family>",
+    "body":        "<font-family>",
     # Tamaños (pt)
-    "size_title":        40,
-    "size_subtitle":     22,
-    "size_heading":      28,
-    "size_body":         18,
-    "size_small":        14,
+    "size_title":    <pt>,
+    "size_subtitle": <pt>,
+    "size_heading":  <pt>,
+    "size_body":     <pt>,
+    "size_small":    <pt>,
 }
 
 def hex_to_rgb(h: str) -> RGBColor:
@@ -190,7 +205,7 @@ Tres reglas que el scaffold hace cumplir:
   Constantes 4:3 hardcoded (como las del pipeline de `/analyze`)
   rompen sobre un scaffold 16:9.
 
-## 4. Fuentes
+## 5. Fuentes
 
 PPT usa las fuentes del sistema del lector salvo que las embebas en
 `ppt/fonts/`. Consecuencias:
@@ -210,7 +225,7 @@ pairing elegido requiere una face no estándar (p.ej. "IBM Plex
 Serif + IBM Plex Mono funciona en Windows, se renderiza con
 sustitución en Mac").
 
-## 5. Guía de paleta
+## 6. Guía de paleta
 
 Un deck diseñado tiene como mucho tres familias de color en un
 slide dado: primario (un color de acento, saturado, usado en 5–15%
@@ -218,19 +233,22 @@ de la superficie), neutrales (texto body y fondos), y colores de
 estado (éxito/alerta/peligro) usados con moderación para KPIs o
 callouts.
 
-Cuando inventes una paleta para un deck, elige valores hex concretos
-desde el principio y cíñete a ellos. No mezcles dos azules distintos,
-dos rojos distintos o dos saturaciones de acento distintas en el
-mismo deck. Si el brief sugiere un tono ("corporativo" / "lúdico" /
-"académico"), elige valores que realmente vendan ese tono — corporate
-navy es `#0a2540`, no un azul cielo pastel; académico es un carbón
-moderado y un beige cálido, no color saturado para nada.
+Nunca mezcles dos azules distintos, dos rojos distintos o dos
+saturaciones de acento distintas en el mismo deck. Comprométete con
+valores concretos desde el principio y aplícalos de manera uniforme
+en cada slide.
 
-El módulo `pptx_layout.py` dentro de `/analyze` lleva tres paletas
-de referencia (`corporate`, `academic`, `modern`) si quieres arte
-previo; si no, inventa una paleta que sirva al brief.
+De dónde salen esos valores concretos depende de lo que tenga el
+agente:
 
-## 6. Tipos de slide que construirás
+- Si hay una skill de theming centralizada disponible, el tema
+  elegido provee un set completo y coherente de tokens (primary,
+  accent, ink, muted, rule, bg, bg_alt, tipografía, tamaños). Úsalo
+  tal cual.
+- Si no, improvisa desde los roles de paleta tonal en
+  `skills-guides/visual-craftsmanship.md`.
+
+## 7. Tipos de slide que construirás
 
 Abajo están las composiciones que merece dominar. Los snippets para
 cada uno viven en `REFERENCE.md`; aquí está el menú.
@@ -263,7 +281,7 @@ cada uno viven en `REFERENCE.md`; aquí está el menú.
   la línea de siguiente paso. Evita "Thank you" como slide final;
   termina con el mensaje.
 
-## 7. Tablas
+## 8. Tablas
 
 Las tablas de `python-pptx` heredan por defecto un estilo de tema
 pastel que parece el default era-2003 de Microsoft. **Sobrescríbelo
@@ -281,7 +299,7 @@ siempre agresivamente**. El override baseline, en palabras:
 El snippet completo vive en `REFERENCE.md` §Tabla con override de
 estilo; llámalo desde cada slide que produzca tabla.
 
-## 8. Imágenes
+## 9. Imágenes
 
 Colocadas vía `slide.shapes.add_picture(path, left, top, width,
 height)`. Dos reglas:
@@ -295,7 +313,7 @@ height)`. Dos reglas:
   visible. Renderiza charts desde matplotlib / plotly con
   `dpi=200, facecolor="none"` antes de insertar.
 
-## 9. Charts
+## 10. Charts
 
 Los charts de PPT tienen una ventaja enorme de calidad de vida
 frente a las imágenes: el usuario puede hacer doble click y editar
@@ -322,7 +340,7 @@ No soportados (usa imagen pre-renderizada):
 
 Snippet en `REFERENCE.md` §Chart OOXML nativo — bar / column / line.
 
-## 10. Notas del presentador
+## 11. Notas del presentador
 
 Pitch decks, briefings ejecutivos, decks de formación y
 presentaciones académicas viven por sus notas del presentador — el
@@ -340,7 +358,7 @@ fuente por defecto de python-pptx; raramente necesitas estilarlas.
 Para pitch y formación, trata "generar notas del presentador" como
 parte de la definición de la tarea, no como bonus.
 
-## 11. Validación post-build y export a PDF
+## 12. Validación post-build y export a PDF
 
 Tras construir, verifica siempre el resultado. Tres snippets en
 `REFERENCE.md`:
@@ -369,7 +387,7 @@ Tras construir, verifica siempre el resultado. Tres snippets en
 La validación visual y el export a PDF requieren `libreoffice` y
 `poppler-utils`. La validación estructural solo necesita `python-pptx`.
 
-## 12. Plantillas del usuario (`.potx` / `.pptx`)
+## 13. Plantillas del usuario (`.potx` / `.pptx`)
 
 Cuando el usuario provee una plantilla corporativa — con su logo,
 master slide, fuentes y paleta — ignora el scaffold y carga su
@@ -410,14 +428,14 @@ Cuando uses una plantilla de cliente:
 
 Snippet en `REFERENCE.md` §Usando una plantilla de cliente.
 
-## 13. Operaciones estructurales
+## 14. Operaciones estructurales
 
 Para manipular decks existentes (merge, split, reordenar, borrar,
 find-replace cross-slide y notas, convertir `.ppt` legacy), ver
 `STRUCTURAL_OPS.md`. Son snippets copy-paste; ejecútalos desde un
 script pequeño, no intentes importarlos como módulo.
 
-## 14. Limitaciones conocidas
+## 15. Limitaciones conocidas
 
 `python-pptx` cubre ~80% de la autoría real de decks de forma limpia.
 El 20% restante requiere o bien manipulación OOXML cruda o no está
@@ -441,7 +459,7 @@ soportado en absoluto:
 Documenta la limitación en las notas del presentador del deck o en
 un slide de anexo cuando afecte al deliverable.
 
-## 15. Cheat sheet de referencia rápida
+## 16. Cheat sheet de referencia rápida
 
 | Tarea | Enfoque |
 |---|---|
@@ -460,7 +478,7 @@ un slide de anexo cuando afecte al deliverable.
 | Convertir `.ppt` legacy | `soffice --headless --convert-to pptx old.ppt` |
 | Plantilla de usuario | carga `.pptx`/`.potx` directamente como scaffold |
 
-## 16. Cuándo cargar REFERENCE.md
+## 17. Cuándo cargar REFERENCE.md
 
 - Snippets completos para cada tipo de slide (portada, agenda,
   divisor de sección, título+contenido, bullets, dos columnas,

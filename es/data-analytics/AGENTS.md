@@ -444,6 +444,8 @@ Tres principios core (ver `skills/analyze/visualization.md` y `/analyze` Fase 4 
 
 ## 8. Formatos de Salida
 
+**Marca / identidad visual (ejecutar ANTES de cualquier entregable visual):** si la shared-skill `brand-kit` está disponible, invoca su flujo primero para fijar los tokens de diseño que cada skill de output aplicará. El usuario elige uno de los temas predefinidos, aporta colores y fuentes ad-hoc, o apunta a un fichero externo de marca como scaffold. Consulta el `SKILL.md` de `brand-kit` para el flujo. Si `brand-kit` no está declarada para este agente, las skills de output improvisan tokens siguiendo `skills-guides/visual-craftsmanship.md` — sigue siendo coherente, solo que no centralizado.
+
 Para instrucciones detalladas de generación por formato, ver `skills/analyze/report/report.md` (cargado desde `/analyze` Fase 4).
 
 | Formato | Cómo generarlo | Cuándo usarlo |
