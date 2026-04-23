@@ -1,6 +1,6 @@
 ---
 name: explore-data
-description: "Exploración rápida de dominios de datos, tablas, columnas, perfilado estadístico y terminología de negocio usando los MCPs de datos gobernados. Usar cuando el usuario quiera descubrir que datos hay disponibles, entender la estructura de un dominio o explorar tablas y columnas antes de un análisis."
+description: "Exploración rápida de dominios de datos, tablas, columnas, perfilado estadístico, cobertura de calidad de gobierno y terminología de negocio usando los MCPs de datos gobernados. Usar cuando el usuario quiera descubrir que datos hay disponibles, entender la estructura de un dominio o explorar tablas y columnas antes de un análisis."
 argument-hint: "[dominio (opcional)]"
 ---
 
@@ -10,7 +10,7 @@ Guía para explorar rapidamente los datos disponibles en los dominios gobernados
 
 ## 1. Descubrimiento del Dominio
 
-Leer y seguir `skills-guides/stratio-data-tools.md` sec 4-5 para los pasos de descubrimiento del dominio (buscar o listar dominios, seleccionar, explorar tablas, columnas, terminología y profiling).
+Leer y seguir `skills-guides/stratio-data-tools.md` sec 4 para los pasos de descubrimiento del dominio (buscar o listar dominios, seleccionar, explorar tablas, columnas y terminología).
 
 Si el usuario proporciona un argumento ($ARGUMENTS), buscar con `search_domains($ARGUMENTS)`. Si coincide con un dominio, saltar directamente a explorar tablas. Si no coincide, preguntar al usuario cual dominio explorar siguiendo la convención de preguntas al usuario (adaptativa al entorno: interactivas si disponibles, lista numerada en chat si no). Preguntar si quiere profundizar en alguna tabla específica o ver todas.
 
@@ -18,7 +18,21 @@ Si el usuario proporciona un argumento ($ARGUMENTS), buscar con `search_domains(
 
 Si `output/MEMORY.md` existe, leer la sección "Patrones de Datos Conocidos" del dominio que se va a explorar. Si hay patrones registrados, informar al usuario antes de perfilar (ej: "En análisis anteriores se detecto que la columna X tiene ~35% nulos").
 
-## 3. Resumen y Sugerencias Proactivas
+## 3. Profundización (cuando el alcance está acotado)
+
+Cuando el usuario está centrado en un dominio concreto o un subconjunto reducido de tablas, añadir un paso de enriquecimiento ligero tras explorar columnas. Omitir este paso en exploraciones amplias de múltiples dominios — el profiling es costoso.
+
+Para cada tabla clave identificada, lanzar **en paralelo**:
+- `profile_data` por tabla — seguir `skills-guides/stratio-data-tools.md` sec 5.1 (SQL generada con `generate_sql`, umbrales adaptativos por tamaño, parámetro `limit`).
+- `get_tables_quality_details(domain_name, [tablas])` — ver `skills-guides/stratio-data-tools.md` sec 5.2.
+
+Resumir de forma ligera (descriptivo, sin convertir esto en un análisis):
+- De `profile_data`: porcentajes de nulos destacables, rango temporal si hay columnas de fecha, cardinalidades anómalas u outliers que merezca flaggear.
+- De `get_tables_quality_details`: número de reglas por tabla, desglose por estado (OK / KO / WARNING / not-executed), dimensiones con reglas en estado KO o WARNING.
+
+Alimentar ambos hallazgos en el resumen de la sección 4. Si `profile_data` detecta una anomalía que ninguna regla de gobierno cubre (dimensión no cubierta), señalarla como candidata para la skill `assess-quality`.
+
+## 4. Resumen y Sugerencias Proactivas
 
 Presentar un resumen estructurado:
 - Dominio explorado y su propósito
@@ -26,9 +40,10 @@ Presentar un resumen estructurado:
 - Tablas principales con su descripción
 - Columnas clave identificadas
 - Términos de negocio relevantes
-- Observaciones de calidad de datos (si se hizo perfilado)
+- Señales estadísticas destacables (si se ejecutó profiling en la sección 3)
+- Cobertura de calidad de gobierno (si se consultaron los detalles de calidad en la sección 3)
 
-### Análisis sugeridos basados en la estructura del dominio
+### Análisis sugeridos basados en la estructura del dominio y los hallazgos
 
 Tras explorar, detectar automáticamente oportunidades analíticas y presentarlas al usuario:
 

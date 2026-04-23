@@ -18,7 +18,8 @@
 | 7 | `generate_sql` | Ver el SQL antes de ejecutar (opcional, para revisión) |
 | 8 | `execute_sql` | Re-ejecutar SQL generado por el MCP (nunca SQL manual) |
 | 9 | `profile_data` | EDA estadístico rápido |
-| 10 | `propose_knowledge` | Proponer términos de negocio descubiertos |
+| 10 | `get_tables_quality_details` | Cobertura de reglas de calidad de gobierno por tabla (OK/KO/WARNING/not-executed) |
+| 11 | `propose_knowledge` | Proponer términos de negocio descubiertos |
 | — | `get_mcp_task_result(task_id)` | Obtener el resultado de una tool de larga duración que sigue ejecutándose en segundo plano. Se llama cuando cualquier tool devuelve solo un `task_id` (ver sección 8.1) |
 
 ## 3. Reglas Estrictas
@@ -87,7 +88,11 @@ Para cada tabla de interés:
 - Políticas de datos
 - Glosario del dominio
 
-## 5. Perfilado Estadístico
+## 5. Observación de Datos: Perfilado y Cobertura de Calidad
+
+Dos tools complementarias caracterizan las tablas seleccionadas antes de un análisis — una aporta señal estadística, la otra muestra la cobertura de reglas de gobierno. Lanzar ambas **en paralelo** cuando el alcance cubre el mismo conjunto de tablas.
+
+### 5.1 Perfilado Estadístico — `profile_data`
 
 Para las reglas de uso de `profile_data` (generar SQL con `generate_sql`, nunca SQL manual, usar parámetro `limit` en vez de LIMIT en SQL), ver sec 3.
 
@@ -100,6 +105,20 @@ Umbrales adaptativos de profiling según tamaño estimado:
 | >1M | Muestreo + alerta | `limit=100000` + informar al usuario |
 
 Documentar en reasoning si se usó muestreo.
+
+### 5.2 Cobertura de Calidad de Gobierno — `get_tables_quality_details`
+
+`get_tables_quality_details(domain_name, tablas)` devuelve las reglas de calidad de gobierno actualmente definidas para las tablas indicadas y su último estado de ejecución.
+
+Se devuelve para cada tabla:
+- Reglas registradas sobre la tabla, con dimensión (completitud, unicidad, validez, consistencia, etc.) y columna afectada
+- Estado de ejecución por regla: `OK`, `KO`, `WARNING` o `not-executed`
+
+Cuándo usarla:
+- Chequeo ligero de gobierno durante la exploración de datos o la fase EDA de un análisis
+- No reemplaza una evaluación completa de calidad — para análisis de brechas y remediación, usar la skill `assess-quality`
+
+Patrón de ejecución: lanzar en paralelo con `profile_data` sobre el mismo conjunto de tablas. El profiling revela anomalías estadísticas; los detalles de calidad revelan cuáles de esas anomalías ya están cubiertas por una regla de gobierno (y cuáles no).
 
 ## 6. Respuestas de Aclaración del MCP
 
