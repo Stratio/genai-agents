@@ -717,6 +717,94 @@ Reglas al usar plantilla de cliente:
 
 ---
 
+## Validación estructural
+
+Reabre el PPTX guardado y emite un manifest de lo que realmente
+contiene. Detecta corrupción, text frames recortados (`word_wrap`
+faltante), slides perdidos, shapes mal clasificados. Corre en ~100 ms;
+llámalo inmediatamente después de `prs.save(...)` en cada build.
+
+```python
+from pathlib import Path
+
+from pptx import Presentation
+from pptx.enum.shapes import MSO_SHAPE_TYPE
+
+
+def validate_structure(pptx_path) -> dict:
+    """Reabre el PPTX y emite un manifest estructural."""
+    path = Path(pptx_path)
+    manifest: dict = {
+        "path": str(path),
+        "size_bytes": path.stat().st_size,
+        "reopens": False,
+    }
+    try:
+        prs = Presentation(str(path))
+        manifest["reopens"] = True
+    except Exception as exc:
+        manifest["error"] = f"{type(exc).__name__}: {exc}"
+        return manifest
+
+    w_in = (prs.slide_width or 0) / 914400
+    h_in = (prs.slide_height or 0) / 914400
+    manifest["slides"] = len(prs.slides)
+    manifest["aspect_ratio"] = f"{w_in:.2f}x{h_in:.2f} in"
+
+    shapes = {"text": 0, "picture": 0, "table": 0, "chart": 0, "other": 0}
+    wrap_ok = True
+    notes_count = 0
+    for slide in prs.slides:
+        for shape in slide.shapes:
+            if shape.has_text_frame:
+                shapes["text"] += 1
+                if shape.text_frame.word_wrap is False:
+                    wrap_ok = False
+            elif shape.shape_type == MSO_SHAPE_TYPE.PICTURE:
+                shapes["picture"] += 1
+            elif shape.has_table:
+                shapes["table"] += 1
+            elif shape.has_chart:
+                shapes["chart"] += 1
+            else:
+                shapes["other"] += 1
+        if slide.has_notes_slide:
+            notes_text = slide.notes_slide.notes_text_frame.text.strip()
+            if notes_text:
+                notes_count += 1
+
+    manifest["shapes_by_type"] = shapes
+    manifest["slides_with_notes"] = notes_count
+    manifest["word_wrap_ok"] = wrap_ok
+    return manifest
+
+
+# Uso
+manifest = validate_structure("output/deck.pptx")
+print(manifest)
+# {"path": "output/deck.pptx", "size_bytes": 38512, "reopens": True,
+#  "slides": 8, "aspect_ratio": "10.00x5.63 in",
+#  "shapes_by_type": {"text": 22, "picture": 3, "table": 1, "chart": 2, "other": 4},
+#  "slides_with_notes": 8, "word_wrap_ok": True}
+```
+
+Qué hacer con el manifest:
+
+- `reopens: False` o `error` presente — el archivo está corrupto.
+  Arregla el generador, no lo entregues.
+- `word_wrap_ok: False` — al menos un text frame tiene
+  `word_wrap=False` (el default de python-pptx). El texto se cortará
+  al hacer overflow. Arregla el sitio de emisión para poner
+  `tf.word_wrap = True`.
+- `slides` no casa con el brief ("pitch deck de 12 slides, tengo 7")
+  — regenera, no entregues.
+- `slides_with_notes` cerca de cero en decks de pitch / briefing /
+  formación — faltan speaker notes; avisa al usuario o regenera.
+- `aspect_ratio` distinto del comprometido (p.ej. `10.00x7.50`
+  inesperado en un brief de 16:9) — se cargó el scaffold equivocado.
+
+---
+
 ## Pipeline de validación visual
 
 Tras construir, renderiza cada slide a PNG e inspecciónalo. Detecta

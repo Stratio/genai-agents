@@ -490,14 +490,34 @@ ocrmypdf --language spa+eng scanned.pdf scanned_searchable.pdf
 El equivalente en Python hecho a mano — rasterizar + OCR + reconstruir —
 es posible pero engorroso. OCRmyPDF gestiona todos los casos límite.
 
-## 10. Cuándo cargar archivos adicionales
+## 10. Validación post-build
+
+Tras construir, verifica siempre el resultado. Dos snippets en
+`REFERENCE.md`:
+
+- **Validación estructural** (§Validación estructural): reabre el PDF
+  guardado y emite un manifest — páginas, longitud de texto extraído,
+  imágenes, tablas, entradas de outline, metadatos. Detecta corrupción,
+  páginas renderizadas en blanco, o TOC perdido *antes* de entregar el
+  archivo. Corre en ~100–300 ms (más en PDFs grandes); hazlo en cada
+  build.
+- **Validación visual** (§Pipeline de validación visual): rasteriza
+  PNGs por página con `pdftoppm`. Inspecciona cada PNG por overflow,
+  espaciado apretado, figuras rotas, sustitución de fuentes. Regenera
+  y revalida; 2–3 iteraciones es lo normal.
+
+La validación estructural solo necesita `pypdf` (y opcionalmente
+`pdfplumber` para conteos de imágenes / tablas). La validación visual
+requiere `poppler-utils` para `pdftoppm`.
+
+## 11. Cuándo cargar archivos adicionales
 
 - **`FORMS.md`** — rellenar campos AcroForm interactivos en PDFs existentes
 - **`REFERENCE.md`** — patrones avanzados de reportlab, incrustación de SVG,
   generación de índices, marcadores, numeración de páginas, renderizado por lotes
 - **`fonts/`** — los propios archivos TTF, con los avisos de licencia OFL
 
-## 11. Fuentes incluidas
+## 12. Fuentes incluidas
 
 El directorio `fonts/` incluye archivos TTF bajo la SIL Open Font License. Regístralas directamente desde ese directorio al construir un PDF — no hace falta instalación a nivel de sistema. Consulta `fonts/README.md` para la lista completa, los pesos disponibles y las notas de licencia.
 
