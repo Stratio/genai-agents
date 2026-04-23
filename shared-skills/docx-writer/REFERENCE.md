@@ -6,55 +6,30 @@ you're about to build something beyond a basic heading+paragraph
 document.
 
 All snippets assume the `DESIGN` dict and `hex_to_rgb` helper from
-the scaffold in `SKILL.md` §3.
+the scaffold in `SKILL.md` §4.
 
 ---
 
-## Palette reference
+## Palette guidance
 
-Six starting palettes aligned with the document taxonomy in §1. Copy
-one verbatim into `DESIGN` or use it as a seed and tweak.
+This skill does not ship a palette catalog. The canonical token
+contract — `primary`, `ink`, `muted`, `rule`, `bg`, `bg_alt`, `accent`,
+`state_ok` / `state_warn` / `state_danger`, plus `display` / `body` /
+`mono` — is shared across writer skills.
 
-```python
-PALETTES = {
-    "editorial-serious": {
-        "primary": "#0a2540", "ink": "#1f2937", "muted": "#6b7280",
-        "rule":    "#d1d5db", "bg_alt": "#f3f4f6",
-        "display": "Instrument Serif", "body": "Crimson Pro",
-    },
-    "corporate-formal": {
-        "primary": "#1a365d", "ink": "#1f2937", "muted": "#6b7280",
-        "rule":    "#e5e7eb", "bg_alt": "#f8fafc",
-        "display": "Calibri",  "body": "Calibri",
-    },
-    "technical-minimal": {
-        "primary": "#0369a1", "ink": "#111827", "muted": "#4b5563",
-        "rule":    "#e5e7eb", "bg_alt": "#f9fafb",
-        "display": "IBM Plex Sans", "body": "IBM Plex Sans",
-    },
-    "warm-magazine": {
-        "primary": "#8a3324", "ink": "#1c1917", "muted": "#78716c",
-        "rule":    "#e7e5e4", "bg_alt": "#fafaf9",
-        "display": "Big Shoulders Display", "body": "Lora",
-    },
-    "restrained-legal": {
-        "primary": "#1e1b4b", "ink": "#1f2937", "muted": "#6b7280",
-        "rule":    "#d1d5db", "bg_alt": "#f9fafb",
-        "display": "Libre Baskerville", "body": "Libre Baskerville",
-    },
-    "academic-sober": {
-        "primary": "#312e81", "ink": "#1f2937", "muted": "#6b7280",
-        "rule":    "#d4d4d8", "bg_alt": "#fafafa",
-        "display": "Libre Baskerville", "body": "Libre Baskerville",
-    },
-}
-```
+- For predefined themes (a curated catalog of tokens ready to drop
+  into `DESIGN`), see the agent's brand-kit / centralized theming
+  skill if one is included.
+- For ad-hoc improvisation against the tonal palette roles
+  (editorial-serious, technical-minimal, warm-magazine, and so on),
+  see `skills-guides/visual-craftsmanship.md`.
 
-Override inside `DESIGN` — merging keeps the size tokens, flips
-palette + typography:
+Whichever source you use, resolve the token set upstream and then
+merge it into `DESIGN` at the top of the scaffold:
 
 ```python
-DESIGN.update(PALETTES["editorial-serious"])
+# `theme_tokens` comes from the theming skill or from improvisation
+DESIGN.update(theme_tokens)
 ```
 
 ---

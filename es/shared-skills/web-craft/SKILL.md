@@ -68,14 +68,21 @@ Sirve fuentes mediante `@import` desde Google Fonts o desde la distribución ofi
 ### 2.4 Comprométete con una paleta
 Un acento dominante, un neutro profundo para texto (raramente negro puro), un neutro claro para fondos (no blanco puro), colores de acento opcionales. Declara la paleta en custom properties CSS; nunca teclees el mismo hex dos veces a mano.
 
+Los valores concretos vienen del tema, no de esta skill.
+
+- **Si el agente tiene disponible una skill de theming centralizada** (una skill tipo brand-kit que aporta un catálogo de temas más un flujo para que el usuario elija o defina uno), ejecuta ese flujo ANTES de codear. El tema elegido provee el set de tokens que se mapea al `:root` de abajo.
+- **Si no hay tal skill disponible**, improvisa tokens coherentes con el contexto del entregable siguiendo los roles de paleta tonal en `skills-guides/visual-craftsmanship.md`.
+
+El bloque `:root` de abajo usa placeholders para dejar claro de dónde vienen los valores:
+
 ```css
 :root {
-    --accent: #d9472b;             /* dominante — parco, 5–15% de la superficie */
-    --text: #1a1a1f;               /* neutro profundo */
-    --surface: #f6f1e7;            /* neutro claro */
-    --rule: #1a1a1f14;             /* divisores sutiles, derivados del texto */
-    --positive: #1f6b3a;           /* acento de estado — solo para estado */
-    --negative: #a3281a;
+    --accent: <hex>;               /* dominante — parco, 5–15% de la superficie */
+    --text: <hex>;                 /* neutro profundo */
+    --surface: <hex>;              /* neutro claro */
+    --rule: <hex>;                 /* divisores sutiles (a menudo derivados de --text) */
+    --positive: <hex>;             /* acento de estado — solo para estado */
+    --negative: <hex>;
 }
 ```
 

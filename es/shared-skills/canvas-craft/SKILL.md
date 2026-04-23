@@ -80,12 +80,17 @@ Nunca te apoyes en la Helvetica integrada de reportlab para artefactos finales. 
 
 ### Paleta específica para canvas
 
+Los valores concretos de la paleta vienen del tema, no de esta skill.
+
+- **Si el agente tiene disponible una skill de theming centralizada** (una skill tipo brand-kit que aporta un catálogo de temas más un flujo para que el usuario elija o defina uno), ejecuta ese flujo ANTES de codear. Mapea los tokens `primary` / `ink` / `accent` / `bg` del tema a los cuatro colores como mucho que tolera esta superficie.
+- **Si no hay tal skill disponible**, improvisa siguiendo los roles de paleta tonal en `skills-guides/visual-craftsmanship.md`.
+
 Los artefactos renderizados para impresión se benefician de:
 - Neutros profundos que no son `#000` (café oscuro cálido, índigo frío, azul-negro).
 - Blancos rotos como fondos en lugar del `#fff` puro. Hueso, crema, papel, arcilla.
 - Saturación que sobreviva a la compresión de impresión. Los pastel tienden a desvaírse; los tonos más profundos aguantan.
 
-Declara RGB en floats `0–1` para reportlab (`colors.Color(0.85, 0.27, 0.17)`). Mantén la paleta en cuatro colores declarados o menos.
+Declara RGB en floats `0–1` para reportlab (`colors.Color(<r>, <g>, <b>)`). Mantén la paleta en cuatro colores declarados o menos — el canvas tiene espacio solo para el dominante, el neutro profundo, el neutro claro y un accent.
 
 ## 4. Pipeline combinada: portada + cuerpo
 

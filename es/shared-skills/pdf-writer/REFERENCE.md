@@ -166,7 +166,7 @@ import matplotlib.pyplot as plt
 from reportlab.platypus import Image
 
 plt.figure(figsize=(6, 3.5), dpi=200)
-plt.plot([1, 2, 3, 4], [10, 14, 12, 18], linewidth=2, color="#B84C2C")
+plt.plot([1, 2, 3, 4], [10, 14, 12, 18], linewidth=2, color=str(ACCENT))  # desde el tema
 plt.gca().spines[["top", "right"]].set_visible(False)
 plt.tight_layout()
 plt.savefig("/tmp/chart.png", dpi=200, bbox_inches="tight")

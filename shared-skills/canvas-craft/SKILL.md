@@ -80,12 +80,17 @@ Never rely on reportlab's built-in Helvetica for final artifacts. Those faces pr
 
 ### Canvas-specific palette
 
+Concrete palette values come from the theme, not from this skill.
+
+- **If the agent has a centralized theming skill available** (a brand-kit-style skill that ships a catalog of themes plus a workflow for the user to pick or define one), run that workflow BEFORE coding. Map the theme's `primary` / `ink` / `accent` / `bg` tokens to the at-most-four colours this surface tolerates.
+- **If no such skill is present**, improvise following the tonal palette roles in `skills-guides/visual-craftsmanship.md`.
+
 Artifacts rendered for print benefit from:
 - Deep neutrals that are not `#000` (warm espresso, cold indigo, blue-black).
 - Off-whites as backgrounds rather than pure `#fff`. Bone, cream, paper, clay.
 - Saturation that survives print compression. Pastels tend to wash out; deeper tones hold.
 
-Define RGB in `0–1` floats for reportlab (`colors.Color(0.85, 0.27, 0.17)`). Keep the palette to four declared colours or fewer.
+Define RGB in `0–1` floats for reportlab (`colors.Color(<r>, <g>, <b>)`). Keep the palette to four declared colours or fewer — canvas has room only for the dominant, the deep neutral, the pale neutral and one accent.
 
 ## 4. Combined pipeline: cover + body
 

@@ -31,6 +31,7 @@ genai-agents/
     pptx-writer/
     web-craft/
     canvas-craft/
+    brand-kit/
     skill-creator/
   shared-skill-guides/     # Shared guides (not skills; copied to skills-guides/ in the output)
     stratio-data-tools.md
@@ -134,6 +135,12 @@ Three shared skills cover the visual output of the monorepo. They share the guid
 - `pdf-writer` — multi-page typographic documents or prose-dominated single pages. Analytical reports, invoices, contracts, zines.
 
 Agents that produce visual output declare the family members they need in `<agent>/shared-skills` and add `visual-craftsmanship.md` to `<agent>/shared-guides`. `data-analytics` and `governance-officer` declare all three; `data-quality` declares `web-craft` only (its reports are multi-page tabular, already served by `pdf-writer`/`quality-report`).
+
+### Brand-kit / centralized theming
+
+`brand-kit` is the shared skill that centralizes visual identity tokens (colors, typography, chart palettes, sizes, tone). It ships ten curated themes and is extensible — clients add their own themes directly inside the skill or provide an alternative theming skill. Agents that generate visual deliverables declare `brand-kit` in `<agent>/shared-skills`.
+
+Output skills (`docx-writer`, `pptx-writer`, `pdf-writer`, `web-craft`, `canvas-craft`) reference the concept "centralized theming skill" **generically**, not by name — they never mention `brand-kit` literally. This keeps self-containment intact: a client can substitute `brand-kit` with their own skill without editing any output skill, and a standalone pack of (for example) `docx-writer` still works by improvising tokens from `visual-craftsmanship.md`.
 
 ### Creating a shared skill
 

@@ -341,6 +341,34 @@ bash "$SCRIPT_DIR/bin/sweep-nonruntime.sh" "$OUTPUT_DIR"
 echo "    [7c] Non-runtime files removed"
 
 # ---------------------------------------------------------------------------
+# Phase 7e — Resolve guides for local skills + clean residual manifests
+# ---------------------------------------------------------------------------
+# Shared skills are already processed in Phase 5.1; this pass covers local
+# skills copied via rsync in Phase 6 that declare a `skill-guides` manifest.
+# For any skill with the manifest still present: copy the declared guides
+# alongside SKILL.md, rewrite `skills-guides/X.md` → `X.md`, and drop the
+# manifest so it doesn't ship to runtime.
+for skill_dir in "$OUTPUT_DIR/.claude/skills"/*/; do
+  [[ -d "$skill_dir" ]] || continue
+  [[ -f "$skill_dir/skill-guides" ]] || continue
+  while IFS= read -r guide || [[ -n "$guide" ]]; do
+    [[ -z "$guide" || "$guide" == \#* ]] && continue
+    guide_src="$MONOREPO_ROOT/shared-skill-guides/$guide"
+    guide_dst="$skill_dir/$guide"
+    if [[ ! -e "$guide_dst" ]]; then
+      if [[ -d "$guide_src" ]]; then
+        cp -r "$guide_src" "$guide_dst"
+      elif [[ -f "$guide_src" ]]; then
+        cp "$guide_src" "$guide_dst"
+      fi
+    fi
+  done < "$skill_dir/skill-guides"
+  find "$skill_dir" -type f -name '*.md' -exec sed -i 's|skills-guides/||g' {} \;
+  rm -f "$skill_dir/skill-guides"
+done
+echo "    [7e] Local-skill guides resolved; manifests cleaned"
+
+# ---------------------------------------------------------------------------
 # Phase 8 — Integrity verification
 # ---------------------------------------------------------------------------
 echo "    [8] Verifying integrity..."

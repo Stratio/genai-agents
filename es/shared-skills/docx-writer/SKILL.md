@@ -30,15 +30,16 @@ decisiones:
 3. **Selecciona un par tipográfico** — una fuente de display para
    encabezados y una de cuerpo para prosa. Dos tipografías suele ser
    suficiente. Como DOCX usa las fuentes del sistema del lector salvo
-   que las embebas (§4), elige pares que se degraden bien — Calibri /
+   que las embebas (§5), elige pares que se degraden bien — Calibri /
    Aptos / Arial / Times New Roman / Georgia / Cambria son valores
    universales y seguros.
 4. **Define una paleta** — un color de acento dominante (usado en el
    5–15% de la superficie: encabezados, reglas, llamadas de atención),
-   un neutro profundo para el cuerpo (rara vez negro puro — `#1f2937`
-   es más amable), un neutro claro para bandas de tabla o márgenes, y
-   colores de estado (éxito/warning/peligro) con parsimonia. Saturación
-   real, no pasteles lavados por defecto.
+   un neutro profundo para el cuerpo (rara vez negro puro — un slate
+   cálido se lee mejor), un neutro claro para bandas de tabla o
+   márgenes, y colores de estado (éxito/warning/peligro) con
+   parsimonia. Saturación real, no pasteles lavados por defecto. Los
+   valores concretos vienen del tema (§3), no de esta skill.
 5. **Fija el ritmo** — márgenes (2,5 cm ISO por defecto; 3 cm para
    editorial generoso; 2 cm para manual de referencia denso),
    espaciado entre párrafos, aire alrededor de encabezados, interlineado.
@@ -100,7 +101,21 @@ US-céntrica que rara vez sirve al diseño intencional. Editorial
 generoso: 3 cm. ISO por defecto: 2,5 cm. Manual denso: 2 cm.
 Newsletter con margen: asimétrico (izquierda 2 cm, derecha 4 cm).
 
-## 3. Una plantilla de arranque apropiada
+## 3. Aplicación del tema
+
+Los tokens de diseño (colores, tipografía, tamaños) no viven en esta
+skill — vienen del tema elegido para el entregable.
+
+- Si hay una skill de theming centralizada disponible (tipo brand-kit),
+  ejecuta su flujo ANTES de autorar; devuelve un set de tokens que se
+  mapea sobre el dict `DESIGN` de abajo.
+- Si no, improvisa tokens coherentes con el entregable siguiendo los
+  roles de paleta tonal en `skills-guides/visual-craftsmanship.md`.
+
+El dict `DESIGN` del scaffold usa placeholders (`<hex>`,
+`<font-family>`, `<pt>`) — rellénalos desde el tema, no hardcodees.
+
+## 4. Una plantilla de arranque apropiada
 
 En lugar de estirar la mano hacia `Document()` y rezar, usa este
 scaffold y adáptalo:
@@ -114,28 +129,30 @@ from docx.oxml.ns import qn
 from docx.shared import Cm, Pt, RGBColor
 
 # 1. Comprométete con los tokens de diseño al principio — no cambian
-#    a mitad de documento.
+#    a mitad de documento. Rellénalos desde el tema elegido (ver §3).
+#    No hardcodees valores aquí; el esqueleto permanece estable, los
+#    valores son branding.
 DESIGN = {
     # Paleta (strings hex — convertir a RGBColor en el punto de uso)
-    "primary":  "#0a2540",   # azul marino (acento / encabezados)
-    "ink":      "#1f2937",   # texto cuerpo (no negro puro)
-    "muted":    "#6b7280",   # pies de figura, metadatos
-    "rule":     "#d1d5db",   # divisores, reglas inferiores de tabla
-    "bg_alt":   "#f3f4f6",   # neutro claro para bandas de tabla
-    "state_danger":  "#b91c1c",
-    "state_warn":    "#b45309",
-    "state_ok":      "#047857",
+    "primary":       "<hex>",   # encabezados, reglas superiores, acentos
+    "ink":           "<hex>",   # texto cuerpo (rara vez negro puro)
+    "muted":         "<hex>",   # pies de figura, metadatos
+    "rule":          "<hex>",   # divisores, reglas inferiores de tabla
+    "bg_alt":        "<hex>",   # neutro claro para bandas de tabla
+    "state_danger":  "<hex>",
+    "state_warn":    "<hex>",
+    "state_ok":      "<hex>",
     # Tipografía
-    "display":  "Instrument Serif",  # encabezados; fallback Times
-    "body":     "Crimson Pro",       # prosa; fallback Georgia
-    "mono":     "JetBrains Mono",    # código; fallback Consolas
+    "display":  "<font-family>",  # encabezados
+    "body":     "<font-family>",  # prosa
+    "mono":     "<font-family>",  # código
     # Tamaños (pt)
-    "size_h1":    22,
-    "size_h2":    16,
-    "size_h3":    13,
-    "size_body":  11,
-    "size_small":  9,
-    # Página
+    "size_h1":    <pt>,
+    "size_h2":    <pt>,
+    "size_h3":    <pt>,
+    "size_body":  <pt>,
+    "size_small": <pt>,
+    # Página (decisión del documento, no del tema)
     "page_size":  "A4",              # "A4" o "Letter"
     "margin_cm":  2.5,
 }
@@ -258,7 +275,7 @@ Cuatro reglas que el scaffold refuerza:
   local al módulo en cuanto repitas un patrón tres veces; no construyas
   una abstracción por adelantado.
 
-## 4. Fuentes
+## 5. Fuentes
 
 DOCX usa las fuentes instaladas en el lector salvo que las embebas
 dentro de `word/fontTable.xml`. Consecuencias:
@@ -276,7 +293,7 @@ Recomendación: quédate en los valores seguros salvo que el documento
 solo se vaya a abrir en Word 2016+ Windows/macOS. Informa al usuario
 si el par elegido requiere una fuente no estándar.
 
-## 5. Guía de paleta
+## 6. Guía de paleta
 
 Un documento diseñado tiene como mucho tres familias de color en
 cualquier página: primary (un color de acento, saturado, usado en
@@ -285,19 +302,23 @@ reglas de acento), neutral (texto cuerpo y fondos), y colores de
 estado (éxito/warning/peligro) usados con parsimonia en llamadas de
 atención.
 
-Cuando te inventes una paleta, elige valores hex concretos al inicio
-y respétalos. No mezcles dos azules distintos, dos rojos distintos o
-dos saturaciones distintas del mismo acento en el mismo documento.
-Si el brief sugiere un tono ("corporativo" / "editorial" / "legal"),
-elige valores que vendan ese tono — el azul marino corporativo es
-`#0a2540`, no un azul cielo pastel; académico es un carbón sobrio y
-beige cálido, no color saturado en absoluto.
+Nunca mezcles dos azules distintos, dos rojos distintos o dos
+saturaciones distintas del mismo acento en el mismo documento.
+Comprométete con valores concretos al inicio y aplícalos
+uniformemente.
 
-Paletas de referencia para los tonos más comunes viven en
-`REFERENCE.md` §Referencia de paleta. Copia una verbatim o úsala
-como semilla y ajusta.
+De dónde salen esos valores concretos depende de lo que tenga el
+agente:
 
-## 6. Bloques de documento que compondrás
+- Si hay una skill de theming centralizada disponible, el tema
+  elegido provee un set completo y coherente de tokens (primary,
+  ink, muted, rule, bg_alt, accent, colores de estado, tipografía,
+  tamaños). Úsalo tal cual.
+- Si no, improvisa desde los roles de paleta tonal en
+  `skills-guides/visual-craftsmanship.md`. Para unas semillas
+  editoriales que puedas adaptar, ver `REFERENCE.md` §Guía de paleta.
+
+## 7. Bloques de documento que compondrás
 
 Estos son los building blocks que vale la pena dominar. Los snippets
 de cada uno viven en `REFERENCE.md`; aquí el menú.
@@ -326,7 +347,7 @@ de cada uno viven en `REFERENCE.md`; aquí el menú.
 - **Salto de página** — `<w:br w:type="page"/>` explícito dentro de
   un párrafo.
 
-## 7. Tablas
+## 8. Tablas
 
 Una tabla DOCX sin decisiones de diseño se lee como un pantallazo de
 hoja de cálculo. **Sobrescribe siempre el estilo por defecto.** El
@@ -351,7 +372,7 @@ override base, en palabras:
 Snippet completo en `REFERENCE.md` §Tabla con override de estilo;
 cópialo literal para cada documento que genere tablas.
 
-## 8. Figuras
+## 9. Figuras
 
 Incrustadas vía `doc.add_picture(path, width=Cm(...))`. Dos reglas:
 
@@ -365,7 +386,7 @@ Para numeración de figuras ("Figura 3 — Curva de cohorte de
 retención") usa un contador local al módulo o campos `SEQ` hechos a
 mano — ver `REFERENCE.md` §Campos SEQ para numeración.
 
-## 9. Cabeceras, pies, números de página
+## 10. Cabeceras, pies, números de página
 
 Todo documento multipágina se beneficia de chrome recorriendo — un
 título de cabecera, un contador de página en el pie, ocasionalmente
@@ -391,7 +412,7 @@ Salta el chrome en la portada marcando la primera sección
 `different_first_page_header_footer = True` y dejando sus párrafos
 de cabecera/pie vacíos (snippet también en REFERENCE.md).
 
-## 10. Validación post-build y export a PDF
+## 11. Validación post-build y export a PDF
 
 Después de construir, verifica siempre el resultado. Tres snippets
 en `REFERENCE.md`:
@@ -419,10 +440,10 @@ La validación visual y el export a PDF requieren `libreoffice` y
 `poppler-utils`. La validación estructural solo necesita `python-docx`
 y `lxml`.
 
-## 11. Plantillas del usuario
+## 12. Plantillas del usuario
 
 Cuando el usuario aporte una plantilla corporativa — con su logo,
-letterhead, estilos y paleta — ignora el scaffold del §3 y carga su
+letterhead, estilos y paleta — ignora el scaffold del §4 y carga su
 archivo:
 
 ```python
@@ -455,7 +476,7 @@ Para un patrón fill-in-the-blank (`{{destinatario}}` → nombre real),
 ver `REFERENCE.md` §Trabajar con un DOCX existente como punto de
 partida.
 
-## 12. Operaciones estructurales
+## 13. Operaciones estructurales
 
 Para manipular documentos existentes (fusionar varios DOCX, dividir
 por nivel de encabezado o salto de página, find-replace con regex
@@ -464,7 +485,7 @@ sobre cuerpo / cabeceras / pies, convertir binario heredado `.doc` a
 ejecútalos desde un script pequeño, no intentes importarlos como
 módulo.
 
-## 13. Pitfalls
+## 14. Pitfalls
 
 Contrastado con `python-docx` 1.1 y la spec ECMA-376:
 
@@ -503,7 +524,7 @@ Contrastado con `python-docx` 1.1 y la spec ECMA-376:
   importa cuando usas find-replace en strings que empiezan o
   terminan con espacio; sin él se colapsa.
 
-## 14. Limitaciones conocidas
+## 15. Limitaciones conocidas
 
 `python-docx` cubre ~85% de la autoría real de documentos
 limpiamente. El 15% restante o necesita manipulación OOXML en crudo
@@ -523,12 +544,12 @@ o no está soportado:
   se inserta correctamente pero Word lo rellena solo cuando el
   usuario abre el archivo (o acepta el diálogo "actualizar campos").
   Muestra al usuario cómo dispararlo.
-- **Renderizado de fuente exacta en cualquier máquina** — ver §4.
+- **Renderizado de fuente exacta en cualquier máquina** — ver §5.
 
 Documenta la limitación en un apéndice corto o en un callout cuando
 afecte al entregable.
 
-## 15. Cheat sheet
+## 16. Cheat sheet
 
 | Tarea | Enfoque |
 |---|---|
@@ -552,7 +573,7 @@ afecte al entregable.
 | Convertir `.doc` heredado | `soffice --headless --convert-to docx old.doc` |
 | Plantilla del usuario | carga `.docx` / `.dotx` directamente; reusa sus estilos |
 
-## 16. Cuándo cargar REFERENCE.md
+## 17. Cuándo cargar REFERENCE.md
 
 - Snippets completos para cada bloque (portada, encabezados, párrafos,
   tablas con overrides, figuras, callouts, listas, bloques de código,

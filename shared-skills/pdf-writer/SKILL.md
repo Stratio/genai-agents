@@ -104,7 +104,33 @@ register_fonts()
 Only register what you'll use — each registration embeds the font in the
 output PDF and adds roughly 80–150 KB to file size.
 
-## 3. A proper starting template
+## 3. Theme application
+
+Design tokens (colors, typography, sizes) do not live in this skill —
+they come from the theme chosen for the PDF.
+
+- If a centralized theming skill is available (brand-kit-style),
+  run its workflow BEFORE authoring; it returns a token set that maps
+  onto the `HexColor` tokens below.
+- Otherwise, improvise tokens coherent with the deliverable following
+  the tonal palette roles in `skills-guides/visual-craftsmanship.md`.
+
+### Print-specific sensibilities
+
+Themes are written to serve multiple media. If the chosen theme
+declares a `## Print variant` block, use it verbatim — the author
+already tuned paper-vs-screen. Otherwise adapt when mapping screen
+tokens to the PDF:
+
+- `PAPER` should not be pure `#FFFFFF` — prefer a slightly warm
+  off-white (bone, paper, cream).
+- `INK` should not be pure `#000000` — a warm near-black reads kinder.
+- `RULE` thinner and warmer than a web theme would use.
+
+The template below uses placeholders — fill them from the theme
+(adjusted for print per the notes above). See §2 for font registration.
+
+## 4. A proper starting template
 
 Instead of reaching for reportlab defaults, use this as a scaffold and
 adapt:
@@ -123,18 +149,20 @@ from reportlab.platypus import (
 )
 
 # === FONTS ===
+# The theme names the families; match each family to a bundled TTF.
 FONTS = Path(__file__).parent / "fonts"
-pdfmetrics.registerFont(TTFont("Body",        FONTS / "CrimsonPro-Regular.ttf"))
-pdfmetrics.registerFont(TTFont("Body-Bold",   FONTS / "CrimsonPro-Bold.ttf"))
-pdfmetrics.registerFont(TTFont("Display",     FONTS / "InstrumentSans-Bold.ttf"))
-pdfmetrics.registerFont(TTFont("Mono",        FONTS / "JetBrainsMono-Regular.ttf"))
+pdfmetrics.registerFont(TTFont("Body",        FONTS / "<body-regular>.ttf"))
+pdfmetrics.registerFont(TTFont("Body-Bold",   FONTS / "<body-bold>.ttf"))
+pdfmetrics.registerFont(TTFont("Display",     FONTS / "<display-bold>.ttf"))
+pdfmetrics.registerFont(TTFont("Mono",        FONTS / "<mono-regular>.ttf"))
 
 # === DESIGN TOKENS ===
-INK    = HexColor("#1A1A1A")   # near-black for body copy
-ACCENT = HexColor("#B84C2C")   # terracotta accent
-MUTED  = HexColor("#6E6E6E")   # captions, metadata
-RULE   = HexColor("#E5E0D8")   # hairlines, subtle dividers
-PAPER  = HexColor("#FAF8F4")   # warm off-white background (optional)
+# Fill from the chosen theme (see §3). Do not hard-code values here.
+INK    = HexColor("<hex>")   # body text (rarely pure black)
+ACCENT = HexColor("<hex>")   # accent color, CTAs, highlights
+MUTED  = HexColor("<hex>")   # captions, metadata
+RULE   = HexColor("<hex>")   # hairlines, subtle dividers
+PAPER  = HexColor("<hex>")   # page background (often maps to bg or bg_alt)
 
 MARGIN_X = 22 * mm
 MARGIN_Y = 25 * mm
@@ -243,7 +271,7 @@ This scaffold already gives you:
 
 Adapt the scaffold; don't fight it.
 
-## 4. Tables that don't look like Excel screenshots
+## 5. Tables that don't look like Excel screenshots
 
 reportlab's default tables are hideous. A designed table needs:
 
@@ -286,7 +314,7 @@ tbl.setStyle(TableStyle([
 ]))
 ```
 
-## 5. Common gotchas with reportlab
+## 6. Common gotchas with reportlab
 
 ### Unicode subscripts and superscripts
 
@@ -328,7 +356,7 @@ tbl = LongTable(data, colWidths=[...], repeatRows=1)
 
 `repeatRows=1` keeps the header row at the top of every page.
 
-## 6. Merging, splitting, and rotating PDFs
+## 7. Merging, splitting, and rotating PDFs
 
 For structural operations, `pypdf` is the tool. Don't reach for
 reportlab — that's for creating content, not rearranging it.
@@ -399,7 +427,7 @@ qpdf input.pdf --pages . 5-9 -- section.pdf
 qpdf input.pdf --rotate=+90:1 rotated.pdf
 ```
 
-## 7. Watermarks
+## 8. Watermarks
 
 A watermark is a PDF drawn on top of another PDF, page by page. Easiest
 approach: create the watermark with reportlab, then merge.
@@ -435,7 +463,7 @@ with open("/tmp/report_watermarked.pdf", "wb") as f:
 
 For a visible-but-less-distracting watermark, lower the alpha to 0.06–0.10.
 
-## 8. Encryption and permissions
+## 9. Encryption and permissions
 
 ```python
 from pypdf import PdfReader, PdfWriter
@@ -458,7 +486,7 @@ with open("/tmp/report_encrypted.pdf", "wb") as f:
 Note: PDF encryption is not a security boundary. Anyone can remove it
 with the right tool. It's a polite barrier, not a vault.
 
-## 9. Converting scanned PDFs to searchable PDFs
+## 10. Converting scanned PDFs to searchable PDFs
 
 Use OCRmyPDF when available — it preserves the original scan and adds
 an invisible text layer:
@@ -470,7 +498,7 @@ ocrmypdf --language spa+eng scanned.pdf scanned_searchable.pdf
 Python equivalent by hand: rasterize + OCR + rebuild is possible but
 fiddly. OCRmyPDF handles all the edge cases.
 
-## 10. Post-build validation
+## 11. Post-build validation
 
 After building, always verify the result. Two snippets in
 `REFERENCE.md`:
@@ -490,14 +518,14 @@ Structural validation only needs `pypdf` (and optionally `pdfplumber`
 for image / table counts). Visual validation requires `poppler-utils`
 for `pdftoppm`.
 
-## 11. When to load additional files
+## 12. When to load additional files
 
 - **`FORMS.md`** — filling interactive AcroForm fields in existing PDFs
 - **`REFERENCE.md`** — advanced reportlab patterns, SVG embedding,
   TOC generation, bookmarks, page numbering, batch rendering
 - **`fonts/`** — the TTF files themselves, with OFL license notices
 
-## 12. Bundled fonts
+## 13. Bundled fonts
 
 The `fonts/` directory ships with TTF files under the SIL Open Font License. Register them directly from that directory when you build a PDF — no system-wide install needed. See `fonts/README.md` for the complete list, available weights and licensing notes.
 

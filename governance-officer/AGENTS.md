@@ -373,6 +373,8 @@ Python is used EXCLUSIVELY to generate file reports (PDF, DOCX, Markdown on disk
 
 ## 10. Outputs
 
+**Brand / visual identity (run BEFORE any visual deliverable):** if the `brand-kit` shared skill is available, invoke its workflow first to fix the design tokens every output skill will apply. The user picks one of the predefined themes, supplies ad-hoc colors and fonts, or points to an external brand file as scaffold. See the `brand-kit` SKILL.md for the flow.
+
 | Format | When | How |
 |--------|------|-----|
 | **Chat** (default) | Always, for any response | Structured markdown in the conversation |
