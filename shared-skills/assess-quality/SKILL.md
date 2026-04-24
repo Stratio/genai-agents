@@ -52,7 +52,7 @@ Once the scope is determined, launch in parallel. It is **MANDATORY** to include
 ```
 Parallel:
   A. list_domain_tables(domain_name)
-  B. get_quality_rule_dimensions(collection_name=domain_name)  <-- MANDATORY
+  B. get_quality_rule_dimensions(domain_name=domain_name)  <-- MANDATORY
   C. quality_rules_metadata(domain_name=domain_name)           <-- update AI metadata, only if not executed before
 ```
 Then, with the table list obtained from A, launch in parallel for ALL tables:
@@ -70,7 +70,7 @@ Finally, use the generated SQLs to launch `profile_data(query=[sql])` in paralle
 Parallel:
   A. get_tables_quality_details(domain_name, [table])
   B. get_table_columns_details(domain_name, table)
-  C. get_quality_rule_dimensions(collection_name=domain_name)  <-- only if not obtained before
+  C. get_quality_rule_dimensions(domain_name=domain_name)  <-- only if not obtained before
   D. get_tables_details(domain_name, [table])                  <-- only if not obtained before
   E. generate_sql("get all fields from table [table] without filters", domain_name)
   F. quality_rules_metadata(domain_name=domain_name)           <-- only if not executed before
@@ -82,14 +82,14 @@ After obtaining E, launch `profile_data(query=[sql])`.
 Parallel:
   A. get_tables_quality_details(domain_name, [table])
   B. get_table_columns_details(domain_name, table)
-  C. get_quality_rule_dimensions(collection_name=domain_name)  <-- only if not obtained before
+  C. get_quality_rule_dimensions(domain_name=domain_name)  <-- only if not obtained before
   D. generate_sql("get only the [column] field from table [table] without filters", domain_name)
   E. quality_rules_metadata(domain_name=domain_name)           <-- only if not executed before
 ```
 After obtaining D, launch `profile_data(query=[sql])`.
 In the subsequent analysis (section 3), filter everything to that column's scope: inventory of rules affecting that column, gaps only for that column, EDA only for that column.
 
-**Note about `quality_rules_metadata`**: This call updates the AI metadata of the rules (description, dimension). It is executed without `force_update` — it only processes rules without metadata or modified ones. If it fails, continue without blocking: the workflow does not depend on it.
+**Note about `quality_rules_metadata`**: This call updates the AI metadata of the rules (description, dimension). It is executed without `quality_rules_metadata_force_update` — it only processes rules without metadata or modified ones. If it fails, continue without blocking: the workflow does not depend on it. **Note on permissions**: this tool requires write-level access; users with read-only roles will receive a 403 error. In that case, skip and continue — assessment is not blocked.
 
 **Note**: Profiling (EDA) is fundamental for detecting real gaps (e.g., existing nulls without a completeness rule). If the domain has >10 tables, assess first those the user explicitly mentions and ask if they want to continue with the rest.
 

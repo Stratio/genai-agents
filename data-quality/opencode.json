@@ -47,6 +47,7 @@
     "*get_mcp_task_result": "allow",
     "*get_critical_data_elements": "allow",
     "*set_critical_data_elements": "allow",
+    "*get_mcp_task_result": "allow",
     "bash": {
       "*": "allow"
     }

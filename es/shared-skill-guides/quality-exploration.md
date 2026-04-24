@@ -14,7 +14,7 @@ Para el workflow estándar de descubrimiento (listar dominios, regla crítica de
 
 Debe obtenerse siempre las definiciones de dimensiones antes de evaluar:
 
-`get_quality_rule_dimensions(collection_name=domain_name)` para conocer exactamente qué significa cada dimensión en este dominio específico y cuántas dimensiones soporta.
+`get_quality_rule_dimensions(domain_name=domain_name)` para conocer exactamente qué significa cada dimensión en este dominio específico y cuántas dimensiones soporta.
 
 Además, ejecutar `quality_rules_metadata(domain_name=domain_name)` antes de evaluar para tener metadata AI fresca en las reglas (descripción, dimensión). Sin `force_update` — solo procesa reglas sin metadata o modificadas. No bloqueante: si falla, continuar con el workflow normalmente.
 

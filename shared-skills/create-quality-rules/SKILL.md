@@ -85,7 +85,7 @@ Each rule has the following fields:
 - `query`: SQL that counts the records that PASS the check (numerator)
 - `query_reference`: SQL that counts the total number of records (denominator)
 - `dimension`: completeness / uniqueness / validity / consistency
-- `collection_name`: the domain's domain_name
+- `domain_name`: the domain name, exactly as returned by `search_domains` or `list_domains`
 - `measurement_type`: (optional) how the quality result is measured. Possible values:
   - `percentage` (default): compares query vs query_reference as a percentage
   - `count`: uses the absolute record count from the query
@@ -108,6 +108,8 @@ Each rule has the following fields:
 - `active`: (optional) whether the rule is active after creation; default `False` — rules are created inactive and must be activated manually or by the user
 
 ### 3.2 SQL patterns by dimension
+
+> **SQL placeholder format**: Each table reference in a quality rule SQL must use the `${table_name}` syntax, where `table_name` is the **exact table name** from your domain. For example, for a table named `account` → `${account}`; for `card` → `${card}`; for cross-table patterns where the tables are `orders` and `clients` → `${orders}` and `${clients}`. The governance system automatically resolves each `${table_name}` to its physical storage path when the rule executes. In the patterns below, `${table}`, `${table_a}`, `${table_b}`, `${header_table}`, and `${detail_table}` are generic placeholders — replace them with the real table names of your domain.
 
 **Completeness** — non-null column:
 ```sql
@@ -294,7 +296,7 @@ Before presenting the plan to the user, the technical validity of the designed q
 
 **Validation procedure:**
 1. For each designed rule, prepare the `query` and the `query_reference`.
-2. Resolve the `${table}` placeholders by substituting them with the actual table name.
+2. Resolve the `${table_name}` placeholders (e.g., `${account}` → `account`) by stripping the `${}` wrapper to obtain a plain table name for use with `execute_sql`. Note: in `create_quality_rule`, always keep the full `${table_name}` format — the governance system resolves placeholders to physical storage paths at rule execution time. The validation with `execute_sql` verifies SQL logic and syntax only; it does not guarantee that the physical path used by the governance system matches the one in the domain catalog.
 3. Execute both queries using `execute_sql(query=[sql], limit=1)`.
 4. If any query returns an error:
    - Review the SQL syntax.
@@ -325,7 +327,7 @@ This flow applies when the user directly describes a rule they want to create, w
    Parallel:
      A. get_table_columns_details(domain_name, table)  [for each table involved]
      B. get_tables_details(domain_name, [tables])
-     C. get_quality_rule_dimensions(collection_name=domain_name)
+     C. get_quality_rule_dimensions(domain_name=domain_name)
    ```
 3. **Verify existence**: confirm that the tables and columns mentioned by the user exist in the domain. If any do not exist, inform and ask.
 
@@ -344,7 +346,7 @@ Follow the design guidelines in section 3.3 and the SQL patterns in section 3.2.
 ### B.3 SQL Validation (MANDATORY)
 
 Same as section 3.5:
-1. Resolve the `${table}` placeholders with the actual table name.
+1. Resolve the `${table_name}` placeholders (e.g., `${account}` → `account`) by stripping the `${}` wrapper for use with `execute_sql`. Keep the full `${table_name}` format in `create_quality_rule`.
 2. Execute `query` and `query_reference` with `execute_sql(query=[sql], limit=1)`.
 3. If any query fails, review and correct until both are successful.
 4. Calculate the result and rule status applying the logic from step 5 of section 3.5 (measurement_type, threshold_mode, and configured thresholds).
@@ -361,6 +363,15 @@ After informing of the result, continue directly with section 4 (Present Plan an
 ## 4. PAUSE: Present Plan and Wait for Approval
 
 Before executing any call to `create_quality_rule`, present the complete plan to the user.
+
+> **MANDATORY ORDER**: The plan MUST be shown to the user before any approval is processed.
+> If the message that triggered this skill already contains an approval signal or scheduling
+> details (e.g., the user responded to an assess-quality follow-up with "create the rules,
+> schedule daily at 9am"), do NOT skip the plan presentation. Show the plan first, then
+> include the provided scheduling/measurement details as a pre-filled suggestion in the
+> approval question so the user can confirm or adjust without having to repeat themselves.
+> The shortcuts in "Interpreting the user's response" only apply to answers given AFTER the
+> plan has been displayed.
 
 **Note for Flow B (specific rule)**: The plan will typically contain a single rule. Also include the SQL validation result with the calculated status (OK/KO/WARNING/NO_DATA).
 
@@ -442,7 +453,7 @@ Before proceeding, I need to know:
 - `cron_start_datetime` (optional): ask "When do you want execution to start? (leave blank to start immediately)". If the user indicates a date/time in natural language, convert it to ISO 8601. Example: `2026-04-01T09:00:00`
 - `cron_timezone`: **Do NOT ask** unless the user mentions a different timezone. Use `Europe/Madrid` by default.
 
-If the user provides the cron details in the same approval response (e.g., "yes, option 1, daily at 9"), do not ask again — use that data directly.
+If the user provides the cron details in their response to the presented plan (e.g., "yes, option 1, daily at 9"), do not ask again — use that data directly.
 
 **Approval + option 2** → For each rule (or block of rules the user wants to treat the same), ask for the same fields as above. Allow some rules to have scheduling and others not.
 
