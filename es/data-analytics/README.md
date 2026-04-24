@@ -8,9 +8,9 @@ Agente completo de Business Intelligence y Business Analytics para Claude Code y
 - Análisis avanzado con Python (pandas, numpy, scipy)
 - Segmentación y clustering (scikit-learn)
 - Visualizaciones profesionales (matplotlib, seaborn, plotly)
-- **Entregables analíticos** (multi-formato) — PDF, DOCX, dashboard web interactivo, PowerPoint, póster/infografía, generados por `/analyze` Fase 4 vía las skills writer (`pdf-writer`, `docx-writer`, `pptx-writer`, `web-craft`, `canvas-craft`) + `brand-kit` para los tokens de diseño
-- **Entregables visuales ligeros sin análisis** — pósteres / infografías / portadas de una sola página (`canvas-craft`), dashboards interactivos standalone (`web-craft`), PDFs ligeros con ≤3 KPIs o documentos tipográficos como facturas y cartas (`pdf-writer`)
-- **Lectura de PDF** — extraer texto, tablas, imágenes y datos de formulario de PDFs (`pdf-reader`)
+- **Entregables analíticos** (multi-formato) — PDF, DOCX, dashboard web interactivo, PowerPoint, póster/infografía, libro Excel/XLSX, generados por `/analyze` Fase 4 vía las skills writer (`pdf-writer`, `docx-writer`, `pptx-writer`, `web-craft`, `canvas-craft`, `xlsx-writer`) + `brand-kit` para los tokens de diseño
+- **Entregables visuales ligeros sin análisis** — pósteres / infografías / portadas de una sola página (`canvas-craft`), dashboards interactivos standalone (`web-craft`), PDFs ligeros con ≤3 KPIs o documentos tipográficos como facturas y cartas (`pdf-writer`), libros ad-hoc y exports de datos (`xlsx-writer`)
+- **Lectura de PDF** — extraer texto, tablas, imágenes y datos de formulario de PDFs (`pdf-reader`); lectura de Excel — extraer celdas, tablas, fórmulas y metadatos de XLSX (`xlsx-reader`)
 - **Evaluación y reporte de cobertura de calidad de datos** (solo lectura) — evaluar reglas de calidad existentes, identificar gaps de cobertura, generar informes de calidad en Chat/PDF/DOCX/Markdown. La creación y planificación de reglas queda reservada a los agentes Data Quality / Governance Officer.
 - Documentación del razonamiento y validación de output
 - Memoria persistente de análisis y preferencias
@@ -58,6 +58,8 @@ Los pack scripts solo son necesarios para distribuir el agente fuera del reposit
 | Escritura de DOCX | `/docx-writer` | **shared** | Documentos Word genéricos (cartas, memos, contratos, notas de política, informes multipágina en prosa). También combinar/dividir, find-replace, convertir `.doc` a `.docx`, preview visual |
 | Lectura de PPTX | `/pptx-reader` | **shared** | Extraer texto, notas del presentador, datos de chart de ficheros `.pptx` (o `.ppt` heredado vía conversión con LibreOffice) |
 | Escritura de PPTX | `/pptx-writer` | **shared** | Decks PowerPoint diseñados (pitch, ventas, briefing ejecutivo, formación, académico). También combinar/dividir/reordenar, find-replace en slides y notas, conversión legacy `.ppt` |
+| Lectura de XLSX | `/xlsx-reader` | **shared** | Extraer valores de celda, tablas, fórmulas, imágenes y metadatos de ficheros `.xlsx`/`.xlsm` (o `.xls`/`.xlsb` legacy vía conversión con LibreOffice) |
+| Escritura de XLSX | `/xlsx-writer` | **shared** | Libros Excel diseñados (cover/KPI analítico + hojas de detalle, matrices pivot, exports tabulares, catálogos, modelos cuantitativos). También combinar/dividir, find-replace, conversión `.xls` legacy, refresco de fórmulas vía LibreOffice |
 | Artefacto visual | `/canvas-craft` | **shared** | Visuales de una sola página dominados por composición: pósteres, infografías, portadas, one-pagers (PDF o PNG) |
 | Artefacto web | `/web-craft` | **shared** | HTML interactivo standalone: dashboards, componentes UI, landing pages |
 | Tokens de marca | `/brand-kit` | **shared** | Catálogo centralizado de temas de identidad visual (colores, tipografía, paletas de gráficos). Se invoca antes de cualquier entregable visual. Ver AGENTS.md §8.3 para la cascada de decisión |

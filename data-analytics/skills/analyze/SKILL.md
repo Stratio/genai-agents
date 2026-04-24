@@ -1,6 +1,6 @@
 ---
 name: analyze
-description: "Full BI/BA data analysis — domain discovery, EDA and data quality, metric and KPI planning with analytical framework, data queries via MCP, Python analysis with pandas, visualizations, multi-format report generation, and reasoning documentation. Use when the user needs to analyze business data, calculate KPIs, produce visualizations, generate graphic summaries, obtain insights, or answer analytical questions about governed domains. Also activates for multi-metric comparisons, KPI overviews, deliverable requests (reports, dashboards), or any request requiring data crossing across dimensions."
+description: "Full BI/BA data analysis — domain discovery, EDA and data quality, metric and KPI planning with analytical framework, data queries via MCP, Python analysis with pandas, visualizations, multi-format report generation (PDF, DOCX, PowerPoint, Dashboard web, Poster/Infographic, Excel/XLSX), and reasoning documentation. Use when the user needs to analyze business data, calculate KPIs, produce visualizations, generate graphic summaries, obtain insights, or answer analytical questions about governed domains. Also activates for multi-metric comparisons, KPI overviews, deliverable requests (reports, dashboards, workbooks), or any request requiring data crossing across dimensions."
 argument-hint: "[analysis question or topic]"
 ---
 
@@ -97,14 +97,14 @@ A single interaction:
 |---|----------|-------------------|-----------|-----------|
 | 1 | What analysis depth do you prefer? | **Quick** · **Standard** (Recommended) · **Deep** | Single | Always |
 | 2 | What audience is the analysis for? | **C-level/Executive** · **Manager/Lead** · **Technical/Data team** · **Mixed/General** | Single | Always |
-| 3 | In what formats do you want the deliverables? | **PDF** · **DOCX** · **PowerPoint** (.pptx) · **Dashboard web** (Interactive HTML with Plotly) · **Poster/Infographic** (single-page visual) | Multiple | Always |
+| 3 | In what formats do you want the deliverables? | **PDF** · **DOCX** · **PowerPoint** (.pptx) · **Dashboard web** (Interactive HTML with Plotly) · **Poster/Infographic** (single-page visual) · **Excel** (.xlsx workbook) | Multiple | Always |
 | 4 | Do you want unit tests to be generated and run on the Python code? | **Yes** (Recommended): improves precision and quality, but consumes more time, cost, and context · **No**: direct execution without tests | Single | Standard/Deep only |
 
 **Adaptive rule**: If the user's request already specifies information that answers any of these questions, pre-fill that answer and do not ask it again. For example: if the user said "give me a PDF report", pre-fill format as Document; if the user said "quick analysis", pre-fill depth as Quick; if the user said "executive dashboard", pre-fill audience as C-level/Executive and format as Web. Only ask questions whose answers cannot be inferred from the request.
 
 - Tests validate transformations and calculations before running with real data. They improve precision but consume more tokens, time, and cost. **In Quick depth, testing is automatically disabled without asking the user.**
 - The format question ALWAYS allows multiple selection
-- The format options are EXACTLY 5: PDF, DOCX, PowerPoint, Dashboard web, Poster/Infographic. Each routes to its dedicated writer skill (see agent instructions §8). Do not invent, omit, or substitute
+- The format options are EXACTLY 6: PDF, DOCX, PowerPoint, Dashboard web, Poster/Infographic, Excel. Each routes to its dedicated writer skill (see agent instructions §8). Do not invent, omit, or substitute
 - If no format is selected → no deliverables, the analysis is delivered only in chat + automatic report.md
 - **If one or more formats are selected → deliverables ARE ALWAYS GENERATED, regardless of the chosen depth. Quick/Standard/Deep affects the analysis, not the deliverables.**
 - Additional requirements via "Other" option (time filters, segments, mandatory metrics)
@@ -330,6 +330,7 @@ If during execution a finding is detected that exceeds the scope of the current 
    - **PowerPoint** → `pptx-writer`. 16:9 by default; 4:3 only if the user asked explicitly. Output: `<slug>-presentation.pptx`.
    - **Dashboard web** → `web-craft`. **Also load `analytical-dashboard.md`** (from this same skill folder) as input to web-craft, UNLESS the user signalled design freedom at the plan approval step (§5.11 dashboard guide disclosure). Output: `<slug>-dashboard.html`.
    - **Poster/Infographic** → `canvas-craft`. Output: `<slug>-poster.pdf` or `<slug>-poster.png`.
+   - **Excel** → `xlsx-writer`. Analytical composition per `xlsx-writer` SKILL.md §8: cover/KPI sheet with 3-4 key metrics from the executive summary, parameters sheet documenting filters / date range / segment selections, detail sheets (one per principal dimension) with `openpyxl.worksheet.table.Table` objects and conditional formatting on delta columns (vs previous period / benchmark / target), optional hypothesis-validation sheet at Standard/Deep depth, optional raw-data appendix when the dataset is small. If the workbook includes formulas, run `shared-skills/xlsx-writer/scripts/refresh_formulas.py <path> --json` post-build to populate cached values. Output: `<slug>-workbook.xlsx`.
 3. Write `output/[ANALYSIS_DIR]/report.md` (tables + mermaid) as internal documentation, always — regardless of which formats were selected. This is the source of truth that writer skills consume.
 4. Filename convention: `<slug>` = descriptive part of `[ANALYSIS_DIR]` (everything after `YYYY-MM-DD_HHMM_`). Internal files (`plan.md`, `reasoning/`, `validation/`) stay unprefixed.
 5. Verify each file exists on disk with `ls -lh output/[ANALYSIS_DIR]/` after the deliverable is produced. Regenerate if missing BEFORE reporting to the user.

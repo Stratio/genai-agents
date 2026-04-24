@@ -1,7 +1,7 @@
 ---
 name: quality-report
-description: "Generar un informe formal de cobertura de calidad del dato en el formato que elija el usuario. Guidance-first: orquesta el ensamblado del contenido y delega la generación de ficheros a las skills de escritura del agente (pdf-writer, docx-writer, pptx-writer, web-craft, canvas-craft) más la skill centralizada de theming. El formato Chat funciona en solitario, sin dependencia de writers."
-argument-hint: "[formato: chat|pdf|docx|pptx|web|poster] [nombre-fichero (opcional)]"
+description: "Generar un informe formal de cobertura de calidad del dato en el formato que elija el usuario. Guidance-first: orquesta el ensamblado del contenido y delega la generación de ficheros a las skills de escritura del agente (pdf-writer, docx-writer, pptx-writer, web-craft, canvas-craft, xlsx-writer) más la skill centralizada de theming. El formato Chat funciona en solitario, sin dependencia de writers."
+argument-hint: "[formato: chat|pdf|docx|pptx|web|poster|xlsx] [nombre-fichero (opcional)]"
 ---
 
 # Skill: Generación de Informe de Calidad
@@ -31,7 +31,7 @@ Paralelo:
 
 ### 2.1 Pre-check — disponibilidad de writer skills (PRIMER PASO OBLIGATORIO)
 
-Antes de ofrecer opciones de formato de fichero, confirmar qué writer skills declara el agente host. Si el agente host NO declara `pdf-writer`, `docx-writer`, `pptx-writer`, `web-craft` ni `canvas-craft`, el único formato disponible es Chat — saltar el §2.2 entero y proceder directamente al §5.1 (Chat).
+Antes de ofrecer opciones de formato de fichero, confirmar qué writer skills declara el agente host. Si el agente host NO declara `pdf-writer`, `docx-writer`, `pptx-writer`, `web-craft`, `canvas-craft` ni `xlsx-writer`, el único formato disponible es Chat — saltar el §2.2 entero y proceder directamente al §5.1 (Chat).
 
 Este pre-check es bloqueante: NO ofrecer formatos de fichero que el agente host no puede materializar, y NO intentar cargar una writer skill que el agente host no declara, aunque el usuario insista en un formato de fichero.
 
@@ -45,6 +45,7 @@ Si al menos una writer skill está declarada, preguntar al usuario siguiendo la 
 - **PowerPoint** — deck ejecutivo (16:9 por defecto). Requiere `pptx-writer`.
 - **Dashboard web** — HTML interactivo con filtros, KPI cards y tablas ordenables. Requiere `web-craft`.
 - **Póster / Infografía** — resumen visual de una página para imprenta o publicación. Requiere `canvas-craft`.
+- **Excel (XLSX)** — libro tabular de cobertura multi-hoja (portada + matriz de cobertura con formato condicional + detalle de reglas + gaps + recomendaciones). Requiere `xlsx-writer`.
 
 Se admite selección múltiple (el mismo contenido se materializa en varios formatos reutilizando el mismo `quality-report.md` interno).
 
@@ -104,6 +105,7 @@ Usar la misma convención de carpeta que §5.3.
    - **PowerPoint** → cargar `pptx-writer`. Salida: `<slug>-quality-summary.pptx`. 16:9 por defecto; 4:3 solo si el usuario lo pide explícitamente. Objetivo ≤12 slides siguiendo el guion de `quality-report-layout.md` §6.3.
    - **Dashboard web** → cargar `web-craft`. Salida: `<slug>-quality-dashboard.html`. Aplicar el layout específico de calidad de §6.4 (exactamente los cuatro KPI cards de §5, heatmap interactivo de cobertura, filtros por dimensión/status/prioridad, tablas ordenables). Si el agente host también declara una guía general `analytical-dashboard.md`, cargarla en paralelo para que los patrones genéricos de dashboard (filtros globales, Plotly vía CDN, presupuesto de datos, responsive, motion, idioma) apliquen por encima.
    - **Póster / Infografía** → cargar `canvas-craft`. Salida: `<slug>-quality-poster.pdf` o `<slug>-quality-poster.png`. Composición de página única según §6.5 (banda superior de KPIs, heatmap central, top 3 gaps + top 3 recomendaciones en columnas laterales, A3 vertical por defecto).
+   - **Excel (XLSX)** → cargar `xlsx-writer`. Salida: `<slug>-quality-report.xlsx`. Libro multi-hoja según `quality-report-layout.md` §6.6 (Cover con 4 KPI cards en banda de celdas combinadas, matriz de Coverage como Table nativa con formato condicional para OK/KO/WARNING/NOT_EXECUTED, detalle de Rules agrupado por tabla, Gaps priorizados, opcional Rules-created-this-session, Recomendaciones). Sin fórmulas de Excel (todos los valores son datos mostrados); sin gráficos nativos (la matriz de cobertura es en sí el heatmap). Los tokens de marca aplican solo a colores de fill, bordes y estados — XLSX usa las fuentes del sistema del lector, no fuentes embebidas.
 
 5. **Convención de nombres**: `<slug>` = parte descriptiva del dominio/scope (según paso 1). Los ficheros internos (`quality-report.md`) se mantienen sin prefijo.
 

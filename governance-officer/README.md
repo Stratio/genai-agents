@@ -18,7 +18,7 @@ Governance officer agent combining semantic layer building and data quality mana
 - Reasoned quality rule proposals based on semantic context and real data
 - Quality rule creation with mandatory human approval
 - Automatic execution scheduling for quality rules
-- Coverage report generation (chat, PDF, DOCX, Markdown)
+- Coverage report generation (chat, PDF, DOCX, PPTX, Dashboard web, Poster/Infographic, XLSX, Markdown)
 
 ## Requirements
 
@@ -53,11 +53,13 @@ MCP configuration is in `.mcp.json` (Claude Code / claude.ai) and in `opencode.j
 | Quality assessment | `/assess-quality` | Assess quality coverage by domain or table |
 | Rule creation | `/create-quality-rules` | Design and create quality rules with human approval |
 | Quality scheduling | `/create-quality-schedule` | Create automatic execution schedules |
-| Quality report | `/quality-report` | Generate formal coverage report (PDF, DOCX, Markdown) |
+| Quality report | `/quality-report` | Generate formal coverage report (PDF, DOCX, PPTX, Dashboard web, Poster/Infographic, XLSX, Markdown, Chat) |
 | PDF reading | `/pdf-reader` | Extract text, tables and data from user-provided PDF files |
 | PDF writing | `/pdf-writer` | Create custom PDFs, merge/split, watermark, encrypt, fill forms |
 | DOCX reading | `/docx-reader` | Extract text, tables, images and metadata from `.docx` or legacy `.doc` files (policies, ontology specs, business documents) |
 | DOCX writing | `/docx-writer` | Governance DOCX (policy briefs, ontology documentation, compliance reports). Merge/split, find-replace, convert `.doc` to `.docx` |
+| XLSX reading | `/xlsx-reader` | Extract cell values, tables, formulas and metadata from `.xlsx`/`.xlsm` files (or legacy `.xls`/`.xlsb` via LibreOffice) — data dictionaries, term catalogs, rule-spec workbooks, compliance matrices |
+| XLSX writing | `/xlsx-writer` | Governance XLSX (ontology exports, term catalogs, compliance matrices, policy checklist workbooks). Multi-sheet quality-coverage workbooks. Merge/split, find-replace, legacy `.xls` conversion, formula refresh |
 
 ## Packaging scripts
 

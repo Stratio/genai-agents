@@ -8,6 +8,8 @@ docx-reader
 docx-writer
 pptx-reader
 pptx-writer
+xlsx-reader
+xlsx-writer
 web-craft
 canvas-craft
 brand-kit
