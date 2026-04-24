@@ -4,6 +4,8 @@ Shared skill que extrae valores de celdas, tablas, fórmulas, imágenes, metadat
 
 Diseñada como un flujo de dos fases: modo rápido (extracción one-shot con cadena de fallback multi-motor) y modo profundo (extracción determinista por motor con diagnóstico previo). La skill elige la fase según lo que el libro contiene realmente, nunca a priori.
 
+La skill compañera `xlsx-writer` cubre la autoría ad-hoc de XLSX y las operaciones estructurales (libros analíticos, matrices pivote, merge/split/find-replace, conversión de `.xls` heredado, refresco de fórmulas).
+
 ## Qué hace
 
 - Diagnóstico estructural (inventario de partes vía `unzip -l`, listado de hojas con estado de visibilidad, inventario de nombres definidos)
@@ -37,3 +39,11 @@ En Stratio Cowork la imagen del sandbox (`genai-agents-sandbox`) provee todo lo 
 ## Degradación elegante
 
 La skill funciona solo con `openpyxl` + `pandas` + `lxml` para `.xlsx` y `.xlsm` modernos. LibreOffice habilita `.xls` y `.xlsb` legacy. Sin LibreOffice y sin `xlrd<2`, los binarios legacy no se pueden abrir — la skill reporta un diagnóstico claro en lugar de fallar en silencio.
+
+## Guías compartidas
+
+Ninguna.
+
+## MCPs
+
+Ninguno — la skill opera exclusivamente sobre ficheros XLSX aportados por el usuario.

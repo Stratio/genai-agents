@@ -50,6 +50,10 @@ brew install poppler
 
 Ninguna en esta iteración.
 
+## MCPs
+
+Ninguno — la skill opera exclusivamente sobre ficheros PPTX aportados por el usuario.
+
 ## Assets incluidos
 
 Ninguno. La skill depende de `python-pptx` y del LibreOffice del sistema; no se incluyen fuentes ni plantillas.

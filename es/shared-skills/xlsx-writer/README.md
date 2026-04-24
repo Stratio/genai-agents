@@ -28,7 +28,16 @@ Todas ya parte del `requirements.txt` baseline de los agentes Python que cargan 
 
 En Stratio Cowork la imagen del sandbox (`genai-agents-sandbox`) provee todo lo anterior. En dev local, revisa la sección "System dependencies" del `README.md` del monorepo.
 
-## Shared guides
+## Skills compañeras
+
+- `xlsx-reader` — la contraparte de ingesta (valores de celda / tablas / fórmulas / imágenes / metadatos). Comparte el stack `openpyxl` + `pandas`.
+- `quality-report` — la skill que dispara el formato "Excel", materializando el libro multi-hoja de cobertura descrito en `quality-report-layout.md §6.6`.
+
+## MCPs
+
+Ninguno — la skill opera exclusivamente sobre ficheros locales.
+
+## Guías compartidas
 
 - `visual-craftsmanship.md` (vía `skill-guides`) — roles de paleta tonal y pairings tipográficos usados como fallback cuando no hay skill centralizada de theming que resolvió un tema.
 

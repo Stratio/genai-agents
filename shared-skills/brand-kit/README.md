@@ -36,6 +36,27 @@ Each theme file contains the full token set: the 10 core colors, the
 chart categorical palette, the typography block (families + sizes +
 fallbacks), tone family, recommended use cases, and anti-patterns.
 
+### Tone families vs. themes
+
+Each theme declares a **tone family** from the eight canonical tones defined in `skills-guides/visual-craftsmanship.md`. Several themes can share the same tone family and still serve distinct use cases — the tone defines the aesthetic direction, the theme supplies the concrete tokens.
+
+| Tone family | Themes that map here |
+|---|---|
+| editorial-serious | editorial-serious, academic-sober, corporate-formal |
+| technical-minimal | technical-minimal, modern-product |
+| warm-magazine | warm-magazine |
+| forensic-audit | forensic-audit |
+| brutalist-raw | brutalist-raw |
+| luxury-refined | luxury-refined |
+| industrial-utilitarian | industrial-utilitarian |
+| playful-toy | (no bundled theme; available to custom themes) |
+
+When adding your own theme, either map it to one of the eight canonical tones or declare a new tone with a short description in its `## Tone family` section.
+
+## MCPs
+
+None — brand-kit is a catalog of tokens plus a selection workflow; all I/O is done by the consuming output skill.
+
 ## How agents use it
 
 When the agent is about to generate any visual deliverable, it runs

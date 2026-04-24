@@ -34,6 +34,13 @@ Las skills compartidas son, por norma, autocontenidas — ningún SKILL.md en `s
 
 Ninguna directa en esta skill. Toda la generación de ficheros se delega a las writer skills que declare el agente host. Cada writer skill gestiona sus propias dependencias de runtime.
 
+## MCPs
+
+- **Governance (`gov`):** `get_tables_quality_details`, `get_quality_rule_dimensions`, `quality_rules_metadata`.
+- **Data (`sql`):** `get_table_columns_details`, `get_tables_details` — invocados solo cuando falta contexto upstream de `assess-quality` y la skill necesita rellenarlo.
+
+La mayoría de invocaciones llegan con el contexto ya poblado por `assess-quality`, así que en la práctica la skill lee más del estado de la conversación que lo que llama a MCPs directamente.
+
 ## Cómo incluir esta skill en un agente
 
 Al añadir `quality-report` al manifiesto `shared-skills` de un agente, declararla junto a las writer skills `pdf-writer`, `docx-writer`, `pptx-writer`, `web-craft`, `canvas-craft` y `xlsx-writer`, más la skill centralizada de theming `brand-kit`. Ese bundle es lo que permite al agente entregar el rango completo de formatos (PDF, DOCX, PPTX, Dashboard web, Póster/Infografía, XLSX). Si el agente es chat-oriented y omite los writers por diseño, al usuario solo se le ofrecerá el formato Chat — que es una configuración válida y soportada.

@@ -4,6 +4,8 @@ Skill compartida que extrae texto, tablas, imágenes, metadatos y marcas de camb
 
 Diseñada como un flujo en dos fases: modo rápido (extracción de un solo paso con cadena de motores de respaldo) y modo profundo (extracción determinista por herramienta, con diagnóstico previo). La skill elige la fase según lo que realmente contiene el documento, no a priori.
 
+La skill compañera `docx-writer` cubre la autoría ad-hoc de DOCX y las operaciones estructurales (merge, split, buscar-reemplazar, conversión de `.doc` heredado).
+
 ## Qué hace
 
 - Diagnóstico estructural (inventario de partes vía `unzip -l`, detección de `word/comments.xml`, `word/media/`, `word/footnotes.xml`)
@@ -31,3 +33,11 @@ En Stratio Cowork la imagen del sandbox (`genai-agents-sandbox`) aporta todo lo 
 ## Degradación elegante
 
 La skill funciona solo con `python-docx` + `lxml`. `pandoc` y `libreoffice` mejoran la calidad de extracción y desbloquean el soporte de `.doc` heredado, pero no son obligatorias.
+
+## Guías compartidas
+
+Ninguna.
+
+## MCPs
+
+Ninguno — la skill opera exclusivamente sobre ficheros DOCX aportados por el usuario.

@@ -42,6 +42,14 @@ brew install --cask libreoffice
 brew install poppler
 ```
 
+## Companion skills
+
+- `pptx-reader` — the ingestion counterpart (text / bullets / tables / notes / comments / chart data). Shares the `python-pptx` + LibreOffice stack.
+
+## MCPs
+
+None — the skill operates purely on local files.
+
 ## Shared guides
 
 - `visual-craftsmanship.md` (via `skill-guides`) — shared design principles across the visual-craftsmanship family (`web-craft`, `canvas-craft`, `pdf-writer`, `docx-writer`, `pptx-writer`).
