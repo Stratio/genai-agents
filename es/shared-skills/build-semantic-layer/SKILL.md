@@ -1,6 +1,6 @@
 ---
 name: build-semantic-layer
-description: "Pipeline completo para construir la capa semántica de un dominio técnico. Orquesta las 5 fases en secuencia con diagnóstico de estado, publicación opcional y seguimiento de progreso."
+description: "Construir la capa semántica completa de un dominio técnico end-to-end en Stratio Governance, orquestando las cinco fases del pipeline (technical terms → ontology → business views → SQL mappings → semantic terms), con publicación opcional de vistas entre mappings y semantic terms. Requiere una data collection existente — usa create-data-collection primero si no existe. Usar cuando el usuario quiera construir, completar, regenerar o auditar la capa semántica completa de un dominio, en lugar de invocar una skill de fase concreta."
 argument-hint: "[dominio técnico (opcional)]"
 ---
 

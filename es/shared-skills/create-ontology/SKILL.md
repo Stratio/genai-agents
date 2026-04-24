@@ -1,6 +1,6 @@
 ---
 name: create-ontology
-description: "Crear, ampliar o borrar clases de una ontología en Stratio Governance. Incluye planificación interactiva con el usuario (dominio, ficheros de referencia, clases, nomenclaturas) antes de crear."
+description: "Crear, ampliar o borrar clases de una ontología en Stratio Governance, con planificación interactiva a partir de ficheros de referencia (.owl/.ttl, CSVs, documentos de negocio) antes de crear. Usar cuando el usuario quiera modelar la ontología de un dominio, añadir clases a una ya existente, sembrar clases desde documentos de referencia, o eliminar clases obsoletas. Para generar las vistas de negocio a partir de la ontología, preferir create-business-views."
 argument-hint: "[dominio técnico (opcional)]"
 ---
 

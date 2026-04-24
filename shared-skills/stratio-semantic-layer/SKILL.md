@@ -1,6 +1,6 @@
 ---
 name: stratio-semantic-layer
-description: "Stratio semantic layer MCPs reference — mandatory rules, usage patterns and best practices for the semantic governance MCP tools (create_ontology, create_business_views, etc.). Load to refresh usage rules or before interacting with governance tools without a specific skill."
+description: "Stratio semantic layer MCPs reference — mandatory rules, usage patterns and best practices for the governance MCP tools (create_ontology, create_business_views, create_sql_mappings, create_semantic_terms, create_business_term, etc.). Load before interacting with governance tools without a dedicated skill, when unsure of invocation order or parameters, or to refresh usage rules. For a specific flow, prefer the matching create-* skill."
 argument-hint: ""
 ---
 

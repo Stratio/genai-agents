@@ -1,6 +1,6 @@
 ---
 name: quality-report
-description: "Generar un informe formal de cobertura de calidad del dato en el formato que elija el usuario. Guidance-first: orquesta el ensamblado del contenido y delega la generación de ficheros a las skills de escritura del agente (pdf-writer, docx-writer, pptx-writer, web-craft, canvas-craft, xlsx-writer) más la skill centralizada de theming. El formato Chat funciona en solitario, sin dependencia de writers."
+description: "Generar un informe formal de cobertura de calidad del dato en el formato que elija el usuario — chat, PDF, DOCX, PPTX, dashboard web, póster o matriz de cobertura en XLSX. Delega la generación de ficheros a las writer skills del agente (pdf-writer, docx-writer, pptx-writer, web-craft, canvas-craft, xlsx-writer) más la skill centralizada de theming; el formato chat funciona en solitario, los formatos-fichero solo se ofrecen si el agente host declara la writer skill correspondiente. Usar cuando el usuario quiera un informe de calidad, un resumen de cobertura, un dashboard de calidad, un deck ejecutivo de hallazgos de calidad, o cualquier entregable que consolide resultados de assess-quality."
 argument-hint: "[formato: chat|pdf|docx|pptx|web|poster|xlsx] [nombre-fichero (opcional)]"
 ---
 

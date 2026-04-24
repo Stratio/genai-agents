@@ -1,6 +1,6 @@
 ---
 name: create-quality-schedule
-description: "Create a schedule to automatically execute all quality rules in one or more folders/collections. Operates at the folder level (domain/collection), not individual rules. Requires mandatory human confirmation before execution."
+description: "Create a schedule that runs all quality rules in one or more Stratio Governance folders/collections automatically, at folder level — not per individual rule — with mandatory human confirmation. Use when the user wants to automate recurring quality checks, schedule a daily/weekly/monthly rule run for a domain, or plan quality execution across several collections."
 argument-hint: "[domain/collection] [frequency (optional)]"
 ---
 

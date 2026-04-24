@@ -1,6 +1,6 @@
 ---
 name: create-quality-rules
-description: "Diseñar y crear reglas de calidad. Flujo A (gaps): cubrir gaps identificados en una evaluación de cobertura previa. Flujo B (regla concreta): crear una regla específica descrita por el usuario sin evaluación previa. Ambos flujos requieren confirmación humana obligatoria antes de ejecutar."
+description: "Diseñar y crear reglas de calidad de datos en Stratio Governance con confirmación humana obligatoria antes de ejecutar. Usar cuando el usuario quiera crear una regla de calidad, cubrir dimensiones sin cobertura, arreglar gaps de calidad detectados en una evaluación previa (Flujo A), o añadir una validación concreta sobre una columna o tabla sin evaluación previa (Flujo B). Para programar la ejecución de reglas existentes, preferir create-quality-schedule."
 argument-hint: "[dominio] [tabla (opcional)]"
 ---
 

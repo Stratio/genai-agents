@@ -1,6 +1,6 @@
 ---
 name: create-semantic-terms
-description: "Generar o regenerar términos semánticos de negocio en el glosario de Stratio Governance para las vistas de negocio de un dominio."
+description: "Generar o regenerar semantic terms para las vistas de negocio de un dominio en Stratio Governance. Usar cuando el usuario quiera refrescar los semantic terms de las vistas de un dominio tras cambios en la ontología o las vistas, o poblarlos masivamente para un nuevo dominio. Para business terms en el diccionario, preferir manage-business-terms; para crear las vistas en sí, preferir create-business-views."
 argument-hint: "[dominio técnico (opcional)]"
 ---
 

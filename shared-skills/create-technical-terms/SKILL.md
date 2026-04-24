@@ -1,6 +1,6 @@
 ---
 name: create-technical-terms
-description: "Create or regenerate technical terms (table and column descriptions) in Stratio Governance for a technical domain."
+description: "Create or regenerate technical terms — descriptions of tables and columns — in Stratio Governance for an entire technical domain, and seed the collection description when missing. Use when the user wants to document tables and columns, bulk-generate descriptions for a new domain, refresh them after schema changes, or recover missing technical terms."
 argument-hint: "[technical domain (optional)]"
 ---
 

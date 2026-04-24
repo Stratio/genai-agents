@@ -22,6 +22,15 @@ This agent does not execute data queries, does not generate files on disk, and d
 - Environment variables: `MCP_GOV_URL`, `MCP_GOV_API_KEY`, `MCP_SQL_URL`, `MCP_SQL_API_KEY`
 - Preconfigured setup in `.mcp.json` (Claude Code / claude.ai) and in `opencode.json` (OpenCode), both preconfigured to read the URL and credentials from environment variables
 
+### System and Python dependencies
+
+This agent does not ship a `requirements.txt` of its own because its primary output is MCP interaction, not file generation. However, it declares the shared skills `docx-reader` and `pptx-reader` (in `shared-skills`) so that planning can ingest DOCX specifications and PPTX decks. Those skills require:
+
+- Python: `python-docx`, `python-pptx`, `lxml`
+- System: `pandoc` (DOCX extraction, including tracked changes), `libreoffice-*-nogui` (legacy `.doc`/`.ppt` conversion and preview rasterization), `poppler-utils` (rasterization)
+
+In the Stratio Cowork sandbox (`genai-agents-sandbox`) these dependencies are provided by the image. For local/out-of-sandbox installs, see the sandbox `development/DOCKER_DEPENDENCIES.md` or each skill's README.
+
 ## Packaging scripts
 
 All scripts are non-interactive (CI/CD-friendly). If `--name` is not provided, they default to `semantic-layer`. All scripts accept `--lang <code>` to generate output in a specific language (e.g., `--lang es` for Spanish). When `--lang` is used, output goes to `dist/<lang>/...` instead of `dist/...`.

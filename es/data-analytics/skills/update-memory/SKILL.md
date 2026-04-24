@@ -1,6 +1,6 @@
 ---
 name: update-memory
-description: "Actualizar la memoria persistente del agente con preferencias del usuario, patrones de datos y heurísticas descubiertas. Se invoca automáticamente al final de cada análisis o manualmente cuando el usuario quiera registrar preferencias."
+description: "Actualizar el fichero de memoria persistente del agente con preferencias del usuario, patrones de datos y heurísticas descubiertas para que futuras sesiones puedan recuperarlos. Usar cuando termina un análisis, cuando el usuario pide guardar o recordar una preferencia, o cuando emerge una decisión reutilizable (convención de nombres, dominio excluido, tipo de gráfico preferido) durante la conversación. Para persistencia en governance o capa semántica, preferir propose-knowledge."
 argument-hint: "[preferencia o patrón a recordar (opcional)]"
 ---
 

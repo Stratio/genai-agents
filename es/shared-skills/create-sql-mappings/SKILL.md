@@ -1,6 +1,6 @@
 ---
 name: create-sql-mappings
-description: "Crear o actualizar SQL mappings para vistas de negocio existentes en Stratio Governance. Para corregir, mejorar o crear mappings sin recrear vistas."
+description: "Crear o actualizar los SQL mappings de vistas de negocio existentes en Stratio Governance, sin recrear las vistas, y opcionalmente publicarlas después. Usar cuando el usuario quiera corregir un mapping, arreglar el SQL de una vista, añadir columnas que falten, o recuperarse de una creación parcial de mappings. Para regeneración end-to-end de vistas + mappings, preferir create-business-views."
 argument-hint: "[dominio técnico (opcional)]"
 ---
 

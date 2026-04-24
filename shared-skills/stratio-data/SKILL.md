@@ -1,6 +1,6 @@
 ---
 name: stratio-data
-description: "Stratio data MCPs reference — mandatory rules, usage patterns and best practices for all data MCP tools (query_data, list_domains, search_domains, generate_sql, etc.). Load before the first interaction with data MCP tools, or to refresh usage rules."
+description: "Stratio data MCPs reference — mandatory rules, usage patterns and best practices for all data MCP tools (query_data, list_domains, search_domains, generate_sql, profile_data, get_tables_details, etc.). Load before the first call to a data MCP tool, when unsure of invocation order or parameters, or to refresh usage rules mid-session."
 argument-hint: ""
 ---
 

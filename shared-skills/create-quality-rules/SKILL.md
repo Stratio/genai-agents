@@ -1,6 +1,6 @@
 ---
 name: create-quality-rules
-description: "Design and create quality rules. Flow A (gaps): cover gaps identified in a prior coverage assessment. Flow B (specific rule): create a specific rule described by the user without prior assessment. Both flows require mandatory human confirmation before execution."
+description: "Design and create data quality rules in Stratio Governance with mandatory human confirmation before execution. Use when the user wants to create a quality rule, cover uncovered dimensions, fix quality gaps from a prior assessment (Flow A), or add a specific validation on a column or table without prior assessment (Flow B). For scheduling the execution of existing rules, prefer create-quality-schedule."
 argument-hint: "[domain] [table (optional)]"
 ---
 
