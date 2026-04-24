@@ -1,1 +1,3 @@
 description: "Agent creator for designing and generating complete AI agents for Stratio Cowork. Guides requirements gathering, architecture design, AGENTS.md generation, skill creation, quality review, and agents/v1 ZIP packaging."
+tags:
+  - ai-agent-creation

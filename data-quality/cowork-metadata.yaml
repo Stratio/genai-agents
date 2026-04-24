@@ -1,1 +1,5 @@
 description: "Expert in data governance and data quality. Assesses quality coverage, identifies gaps, and creates quality rules."
+tags:
+  - data-quality
+  - data-governance
+  - reporting
