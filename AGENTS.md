@@ -224,6 +224,16 @@ When adding or modifying translatable content:
 2. Create or update the counterpart in `es/` (e.g., `es/.../SKILL.md`) with the Spanish translation
 3. Run `bin/check-translations.sh` to verify no translations are missing
 
+## Changelog
+
+`CHANGELOG.md` tracks user-facing milestones per release: new agents, new shared skills, architectural changes, breaking changes, and structural refactors that change how the monorepo is consumed. Each release section aggregates those milestones at a summary level, not the incremental PRs that built them. **The changelog is always written in English**, regardless of the conversation language — it is part of the repository's public surface and is not translated into the `es/` overlay.
+
+**Do not add to the changelog:** small bug fixes, documentation tweaks, internal renames, test adjustments, dependency bumps without user impact, and intermediate work inside a feature that has not shipped yet. If the entry would read as "fix typo", "small improvement" or "minor refactor", it belongs in the commit / PR — which is already the source of truth at that level of detail.
+
+Practical rule: before adding an entry, ask whether an external consumer of this repo would care about it. If the answer is no, the entry does not belong here.
+
+When preparing a release, collapse incremental PR-level entries accumulated in the upcoming section into a handful of high-level bullets (by agent, shared-skill family, packaging, i18n, CI/CD). Keep the released section short — the git log carries the detail.
+
 ## Adding a new agent
 
 The complete creation guide is in `README.md` (section "Creating a new agent"). Monorepo integration checklist:
