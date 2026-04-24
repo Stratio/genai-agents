@@ -18,6 +18,7 @@
       "mcp__stratio_gov__create_quality_rule",
       "mcp__stratio_gov__create_quality_rule_planification",
       "mcp__stratio_gov__quality_rules_metadata",
+      "mcp__stratio_gov__get_mcp_task_result",
       "Bash(poetry *)",
       "Bash(python *)",
       "Bash(python3 *)",

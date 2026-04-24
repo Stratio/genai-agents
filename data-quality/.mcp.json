@@ -22,7 +22,8 @@
         "get_quality_rule_dimensions",
         "create_quality_rule",
         "create_quality_rule_planification",
-        "quality_rules_metadata"
+        "quality_rules_metadata",
+        "get_mcp_task_result"
       ]
     }
   }
