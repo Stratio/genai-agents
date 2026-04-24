@@ -44,6 +44,7 @@
     "*create_quality_rule": "allow",
     "*create_quality_rule_planification": "allow",
     "*quality_rules_metadata": "allow",
+    "*get_mcp_task_result": "allow",
     "bash": {
       "*": "allow"
     }

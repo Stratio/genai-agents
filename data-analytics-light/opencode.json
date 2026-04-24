@@ -41,6 +41,7 @@
     "stratio_data_*": "allow",
     "stratio_gov_*": "deny",
     "*get_quality_rule_dimensions": "allow",
+    "*get_mcp_task_result": "allow",
     "bash": {
       "*": "allow"
     }

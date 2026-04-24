@@ -19,7 +19,8 @@
         "Authorization": "Bearer ${MCP_GOV_API_KEY:-}"
       },
       "allowedTools": [
-        "get_quality_rule_dimensions"
+        "get_quality_rule_dimensions",
+        "get_mcp_task_result"
       ]
     }
   }
