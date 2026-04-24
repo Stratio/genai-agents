@@ -370,7 +370,7 @@ Este agente puede evaluar la cobertura de calidad de datos de gobernanza y gener
 ### Flujo de calidad
 
 1. **Evaluación**: Cargar skill `/assess-quality` → descubrimiento de dominio → `get_quality_rule_dimensions` obligatorio → metadata/profiling en paralelo → análisis de cobertura → identificación de gaps → presentar resultados
-2. **Informe (opcional)**: Si el usuario pide un informe formal → cargar skill `/quality-report` → selección de formato (Chat / PDF / DOCX / Markdown) → preparación del JSON → ejecución del generador
+2. **Informe (opcional)**: Si el usuario pide un informe formal → cargar skill `/quality-report` → selección de formato (Chat / PDF / DOCX / PPTX / Dashboard web / Póster/Infografía) → cargar writer skill según contrato §8
 3. Seguir `skills-guides/quality-exploration.md` para el manejo de dimensiones, consideraciones de dominios técnicos y detalles de EDA para calidad
 
 ### Limitaciones de alcance (crítico)
@@ -383,18 +383,9 @@ Después, ofrecer exportar el inventario de gaps (resumen en chat o Markdown) pa
 
 ### Generación de informes de calidad
 
-Los informes de calidad usan su propio generador (incluido en la skill `quality-report`), **no** la infraestructura de entregables analíticos en `skills/analyze/report/` (sin CSS themes, sin Jinja2 templates, sin DashboardBuilder). El detalle operativo completo vive en la skill `/quality-report`. Comandos indicativos:
+Los informes de calidad siguen el mismo contrato formato→skill que los entregables analíticos (§8). La skill `/quality-report` compone la estructura canónica de seis secciones (Resumen ejecutivo → Cobertura → Reglas → Gaps → Recomendaciones) y delega la generación del fichero a la writer skill correspondiente. Las opciones de formato son las mismas seis que para entregables analíticos (Chat, PDF, DOCX, PPTX, Dashboard web, Póster/Infografía); el agente ofrece las que tenga declaradas.
 
-```bash
-python3 skills/quality-report/scripts/validate_report_input.py output/report-input.json
-python3 skills/quality-report/scripts/quality_report_generator.py \
-  --format <pdf|docx|md> \
-  --output "output/quality-report-[dominio]-[YYYY-MM-DD].<ext>" \
-  --input-file output/report-input.json \
-  --lang <código_idioma_usuario>
-```
-
-**Idioma del informe de calidad**: pasar siempre `--lang <código>` con el idioma que el usuario está usando en el chat (p. ej. `--lang es` si estás conversando en español). El generador traduce los títulos estáticos (Resumen Ejecutivo, Cobertura por Tabla, etc.), las columnas de tabla, el atributo HTML `lang` y el footer. Si se omite `--lang`, hace fallback al fichero `.agent_lang` escrito al empaquetar y finalmente a inglés. Para sobreescribir labels específicos (p. ej. usuario en un idioma no cubierto por el catálogo), pasar `--labels-json '{...}'` o añadir un dict `"labels": {...}` al JSON input.
+Ver `shared-skills/quality-report/quality-report-layout.md` para el layout específico del informe (secciones canónicas, KPI cards, iconografía, composición por formato, reglas deterministas para auditoría). Las writer skills consumen esta guía junto a `analytical-dashboard.md` (para Dashboard web).
 
 ---
 
@@ -519,11 +510,7 @@ Escoge el tema cuyo descriptor mejor encaje en estas dimensiones. Identifica 2-3
 - Registrar el tema aplicado como línea en `reasoning.md` y `analysis_memory.md` (ej. `theme: editorial-serious`). Informativo, no contrato.
 - NO escribir el tema en `MEMORY.md` automáticamente. Solo persistir allí si el usuario lo pide explícitamente ("recuerda este tema para la próxima").
 
-### 8.4 Informes de calidad (excepción)
-
-`quality-report` tiene su propio generador dedicado para informes de cobertura de gobernanza y se invoca vía `/assess-quality` → `/quality-report`, no vía este contrato formato→skill. Ver §4.1.
-
-### 8.5 Markdown interno
+### 8.4 Markdown interno
 
 `/analyze` Fase 4 siempre escribe `output/[ANALISIS_DIR]/report.md` (tablas + mermaid) como documentación interna, independientemente de qué formatos se seleccionaron. Es la fuente de verdad que consumen las skills writer.
 
@@ -551,7 +538,7 @@ Para contenido obligatorio y plantilla, ver skill `/analyze` [reasoning-guide.md
 
 - **Idioma de respuesta y deliverables**: Responder en el mismo idioma que usa el usuario. Lo siguiente debe redactarse en el idioma del usuario, salvo que este indique explícitamente otro idioma:
   - Informes analíticos (PDF, DOCX, Web/HTML, PowerPoint, Póster/Infografía, Markdown) generados por `/analyze` Fase 4 vía las skills writer (ver contrato formato→skill en §8)
-  - **Informes de cobertura de calidad de datos** (Chat, PDF, DOCX, Markdown) generados por `/assess-quality` + `/quality-report`
+  - **Informes de cobertura de calidad de datos** (Chat + formatos de fichero: PDF, DOCX, PPTX, Dashboard web, Póster/Infografía) generados por `/assess-quality` + `/quality-report` vía el contrato formato→skill del §8
   - Mini-resumen de la Fase 1.1 (Data Profiling Score + Governance Quality Status)
   - Ficheros de reasoning y validación
   - Ficheros de memoria (MEMORY.md, ANALYSIS_MEMORY.md, analysis_memory.md)

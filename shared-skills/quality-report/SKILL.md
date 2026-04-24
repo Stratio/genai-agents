@@ -1,14 +1,14 @@
 ---
 name: quality-report
-description: "Generate a formal data quality coverage report in the format chosen by the user (chat, PDF, DOCX, or Markdown on disk). Use when the user wants a document or presentation with the current quality status, after assessing coverage or creating quality rules."
-argument-hint: "[format: chat|pdf|docx|md] [filename (optional)]"
+description: "Generate a formal data quality coverage report in the format chosen by the user. Guidance-first: orchestrates content assembly and delegates file generation to the agent's writer skills (pdf-writer, docx-writer, pptx-writer, web-craft, canvas-craft) plus the centralized theming skill. Chat format works standalone with no writer dependency."
+argument-hint: "[format: chat|pdf|docx|pptx|web|poster] [filename (optional)]"
 ---
 
 # Skill: Quality Report Generation
 
-Workflow for generating a structured report with the state of data quality coverage.
+Guidance-first workflow to produce a structured data quality coverage report. This skill orchestrates: it collects and composes the content, resolves the brand theme, and delegates the file-format generation to the host agent's writer skills. Only the Chat format is produced standalone by this skill.
 
-## 1. Prerequisites and Report Data
+## 1. Prerequisites and report data
 
 This skill needs quality data to generate the report. Check if it already exists in the current conversation:
 
@@ -27,260 +27,98 @@ Parallel:
   C. get_quality_rule_dimensions(collection_name=domain_name)
 ```
 
-## 2. Format Selection
+## 2. Format selection
 
-If the user has not specified a format, ask the user with options following the user question convention:
+### 2.1 Pre-check — writer skills availability (MANDATORY first step)
 
-```
-What format do you want the report in?
-  1. Chat — structured summary in this conversation (no file)
-  2. PDF — formal downloadable document
-  3. DOCX — editable Word document
-  4. Markdown — .md file on disk
-```
+Before offering file-format options, confirm which writer skills the host agent declares. If the host agent does NOT declare `pdf-writer`, `docx-writer`, `pptx-writer`, `web-craft` nor `canvas-craft`, the only format available is Chat — skip §2.2 entirely and proceed with §5.1 (Chat).
 
-If the user has specified the format in the arguments or message, use it directly.
+This check is blocking: DO NOT offer file formats that the host agent cannot materialise, and DO NOT attempt to load a writer skill that is not declared by the host agent, even if the user insists on a file format.
 
-## 3. Report Structure
+### 2.2 Format options
 
-The report has the same structure regardless of format:
+If at least one writer skill is declared, ask the user following the user question convention. Only offer the options whose required skill is declared by the agent:
 
-### Cover / Header
-- Title: "Data Quality Coverage Report"
-- Domain / Collection: [name]
-- Scope: [full domain / specific table(s)]
-- Generation date: [today]
-- Agent: Data Quality Expert
+- **Chat** — structured summary in this conversation (no file). Always available.
+- **PDF** — typographic multi-page document. Requires `pdf-writer`.
+- **DOCX** — editable Word document. Requires `docx-writer`.
+- **PowerPoint** — executive summary deck (16:9 by default). Requires `pptx-writer`.
+- **Dashboard web** — interactive HTML with filters, KPI cards and sortable tables. Requires `web-craft`.
+- **Poster / Infographic** — single-page visual summary for print or publication. Requires `canvas-craft`.
 
-### Section 1 — Executive Summary
-- Tables analyzed: N
-- Existing quality rules: N
-- Estimated global coverage: XX%
-- Rules in OK status: N | KO: N | WARNING: N | Not executed: N
-- Gaps identified: N critical, N moderate, N low
-- Rules created in this session (if applicable): N
+Multiple selection is allowed (the same content materialises in several formats using the same internal `quality-report.md`).
 
-### Section 2 — Coverage by Table
+If the user specified the format in the arguments or message, use it directly and skip the question.
 
-Matrix table (include standard and domain-specific dimensions):
-```
-| Table | Completeness | Uniqueness | Validity | Consistency | Other Dimensions | Coverage |
-```
+## 3. Report structure
 
-With icon or color legend (depending on format).
+The report has the same structure regardless of format. Six canonical sections in this fixed order:
 
-### Section 3 — Existing Rules Detail
+1. **Cover / Header** — title, domain, scope, generation date, agent name.
+2. **Executive summary** — tables analysed, rules total, breakdown OK/KO/WARNING/NOT_EXECUTED, coverage estimate, gaps by priority (CRITICO/ALTO/MEDIO/BAJO), rules created this session.
+3. **Coverage by table** — matrix of tables × dimensions with icon-coded status.
+4. **Rules detail** — per table: rules with name, dimension, status, % pass, description. KO and WARNING visually highlighted.
+5. **Identified gaps** — prioritised list with table, column, dimension, priority, description and recommendation.
+6. **Recommendations and next steps** — prioritised bullets.
 
-For each table, list its rules:
-```
-| Rule | Dimension | Status | % Pass | Description |
-```
+If the user created rules via `create-quality-rules` in the current conversation, an optional **Rules created in this session** section goes between §4 and §5.
 
-Highlight (bold or red) rules in KO or WARNING.
+For the full layout contract (iconography, KPI cards, per-format composition, deterministic rules for audit), see `quality-report-layout.md` in this skill folder.
 
-### Section 4 — Identified Gaps
+## 4. Branding decisions
 
-Prioritized list of gaps:
-- For each gap: table, column, missing dimension, estimated impact, recommendation
+Before invoking any writer skill for a file format, fix the theme following the host agent's branding cascade. When the host agent declares a format→skill contract with a §Branding decisions sub-section, follow that cascade — it is typically 5 levels: pin → explicit signal → intra-session continuity → MEMORY preference → curated proposal.
 
-### Section 5 — Rules Created in this Session (if applicable)
+**Primary neutral default for quality reports** (when no cascade rule resolves to a specific theme): `forensic-audit`. It matches the audit register of a coverage report and keeps month-over-month reruns of the same dataset visually stable. The curated proposal should prefer themes whose descriptor mentions "audit", "technical", "editorial" or "corporate".
 
-If quality rules were created in this session, include:
-- List of created rules with their SQL
-- Coverage before and after (only if a coverage assessment was performed previously; for Flow B rules without prior assessment, omit the coverage comparison)
+If the user asks for neutrality explicitly ("no me importa el diseño" / "make it neutral" / "hazlo neutro"), apply `technical-minimal` as the sober fallback — maximum restraint, predictable output for non-audit contexts.
 
-**For Flow B rules (specific rule)**: indicate they were directly requested by the user, include the described business logic, the SQL validation result (passing records / total, % or count) and the calculated status (OK / KO / WARNING / NO_DATA) based on the applied measurement configuration (measurement_type + threshold_mode + thresholds).
+The chosen theme is recorded silently as the last line of the internal `quality-report.md` (e.g. `theme applied: forensic-audit`). Informational, not a contract.
 
-**For Flow A rules (gaps)**: include the SQL validation result with the calculated status. If validation showed KO or WARNING, visually highlight it (bold) as data to review.
+## 5. Deliverable generation
 
-### Section 6 — Recommendations and Next Steps
+### 5.1 Chat format
 
-- Priority KO/WARNING rules to investigate
-- Critical pending gaps to cover
-- Effort estimation for full coverage
+Emit the report directly as markdown in the current response, following the six canonical sections from §3. No file is produced, no writer skill is invoked, the branding cascade does not run.
 
-## 4. Generation by Format
+End the message with the summary of 2-3 key points per §7.
 
-### Format: Chat
+### 5.2 Markdown on disk (optional, trivial)
 
-Generate the report directly in markdown within the chat response. Follow the structure in section 3 with well-formatted headers, tables, and lists.
+If the user asks for a `.md` file on disk (not Chat, not one of the writer-backed formats), write it directly with the Write tool at `output/<folder>/<slug>-quality-report.md`. No writer skill involved — markdown is plain text.
 
-Do not execute Python or create files.
+Use the same folder convention as §5.3.
 
-### File formats: PDF, DOCX, and Markdown on disk
+### 5.3 File formats (PDF, DOCX, PPTX, Dashboard web, Poster)
 
-All three file formats (PDF, DOCX, MD) use the same Python generator and the same `report-input.json` file. The process is identical except for the `--format` flag and the output file extension.
+1. **Folder**: create `output/YYYY-MM-DD_HHMM_quality_<slug>/` (all artefacts live here). `<slug>` = domain or scope normalised (lowercase ASCII, accents stripped, spaces replaced by underscores, max 30 chars). Example: `2026-04-24_1530_quality_analiticabanca`.
 
-#### Step 1 — Verify environment
+2. **Brand tokens (once, before any visual format)**: load the centralized theming skill (`brand-kit`) with the theme fixed in §4. The theme file provides the token bundle — colours, typography, chart palette — that downstream writer skills consume so every deliverable looks coherent.
 
-The Python stack (`weasyprint`, `jinja2`, `markdown`, `beautifulsoup4`, `python-docx`) is provided by the environment (Stratio Cowork sandbox image or, in dev local, your venv). Verify with `python3 -c "import weasyprint, jinja2, markdown, bs4, docx"`. If any import fails, run `pip install <pkg>` in the current environment.
+3. **Assemble the content source**: write `output/<folder>/quality-report.md` in the user's language, containing every canonical section from §3 using the structure described in `quality-report-layout.md` §10. When a section has no data, include the heading and an explicit "No X detected" line — do not omit silently. Apply the deterministic layout rules from `quality-report-layout.md` §11 (fixed section order, KPI card order, matrix column order, gap ordering, item limits per format). This internal file is the single source of truth the writer skills consume.
 
-#### Step 2 — Determine the report folder
+4. **For each selected format, load the matching writer skill and produce the deliverable. Follow `quality-report-layout.md` for the format-specific composition**:
 
-Mirror the folder convention used by analysis reports so every quality report lives in its own self-contained directory alongside its input JSON and generated artefacts.
+   - **PDF** → load `pdf-writer`. Output: `<slug>-quality-report.pdf`. The deliverable must render the six canonical sections, apply brand tokens, honour the KPI cards pattern from the layout guide §5, and follow the PDF composition rules from §6.1 (header/footer on every page, repeat matrix header on page breaks, portrait unless dimension count >8).
+   - **DOCX** → load `docx-writer`. Output: `<slug>-quality-report.docx`. Same six sections; use Word-native tables for the coverage matrix and rules detail so the user can edit them. Preserve heading styles (`Heading 1`, `Heading 2`, …).
+   - **PowerPoint** → load `pptx-writer`. Output: `<slug>-quality-summary.pptx`. 16:9 by default; 4:3 only if the user asked explicitly. Target ≤12 slides following the outline in `quality-report-layout.md` §6.3.
+   - **Dashboard web** → load `web-craft`. Output: `<slug>-quality-dashboard.html`. Apply the quality-specific layout from §6.4 (exactly the four KPI cards from §5, interactive coverage heatmap, filters for dimension/status/priority, sortable tables). If the host agent also declares a general `analytical-dashboard.md` guide, load it alongside so the generic dashboard patterns (global filters, Plotly via CDN, data budget, responsive, motion, language) apply on top.
+   - **Poster / Infographic** → load `canvas-craft`. Output: `<slug>-quality-poster.pdf` or `<slug>-quality-poster.png`. Single-page composition per §6.5 (KPI band top, central heatmap, top-3 gaps + top-3 recommendations in flanking columns, A3 portrait by default).
 
-1. Build the folder name: `YYYY-MM-DD_HHMM_quality_<slug>` where `<slug>` is the domain or scope normalised (lowercase ASCII, accents stripped, spaces replaced by underscores, max 30 chars). Example: `2026-04-20_1530_quality_semantic_analiticabanca`.
-2. Create the directory: `mkdir -p "output/<folder>/"` and then `readlink -f "output/<folder>/"` to get the absolute path. All files produced by this skill (input JSON, PDF, DOCX, Markdown) go inside this folder — never directly under `output/`.
-3. If the user already has an active analysis folder in this session and explicitly asks to store the quality report alongside the analysis, reuse that folder instead of creating a new one.
+5. **Filename convention**: `<slug>` = descriptive domain/scope (as defined in step 1). Internal files (`quality-report.md`) stay without prefix.
 
-#### Step 3 — Prepare report-input.json
+6. **Verify each file exists on disk with `ls -lh output/<folder>/` after each writer skill returns.** If a file is missing, regenerate — do NOT report partial success to the user.
 
-Write `<absolute-path>/<folder>/report-input.json` with the exact schema that follows. **Field names are literal — the generator reads them with `data.get("field")` and returns `-` if they don't exist.**
+## 6. Post-generation verification
 
-**Common errors to avoid (produce blank report):**
-- NOT `report_title` → `title`
-- NOT `report_date` / `date` → `generated_at`
-- NOT `executive_summary` → `summary`
-- NOT `total_rules` / `rules_count` → `summary.rules_total`
-- NOT `rules_pending` / `rules_not_run` → `summary.rules_not_executed`
-- NOT `quality_rules` → `tables[].rules`
-- NOT `coverage_by_dimension` (nested object) → flat fields `tables[].completeness`, `tables[].uniqueness`, etc.
-- NOT priorities in Spanish (`Alta/Media/Baja`) → `CRITICO|ALTO|MEDIO|BAJO`
-- NOT `recommendations` as array of objects → array of **plain strings**
-- NOT `calculated_status` in `rules_created` → `status`
+For file formats:
+1. `ls -lh output/<folder>/` — confirm every expected file is present with non-zero size.
+2. If any file is missing or zero-size: regenerate that format before returning to the user.
 
-```json
-{
-  "title": "Data Quality Coverage Report — <table> — <domain>",
-  "domain": "<domain_name>",
-  "scope": "<table(s) or 'Full domain'>",
-  "generated_at": "<YYYY-MM-DD>",
-  "summary": {
-    "tables_analyzed": <N>,
-    "rules_total": <N>,
-    "rules_ok": <N>,
-    "rules_ko": <N>,
-    "rules_warning": <N>,
-    "rules_not_executed": <N>,
-    "coverage_estimate": "<XX%>",
-    "gaps_critical": <N>,
-    "gaps_moderate": <N>,
-    "gaps_low": <N>,
-    "rules_created_this_session": <N or null>
-  },
-  "tables": [
-    {
-      "name": "<table>",
-      "coverage_estimate": "<XX%>",
-      "completeness": "<OK|Gap|Partial|N/A>",
-      "uniqueness": "<OK|Gap|Partial|N/A>",
-      "validity": "<OK|Gap|Partial|N/A>",
-      "consistency": "<OK|Gap|Partial|N/A>",
-      "rules": [
-        {
-          "name": "<rule-name>",
-          "dimension": "<dimension>",
-          "status": "<OK|KO|WARNING>",
-          "pass_pct": <0-100 or null>,
-          "description": "<description>"
-        }
-      ],
-      "gaps": [
-        {
-          "column": "<column or '—' if applies to the table>",
-          "dimension": "<missing dimension>",
-          "priority": "<CRITICO|ALTO|MEDIO|BAJO>",
-          "description": "<gap description>"
-        }
-      ]
-    }
-  ],
-  "rules_created": [
-    {
-      "name": "<rule-name>",
-      "table": "<table>",
-      "dimension": "<completeness|uniqueness|validity|consistency|...>",
-      "status": "<created|OK|KO|WARNING|SIN_DATOS>"
-    }
-  ],
-  "recommendations": ["<recommendation 1 as plain string>", "<recommendation 2>"]
-}
-```
+## 7. Final message to the user
 
-**Mapping notes from coverage assessment data:**
-- `summary.rules_total` ← total existing rules in the collection (not only executed ones)
-- `summary.rules_not_executed` ← rules without results yet (pending)
-- `summary.gaps_critical` ← gaps with priority `CRITICO`; `gaps_moderate` ← `ALTO`; `gaps_low` ← `MEDIO` + `BAJO`
-- `tables[].completeness/uniqueness/validity/consistency` ← `OK` if there is an active rule, `Gap` if none, `Partial` if incomplete, `N/A` if not applicable
-- `tables[].rules[].status` ← for unexecuted rules use `WARNING` (never "Pending" or "Not executed")
-- `tables[].gaps[].priority` ← `CRITICO` for PK/FK without rule, `ALTO` for key columns, `MEDIO` for the rest, `BAJO` for optional dimensions
-- `rules_created[].status` ← use `"created"` for rules newly created this session without validation; `OK|KO|WARNING|SIN_DATOS` if SQL validation was executed
+After generation, present in chat:
 
-#### Step 4 — Determine the artefact filenames
-
-All artefacts live **inside** the folder from Step 2. The filenames carry the descriptive `<slug>` (the part after the timestamp in the folder name) as a prefix so they stay recognisable after download.
-
-- If the user indicated a name: use that (with the correct extension), still inside the folder.
-- If not:
-  - PDF: `output/<folder>/<slug>-quality-report.pdf`
-  - DOCX: `output/<folder>/<slug>-quality-report.docx`
-  - MD: `output/<folder>/<slug>-quality-report.md`
-
-#### Step 5 — Validate the JSON (MANDATORY before running the generator)
-
-```bash
-python3 scripts/validate_report_input.py output/<folder>/report-input.json
-```
-
-- If it ends with `[OK]`: continue to step 6.
-- If it ends with `[VALIDATION FAILED]`: read each error, correct the `report-input.json`, and re-run validation until it passes without errors. **Do not run the generator with an invalid JSON** — it will produce a blank report without warning.
-
-#### Step 6 — Run the generator
-
-```bash
-python3 scripts/quality_report_generator.py \
-  --format <pdf|docx|md> \
-  --output "output/<folder>/<slug>-quality-report.<ext>" \
-  --input-file "output/<folder>/report-input.json" \
-  --lang <user_language_code>
-```
-
-**Optional — visual tone** (affects PDF and DOCX only; the Markdown format is language-neutral and ignores this flag):
-
-```bash
-python3 scripts/quality_report_generator.py \
-  --format pdf \
-  --output "output/<folder>/<slug>-quality-report.pdf" \
-  --input-file "output/<folder>/report-input.json" \
-  --lang <user_language_code> \
-  --tone <default|technical-minimal|executive-editorial|forensic>
-```
-
-Tones change the accent palette and type pairing of the generated document:
-
-- `default` — preserves the legacy palette (Arial body, navy accent). Used when `--tone` is omitted.
-- `technical-minimal` — IBM Plex Serif body with IBM Plex Sans display and IBM Plex Mono for tabular data; cold blue accent. Good for engineering audiences or incident reviews.
-- `executive-editorial` — Crimson Pro body with Instrument Serif display; warm oxblood accent on cream. Good for board-level summaries or quarterly reports.
-- `forensic` — IBM Plex Mono body with Plex Serif display; deep red accent on bone. Good for audit-style documentation where every figure is meant to be scrutinised.
-
-See `skills-guides/visual-craftsmanship.md` for the shared aesthetic principles (palette roles, type pairing, anti-patterns, craftsmanship checklist).
-
-**Font availability note**: the non-default tones reference families (IBM Plex Serif/Sans/Mono, Crimson Pro, Instrument Serif, JetBrains Mono). They must be installed system-wide or delivered by the environment; if WeasyPrint cannot resolve a family it falls back silently and the visible tone will not change. When in doubt, keep `--tone default` (Arial) or install the family via the agent's environment setup.
-
-**Language of the static labels** (section headings, table column names, footer, HTML `lang` attribute). Resolution order (highest wins):
-
-1. `--labels-json '{...}'` on the command line — per-key override.
-2. `"labels": {...}` embedded in the JSON input — per-key override.
-3. `--lang <code>` on the command line — selects from the catalogue.
-4. `"lang": "<code>"` embedded in the JSON input — selects from the catalogue.
-5. `.agent_lang` file at the agent root (written at packaging time) — the default language of the packaged agent.
-6. `"en"` as final fallback.
-
-**Practical rule**: pass `--lang <code>` with the language of the current user (the same language you are using in the chat). Supported catalogue languages today are `en` and `es`; unknown codes fall back to English per-key. If you need a label the catalogue doesn't ship in the user's language (e.g. the user writes in French), pass the translations via `--labels-json` or the JSON `"labels"` field.
-
-If the user requests PDF and DOCX in the same session, the `report-input.json` can be reused — run the generator twice with different `--format` and `--output`.
-
-## 5. Post-Generation Verification
-
-For file formats (PDF, DOCX, MD on disk):
-1. Verify the file exists: `ls -lh output/<folder>/`
-2. Inform the user: folder path, filenames, size of each artefact
-3. If generation failed: show the error and offer a chat alternative
-
-## 6. Final Message to the User
-
-After generating the report, present in chat:
-- Generation confirmation (or the report itself if chat format)
-- File path (if applicable)
-- Summary of 2-3 key points from the report
-- Question about whether they want anything else (create rules for gaps, expand scope, etc.)
+- Generation confirmation (for Chat: the report itself; for files: folder path + list of generated artefacts with sizes).
+- 2-3 key points from the report (e.g. top coverage gap, most critical KO rule, biggest improvement vs a previous report if available).
+- Follow-up question (create rules for the detected gaps, expand scope to other tables, schedule periodic re-evaluation, etc.).

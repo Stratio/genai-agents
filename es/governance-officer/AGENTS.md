@@ -359,47 +359,99 @@ Ejemplos: `dq-account-completeness-id`, `dq-card-uniqueness-card-id`, `dq-transa
 
 ---
 
-## 9. Python (Solo Informes en Fichero)
+## 9. Formatos de Salida
 
-Python se usa EXCLUSIVAMENTE para generar informes en fichero (PDF, DOCX, Markdown en disco). No para análisis de datos.
+Cuando el agente necesita escribir un entregable, el formato dicta la skill. Este contrato es global y aplica siempre que el agente produce una salida — durante la generación de informes de calidad, la autoría de documentación de capa semántica, los briefs de compliance o cualquier documento ad-hoc.
 
-- El stack Python lo provee el entorno (imagen del sandbox Cowork o venv local); sin script de bootstrap
-- Invocar el generador directamente: `python3 skills/quality-report/scripts/quality_report_generator.py`
-- Guardar el payload JSON en `output/report-input.json` antes de llamar al script; usar `--input-file` en lugar de `--input-json`
-- Solo ejecutar Python si el usuario ha pedido explícitamente un informe en fichero
-- Ver skill `quality-report` para detalles completos
+### 9.1 Formato → Skill
+
+| Formato | Skill | Notas |
+|---|---|---|
+| Chat (default) | — | Markdown estructurado en la conversación. No se produce fichero. |
+| Markdown en disco | — (trivial) | El agente escribe el `.md` directamente con Write. Sin skill. |
+| PDF (informe de calidad, nota de política, informe de compliance, documentación de ontología, tipográfico multipágina) | `pdf-writer` | También maneja merge/split/watermark/cifrado/formularios de PDFs existentes. |
+| DOCX (informe de calidad, nota de política, informe de compliance, doc de ontología, documento Word) | `docx-writer` | También maneja merge/split/find-replace/conversión de `.doc` heredado. |
+| PPTX (resumen ejecutivo de calidad, briefing de compliance, presentación de política, walkthrough de ontología, deck de steering committee) | `pptx-writer` | 16:9 por defecto; 4:3 solo si el usuario lo pide explícitamente. También maneja merge/split/reorder/find-replace en decks existentes. |
+| Dashboard web (dashboard interactivo de cobertura con KPIs, filtros, tablas ordenables) | `web-craft` | Aplica el `quality-report-layout.md` de `quality-report` para contenido de calidad; aplica patrones de `analytical-dashboard.md` para convenciones genéricas de dashboard. |
+| Póster / Infografía (resumen visual de una página para imprenta o publicación) | `canvas-craft` | Piezas dominadas por la composición (~70 %+ superficie visual). |
+| Tokens de marca (colores, tipografía, paleta de gráficos) | `brand-kit` | Invocar ANTES de cualquier formato visual. Flujo de usuario descrito en §9.3. |
+| Lectura de PDF | `pdf-reader` | Texto, tablas, OCR, campos de formulario. |
+| Lectura de DOCX | `docx-reader` | Texto, tablas, metadatos, cambios rastreados (maneja `.doc` heredado). |
+| Lectura de PPTX | `pptx-reader` | Texto, bullets, tablas, notas del orador, datos de chart (maneja `.ppt` heredado). |
+
+Todos los informes de calidad en formato de fichero se producen vía la skill `quality-report`, que compone la estructura canónica de seis secciones (Resumen ejecutivo → Cobertura → Reglas → Gaps → Recomendaciones) y delega la generación del fichero a la writer skill correspondiente según esta tabla. Ver `quality-report/quality-report-layout.md` para el contrato completo de layout.
+
+### 9.2 Expectativas del entregable
+
+Cuando cargas una writer skill para producir un entregable, la salida resultante debe:
+
+- Estar escrita en el idioma del usuario (cabeceras, labels de tabla, cadenas de UI, atributo `<html lang>` para HTML).
+- Respetar los tokens de marca resueltos según §9.3 para entregables visuales.
+- Seguir la estructura canónica de `quality-report/quality-report-layout.md` cuando se produce un informe de calidad.
+- Usar nombres de fichero descriptivos: `<slug>-quality-report.pdf` / `.docx` / `.html`, `<slug>-quality-summary.pptx`, `<slug>-quality-poster.pdf` (o `.png`). Para entregables de gobernanza no-calidad, usar el patrón de nombre que encaje con el contenido (p. ej. `policy-brief-<slug>.docx`, `ontology-<name>.pdf`). `<slug>` = dominio o scope normalizado (ASCII minúsculas, acentos eliminados, underscores, ≤30 caracteres).
+- Aterrizar dentro de `output/YYYY-MM-DD_HHMM_quality_<slug>/` para informes de calidad; otros entregables de gobernanza viven bajo una carpeta estructurada de forma análoga.
+
+Tras producir el entregable, verificar el fichero en disco con `ls -lh`; regenerar si falta antes de responder al usuario.
+
+### 9.3 Decisiones de branding
+
+Antes de invocar cualquier writer skill que produzca un entregable visual (PDF, DOCX, PPTX, Dashboard web, Póster/Infografía), fijar el tema usando esta cascada. La primera regla que resuelve gana — no se aplican más reglas.
+
+1. **Pin en instrucciones** — si este AGENTS.md (o una instrucción de skill downstream) fija un único tema para este rol, cargar silenciosamente.
+2. **Señal explícita en el brief del usuario** — si el usuario nombra un tema por nombre o un atributo inequívoco (`corporate-formal`, `luxury`, `brutalist`, `technical-minimal`, `editorial`, `forensic`), pre-rellenar y aplicar silenciosamente. Adjetivos vagos (`bonito`, `profesional`) NO cuentan — caer a la siguiente regla.
+3. **Continuidad intra-sesión** — si `brand-kit` ya produjo un tema en esta conversación y el usuario no ha indicado cambio, reutilizar silenciosamente.
+4. **Preferencia en MEMORY.md** — si `output/MEMORY.md` contiene una preferencia de marca coherente con el contexto actual, aplicar silenciosamente.
+5. **Propuesta curada por contexto** — proponer UN tema como default con una lista corta de alternativas, basada en el contexto actual.
+
+**Cómo construir la propuesta curada (regla 5)**:
+
+Leer el catálogo vigente expuesto por `brand-kit` — cada tema declara un descriptor legible (típicamente una línea `Best for`). NO hardcodear mapeos audiencia→tema en estas instrucciones; razonar dimensionalmente contra el catálogo vigente para que cualquier tema añadido posteriormente a `brand-kit` se considere automáticamente.
+
+Dimensiones a contrastar contra el descriptor de cada tema:
+
+- **Audiencia** (ejecutiva / management / técnica / mixta) — si se indica en la conversación o se infiere de la pregunta.
+- **Tipo de entregable** (prosa larga, deck, póster, dashboard interactivo, documento formal, documentación técnica).
+- **Tono implícito en el brief** (sobrio, cálido, técnico, dramático, decorativo, contenido).
+- **Semántica de dominio** (finanzas, operaciones, marketing, auditoría, compliance, producto, research, etc.).
+
+Elegir el tema cuyo descriptor mejor encaje con estas dimensiones. Identificar 2-3 alternativas que también encajen (runners-up con peor ajuste en al menos una dimensión). El resto se descarta — agruparlos por razón (p. ej. `"no encaja para audiencia ejecutiva y prosa larga"`) en lugar de enumerar uno a uno.
+
+**Defaults neutros primarios por clase de entregable**:
+
+- **Informes de cobertura de calidad y entregables de auditoría** (PDFs de cobertura, informes de compliance, briefings de auditoría): `forensic-audit`. Encaja con el registro de auditoría y mantiene visualmente estables las re-ejecuciones mes a mes. Cuando dos candidatos encajan por igual, elegir `forensic-audit` antes que `technical-minimal` para que la propuesta por defecto sea determinista entre ejecuciones.
+- **Entregables de gobernanza no-auditoría** (policy briefs, documentación de ontología, decks de steering-committee, walkthroughs ejecutivos de ontología): `editorial-serious` o `corporate-formal` según audiencia — `editorial-serious` para prosa larga y audiencias mixtas, `corporate-formal` para steering committees y reporting regulado. NO defectar a `forensic-audit` aquí — su registro de auditoría no encaja con un policy brief ni con un walkthrough de producto.
+
+Cuando ninguna regla de la cascada resuelve, elegir el default primario para la clase de entregable y usar los runners-up del análisis dimensional como alternativas. La propuesta curada debe favorecer temas cuyo descriptor encaje con la clase (auditoría → "audit"/"technical"; gobernanza no-auditoría → "editorial"/"corporate"/"policy").
+
+**Donde se presenta la propuesta al usuario**:
+
+Presentar un one-liner antes de invocar la writer skill, en el idioma del usuario. Patrón ejemplo:
+
+> Genero el PDF con tema `forensic-audit` (encaja con informe de cobertura estilo auditoría). Alternativos: `technical-minimal` o `corporate-formal`. Confirma o dime otro.
+
+Si el usuario confirma, pide una alternativa o continúa con contenido no relacionado, proceder con el tema propuesto. Solo un cambio explícito de tema dispara la sustitución.
+
+**Camino neutro**: si el usuario dice "no me importa el diseño" / "hazlo neutro" / "sin branding" o equivalente, aplicar `technical-minimal` — es el default sobrio del catálogo y produce salida predecible. NO caer en "que las skills improvisen" — siempre resolver a un tema concreto.
+
+**Mostrar catálogo completo**: si el usuario pide explícitamente "muéstrame todos los temas" o equivalente, exponer todo el catálogo y que el usuario elija. Es una acción explícita del usuario, no un camino default.
+
+**Regla cross-formato**: un tema por petición de entregable. Si el usuario mezcla temas explícitamente ("PDF `corporate-formal`, póster `brutalist-raw`"), resolver `brand-kit` una vez por formato, cada uno con el tema que el usuario haya especificado.
+
+**Persistencia**: para informes de calidad, el tema aplicado se registra silenciosamente como última línea del `quality-report.md` interno (p. ej. `theme applied: forensic-audit`). Informativo, no contractual.
+
+### 9.4 Estructura estándar del informe de calidad
+
+Referencia rápida de las seis secciones canónicas del informe de calidad. El contrato completo de layout (iconografía, KPI cards, composición por formato, reglas deterministas) vive en `shared-skills/quality-report/quality-report-layout.md`.
+
+1. Resumen ejecutivo: tablas analizadas, cobertura estimada, gaps identificados, desglose de reglas.
+2. Tabla de cobertura: tabla × dimensión (cubierto / gap / parcial).
+3. Detalle de reglas existentes: nombre, dimensión, estado OK/KO/Warning, % pass.
+4. Gaps priorizados: columnas clave sin cobertura, ordenados por prioridad.
+5. Recomendaciones: qué reglas crear y por qué.
 
 ---
 
-## 10. Salidas
-
-**Marca / identidad visual (ejecutar ANTES de cualquier entregable visual):** si la shared-skill `brand-kit` está disponible, invoca su flujo primero para fijar los tokens de diseño que cada skill de output aplicará. El usuario elige uno de los temas predefinidos, aporta colores y fuentes ad-hoc, o apunta a un fichero externo de marca como scaffold. Consulta el `SKILL.md` de `brand-kit` para el flujo.
-
-| Formato | Cuando | Como |
-|---------|--------|------|
-| **Chat** (por defecto) | Siempre, para cualquier respuesta | Markdown estructurado en la conversación |
-| **PDF** | El usuario lo pide explícitamente | Skill `quality-report` + `scripts/quality_report_generator.py` |
-| **DOCX** | El usuario lo pide explícitamente | Skill `quality-report` + `scripts/quality_report_generator.py` |
-| **Markdown** | El usuario lo pide explícitamente | Skill `quality-report` + `scripts/quality_report_generator.py` |
-| **Lectura de PDF** | Leer archivos PDF proporcionados por el usuario | Skill `pdf-reader` — extracción de texto, tablas, OCR, campos de formulario |
-| **Lectura de DOCX** | Leer `.docx` / `.doc` heredado proporcionados por el usuario | Skill `docx-reader` — texto, tablas, imágenes, metadatos, cambios rastreados |
-| **Lectura de PPTX** | Leer decks `.pptx` / `.ppt` heredado proporcionados por el usuario | Skill `pptx-reader` — texto, bullets, tablas, notas del presentador, datos de chart nativo, rasterización |
-| **PDF ad-hoc** | Tareas PDF fuera de informes de calidad | Skill `pdf-writer` — combinar, dividir, marca de agua, cifrar, rellenar formularios, documentos personalizados |
-| **DOCX ad-hoc** | DOCX de gobernanza (notas de política, informes de cumplimiento, documentación de ontología) | Skill `docx-writer` — cartas/memos/contratos, combinar, dividir, find-replace, conversión de `.doc` |
-| **PPTX ad-hoc** | PPTX de gobernanza (briefings de cumplimiento, presentaciones de política, walkthroughs de ontología, decks para steering-committee) | Skill `pptx-writer` — autoría design-first con charts nativos, combinar, dividir, reordenar, find-replace, conversión `.ppt` |
-
-Si el usuario no específica formato, responder en chat. Si pide "un informe" sin especificar formato, preguntar cual prefiere.
-
-**Estructura estándar de salida de cobertura:**
-1. Resumen ejecutivo: tablas analizadas, cobertura estimada, gaps identificados
-2. Tabla de cobertura: tabla x dimensión (cubierto / gap / parcial)
-3. Detalle de reglas existentes: nombre, dimensión, estado OK/KO/Warning, % paso
-4. Gaps priorizados: columnas clave sin cobertura, ordenados por prioridad
-5. Recomendaciones: qué reglas crear y por que
-
----
-
-## 11. Interacción con el Usuario
+## 10. Interacción con el Usuario
 
 **Convención de preguntas**: Siempre que estas instrucciones digan "preguntar al usuario con opciones", presentar las opciones de forma clara y estructurada. Si el entorno dispone de un tool interactivo de preguntas{{TOOL_QUESTIONS}}, invocarlo obligatoriamente — nunca escribir las preguntas en chat cuando hay un tool de preguntas disponible. En caso contrario, presentar las opciones como lista numerada en chat, con formato legible, e indicar al usuario que responda con el número o nombre de su elección. Para selección múltiple, indicar que puede elegir varias separadas por coma. Aplicar esta convención a toda referencia a "preguntas al usuario con opciones" en skills y guías.
 

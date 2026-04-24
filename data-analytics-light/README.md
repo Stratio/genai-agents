@@ -8,7 +8,7 @@ Lightweight Business Intelligence and Business Analytics agent. Same analytical 
 - Advanced analysis with Python (pandas, numpy, scipy)
 - Professional visualizations (matplotlib, seaborn, plotly)
 - Direct chat output with actionable insights
-- **Data quality coverage assessment** and quality summaries in chat (read-only, no file generation, no rule creation). For quality reports as PDF/DOCX/Markdown files, use the full `data-analytics` agent.
+- **Data quality coverage assessment** and quality summaries in chat (read-only, no file generation, no rule creation). `/quality-report` produces file formats by delegating to the writer skills (pdf-writer, docx-writer, pptx-writer, web-craft, canvas-craft). This agent declares only `quality-report` (not writers), so only Chat format is available. For PDF / DOCX / PPTX / Dashboard / Poster quality reports, use the full `data-analytics` agent.
 
 ## Requirements
 

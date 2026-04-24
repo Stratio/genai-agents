@@ -407,10 +407,10 @@ La exclusión explícita evita que la skill se active cuando el usuario solo qui
 
 Run the report generator:
 ```bash
-python3 scripts/quality_report_generator.py \
+python3 scripts/generate_report.py \
   --format pdf \
-  --output "output/quality-report-${domain}-${date}.pdf" \
-  --input-file output/report-input.json
+  --output "output/${slug}-${date}.pdf" \
+  --input-file output/payload.json
 ```
 ```
 

@@ -359,47 +359,99 @@ Examples: `dq-account-completeness-id`, `dq-card-uniqueness-card-id`, `dq-transa
 
 ---
 
-## 9. Python (File Reports Only)
+## 9. Output Formats
 
-Python is used EXCLUSIVELY to generate file reports (PDF, DOCX, Markdown on disk). Not for data analysis.
+When the agent needs to write a deliverable, the format dictates the skill. This contract is global and applies whenever the agent produces an output — during quality report generation, semantic-layer documentation authoring, compliance briefs, or any ad-hoc document.
 
-- The Python stack is provided by the environment (Cowork sandbox image or local venv); no bootstrap script
-- Invoke the generator directly: `python3 skills/quality-report/scripts/quality_report_generator.py`
-- Save the JSON payload to `output/report-input.json` before calling the script; use `--input-file` instead of `--input-json`
-- Only execute Python if the user has explicitly requested a file report
-- See skill `quality-report` for full details
+### 9.1 Format → Skill
+
+| Format | Skill | Notes |
+|---|---|---|
+| Chat (default) | — | Structured markdown in the conversation. No file produced. |
+| Markdown on disk | — (trivial) | Agent writes the `.md` directly with Write. No skill involved. |
+| PDF (quality report, policy brief, compliance report, ontology documentation, typographic multi-page) | `pdf-writer` | Also handles merge/split/watermark/encrypt/form-fill of existing PDFs. |
+| DOCX (quality report, policy brief, compliance report, ontology doc, Word document) | `docx-writer` | Also handles merge/split/find-replace/legacy `.doc` conversion. |
+| PPTX (executive quality summary, compliance briefing, policy presentation, ontology walkthrough, steering-committee deck) | `pptx-writer` | 16:9 default; 4:3 only if the user asks explicitly. Also handles merge/split/reorder/find-replace in existing decks. |
+| Dashboard web (interactive coverage dashboard with KPIs, filters, sortable tables) | `web-craft` | Applies `quality-report`'s `quality-report-layout.md` for quality content; applies `analytical-dashboard.md` patterns for general dashboard conventions. |
+| Poster / Infographic (single-page visual summary for print or publication) | `canvas-craft` | Composition-dominated pieces (~70 %+ visual surface). |
+| Brand tokens (colors, typography, chart palettes) | `brand-kit` | Invoke BEFORE any visual format. User flow described in §9.3. |
+| PDF reading | `pdf-reader` | Text, tables, OCR, form fields. |
+| DOCX reading | `docx-reader` | Text, tables, metadata, tracked changes (handles legacy `.doc`). |
+| PPTX reading | `pptx-reader` | Text, bullets, tables, speaker notes, chart data (handles legacy `.ppt`). |
+
+All file-format quality reports are produced via the `quality-report` skill, which composes the canonical six-section structure (Executive summary → Coverage → Rules → Gaps → Recommendations) and delegates the file generation to the matching writer skill per this table. See `quality-report/quality-report-layout.md` for the full layout contract.
+
+### 9.2 Deliverable expectations
+
+When you load a writer skill to produce a deliverable, the resulting output must:
+
+- Be written in the user's language (headings, table labels, UI strings, `<html lang>` attribute for HTML).
+- Honour the brand tokens resolved per §9.3 for visual deliverables.
+- Follow the canonical structure in `quality-report/quality-report-layout.md` when producing a quality report.
+- Use descriptive filenames: `<slug>-quality-report.pdf` / `.docx` / `.html`, `<slug>-quality-summary.pptx`, `<slug>-quality-poster.pdf` (or `.png`). For non-quality governance deliverables, use the filename pattern that fits the content (e.g. `policy-brief-<slug>.docx`, `ontology-<name>.pdf`). `<slug>` = domain or scope normalised (lowercase ASCII, accents stripped, underscores, ≤30 chars).
+- Land inside `output/YYYY-MM-DD_HHMM_quality_<slug>/` for quality reports; other governance deliverables live under an analogously structured folder.
+
+After the deliverable is produced, verify the file on disk with `ls -lh`; regenerate if missing before reporting to the user.
+
+### 9.3 Branding decisions
+
+Before invoking any writer skill that produces a visual deliverable (PDF, DOCX, PPTX, Dashboard web, Poster/Infographic), fix the theme using this cascade. The first rule that resolves wins — no further rules apply.
+
+1. **Pin in instructions** — if this AGENTS.md (or a downstream skill instruction) fixes a single theme for this role, load it silently.
+2. **Explicit signal in the user's brief** — if the user names a theme by name or an unambiguous attribute (`corporate-formal`, `luxury`, `brutalist`, `technical-minimal`, `editorial`, `forensic`), pre-fill and apply silently. Vague adjectives (`nice`, `professional`, `bonito`) do NOT count — fall through to the next rule.
+3. **Intra-session continuity** — if `brand-kit` already produced a theme earlier in this conversation and the user has not indicated a change, reuse silently.
+4. **MEMORY.md preference** — if `output/MEMORY.md` contains a brand preference coherent with the current context, apply silently.
+5. **Curated proposal by context** — propose ONE theme as default with a short list of alternatives, based on the current context.
+
+**How to build the curated proposal (rule 5)**:
+
+Read the live catalog exposed by `brand-kit` — every theme declares a human-readable descriptor (typically a `Best for` line). Do NOT hardcode audience→theme mappings in these instructions; reason dimensionally against the live catalog so any theme added to `brand-kit` later is considered automatically.
+
+Dimensions to contrast against each theme's descriptor:
+
+- **Audience** (executive / manager / technical / mixed) — if stated in the conversation or inferable from the question.
+- **Deliverable type** (long-form prose, deck, poster, interactive dashboard, formal document, technical documentation).
+- **Tone implied by the brief** (sober, warm, technical, dramatic, decorative, restrained).
+- **Domain semantics** (finance, operations, marketing, audit, compliance, product, research, etc.).
+
+Pick the theme whose descriptor best fits these dimensions. Identify 2-3 alternatives that also fit (runners-up with a weaker match on at least one dimension). The rest are discarded — group them by reason (e.g. `"not a fit for executive audience and long-form prose"`) rather than enumerating one by one.
+
+**Primary neutral defaults by deliverable class**:
+
+- **Quality coverage reports and audit-style deliverables** (coverage PDFs, compliance reports, audit briefings): `forensic-audit`. It matches the audit register and keeps month-over-month reruns visually stable. When two candidates fit equally, pick `forensic-audit` over `technical-minimal` so the default proposal is deterministic across runs.
+- **Non-audit governance deliverables** (policy briefs, ontology documentation, steering-committee decks, executive ontology walkthroughs): `editorial-serious` or `corporate-formal` depending on audience — `editorial-serious` for long-form prose and mixed audiences, `corporate-formal` for steering committees and regulated reporting. Do NOT default to `forensic-audit` here — its audit register mismatches a policy brief or a product walkthrough.
+
+When no cascade rule resolves, pick the primary default for the deliverable class and use the runners-up from the dimensional analysis above as alternatives. The curated proposal should favour themes whose descriptor fits the class (audit → "audit"/"technical"; non-audit governance → "editorial"/"corporate"/"policy").
+
+**Where the proposal is presented to the user**:
+
+Present a one-liner before invoking the writer skill, in the user's language. Example pattern:
+
+> I'll generate the PDF with theme `forensic-audit` (fits audit-style coverage reporting). Alternatives: `technical-minimal` or `corporate-formal`. Confirm or name another.
+
+If the user confirms, asks for an alternative, or continues with unrelated content, proceed with the proposed theme. Only a specific theme change triggers substitution.
+
+**Neutral path**: if the user says "no me importa el diseño" / "hazlo neutro" / "sin branding" or equivalent, apply `technical-minimal` — it is the sober default in the catalog and produces predictable output. Do NOT fall back to "the skills improvise" — always resolve to a concrete theme.
+
+**Show full catalog**: if the user explicitly asks "muéstrame todos los temas" or equivalent, surface the entire catalog and let them pick. This is an explicit user action, not a default path.
+
+**Cross-format rule**: one theme per deliverable request. If the user explicitly mixes themes ("PDF `corporate-formal`, poster `brutalist-raw`"), resolve `brand-kit` once per format, each with the theme the user has specified for it.
+
+**Persistence**: for quality reports, the applied theme is recorded silently as a line at the end of the internal `quality-report.md` (e.g. `theme applied: forensic-audit`). Informational, not a contract.
+
+### 9.4 Standard coverage output structure
+
+This is the quick-reference for the canonical six sections of the quality report. The full layout contract (iconography, KPI cards, per-format composition, deterministic rules) lives in `shared-skills/quality-report/quality-report-layout.md`.
+
+1. Executive summary: tables analyzed, estimated coverage, identified gaps, rules breakdown.
+2. Coverage table: table × dimension (covered / gap / partial).
+3. Existing rules detail: name, dimension, OK/KO/Warning status, % pass.
+4. Prioritized gaps: key columns without coverage, ordered by priority.
+5. Recommendations: what rules to create and why.
 
 ---
 
-## 10. Outputs
-
-**Brand / visual identity (run BEFORE any visual deliverable):** if the `brand-kit` shared skill is available, invoke its workflow first to fix the design tokens every output skill will apply. The user picks one of the predefined themes, supplies ad-hoc colors and fonts, or points to an external brand file as scaffold. See the `brand-kit` SKILL.md for the flow.
-
-| Format | When | How |
-|--------|------|-----|
-| **Chat** (default) | Always, for any response | Structured markdown in the conversation |
-| **PDF** | User explicitly requests it | Skill `quality-report` + `scripts/quality_report_generator.py` |
-| **DOCX** | User explicitly requests it | Skill `quality-report` + `scripts/quality_report_generator.py` |
-| **Markdown** | User explicitly requests it | Skill `quality-report` + `scripts/quality_report_generator.py` |
-| **PDF reading** | Reading user-provided PDF files | Skill `pdf-reader` — text extraction, table extraction, OCR, form fields |
-| **DOCX reading** | Reading user-provided DOCX / legacy `.doc` files | Skill `docx-reader` — text, tables, images, metadata, tracked changes |
-| **PPTX reading** | Reading user-provided PPTX / legacy `.ppt` decks | Skill `pptx-reader` — text, bullets, tables, speaker notes, native chart data, rasterization |
-| **Ad-hoc PDF** | PDF tasks beyond quality reports | Skill `pdf-writer` — merge, split, watermark, encrypt, form filling, custom documents |
-| **Ad-hoc DOCX** | Governance DOCX (policy briefs, compliance reports, ontology documentation) | Skill `docx-writer` — letters/memos/contracts, merge, split, find-replace, `.doc` conversion |
-| **Ad-hoc PPTX** | Governance PPTX (compliance briefings, policy presentations, ontology walkthroughs, steering-committee decks) | Skill `pptx-writer` — design-first authoring with native charts, merge, split, reorder, find-replace, `.ppt` conversion |
-
-If the user does not specify a format, respond in chat. If they ask for "a report" without specifying format, ask which they prefer.
-
-**Standard coverage output structure:**
-1. Executive summary: tables analyzed, estimated coverage, identified gaps
-2. Coverage table: table x dimension (covered / gap / partial)
-3. Existing rules detail: name, dimension, OK/KO/Warning status, % pass
-4. Prioritized gaps: key columns without coverage, ordered by priority
-5. Recommendations: what rules to create and why
-
----
-
-## 11. User Interaction
+## 10. User Interaction
 
 **Question convention**: Whenever these instructions say "ask the user with options", present the options in a clear and structured way. If the environment provides an interactive question tool{{TOOL_QUESTIONS}}, invoke it mandatorily — never write the questions in chat when a user question tool is available. Otherwise, present the options as a numbered list in chat, with readable formatting, and instruct the user to respond with the number or name of their choice. For multiple selection, indicate they can choose several separated by comma. Apply this convention to every reference to "user questions with options" in skills and guides.
 

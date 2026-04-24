@@ -325,17 +325,17 @@ This agent can assess data quality governance coverage and produce quality summa
 ### Quality workflow
 
 1. **Assessment**: Load skill `/assess-quality` → domain discovery → mandatory `get_quality_rule_dimensions` → parallel metadata/profiling → coverage analysis → gap identification → present results in chat
-2. **Report (chat only)**: If the user asks for a formal report → load skill `/quality-report` and **force the `Chat` format**; do NOT run `quality_report_generator.py` or any Python file-generation script
+2. **Report (chat only)**: If the user asks for a formal report → load skill `/quality-report` and **force the `Chat` format** — no file is produced
 3. Follow `skills-guides/quality-exploration.md` for dimension handling, technical-domain considerations, and EDA-for-quality details
 
 ### Chat-only restriction (strict)
 
-This agent is chat-oriented and deliberately lacks the Python report generation pipeline. When loading the `/quality-report` skill:
+This agent deliberately does NOT declare the writer skills (`pdf-writer`, `docx-writer`, `pptx-writer`, `web-craft`, `canvas-craft`) that `/quality-report` needs to materialise file formats. The `/quality-report` skill's pre-check (`§2.1`) detects the absence of writers and automatically restricts the options to Chat only. The agent simply confirms the choice with the user.
 
 - **Only use the `Chat` format**. Render the full quality report as structured markdown directly in the response.
-- If the user asks for PDF, DOCX, or Markdown-on-disk: inform the user clearly:
-  > "This lightweight agent generates quality reports in chat only. For PDF/DOCX/Markdown files, use the full **Data Analytics** agent. I can give you the report in chat right now if that works for you."
-- Never execute `quality_report_generator.py` or `validate_report_input.py`. Never write report files to disk.
+- If the user asks for PDF, DOCX, PPTX, Dashboard web or Poster: inform the user clearly:
+  > "This lightweight agent generates quality reports in chat only. For file formats, use the full **Data Analytics** agent. I can give you the report in chat right now if that works for you."
+- Never attempt to load a writer skill — this agent does not declare any.
 
 ### Scope limitations (critical)
 
