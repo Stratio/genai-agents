@@ -1,6 +1,6 @@
 ---
 name: propose-knowledge
-description: "Analyze the conversation to propose business terms and preferences discovered to the `Stratio Governance` layer of the domain. Use when the user wants to enrich the semantic layer with definitions, rules or preferences discovered during an analysis."
+description: "Analyze the conversation to propose business terms, definitions and preferences discovered for the Stratio Governance layer of a domain. Use when the user wants to enrich the semantic layer, save a definition found during analysis, record that a concept means X, persist a rule or preference, or add a term to governance. For explicitly authored terms with relationships, prefer manage-business-terms."
 argument-hint: "[domain (optional)]"
 ---
 

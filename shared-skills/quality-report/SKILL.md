@@ -1,6 +1,6 @@
 ---
 name: quality-report
-description: "Generate a formal data quality coverage report in the format chosen by the user. Guidance-first: orchestrates content assembly and delegates file generation to the agent's writer skills (pdf-writer, docx-writer, pptx-writer, web-craft, canvas-craft, xlsx-writer) plus the centralized theming skill. Chat format works standalone with no writer dependency."
+description: "Generate a formal data quality coverage report in the format chosen by the user — chat, PDF, DOCX, PPTX, web dashboard, poster or XLSX coverage matrix. Delegates file generation to the agent's writer skills (pdf-writer, docx-writer, pptx-writer, web-craft, canvas-craft, xlsx-writer) plus the centralized theming skill; chat format works standalone, file formats are offered only when the host agent declares the matching writer skill. Use when the user wants a quality report, coverage summary, quality dashboard, executive deck of quality findings, or any deliverable that consolidates assess-quality results."
 argument-hint: "[format: chat|pdf|docx|pptx|web|poster|xlsx] [filename (optional)]"
 ---
 

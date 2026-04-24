@@ -1,6 +1,6 @@
 ---
 name: brand-kit
-description: "Centralized catalog of visual identity themes (colors, typography, tone, chart palettes, sizing) that any output skill (docx-writer, pptx-writer, pdf-writer, web-craft, canvas-craft) consumes to produce branded deliverables. Ships with 10 curated themes and is extensible — clients can add their own themes as individual markdown files. Use this skill before generating any visual deliverable to fix the brand tokens the output skills will apply."
+description: "Select and apply a visual identity theme (colors, typography, tone, chart palettes, sizing) that every writer skill (docx-writer, pptx-writer, pdf-writer, web-craft, canvas-craft, xlsx-writer) consumes to produce branded deliverables. Ships ten curated themes and is extensible via new markdown theme files. Use whenever the user asks for a specific brand or theme, mentions corporate colors/identity/tone, requests a branded report/deck/poster, or before generating any visual deliverable to fix the brand tokens. Does not render the final file — delegates to the writer skills."
 argument-hint: "[theme name | 'custom' | 'scaffold']"
 ---
 
@@ -10,7 +10,7 @@ Branding lives in one place. This skill provides a curated catalog of
 visual identity themes — each one a complete, coherent bundle of colors,
 typography, chart palettes, sizing and tone — that any output skill knows
 how to consume. Pick a theme once and every downstream artifact (DOCX,
-PPTX, PDF, web, single-page visual) inherits it consistently.
+PPTX, PDF, XLSX, web, single-page visual) inherits it consistently.
 
 The skill does not generate artifacts by itself. It provides tokens.
 
@@ -35,8 +35,8 @@ is loaded — no extra file read needed to present the options.
 ## Workflow (invoke this BEFORE any output skill with visual dimension)
 
 Whenever the agent is about to generate a deliverable that has any visual
-expression (DOCX report, PPTX deck, PDF document, HTML landing, single-page
-PDF/PNG), run this flow first to fix the brand tokens. Skipping this step
+expression (DOCX report, PPTX deck, PDF document, XLSX workbook, HTML landing,
+single-page PDF/PNG), run this flow first to fix the brand tokens. Skipping this step
 produces inconsistent artifacts — different fonts, different accents, no
 shared chart palette across the same project.
 
@@ -66,7 +66,7 @@ scaffold, build the same structure in memory from those inputs.
 ### 4. Pass tokens to the output skill
 
 When you invoke the downstream output skill (docx-writer, pptx-writer,
-pdf-writer, web-craft, canvas-craft), supply the loaded tokens. Each
+pdf-writer, web-craft, canvas-craft, xlsx-writer), supply the loaded tokens. Each
 output skill knows how to map the canonical tokens to its native format
 (Python dict for python-docx / python-pptx, HexColor for reportlab, CSS
 custom properties for web).

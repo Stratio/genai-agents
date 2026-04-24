@@ -1,6 +1,6 @@
 ---
 name: create-semantic-terms
-description: "Generate or regenerate business semantic terms in the Stratio Governance glossary for the business views of a domain."
+description: "Generate or regenerate semantic terms for the business views of a domain in Stratio Governance. Use when the user wants to refresh the semantic terms of a domain's views after ontology or view changes, or bulk-populate them for a new domain. For business terms in the dictionary, prefer manage-business-terms; for creating the views themselves, prefer create-business-views."
 argument-hint: "[technical domain (optional)]"
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: create-technical-terms
-description: "Crear o regenerar términos técnicos (descripciones de tablas y columnas) en Stratio Governance para un dominio técnico."
+description: "Crear o regenerar technical terms — descripciones de tablas y columnas — en Stratio Governance para un dominio técnico completo, y sembrar la descripción de la colección cuando falte. Usar cuando el usuario quiera documentar tablas y columnas, generar descripciones en masa para un nuevo dominio, refrescarlas tras cambios de esquema, o recuperar technical terms que falten."
 argument-hint: "[dominio técnico (opcional)]"
 ---
 

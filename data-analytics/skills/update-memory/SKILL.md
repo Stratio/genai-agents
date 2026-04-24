@@ -1,6 +1,6 @@
 ---
 name: update-memory
-description: "Update the agent's persistent memory with user preferences, data patterns, and discovered heuristics. Invoked automatically at the end of each analysis or manually when the user wants to record preferences."
+description: "Update the agent's persistent memory file with user preferences, data patterns, and discovered heuristics so future sessions can pick them up. Use when an analysis finishes, when the user asks to save or remember a preference, or when a reusable decision (naming convention, excluded domain, preferred chart type) emerges during the conversation. For governance / semantic-layer persistence, prefer propose-knowledge."
 argument-hint: "[preference or pattern to remember (optional)]"
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: create-data-collection
-description: "Search for tables and paths in the technical data dictionary and create a new data collection (technical domain) in Stratio Governance."
+description: "Create a new data collection (technical domain) in Stratio Governance and search the technical data dictionary for tables and paths to include. Use when the user wants to create a new technical domain, group a set of tables under a new collection, or scaffold the container before any semantic-layer work. For building the semantic layer of an existing collection, prefer build-semantic-layer."
 argument-hint: "[collection name or search terms (optional)]"
 ---
 

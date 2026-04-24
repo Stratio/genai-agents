@@ -1,6 +1,6 @@
 ---
 name: stratio-semantic-layer
-description: "Referencia de MCPs de capa semántica Stratio — reglas obligatorias, patrones de uso y buenas prácticas para las herramientas MCP de gobernanza semántica (create_ontology, create_business_views, etc.). Cargar para refrescar las reglas de uso o antes de interactuar con tools de gobernanza sin una skill específica."
+description: "Referencia de MCPs de capa semántica Stratio — reglas obligatorias, patrones de uso y buenas prácticas para las herramientas MCP de gobernanza (create_ontology, create_business_views, create_sql_mappings, create_semantic_terms, create_business_term, etc.). Cargar antes de interactuar con tools de gobernanza sin una skill dedicada, cuando haya dudas sobre el orden de invocación o los parámetros, o para refrescar las reglas de uso. Para un flujo concreto, preferir la skill create-* correspondiente."
 argument-hint: ""
 ---
 

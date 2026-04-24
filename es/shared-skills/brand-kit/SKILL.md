@@ -1,6 +1,6 @@
 ---
 name: brand-kit
-description: "Catálogo centralizado de temas de identidad visual (colores, tipografía, tono, paleta de charts, tamaños) que cualquier skill de output (docx-writer, pptx-writer, pdf-writer, web-craft, canvas-craft) consume para producir entregables con branding coherente. Incluye 10 temas curados y es extensible — los clientes pueden añadir sus propios temas como ficheros markdown individuales. Usa esta skill antes de generar cualquier entregable visual para fijar los tokens de marca que aplicarán las skills de output."
+description: "Seleccionar y aplicar un tema de identidad visual (colores, tipografía, tono, paleta de charts, tamaños) que cada writer skill (docx-writer, pptx-writer, pdf-writer, web-craft, canvas-craft, xlsx-writer) consume para producir entregables con branding coherente. Incluye diez temas curados y es extensible mediante nuevos ficheros markdown de tema. Usar siempre que el usuario pida una marca o tema específicos, mencione colores/identidad/tono corporativos, solicite un informe/deck/poster con branding, o antes de generar cualquier entregable visual para fijar los tokens de marca. No renderiza el fichero final — delega en las writer skills."
 argument-hint: "[nombre del tema | 'personalizado' | 'scaffold']"
 ---
 
@@ -10,7 +10,7 @@ El branding vive en un solo sitio. Esta skill proporciona un catálogo
 curado de temas de identidad visual — cada uno un paquete completo y
 coherente de colores, tipografía, paleta de charts, tamaños y tono —
 que cualquier skill de output sabe consumir. Elige un tema una vez y
-todos los artefactos derivados (DOCX, PPTX, PDF, web, visual de una
+todos los artefactos derivados (DOCX, PPTX, PDF, XLSX, web, visual de una
 sola página) lo heredan de forma consistente.
 
 La skill no genera artefactos por sí misma. Proporciona tokens.
@@ -36,8 +36,8 @@ en que carga la skill, sin lectura adicional.
 ## Flujo (invoca este flujo ANTES de cualquier skill de output con dimensión visual)
 
 Siempre que el agente vaya a generar un entregable que tenga cualquier
-expresión visual (informe DOCX, deck PPTX, documento PDF, landing HTML,
-PDF / PNG de una sola página), ejecuta este flujo primero para fijar
+expresión visual (informe DOCX, deck PPTX, documento PDF, libro XLSX,
+landing HTML, PDF / PNG de una sola página), ejecuta este flujo primero para fijar
 los tokens de marca. Saltarse este paso produce artefactos
 inconsistentes — fuentes distintas, acentos distintos, sin paleta
 compartida de charts entre piezas del mismo proyecto.
@@ -69,7 +69,7 @@ esas entradas.
 ### 4. Pasa los tokens a la skill de output
 
 Cuando invoques la skill de output (docx-writer, pptx-writer,
-pdf-writer, web-craft, canvas-craft), proporciónale los tokens
+pdf-writer, web-craft, canvas-craft, xlsx-writer), proporciónale los tokens
 cargados. Cada skill de output sabe mapear los tokens canónicos a su
 formato nativo (dict Python para python-docx / python-pptx, HexColor
 para reportlab, CSS custom properties para web).

@@ -1,6 +1,6 @@
 ---
 name: create-quality-schedule
-description: "Crear una planificación (schedule) para ejecutar automáticamente todas las reglas de calidad de una o varias carpetas/colecciones. Opera a nivel de carpeta (dominio/colección), no de regla individual. Requiere confirmación humana obligatoria antes de ejecutar."
+description: "Crear una planificación (schedule) que ejecute automáticamente todas las reglas de calidad de una o varias carpetas/colecciones en Stratio Governance, a nivel de carpeta — no de regla individual — con confirmación humana obligatoria. Usar cuando el usuario quiera automatizar chequeos recurrentes de calidad, programar una ejecución diaria/semanal/mensual de reglas para un dominio, o planificar la ejecución de calidad en varias colecciones."
 argument-hint: "[dominio/colección] [frecuencia (opcional)]"
 ---
 
