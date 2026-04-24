@@ -52,7 +52,7 @@ Una vez determinado el scope, lanzar en paralelo. Es **OBLIGATORIO** incluir `ge
 ```
 Paralelo:
   A. list_domain_tables(domain_name)
-  B. get_quality_rule_dimensions(collection_name=domain_name)  <-- OBLIGATORIO
+  B. get_quality_rule_dimensions(domain_name=domain_name)  <-- OBLIGATORIO
   C. quality_rules_metadata(domain_name=domain_name)           <-- actualizar metadata AI, solo si no se ejecutó antes
 ```
 Luego, con la lista de tablas obtenida en A, lanzar en paralelo para TODAS las tablas:
@@ -70,7 +70,7 @@ Finalmente, usar los SQLs generados para lanzar `profile_data(query=[sql])` en p
 Paralelo:
   A. get_tables_quality_details(domain_name, [tabla])
   B. get_table_columns_details(domain_name, tabla)
-  C. get_quality_rule_dimensions(collection_name=domain_name)  <-- solo si no se obtuvo antes
+  C. get_quality_rule_dimensions(domain_name=domain_name)  <-- solo si no se obtuvo antes
   D. get_tables_details(domain_name, [tabla])                  <-- solo si no se obtuvo antes
   E. generate_sql("obtener todos los campos de la tabla [tabla] sin filtros", domain_name)
   F. quality_rules_metadata(domain_name=domain_name)           <-- solo si no se ejecutó antes
@@ -82,14 +82,14 @@ Tras obtener E, lanzar `profile_data(query=[sql])`.
 Paralelo:
   A. get_tables_quality_details(domain_name, [tabla])
   B. get_table_columns_details(domain_name, tabla)
-  C. get_quality_rule_dimensions(collection_name=domain_name)  <-- solo si no se obtuvo antes
+  C. get_quality_rule_dimensions(domain_name=domain_name)  <-- solo si no se obtuvo antes
   D. generate_sql("obtener únicamente el campo [columna] de la tabla [tabla] sin filtros", domain_name)
   E. quality_rules_metadata(domain_name=domain_name)           <-- solo si no se ejecutó antes
 ```
 Tras obtener D, lanzar `profile_data(query=[sql])`.
 En el análisis posterior (sección 3), filtrar todo al scope de esa columna: inventario de reglas que afectan a esa columna, gaps solo para esa columna, EDA solo de esa columna.
 
-**Nota sobre `quality_rules_metadata`**: Esta llamada actualiza la metadata AI de las reglas (descripción, dimensión). Se ejecuta sin `force_update` — solo procesa reglas sin metadata o modificadas. Si falla, continuar sin bloquear: el workflow no depende de ella.
+**Nota sobre `quality_rules_metadata`**: Esta llamada actualiza la metadata AI de las reglas (descripción, dimensión). Se ejecuta sin `quality_rules_metadata_force_update` — solo procesa reglas sin metadata o modificadas. Si falla, continuar sin bloquear: el workflow no depende de ella. **Nota sobre permisos**: esta tool requiere acceso de escritura; usuarios con roles de solo lectura recibirán un error 403. En ese caso, omitir y continuar — el assessment no se bloquea.
 
 **Nota**: El perfilado (EDA) es fundamental para detectar gaps reales (ej: nulos existentes sin regla de completeness). Si el dominio tiene >10 tablas, evaluar primero las que el usuario mencione explícitamente y preguntar si quiere continuar con el resto.
 

@@ -85,7 +85,7 @@ Cada regla tiene los siguientes campos:
 - `query`: SQL que cuenta los registros que PASAN el check (numerador)
 - `query_reference`: SQL que cuenta el total de registros (denominador)
 - `dimension`: completeness / uniqueness / validity / consistency
-- `collection_name`: el domain_name del dominio
+- `domain_name`: el nombre del dominio, exactamente como lo devuelve `search_domains` o `list_domains`
 - `measurement_type`: (opcional) cómo se mide el resultado de calidad. Valores posibles:
   - `percentage` (por defecto): compara query vs query_reference como porcentaje
   - `count`: usa el conteo absoluto de registros de la query
@@ -108,6 +108,8 @@ Cada regla tiene los siguientes campos:
 - `active`: (opcional) indica si la regla queda activa tras la creación; por defecto `False` — las reglas se crean inactivas y deben activarse manualmente o por el usuario
 
 ### 3.2 Patrones SQL por dimensión
+
+> **Formato de placeholders SQL**: Cada referencia a tabla en el SQL de una regla de calidad debe usar la sintaxis `${nombre_tabla}`, donde `nombre_tabla` es el **nombre exacto de la tabla** en tu dominio. Por ejemplo, para una tabla llamada `account` → `${account}`; para `card` → `${card}`; en patrones entre tablas, si las tablas son `pedidos` y `clientes` → `${pedidos}` y `${clientes}`. El sistema de gobernanza resuelve automáticamente cada `${nombre_tabla}` a su path físico de almacenamiento cuando la regla se ejecuta. En los patrones que aparecen a continuación, `${tabla}`, `${tabla_a}`, `${tabla_b}`, `${tabla_cabecera}` y `${tabla_detalle}` son placeholders genéricos — reemplazarlos con los nombres reales de las tablas del dominio.
 
 **Completeness** — columna no nula:
 ```sql
@@ -294,7 +296,7 @@ Antes de presentar el plan al usuario, se debe verificar la validez técnica de 
 
 **Procedimiento de validación:**
 1. Para cada regla diseñada, preparar la `query` y la `query_reference`.
-2. Resolver los placeholders `${tabla}` sustituyéndolos por el nombre real de la tabla.
+2. Resolver los placeholders `${nombre_tabla}` (p.ej., `${account}` → `account`) eliminando el envoltorio `${}` para obtener el nombre de tabla plano que se usará con `execute_sql`. Nota: en `create_quality_rule`, mantener siempre el formato completo `${nombre_tabla}` — el sistema de gobernanza resuelve los placeholders a paths físicos en el momento de ejecución de la regla. La validación con `execute_sql` verifica únicamente la lógica y sintaxis SQL; no garantiza que el path físico que usa el sistema de gobernanza coincida con el del catálogo del dominio.
 3. Ejecutar ambas queries usando `execute_sql(query=[sql], limit=1)`.
 4. Si alguna query devuelve error:
    - Revisar la sintaxis SQL.
@@ -325,7 +327,7 @@ Este flujo aplica cuando el usuario describe directamente una regla que quiere c
    Paralelo:
      A. get_table_columns_details(domain_name, tabla)  [por cada tabla involucrada]
      B. get_tables_details(domain_name, [tablas])
-     C. get_quality_rule_dimensions(collection_name=domain_name)
+     C. get_quality_rule_dimensions(domain_name=domain_name)
    ```
 3. **Verificar existencia**: confirmar que las tablas y columnas mencionadas por el usuario existen en el dominio. Si alguna no existe, informar y preguntar.
 
@@ -344,7 +346,7 @@ Seguir las directrices de diseño de la sección 3.3 y los patrones SQL de la se
 ### B.3 Validación SQL (OBLIGATORIO)
 
 Igual que en la sección 3.5:
-1. Resolver los placeholders `${tabla}` por el nombre real de la tabla.
+1. Resolver los placeholders `${nombre_tabla}` (p.ej., `${account}` → `account`) eliminando el envoltorio `${}` para uso con `execute_sql`. Mantener el formato completo `${nombre_tabla}` en `create_quality_rule`.
 2. Ejecutar `query` y `query_reference` con `execute_sql(query=[sql], limit=1)`.
 3. Si alguna query falla, revisar y corregir hasta que ambas sean exitosas.
 4. Calcular el resultado y el estado de la regla aplicando la lógica del paso 5 de la sección 3.5 (measurement_type, threshold_mode y umbrales configurados).
@@ -361,6 +363,15 @@ Tras informar del resultado, continuar directamente con la sección 4 (Presentar
 ## 4. PAUSA: Presentar Plan y Esperar Aprobación
 
 Antes de ejecutar ninguna llamada a `create_quality_rule`, presentar el plan completo al usuario.
+
+> **ORDEN OBLIGATORIO**: El plan DEBE mostrarse al usuario antes de procesar ninguna aprobación.
+> Si el mensaje que activó esta skill ya contiene una señal de aprobación o detalles de
+> scheduling (p.ej., el usuario respondió al follow-up de assess-quality con "crea las reglas,
+> todos los días a las 8:00AM"), NO omitir la presentación del plan. Mostrar el plan primero
+> y luego incluir los detalles de scheduling/medición ya proporcionados como sugerencia
+> pre-rellenada en la pregunta de aprobación, para que el usuario pueda confirmar o ajustar
+> sin tener que repetir. Los shortcuts de "Interpretación de la respuesta del usuario" solo
+> aplican a respuestas dadas DESPUÉS de que el plan haya sido mostrado.
 
 **Nota para Flujo B (regla concreta)**: El plan contendrá típicamente una sola regla. Incluir además el resultado de la validación SQL con el estado calculado (OK/KO/WARNING/SIN_DATOS).
 
@@ -442,7 +453,7 @@ Antes de proceder, necesito saber:
 - `cron_start_datetime` (opcional): preguntar "¿Cuándo quieres que empiece a ejecutarse? (deja en blanco para que empiece inmediatamente)". Si el usuario indica una fecha/hora en lenguaje natural, convertirla a ISO 8601. Ejemplo: `2026-04-01T09:00:00`
 - `cron_timezone`: **NO preguntar** salvo que el usuario mencione otra zona horaria. Usar `Europe/Madrid` por defecto.
 
-Si el usuario proporciona los detalles del cron en la misma respuesta de aprobación (ej: "sí, opción 1, diariamente a las 9"), no preguntar de nuevo — usar directamente esos datos.
+Si el usuario proporciona los detalles del cron en su respuesta al plan presentado (ej: "sí, opción 1, diariamente a las 9"), no preguntar de nuevo — usar directamente esos datos.
 
 **Aprobación + opción 2** → Para cada regla (o bloque de reglas que el usuario quiera tratar igual), preguntar los mismos campos anteriores. Permitir que algunas reglas tengan scheduling y otras no.
 

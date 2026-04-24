@@ -24,7 +24,8 @@ If the data is already in context, extract it directly. If missing, obtain it wi
 Parallel:
   A. get_tables_quality_details(domain_name, tables)
   B. get_table_columns_details(domain_name, table)  [for each table]
-  C. get_quality_rule_dimensions(collection_name=domain_name)
+  C. get_quality_rule_dimensions(domain_name=domain_name)
+  D. get_critical_data_elements(collection_name=domain_name)  [if not already in context]
 ```
 
 ## 2. Format selection

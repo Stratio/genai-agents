@@ -14,7 +14,7 @@ For the standard discovery workflow (list domains, critical domain_name rule, ex
 
 Dimension definitions must always be obtained before assessing:
 
-`get_quality_rule_dimensions(collection_name=domain_name)` to know exactly what each dimension means in this specific domain and how many dimensions it supports.
+`get_quality_rule_dimensions(domain_name=domain_name)` to know exactly what each dimension means in this specific domain and how many dimensions it supports.
 
 Additionally, execute `quality_rules_metadata(domain_name=domain_name)` before assessing to have fresh AI metadata on the rules (description, dimension). Without `force_update` — only processes rules without metadata or modified ones. Non-blocking: if it fails, continue with the workflow normally.
 

@@ -24,7 +24,8 @@ Si los datos ya están en contexto, extraerlos directamente. Si faltan, obtenerl
 Paralelo:
   A. get_tables_quality_details(domain_name, tablas)
   B. get_table_columns_details(domain_name, tabla)  [por cada tabla]
-  C. get_quality_rule_dimensions(collection_name=domain_name)
+  C. get_quality_rule_dimensions(domain_name=domain_name)
+  D. get_critical_data_elements(collection_name=domain_name)  [si no están ya en contexto]
 ```
 
 ## 2. Selección de formato

@@ -261,15 +261,17 @@ Solo tras aprobación explícita, llamar a `set_critical_data_elements` con **ú
 - NO incluir CDEs ya tagueados. La API es aditiva, no reemplaza todo: re-enviar un CDE existente provoca un error 409 y nunca es necesario.
 - Si la especificación del usuario coincide con solo 1 asset nuevo, el payload contiene exactamente 1 asset. Si coincide con 0 assets nuevos, omitir la llamada a la API por completo.
 
+La llamada recibe un único objeto `collection` (no tres parámetros separados):
+
 ```json
-{
+set_critical_data_elements(collection={
   "collection_name": "domain_name",
   "critical_tables": ["account", "district", "loan"],
   "columns_by_table": {
     "card": ["card_id", "disp_id"],
     "transaction": ["account_id", "bank", "date", "trans_id"]
   }
-}
+})
 ```
 
 ### B.6 Presentar resultados
