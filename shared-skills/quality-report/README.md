@@ -34,6 +34,13 @@ Shared skills are normally self-contained — no SKILL.md in `shared-skills/` re
 
 None for this skill directly. All file generation is delegated to the writer skills declared by the host agent. Each writer skill manages its own runtime dependencies.
 
+## MCPs
+
+- **Governance (`gov`):** `get_tables_quality_details`, `get_quality_rule_dimensions`, `quality_rules_metadata`.
+- **Data (`sql`):** `get_table_columns_details`, `get_tables_details` — invoked only when the upstream `assess-quality` context is missing and the skill needs to backfill.
+
+Most invocations arrive with the context already populated by `assess-quality`, so in practice the skill mostly reads from the conversation state rather than calling MCPs directly.
+
 ## Including this skill in an agent
 
 When adding `quality-report` to an agent's `shared-skills` manifest, declare it together with the writer skills `pdf-writer`, `docx-writer`, `pptx-writer`, `web-craft`, `canvas-craft` and `xlsx-writer`, plus the centralized theming skill `brand-kit`. That bundle is what lets the agent deliver the full range of formats (PDF, DOCX, PPTX, Dashboard web, Poster/Infographic, XLSX). If the agent is chat-oriented and omits the writers by design, only the Chat format will be offered to the user — which is a valid, supported configuration.

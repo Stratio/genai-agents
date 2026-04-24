@@ -38,6 +38,27 @@ colores core, la paleta categórica de charts, el bloque tipográfico
 (familias + tamaños + fallbacks), la familia de tono, los casos
 recomendados de uso y los antipatrones.
 
+### Tone families vs. temas
+
+Cada tema declara una **tone family** de las ocho tonos canónicos definidos en `skills-guides/visual-craftsmanship.md`. Varios temas pueden compartir la misma tone family y aun así servir casos de uso distintos — el tono define la dirección estética, el tema aporta los tokens concretos.
+
+| Tone family | Temas que mapean aquí |
+|---|---|
+| editorial-serious | editorial-serious, academic-sober, corporate-formal |
+| technical-minimal | technical-minimal, modern-product |
+| warm-magazine | warm-magazine |
+| forensic-audit | forensic-audit |
+| brutalist-raw | brutalist-raw |
+| luxury-refined | luxury-refined |
+| industrial-utilitarian | industrial-utilitarian |
+| playful-toy | (sin tema incluido; disponible para temas custom) |
+
+Al añadir un tema propio, mapéalo a uno de los ocho tonos canónicos o declara un tono nuevo con una descripción corta en su sección `## Tone family`.
+
+## MCPs
+
+Ninguno — brand-kit es un catálogo de tokens más un workflow de selección; toda la I/O la hace la skill de output que lo consume.
+
 ## Cómo lo usan los agentes
 
 Cuando el agente va a generar cualquier entregable visual, ejecuta

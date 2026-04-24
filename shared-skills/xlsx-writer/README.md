@@ -28,6 +28,15 @@ All already part of the baseline `requirements.txt` of the Python agents that lo
 
 In Stratio Cowork the sandbox image (`genai-agents-sandbox`) provides all of the above. In dev local, see the monorepo `README.md` "System dependencies" section.
 
+## Companion skills
+
+- `xlsx-reader` — the ingestion counterpart (cell values / tables / formulas / images / metadata). Shares the `openpyxl` + `pandas` stack.
+- `quality-report` — the skill that drives the "Excel" output format, materialising the multi-sheet coverage workbook described in `quality-report-layout.md §6.6`.
+
+## MCPs
+
+None — the skill operates purely on local files.
+
 ## Shared guides
 
 - `visual-craftsmanship.md` (via `skill-guides`) — tonal palette roles and typography pairings used as fallback when no centralized theming skill resolved a theme.

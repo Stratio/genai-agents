@@ -28,6 +28,14 @@ Todas ya forman parte del `requirements.txt` base de los agentes Python que carg
 
 En Stratio Cowork, la imagen del sandbox (`genai-agents-sandbox`) provee todo lo anterior. En dev local, ver la sección "System dependencies" del `README.md` del monorepo.
 
+## Skills compañeras
+
+- `docx-reader` — la contraparte de ingesta (texto / tablas / metadatos / cambios rastreados). Comparte el stack `python-docx` / `lxml`.
+
+## MCPs
+
+Ninguno — la skill opera exclusivamente sobre ficheros locales.
+
 ## Guías compartidas
 
 - `visual-craftsmanship.md` (vía `skill-guides`)

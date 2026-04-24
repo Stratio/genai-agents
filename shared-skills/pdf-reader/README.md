@@ -4,6 +4,8 @@ Shared skill that extracts text, tables, forms, metadata, images and OCR'd conte
 
 Designed as a three-phase flow: quick mode (structural diagnosis), deep mode (per-tool deterministic extraction), and OCR mode (for scanned or image-only PDFs). The skill chooses the phase based on what the PDF actually contains, never up-front.
 
+The companion skill `pdf-writer` covers ad-hoc PDF authoring and structural operations (merge, split, watermark, encrypt, forms).
+
 ## What it does
 
 - Structural diagnosis (encryption, corruption, page layout, text-layer presence)
@@ -35,3 +37,11 @@ Digital-signature inspection uses `pyhanko` on demand (`pip install pyhanko`); i
 - `ghostscript` — last-resort PDF repair and rasterization fallback
 
 In Stratio Cowork the sandbox image (`genai-agents-sandbox`) provides all of the above. In dev local, see the monorepo `README.md` "System dependencies" section for install commands.
+
+## Shared guides
+
+None.
+
+## MCPs
+
+None — the skill operates purely on user-provided PDF files.

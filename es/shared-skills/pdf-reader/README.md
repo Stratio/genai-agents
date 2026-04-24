@@ -4,6 +4,8 @@ Skill compartida que extrae texto, tablas, formularios, metadatos, imágenes y c
 
 Diseñada como un flujo de tres fases: modo rápido (diagnóstico estructural), modo profundo (extracción determinista por herramienta) y modo OCR (para PDFs escaneados o compuestos solo por imágenes). La skill elige la fase en función de lo que el PDF contiene realmente, nunca por adelantado.
 
+La skill compañera `pdf-writer` cubre la autoría ad-hoc de PDF y las operaciones estructurales (merge, split, watermark, cifrado, formularios).
+
 ## Qué hace
 
 - Diagnóstico estructural (cifrado, corrupción, layout de páginas, presencia de capa de texto)
@@ -35,3 +37,11 @@ La inspección de firmas digitales usa `pyhanko` bajo demanda (`pip install pyha
 - `ghostscript` — reparación de PDF como último recurso y rasterización de fallback
 
 En Stratio Cowork la imagen del sandbox (`genai-agents-sandbox`) provee todo lo anterior. En dev local, ver la sección "System dependencies" del `README.md` del monorepo.
+
+## Guías compartidas
+
+Ninguna.
+
+## MCPs
+
+Ninguno — la skill opera exclusivamente sobre ficheros PDF aportados por el usuario.

@@ -4,6 +4,8 @@ Shared skill that extracts cell values, tables, formulas, images, metadata and s
 
 Designed as a two-phase flow: quick mode (single-shot extraction with a multi-engine fallback chain) and deep mode (per-engine deterministic extraction with diagnostics first). The skill picks the phase based on what the workbook actually contains, never up-front.
 
+The companion skill `xlsx-writer` covers ad-hoc XLSX authoring and structural operations (analytical workbooks, pivot matrices, merge/split/find-replace, legacy `.xls` conversion, formula refresh).
+
 ## What it does
 
 - Structural diagnosis (part inventory via `unzip -l`, sheet listing with visibility state, defined names inventory)
@@ -37,3 +39,11 @@ In Stratio Cowork the sandbox image (`genai-agents-sandbox`) provides all of the
 ## Graceful degradation
 
 The skill works with just `openpyxl` + `pandas` + `lxml` for modern `.xlsx` and `.xlsm`. LibreOffice unlocks legacy `.xls` and `.xlsb`. Without LibreOffice and without `xlrd<2`, legacy binaries cannot be opened — the skill reports a clear diagnostic instead of silently failing.
+
+## Shared guides
+
+None.
+
+## MCPs
+
+None — the skill operates purely on user-provided XLSX files.

@@ -25,6 +25,16 @@ En Stratio Cowork la imagen del sandbox (`genai-agents-sandbox`) provee todo lo 
 
 - `visual-craftsmanship.md` (declarado en `skill-guides`)
 
+## MCPs
+
+Ninguno — la skill produce artefactos visuales a partir de un brief más los tokens de tema.
+
 ## Activos empaquetados
 
-Incluye el mismo bundle de fuentes display OFL que `pdf-writer` para que la tipografía de display esté disponible out-of-the-box.
+Incluye **3 familias de fuentes OFL** bajo `fonts/` para que la tipografía de display esté disponible out-of-the-box:
+
+- **Fraunces** — peso variable, serif con eje italic variable opcional (sirve tanto para display como para body).
+- **Instrument Serif** — regular + italic, serif editorial refinado.
+- **Archivo Black** — regular + italic, sans display de alto impacto para posters y portadas.
+
+Cada familia ships con su texto de licencia OFL. El bundle es intencionadamente más pequeño que el de `pdf-writer` (que incluye 14 familias) porque canvas-craft se centra en piezas display de una sola página donde un puñado de tipografías idiosincráticas rinden más que una librería amplia.

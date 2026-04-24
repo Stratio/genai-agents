@@ -50,6 +50,10 @@ brew install poppler
 
 None in this iteration.
 
+## MCPs
+
+None — the skill operates purely on user-provided PPTX files.
+
 ## Bundled assets
 
 None. The skill relies on `python-pptx` and the system LibreOffice; no fonts or templates are shipped.

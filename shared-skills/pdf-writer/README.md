@@ -58,10 +58,18 @@ pip install 'reportlab>=4.4' 'pypdf>=5.0' pdfplumber 'svglib>=1.5,<1.6' 'pillow>
 | `ghostscript` | PDF/A conversion, last-resort flattening |
 | `poppler-utils` | `pdfinfo`, `pdftotext` for inspecting source PDFs |
 
+## Companion skills
+
+- `pdf-reader` — the ingestion counterpart (text / table / form / image / OCR extraction). Shares `pdfplumber` and `poppler-utils` so bundling both does not multiply dependencies.
+
+## MCPs
+
+None — the skill operates purely on local files.
+
 ## Shared guides
 
 - `visual-craftsmanship.md` (via `skill-guides`)
 
 ## Bundled assets
 
-Ships a 14-family OFL display-and-body font bundle under `fonts/` so the generated PDFs look consistent across environments without relying on system font discovery. Registered directly from that directory by the skill — no extra font install. See `fonts/README.md` (when present) for the complete list and licensing notes.
+Ships a **14-family OFL display-and-body font bundle** under `fonts/` so the generated PDFs look consistent across environments without relying on system font discovery. Families include Instrument Serif / Instrument Sans, IBM Plex Serif / Mono, Crimson Pro, Lora, Work Sans, JetBrains Mono, Big Shoulders, Young Serif, Outfit, Italiana, Libre Baskerville, DM Mono. Registered directly from that directory by the skill — no extra font install.
