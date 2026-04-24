@@ -1,1 +1,3 @@
 description: "Creador de agentes para diseñar y generar agentes IA completos para Stratio Cowork. Guía la recogida de requisitos, diseño de arquitectura, generación del AGENTS.md, creación de skills, revisión de calidad y empaquetado en formato ZIP agents/v1."
+tags:
+  - ai-agent-creation

@@ -1,1 +1,3 @@
 description: "Skill creator agent for designing and generating high-quality AI agent skills. Guides requirements gathering, skill design, SKILL.md generation, quality review, and ZIP packaging."
+tags:
+  - ai-agent-creation
