@@ -1,12 +1,14 @@
 # Semantic Layer Builder Agent
 
-An agent specialized in building and maintaining semantic layers in Stratio Data Governance.
+An agent specialized in building and maintaining semantic layers in Stratio Data Governance — the full pipeline from technical table descriptions to business semantic terms, with interactive planning and the ability to ingest your own specification documents.
 
 ## What is this agent
 
-Semantic Layer Builder guides you in the creation, maintenance, and publication of the governance artifacts that compose the semantic layer of a data domain. It works with a 5-phase pipeline — from technical table descriptions to the generation of business semantic terms — and can execute each phase independently or as a complete pipeline.
+Semantic Layer Builder guides you in the creation, maintenance and publication of the governance artifacts that compose the semantic layer of a data domain. It works with a 5-phase pipeline — from technical table descriptions to the generation of business semantic terms — and can execute each phase independently or as a complete pipeline.
 
-The agent does not execute data queries or generate files on disk. Its output is direct interaction with the governance tools and summaries in chat.
+The agent can also ingest local context to enrich planning: Word specifications with glossaries and business rules, PowerPoint decks with architecture walkthroughs, plain CSV catalogs and ontology files (`.owl`, `.ttl`).
+
+It does not execute data queries or generate files on disk — its output is direct interaction with the governance tools and summaries in chat.
 
 ## Capabilities
 
@@ -19,7 +21,7 @@ The agent does not execute data queries or generate files on disk. Its output is
 - Manage business terms with relationships to data assets
 - Create data collections (technical domains) from dictionary searches
 - Diagnose the status of a domain's semantic layer
-- Read local files (.owl, .ttl, CSV, documents) to enrich planning
+- Ingest local specification documents to enrich planning: Word files (`.docx`/`.doc`), PowerPoint decks (`.pptx`/`.ppt`), CSV catalogs and ontology files (`.owl`, `.ttl`)
 
 ## What you can ask
 
@@ -39,6 +41,11 @@ The agent does not execute data queries or generate files on disk. Its output is
 - "Create a data collection with the billing tables"
 - "Publish the business views for domain Y"
 
+### Ingesting local specifications
+- "Ingest this policy DOCX and propose business terms from the glossary"
+- "Read this architecture deck and bootstrap the ontology from it"
+- "Use this CSV as a seed for the technical terms"
+
 ### Exploration and diagnostics
 - "What is the status of the semantic layer for domain X?"
 - "What tables are there about customers in the data dictionary?"
@@ -46,16 +53,28 @@ The agent does not execute data queries or generate files on disk. Its output is
 
 ## Available skills
 
+### Semantic layer pipeline
 | Command | Description |
 |---------|-------------|
 | `/build-semantic-layer` | Complete 5-phase pipeline to build the semantic layer of a domain |
 | `/create-technical-terms` | Create automatic technical descriptions of tables and columns |
-| `/create-ontology` | Create, extend, or delete ontology classes with interactive planning |
-| `/create-business-views` | Create, regenerate, or delete business views from an ontology |
+| `/create-ontology` | Create, extend or delete ontology classes with interactive planning |
+| `/create-business-views` | Create, regenerate or delete business views from an ontology |
 | `/create-sql-mappings` | Create or update SQL mappings for existing business views |
 | `/create-semantic-terms` | Generate business semantic terms for the views of a domain |
 | `/manage-business-terms` | Create business terms with relationships to data assets |
 | `/create-data-collection` | Search tables in the dictionary and create a new data collection |
+
+### Local file ingestion
+| Command | Description |
+|---------|-------------|
+| `/docx-reader` | Read Word documents (`.docx` and legacy `.doc`) — specifications, glossaries, business rules |
+| `/pptx-reader` | Read PowerPoint decks (`.pptx` and legacy `.ppt`) — architecture walkthroughs, specification decks |
+
+### MCP tools reference
+| Command | Description |
+|---------|-------------|
+| `/stratio-semantic-layer` | Reference for the semantic-layer governance MCP tools: patterns, best practices, tool-by-tool guidance |
 
 ## Required connections
 
