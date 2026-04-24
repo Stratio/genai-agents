@@ -1,14 +1,14 @@
 ---
 name: quality-report
-description: "Generar un informe formal de cobertura de calidad del dato en el formato que elija el usuario (chat, PDF, DOCX o Markdown en disco). Usar cuando el usuario quiera un documento o presentación con el estado actual de la calidad, después de evaluar la cobertura o crear reglas de calidad."
-argument-hint: "[formato: chat|pdf|docx|md] [nombre-fichero (opcional)]"
+description: "Generar un informe formal de cobertura de calidad del dato en el formato que elija el usuario. Guidance-first: orquesta el ensamblado del contenido y delega la generación de ficheros a las skills de escritura del agente (pdf-writer, docx-writer, pptx-writer, web-craft, canvas-craft) más la skill centralizada de theming. El formato Chat funciona en solitario, sin dependencia de writers."
+argument-hint: "[formato: chat|pdf|docx|pptx|web|poster] [nombre-fichero (opcional)]"
 ---
 
 # Skill: Generación de Informe de Calidad
 
-Workflow para generar un informe estructurado con el estado de cobertura de calidad del dato.
+Workflow guidance-first para producir un informe estructurado de cobertura de calidad del dato. Esta skill orquesta: recopila y compone el contenido, resuelve el tema de marca y delega la generación del formato final a las skills de escritura del agente. Solo el formato Chat lo produce directamente esta skill.
 
-## 1. Prerequisitos y Datos del Informe
+## 1. Prerequisitos y datos del informe
 
 Esta skill necesita datos de calidad para generar el informe. Verificar si ya existen en la conversación actual:
 
@@ -27,260 +27,98 @@ Paralelo:
   C. get_quality_rule_dimensions(collection_name=domain_name)
 ```
 
-## 2. Selección de Formato
+## 2. Selección de formato
 
-Si el usuario no ha especificado formato, preguntar al usuario con opciones siguiendo la convención de preguntas al usuario:
+### 2.1 Pre-check — disponibilidad de writer skills (PRIMER PASO OBLIGATORIO)
 
-```
-¿En que formato quieres el informe?
-  1. Chat — resumen estructurado en esta conversación (sin archivo)
-  2. PDF — documento formal descargable
-  3. DOCX — documento Word editable
-  4. Markdown — archivo .md en disco
-```
+Antes de ofrecer opciones de formato de fichero, confirmar qué writer skills declara el agente host. Si el agente host NO declara `pdf-writer`, `docx-writer`, `pptx-writer`, `web-craft` ni `canvas-craft`, el único formato disponible es Chat — saltar el §2.2 entero y proceder directamente al §5.1 (Chat).
 
-Si el usuario ha especificado formato en los argumentos o en el mensaje, usar ese directamente.
+Este pre-check es bloqueante: NO ofrecer formatos de fichero que el agente host no puede materializar, y NO intentar cargar una writer skill que el agente host no declara, aunque el usuario insista en un formato de fichero.
 
-## 3. Estructura del Informe
+### 2.2 Opciones de formato
 
-El informe tiene la misma estructura independientemente del formato:
+Si al menos una writer skill está declarada, preguntar al usuario siguiendo la convención de preguntas al usuario. Ofrecer únicamente las opciones cuya skill requerida esté declarada por el agente:
 
-### Portada / Cabecera
-- Título: "Informe de Cobertura de Calidad del Dato"
-- Dominio / Colección: [nombre]
-- Scope: [dominio completo / tabla(s) específica(s)]
-- Fecha de generación: [hoy]
-- Agente: Data Quality Expert
+- **Chat** — resumen estructurado en esta conversación (sin fichero). Siempre disponible.
+- **PDF** — documento tipográfico multipágina. Requiere `pdf-writer`.
+- **DOCX** — documento Word editable. Requiere `docx-writer`.
+- **PowerPoint** — deck ejecutivo (16:9 por defecto). Requiere `pptx-writer`.
+- **Dashboard web** — HTML interactivo con filtros, KPI cards y tablas ordenables. Requiere `web-craft`.
+- **Póster / Infografía** — resumen visual de una página para imprenta o publicación. Requiere `canvas-craft`.
 
-### Sección 1 — Resumen Ejecutivo
-- Tablas analizadas: N
-- Reglas de calidad existentes: N
-- Cobertura global estimada: XX%
-- Reglas en estado OK: N | KO: N | WARNING: N | Sin ejecutar: N
-- Gaps identificados: N criticos, N moderados, N bajos
-- Reglas creadas en esta sesión (si aplica): N
+Se admite selección múltiple (el mismo contenido se materializa en varios formatos reutilizando el mismo `quality-report.md` interno).
 
-### Sección 2 — Cobertura por Tabla
+Si el usuario ya especificó el formato en los argumentos o mensaje, usarlo directamente y saltar la pregunta.
 
-Tabla matricial (incluir dimensiones estándar y propias del dominio):
-```
-| Tabla | Completeness | Uniqueness | Validity | Consistency | Otras Dimensiones | Cobertura |
-```
+## 3. Estructura del informe
 
-Con leyenda de iconos o colores (según formato).
+El informe tiene la misma estructura independientemente del formato. Seis secciones canónicas en este orden fijo:
 
-### Sección 3 — Detalle de Reglas Existentes
+1. **Portada / Cabecera** — título, dominio, scope, fecha de generación, nombre del agente.
+2. **Resumen ejecutivo** — tablas analizadas, reglas totales, desglose OK/KO/WARNING/NOT_EXECUTED, coverage estimado, gaps por prioridad (CRITICO/ALTO/MEDIO/BAJO), reglas creadas en esta sesión.
+3. **Cobertura por tabla** — matriz tablas × dimensiones con icono/color por estado.
+4. **Detalle de reglas** — por tabla: reglas con nombre, dimensión, status, % pass, descripción. KO y WARNING resaltados visualmente.
+5. **Gaps identificados** — lista priorizada con tabla, columna, dimensión, prioridad, descripción y recomendación.
+6. **Recomendaciones y próximos pasos** — bullets priorizados.
 
-Por cada tabla, listar sus reglas:
-```
-| Regla | Dimensión | Estado | % Pass | Descripción |
-```
+Si el usuario creó reglas vía `create-quality-rules` en la conversación actual, se incluye una sección opcional **Reglas creadas en esta sesión** entre §4 y §5.
 
-Destacar (negrita o color rojo) las reglas en KO o WARNING.
+Para el contrato completo de layout (iconografía, KPI cards, composición por formato, reglas deterministas para auditoría), ver `quality-report-layout.md` en esta misma skill.
 
-### Sección 4 — Gaps Identificados
+## 4. Decisiones de branding
 
-Lista priorizada de gaps:
-- Para cada gap: tabla, columna, dimensión ausente, impacto estimado, recomendación
+Antes de invocar cualquier writer skill para un formato de fichero, fijar el tema siguiendo la cascada de branding del agente host. Cuando el agente host declara un contrato format→skill con una sub-sección §Decisiones de branding, seguir esa cascada — típicamente 5 niveles: pin → señal explícita → continuidad intra-sesión → preferencia en MEMORY → propuesta curada.
 
-### Sección 5 — Reglas Creadas en esta Sesión (si aplica)
+**Default neutro primario para informes de calidad** (cuando ninguna regla de la cascada resuelve a un tema concreto): `forensic-audit`. Encaja con el registro de auditoría de un informe de cobertura y mantiene visualmente estables las re-ejecuciones mes a mes del mismo dataset. La propuesta curada debe preferir temas cuyo descriptor mencione "audit", "technical", "editorial" o "corporate".
 
-Si se crearon reglas de calidad en esta sesión, incluir:
-- Lista de reglas creadas con su SQL
-- Cobertura antes y después (solo si se realizo una evaluación de cobertura previamente; para reglas del Flujo B sin evaluación previa, omitir la comparación de cobertura)
+Si el usuario pide neutralidad explícita ("no me importa el diseño" / "hazlo neutro" / "sin branding"), aplicar `technical-minimal` como fallback sobrio — máxima contención, salida predecible para contextos no-auditoría.
 
-**Para reglas del Flujo B (regla concreta)**: indicar que fueron solicitadas directamente por el usuario, incluir la lógica de negocio descrita, el resultado de la validación SQL (registros que pasan / total, % o conteo) y el estado calculado (OK / KO / WARNING / SIN_DATOS) basado en la configuración de medición aplicada (measurement_type + threshold_mode + umbrales).
+El tema elegido se registra silenciosamente como última línea del `quality-report.md` interno (p. ej. `theme applied: forensic-audit`). Informativo, no contractual.
 
-**Para reglas del Flujo A (gaps)**: incluir el resultado de la validación SQL con el estado calculado. Si la validación mostro KO o WARNING, destacarlo visualmente (negrita) como dato a revisar.
+## 5. Generación del entregable
 
-### Sección 6 — Recomendaciones y Próximos Pasos
+### 5.1 Formato Chat
 
-- Reglas KO/WARNING a investigar con prioridad
-- Gaps criticos pendientes de cubrir
-- Estimación de esfuerzo para cobertura completa
+Emitir el informe directamente como markdown en la respuesta actual, siguiendo las seis secciones canónicas de §3. No se produce fichero, no se invoca writer skill, no se ejecuta la cascada de branding.
 
-## 4. Generación por Formato
+Cerrar el mensaje con el resumen de 2-3 puntos clave según §7.
 
-### Formato: Chat
+### 5.2 Markdown en disco (opcional, trivial)
 
-Generar directamente el informe en markdown dentro de la respuesta del chat. Seguir la estructura de la sección 3 con headers, tablas y listas bien formateadas.
+Si el usuario pide un fichero `.md` en disco (no Chat, no uno de los formatos con writer), escribirlo directamente con la herramienta Write en `output/<carpeta>/<slug>-quality-report.md`. No se invoca writer skill — markdown es texto plano.
 
-No ejecutar Python ni crear archivos.
+Usar la misma convención de carpeta que §5.3.
 
-### Formatos de archivo: PDF, DOCX y Markdown en disco
+### 5.3 Formatos de fichero (PDF, DOCX, PPTX, Dashboard web, Póster)
 
-Los tres formatos de archivo (PDF, DOCX, MD) usan el mismo generador Python y el mismo fichero `report-input.json`. El proceso es idéntico salvo el flag `--format` y la extensión del fichero de salida.
+1. **Carpeta**: crear `output/YYYY-MM-DD_HHMM_quality_<slug>/` (todos los artefactos viven aquí). `<slug>` = dominio o scope normalizado (ASCII en minúsculas, acentos eliminados, espacios por guiones bajos, máximo 30 caracteres). Ejemplo: `2026-04-24_1530_quality_analiticabanca`.
 
-#### Paso 1 — Verificar entorno
+2. **Tokens de marca (una sola vez, antes de cualquier formato visual)**: cargar la skill centralizada de theming (`brand-kit`) con el tema fijado en §4. El fichero del tema provee el bundle de tokens — colores, tipografía, paleta de gráficos — que consumen las writer skills downstream para que todos los entregables queden coherentes.
 
-El stack Python (`weasyprint`, `jinja2`, `markdown`, `beautifulsoup4`, `python-docx`) lo provee el entorno (imagen del sandbox Stratio Cowork o, en dev local, tu venv). Verificar con `python3 -c "import weasyprint, jinja2, markdown, bs4, docx"`. Si algún import falla, ejecutar `pip install <pkg>` en el entorno actual.
+3. **Ensamblar el origen del contenido**: escribir `output/<carpeta>/quality-report.md` en el idioma del usuario, con cada sección canónica de §3 utilizando la estructura descrita en `quality-report-layout.md` §10. Cuando una sección no tenga datos, incluir la cabecera y una línea explícita "No se han detectado X" — nunca omitir silenciosamente. Aplicar las reglas de layout determinista de `quality-report-layout.md` §11 (orden de secciones fijo, orden de KPI cards, orden de columnas de la matriz, ordenación de gaps, límites de ítems por formato). Este fichero interno es la única fuente de verdad que consumen las writer skills.
 
-#### Paso 2 — Determinar la carpeta del informe
+4. **Para cada formato seleccionado, cargar la writer skill correspondiente y producir el entregable. Seguir `quality-report-layout.md` para la composición específica del formato**:
 
-Se replica la convención de carpeta usada por los informes de análisis para que cada informe de calidad viva en su propio directorio autocontenido junto con su JSON de entrada y los artefactos generados.
+   - **PDF** → cargar `pdf-writer`. Salida: `<slug>-quality-report.pdf`. El entregable debe renderizar las seis secciones canónicas, aplicar tokens de marca, respetar el patrón de KPI cards de la guía §5 y cumplir las reglas de composición PDF de §6.1 (cabecera/pie en cada página, repetir cabecera de matriz al saltar de página, orientación vertical salvo si el conteo de dimensiones es >8).
+   - **DOCX** → cargar `docx-writer`. Salida: `<slug>-quality-report.docx`. Las mismas seis secciones; usar tablas nativas de Word para la matriz de cobertura y el detalle de reglas para que el usuario pueda editarlas. Preservar estilos de cabecera (`Heading 1`, `Heading 2`, …).
+   - **PowerPoint** → cargar `pptx-writer`. Salida: `<slug>-quality-summary.pptx`. 16:9 por defecto; 4:3 solo si el usuario lo pide explícitamente. Objetivo ≤12 slides siguiendo el guion de `quality-report-layout.md` §6.3.
+   - **Dashboard web** → cargar `web-craft`. Salida: `<slug>-quality-dashboard.html`. Aplicar el layout específico de calidad de §6.4 (exactamente los cuatro KPI cards de §5, heatmap interactivo de cobertura, filtros por dimensión/status/prioridad, tablas ordenables). Si el agente host también declara una guía general `analytical-dashboard.md`, cargarla en paralelo para que los patrones genéricos de dashboard (filtros globales, Plotly vía CDN, presupuesto de datos, responsive, motion, idioma) apliquen por encima.
+   - **Póster / Infografía** → cargar `canvas-craft`. Salida: `<slug>-quality-poster.pdf` o `<slug>-quality-poster.png`. Composición de página única según §6.5 (banda superior de KPIs, heatmap central, top 3 gaps + top 3 recomendaciones en columnas laterales, A3 vertical por defecto).
 
-1. Construir el nombre de carpeta: `YYYY-MM-DD_HHMM_quality_<slug>` donde `<slug>` es el dominio o scope normalizado (ASCII en minúsculas, acentos eliminados, espacios reemplazados por guion bajo, máximo 30 caracteres). Ejemplo: `2026-04-20_1530_quality_semantic_analiticabanca`.
-2. Crear el directorio: `mkdir -p "output/<carpeta>/"` y después `readlink -f "output/<carpeta>/"` para obtener la ruta absoluta. Todos los archivos producidos por esta skill (JSON de entrada, PDF, DOCX, Markdown) van dentro de esta carpeta — nunca directamente bajo `output/`.
-3. Si el usuario ya tiene una carpeta de análisis activa en esta sesión y pide expresamente almacenar el informe de calidad junto al análisis, reutilizar esa carpeta en lugar de crear una nueva.
+5. **Convención de nombres**: `<slug>` = parte descriptiva del dominio/scope (según paso 1). Los ficheros internos (`quality-report.md`) se mantienen sin prefijo.
 
-#### Paso 3 — Preparar report-input.json
+6. **Verificar que cada fichero existe en disco con `ls -lh output/<carpeta>/` tras el retorno de cada writer skill.** Si falta alguno, regenerar — NO reportar éxito parcial al usuario.
 
-Escribir `<ruta-absoluta>/<carpeta>/report-input.json` con el schema exacto que sigue. **Los nombres de campo son literales — el generador los lee con `data.get("campo")` y devuelve `-` si no existen.**
+## 6. Verificación post-generación
 
-**Errores comunes a evitar (producen informe en blanco):**
-- NO `report_title` → `title`
-- NO `report_date` / `date` → `generated_at`
-- NO `executive_summary` → `summary`
-- NO `total_rules` / `rules_count` → `summary.rules_total`
-- NO `rules_pending` / `rules_not_run` → `summary.rules_not_executed`
-- NO `quality_rules` → `tables[].rules`
-- NO `coverage_by_dimension` (objeto anidado) → campos planos `tables[].completeness`, `tables[].uniqueness`, etc.
-- NO prioridades en español (`Alta/Media/Baja`) → `CRITICO|ALTO|MEDIO|BAJO`
-- NO `recommendations` como array de objetos → array de **strings** planos
-- NO `calculated_status` en `rules_created` → `status`
+Para formatos de fichero:
+1. `ls -lh output/<carpeta>/` — confirmar que todos los ficheros esperados están presentes con tamaño no nulo.
+2. Si falta alguno o tiene tamaño cero: regenerar ese formato antes de responder al usuario.
 
-```json
-{
-  "title": "Informe de Cobertura de Calidad del Dato — <tabla> — <dominio>",
-  "domain": "<domain_name>",
-  "scope": "<tabla(s) o 'Dominio completo'>",
-  "generated_at": "<YYYY-MM-DD>",
-  "summary": {
-    "tables_analyzed": <N>,
-    "rules_total": <N>,
-    "rules_ok": <N>,
-    "rules_ko": <N>,
-    "rules_warning": <N>,
-    "rules_not_executed": <N>,
-    "coverage_estimate": "<XX%>",
-    "gaps_critical": <N>,
-    "gaps_moderate": <N>,
-    "gaps_low": <N>,
-    "rules_created_this_session": <N o null>
-  },
-  "tables": [
-    {
-      "name": "<tabla>",
-      "coverage_estimate": "<XX%>",
-      "completeness": "<OK|Gap|Parcial|N/A>",
-      "uniqueness": "<OK|Gap|Parcial|N/A>",
-      "validity": "<OK|Gap|Parcial|N/A>",
-      "consistency": "<OK|Gap|Parcial|N/A>",
-      "rules": [
-        {
-          "name": "<nombre-regla>",
-          "dimension": "<dimension>",
-          "status": "<OK|KO|WARNING>",
-          "pass_pct": <0-100 o null>,
-          "description": "<descripcion>"
-        }
-      ],
-      "gaps": [
-        {
-          "column": "<columna o '—' si aplica a la tabla>",
-          "dimension": "<dimension ausente>",
-          "priority": "<CRITICO|ALTO|MEDIO|BAJO>",
-          "description": "<descripcion del gap>"
-        }
-      ]
-    }
-  ],
-  "rules_created": [
-    {
-      "name": "<nombre-regla>",
-      "table": "<tabla>",
-      "dimension": "<completeness|uniqueness|validity|consistency|...>",
-      "status": "<created|OK|KO|WARNING|SIN_DATOS>"
-    }
-  ],
-  "recommendations": ["<recomendacion 1 como string plano>", "<recomendacion 2>"]
-}
-```
+## 7. Mensaje final al usuario
 
-**Notas de mapeo desde los datos de evaluación de cobertura:**
-- `summary.rules_total` ← total de reglas existentes en la colección (no solo las ejecutadas)
-- `summary.rules_not_executed` ← reglas sin resultado aún (pendientes)
-- `summary.gaps_critical` ← gaps con priority `CRITICO`; `gaps_moderate` ← `ALTO`; `gaps_low` ← `MEDIO` + `BAJO`
-- `tables[].completeness/uniqueness/validity/consistency` ← `OK` si hay regla activa, `Gap` si ninguna, `Parcial` si incompleta, `N/A` si no aplica
-- `tables[].rules[].status` ← para reglas sin ejecutar usar `WARNING` (nunca "Pendiente" ni "Sin ejecutar")
-- `tables[].gaps[].priority` ← `CRITICO` para PK/FK sin regla, `ALTO` para columnas clave, `MEDIO` para resto, `BAJO` para dimensiones opcionales
-- `rules_created[].status` ← usar `"created"` para reglas recién creadas en esta sesión sin validación; `OK|KO|WARNING|SIN_DATOS` si se ejecutó validación SQL
+Tras la generación, presentar en chat:
 
-#### Paso 4 — Determinar los nombres de los artefactos
-
-Todos los artefactos viven **dentro** de la carpeta del Paso 2. Los nombres llevan el `<slug>` descriptivo (la parte del nombre de carpeta tras el timestamp) como prefijo para que sigan siendo reconocibles tras la descarga.
-
-- Si el usuario indicó un nombre: usar ese (con la extensión correcta), siempre dentro de la carpeta.
-- Si no:
-  - PDF: `output/<carpeta>/<slug>-quality-report.pdf`
-  - DOCX: `output/<carpeta>/<slug>-quality-report.docx`
-  - MD: `output/<carpeta>/<slug>-quality-report.md`
-
-#### Paso 5 — Validar el JSON (OBLIGATORIO antes de ejecutar el generador)
-
-```bash
-python3 scripts/validate_report_input.py output/<carpeta>/report-input.json
-```
-
-- Si termina con `[OK]`: continuar al paso 6.
-- Si termina con `[VALIDATION FAILED]`: leer cada error, corregir el `report-input.json` y volver a ejecutar la validación hasta que pase sin errores. **No ejecutar el generador con un JSON invalido** — producira un informe en blanco sin avisar.
-
-#### Paso 6 — Ejecutar el generador
-
-```bash
-python3 scripts/quality_report_generator.py \
-  --format <pdf|docx|md> \
-  --output "output/<carpeta>/<slug>-quality-report.<ext>" \
-  --input-file "output/<carpeta>/report-input.json" \
-  --lang <código_idioma_usuario>
-```
-
-**Opcional — tono visual** (afecta solo a PDF y DOCX; el formato Markdown es neutro e ignora este flag):
-
-```bash
-python3 scripts/quality_report_generator.py \
-  --format pdf \
-  --output "output/<carpeta>/<slug>-quality-report.pdf" \
-  --input-file "output/<carpeta>/report-input.json" \
-  --lang <código_idioma_usuario> \
-  --tone <default|technical-minimal|executive-editorial|forensic>
-```
-
-Los tonos cambian la paleta de acento y el emparejamiento tipográfico del documento generado:
-
-- `default` — preserva la paleta histórica (Arial body, acento azul naval). Se usa cuando se omite `--tone`.
-- `technical-minimal` — IBM Plex Serif para body, IBM Plex Sans para display y IBM Plex Mono para datos tabulares; acento azul frío. Adecuado para audiencias de ingeniería o revisiones de incidencias.
-- `executive-editorial` — Crimson Pro body con Instrument Serif display; acento oxblood cálido sobre crema. Adecuado para resúmenes a nivel de comité o informes trimestrales.
-- `forensic` — IBM Plex Mono body con Plex Serif display; acento rojo profundo sobre hueso. Adecuado para documentación estilo auditoría donde cada cifra está para ser escrutada.
-
-Consulta `skills-guides/visual-craftsmanship.md` para los principios estéticos compartidos (roles de paleta, emparejamiento tipográfico, anti-patrones, checklist de artesanía).
-
-**Nota sobre disponibilidad de fuentes**: los tonos no-default referencian familias (IBM Plex Serif/Sans/Mono, Crimson Pro, Instrument Serif, JetBrains Mono). Deben estar instaladas a nivel de sistema o entregadas por el entorno; si WeasyPrint no puede resolver una familia hace fallback silencioso y el tono visible no cambia. En caso de duda, mantén `--tone default` (Arial) o instala la familia vía el entorno del agente.
-
-**Idioma de los labels estáticos** (títulos de sección, nombres de columnas de tabla, footer, atributo HTML `lang`). Orden de resolución (mayor prioridad primero):
-
-1. `--labels-json '{...}'` en la línea de comandos — override por clave.
-2. `"labels": {...}` dentro del JSON input — override por clave.
-3. `--lang <código>` en la línea de comandos — selecciona del catálogo.
-4. `"lang": "<código>"` dentro del JSON input — selecciona del catálogo.
-5. Fichero `.agent_lang` en la raíz del agente (escrito al empaquetar) — idioma por defecto del paquete.
-6. `"en"` como fallback final.
-
-**Regla práctica**: pasar `--lang <código>` con el idioma del usuario actual (el mismo que estás usando en el chat). Los idiomas del catálogo hoy son `en` y `es`; códigos desconocidos hacen fallback a inglés por clave. Si necesitas un label que el catálogo no trae en el idioma del usuario (p. ej. usuario en francés), pasa las traducciones vía `--labels-json` o el campo `"labels"` del JSON.
-
-Si el usuario pide PDF y DOCX en la misma sesión, el `report-input.json` puede reutilizarse — ejecutar el generador dos veces con distinto `--format` y `--output`.
-
-## 5. Verificación Post-Generación
-
-Para formatos de archivo (PDF, DOCX, MD en disco):
-1. Verificar que los archivos existen: `ls -lh output/<carpeta>/`
-2. Informar al usuario: ruta de la carpeta, nombres de los artefactos y tamaño de cada uno
-3. Si la generación fallo: mostrar el error y ofrecer alternativa en chat
-
-## 6. Mensaje Final al Usuario
-
-Tras generar el informe, presentar en el chat:
-- Confirmación de generación (o el informe si es formato chat)
-- Ruta del archivo (si aplica)
-- Resumen de 2-3 puntos clave del informe
-- Pregunta de si desea algo más (crear reglas de los gaps, ampliar scope, etc.)
+- Confirmación de generación (para Chat: el propio informe; para ficheros: path de la carpeta + lista de artefactos con tamaños).
+- 2-3 puntos clave del informe (p. ej. gap de cobertura más grande, regla KO más crítica, mejora más relevante frente a un informe previo si existe).
+- Pregunta de seguimiento (crear reglas para los gaps detectados, ampliar scope a otras tablas, planificar re-evaluación periódica, etc.).

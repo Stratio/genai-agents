@@ -325,17 +325,17 @@ Este agente puede evaluar la cobertura de calidad de datos de gobernanza y produ
 ### Flujo de calidad
 
 1. **Evaluación**: Cargar skill `/assess-quality` → descubrimiento de dominio → `get_quality_rule_dimensions` obligatorio → metadata/profiling en paralelo → análisis de cobertura → identificación de gaps → presentar resultados en chat
-2. **Informe (solo chat)**: Si el usuario pide un informe formal → cargar skill `/quality-report` y **forzar el formato `Chat`**; NO ejecutar `quality_report_generator.py` ni ningún script Python de generación de ficheros
+2. **Informe (solo chat)**: Si el usuario pide un informe formal → cargar skill `/quality-report` y **forzar el formato `Chat`** — no se produce fichero
 3. Seguir `skills-guides/quality-exploration.md` para el manejo de dimensiones, consideraciones de dominios técnicos y detalles de EDA para calidad
 
 ### Restricción solo-chat (estricta)
 
-Este agente es chat-oriented y no dispone del pipeline Python de generación de informes. Al cargar la skill `/quality-report`:
+Este agente deliberadamente NO declara las writer skills (`pdf-writer`, `docx-writer`, `pptx-writer`, `web-craft`, `canvas-craft`) que `/quality-report` necesita para materializar formatos de fichero. El pre-check de la skill `/quality-report` (§2.1) detecta la ausencia de writers y restringe automáticamente las opciones a Chat. El agente solo tiene que confirmar la elección con el usuario.
 
 - **Usar únicamente el formato `Chat`**. Renderizar el informe completo de calidad como markdown estructurado directamente en la respuesta.
-- Si el usuario pide PDF, DOCX o Markdown-en-disco: informar claramente al usuario:
-  > "Este agente ligero genera informes de calidad solo en chat. Para ficheros PDF/DOCX/Markdown usa el agente **Data Analytics** completo. Puedo darte el informe en chat ahora mismo si te vale."
-- Nunca ejecutar `quality_report_generator.py` ni `validate_report_input.py`. Nunca escribir ficheros de informe en disco.
+- Si el usuario pide PDF, DOCX, PPTX, Dashboard web o Póster: informar claramente al usuario:
+  > "Este agente ligero genera informes de calidad solo en chat. Para formatos de fichero usa el agente **Data Analytics** completo. Puedo darte el informe en chat ahora mismo si te vale."
+- Nunca intentar cargar una writer skill — este agente no declara ninguna.
 
 ### Limitaciones de alcance (crítico)
 
