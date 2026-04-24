@@ -183,6 +183,8 @@ Notes:
 | `quality-report` | Generate a formal quality coverage report in PDF, DOCX or Markdown (in `data-analytics-light` only the Chat format is used) | data-analytics, data-analytics-light, data-quality, governance-officer |
 | `pdf-reader` | Inspect, extract text, tables, images, form values and attachments from PDF files with diagnose-first strategy | data-analytics, data-quality, governance-officer |
 | `pdf-writer` | Create designed PDFs, transform existing ones (merge, split, rotate, watermark, encrypt) and fill forms. Design-first workflow with custom typography | data-analytics, data-quality, governance-officer |
+| `xlsx-reader` | Extract cell values, tables, formulas, images and metadata from `.xlsx`/`.xlsm` files (or legacy `.xls`/`.xlsb` via LibreOffice). Diagnose-first strategy | data-analytics, data-quality, governance-officer |
+| `xlsx-writer` | Create designed Excel workbooks (analytical cover/KPI + detail sheets, coverage matrices, pivot tables, tabular exports, catalogs, quantitative models). Merge/split, find-replace, legacy `.xls` conversion, formula refresh via LibreOffice | data-analytics, data-quality, governance-officer |
 | `brand-kit` | Centralized catalog of visual identity themes (colors, typography, chart palettes, sizes, tone). Ships 10 curated themes and is extensible — clients add their own | data-analytics, data-analytics-light, data-quality, governance-officer |
 
 Shared guides (technical documentation that skills reference) live in `shared-skill-guides/`:

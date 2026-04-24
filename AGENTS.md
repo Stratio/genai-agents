@@ -29,6 +29,8 @@ genai-agents/
     docx-writer/
     pptx-reader/
     pptx-writer/
+    xlsx-reader/
+    xlsx-writer/
     web-craft/
     canvas-craft/
     brand-kit/
@@ -84,7 +86,7 @@ genai-agents/
 ## Agent summary
 
 ### data-analytics
-Full BI/BA agent: queries governed data via MCP, analysis with Python (pandas, scipy, scikit-learn), visualizations (matplotlib, seaborn, plotly), report generation (PDF, DOCX, web, PowerPoint), PDF reading and extraction (`pdf-reader`), ad-hoc PDF creation and manipulation (`pdf-writer`: merge, split, watermark, encrypt, forms), DOCX reading (`docx-reader`) and ad-hoc DOCX authoring / manipulation (`docx-writer`: merge, split, find-replace, convert `.doc` to `.docx`), PPTX reading (`pptx-reader`) and ad-hoc PPTX authoring / manipulation (`pptx-writer`: merge, split, reorder, find-replace in slides and notes, convert `.ppt` to `.pptx`) for decks outside the analytical pipeline, read-only data quality coverage assessment and reporting (uses shared skills `assess-quality` and `quality-report`; does not create rules), reasoning documentation, validation, cross-session memory management.
+Full BI/BA agent: queries governed data via MCP, analysis with Python (pandas, scipy, scikit-learn), visualizations (matplotlib, seaborn, plotly), report generation (PDF, DOCX, web, PowerPoint, Excel/XLSX), PDF reading and extraction (`pdf-reader`), ad-hoc PDF creation and manipulation (`pdf-writer`: merge, split, watermark, encrypt, forms), DOCX reading (`docx-reader`) and ad-hoc DOCX authoring / manipulation (`docx-writer`: merge, split, find-replace, convert `.doc` to `.docx`), PPTX reading (`pptx-reader`) and ad-hoc PPTX authoring / manipulation (`pptx-writer`: merge, split, reorder, find-replace in slides and notes, convert `.ppt` to `.pptx`) for decks outside the analytical pipeline, XLSX reading (`xlsx-reader`) and ad-hoc XLSX authoring / manipulation (`xlsx-writer`: analytical workbooks with cover/KPI + detail sheets, pivot matrices, tabular exports, merge/split/find-replace, convert `.xls` to `.xlsx`, formula refresh), read-only data quality coverage assessment and reporting (uses shared skills `assess-quality` and `quality-report`; does not create rules), reasoning documentation, validation, cross-session memory management.
 
 ### data-analytics-light
 Lightweight BI/BA agent: same analytical engine but chat-oriented. Includes read-only data quality coverage assessment with chat-only summaries (uses `assess-quality` and `quality-report` forcing the Chat format; no file generation, no rule creation). No formal report generation — the primary output is the chat. Includes packaging scripts for Claude AI Projects and Claude Cowork.
@@ -93,10 +95,10 @@ Lightweight BI/BA agent: same analytical engine but chat-oriented. Includes read
 Agent specialized in building and maintaining semantic layers in Stratio Governance. Orchestrates the creation of data collections (technical domains), technical terms, ontologies, business views, SQL mappings, view publishing, semantic terms and business terms via governance MCPs. Does not execute data queries or generate files — its output is MCP tool interaction + chat summaries. Can read local user files to enrich planning, including DOCX specifications via `docx-reader` and PPTX specification decks via `pptx-reader`.
 
 ### data-quality
-Agent specialized in data governance and quality. Evaluates quality coverage by domain, collection, table or column, identifies gaps (uncovered dimensions), proposes and creates quality rules with mandatory human approval, and generates coverage reports in multiple formats (PDF, DOCX, Markdown). Includes PDF reading (`pdf-reader`) and ad-hoc PDF manipulation (`pdf-writer`: merge, split, watermark, encrypt, forms), DOCX reading (`docx-reader`) and ad-hoc DOCX authoring / manipulation (`docx-writer`: merge, split, find-replace, `.doc` conversion), plus PPTX reading (`pptx-reader`) and ad-hoc PPTX authoring (`pptx-writer`) for executive quality summary decks and training decks on rules. Operates on governed data via SQL and governance MCPs.
+Agent specialized in data governance and quality. Evaluates quality coverage by domain, collection, table or column, identifies gaps (uncovered dimensions), proposes and creates quality rules with mandatory human approval, and generates coverage reports in multiple formats (PDF, DOCX, PPTX, Dashboard web, Poster/Infographic, XLSX, Markdown). Includes PDF reading (`pdf-reader`) and ad-hoc PDF manipulation (`pdf-writer`: merge, split, watermark, encrypt, forms), DOCX reading (`docx-reader`) and ad-hoc DOCX authoring / manipulation (`docx-writer`: merge, split, find-replace, `.doc` conversion), PPTX reading (`pptx-reader`) and ad-hoc PPTX authoring (`pptx-writer`) for executive quality summary decks and training decks on rules, plus XLSX reading (`xlsx-reader`) for rule-spec workbooks and table catalogs and XLSX authoring (`xlsx-writer`) for multi-sheet coverage workbooks (materialises the Excel option of `quality-report`) and ad-hoc XLSX (rule-spec templates, term catalog exports). Operates on governed data via SQL and governance MCPs.
 
 ### governance-officer
-Combined governance agent with the full capabilities of both semantic-layer and data-quality. Builds and maintains semantic layers (ontologies, views, mappings, terms) AND manages data quality (assessment, rule creation, scheduling, reports). Includes PDF reading (`pdf-reader`) and ad-hoc PDF creation and manipulation (`pdf-writer`: merge, split, watermark, encrypt, forms, ontology documentation), DOCX reading (`docx-reader`) and ad-hoc DOCX authoring / manipulation (`docx-writer`: merge, split, find-replace, `.doc` conversion) for policy briefs, compliance reports and ontology documentation, plus PPTX reading (`pptx-reader`) and PPTX authoring (`pptx-writer`) for compliance briefings, policy presentations, ontology walkthroughs and steering-committee decks. Has full access to all governance and data MCP tools with no restrictions.
+Combined governance agent with the full capabilities of both semantic-layer and data-quality. Builds and maintains semantic layers (ontologies, views, mappings, terms) AND manages data quality (assessment, rule creation, scheduling, reports in PDF, DOCX, PPTX, Dashboard web, Poster/Infographic, XLSX, Markdown). Includes PDF reading (`pdf-reader`) and ad-hoc PDF creation and manipulation (`pdf-writer`: merge, split, watermark, encrypt, forms, ontology documentation), DOCX reading (`docx-reader`) and ad-hoc DOCX authoring / manipulation (`docx-writer`: merge, split, find-replace, `.doc` conversion) for policy briefs, compliance reports and ontology documentation, PPTX reading (`pptx-reader`) and PPTX authoring (`pptx-writer`) for compliance briefings, policy presentations, ontology walkthroughs and steering-committee decks, plus XLSX reading (`xlsx-reader`) for data dictionaries, term catalogs and rule-spec workbooks, and XLSX authoring (`xlsx-writer`) for multi-sheet quality-coverage workbooks, ontology exports, term catalogs, compliance matrices and policy checklist workbooks. Has full access to all governance and data MCP tools with no restrictions.
 
 ### skill-creator
 Agent for designing and generating AI agent skills (SKILL.md files). Interactive workflow: requirements gathering, skill design following proven principles, SKILL.md generation with supporting files, quality review with checklist, and ZIP packaging for download. No MCPs — works purely with conversation and file generation.
@@ -122,7 +124,20 @@ All pack scripts accept `--lang <code>` to generate output in a specific languag
 
 ### Reference rules
 
-Shared-skills must stay self-contained — no SKILL.md in `shared-skills/` references another shared-skill by name, so any shared-skill can be packaged standalone. Documented exceptions: `pdf-reader` ↔ `pdf-writer`, `docx-reader` ↔ `docx-writer` and `pptx-reader` ↔ `pptx-writer` (companion skills) and the `visual-craftsmanship.md` guide (the only place where `web-craft`, `canvas-craft` and `pdf-writer` are compared side by side).
+Shared-skills **should** stay self-contained when practical — most SKILL.md files in `shared-skills/` do not reference another shared-skill by name, so they can be packaged standalone and consumed in isolation by third-party agents. This is the preferred default.
+
+Cross-referencing other shared-skills by name from inside a shared SKILL.md is **permitted** when the skill's workflow genuinely depends on delegating to others and inlining their logic would duplicate thousands of lines. Examples already in the repo:
+
+- `pdf-reader` ↔ `pdf-writer`, `docx-reader` ↔ `docx-writer`, `pptx-reader` ↔ `pptx-writer` (companion skills that reference each other for round-trip flows).
+- `visual-craftsmanship.md` guide (the only place where `web-craft`, `canvas-craft` and `pdf-writer` are compared side by side so an agent can disambiguate).
+- `quality-report` (delegates file-format generation to `pdf-writer`, `docx-writer`, `pptx-writer`, `web-craft`, `canvas-craft` and `brand-kit`).
+
+**Trade-off**: a cross-referencing shared-skill is not perfectly self-contained anymore. It is no longer safe to package standalone — at runtime it needs the skills it names. Two consequences:
+
+1. Any agent that declares a cross-referencing shared-skill in its `shared-skills` manifest must also declare the skills it depends on. Without that, the references inside the SKILL.md point to skills the agent cannot load.
+2. The skill's own `README.md` documents the dependency explicitly, so the next developer (or agent author) knows what to bundle.
+
+A chat-oriented agent may intentionally omit some of the dependent skills — in that case the cross-referencing skill should detect the absence at the beginning of its workflow and restrict itself to the features that do not require the missing skills (e.g. offering only the Chat format). This "graceful degradation" is a valid configuration and should be stated in both the skill's SKILL.md (pre-check) and the host agent's AGENTS.md.
 
 Skills inside `<agent>/skills/` and any `AGENTS.md` may reference directly any skill the agent declares (local or shared). Prefer `load /skill-x and follow its §Y` over duplicating instructions.
 
@@ -134,13 +149,13 @@ Three shared skills cover the visual output of the monorepo. They share the guid
 - `canvas-craft` — single-page static artifacts (PDF/PNG). Posters, covers, certificates, marketing one-pagers, infographics. Ships a small set of OFL display fonts.
 - `pdf-writer` — multi-page typographic documents or prose-dominated single pages. Analytical reports, invoices, contracts, zines.
 
-Agents that produce visual output declare the family members they need in `<agent>/shared-skills` and add `visual-craftsmanship.md` to `<agent>/shared-guides`. `data-analytics` and `governance-officer` declare all three; `data-quality` declares `web-craft` only (its reports are multi-page tabular, already served by `pdf-writer`/`quality-report`).
+Agents that produce visual output declare the family members they need in `<agent>/shared-skills` and add `visual-craftsmanship.md` to `<agent>/shared-guides`. `data-analytics`, `governance-officer` and `data-quality` all declare the full family (pdf-writer, docx-writer, pptx-writer, web-craft, canvas-craft) so they can offer every output format through both the analytical pipeline and `quality-report`.
 
 ### Brand-kit / centralized theming
 
 `brand-kit` is the shared skill that centralizes visual identity tokens (colors, typography, chart palettes, sizes, tone). It ships ten curated themes and is extensible — clients add their own themes directly inside the skill or provide an alternative theming skill. Agents that generate visual deliverables declare `brand-kit` in `<agent>/shared-skills`.
 
-Output skills (`docx-writer`, `pptx-writer`, `pdf-writer`, `web-craft`, `canvas-craft`) reference the concept "centralized theming skill" **generically**, not by name — they never mention `brand-kit` literally. This keeps self-containment intact: a client can substitute `brand-kit` with their own skill without editing any output skill, and a standalone pack of (for example) `docx-writer` still works by improvising tokens from `visual-craftsmanship.md`.
+Output skills (`docx-writer`, `pptx-writer`, `pdf-writer`, `xlsx-writer`, `web-craft`, `canvas-craft`) reference the concept "centralized theming skill" **generically**, not by name — they never mention `brand-kit` literally. This keeps self-containment intact: a client can substitute `brand-kit` with their own skill without editing any output skill, and a standalone pack of (for example) `docx-writer` or `xlsx-writer` still works by improvising tokens from `visual-craftsmanship.md`.
 
 ### Creating a shared skill
 

@@ -1,12 +1,12 @@
 # Quality Report Layout — Guide
 
-Guide consumed by the writer skills (`pdf-writer`, `docx-writer`, `pptx-writer`, `web-craft`, `canvas-craft`) when the agent delegates a quality-coverage report deliverable through the `quality-report` skill.
+Guide consumed by the writer skills (`pdf-writer`, `docx-writer`, `pptx-writer`, `web-craft`, `canvas-craft`, `xlsx-writer`) when the agent delegates a quality-coverage report deliverable through the `quality-report` skill.
 
 This guide captures the conventions that make a data quality coverage report recognisable across formats: a stable six-section anatomy (cover → executive summary → coverage matrix → rules detail → gaps → recommendations), a fixed iconography for rule status, KPI cards tuned for audit readability, and a deterministic layout so the same dataset reproduces the same skeleton month after month. The writer skills still apply their own craft on top of this guide — tokens come from the centralized theming skill selected in the host agent's branding cascade; this guide contributes the **quality-report patterns**.
 
 ## 1. Purpose and scope
 
-Apply this guide whenever the agent produces a quality-coverage report in a file format (PDF, DOCX, PPTX, Dashboard web, Poster/Infographic) via the `quality-report` skill. Skip it for the Chat format — the chat response is free-form markdown, no format-specific decisions are needed.
+Apply this guide whenever the agent produces a quality-coverage report in a file format (PDF, DOCX, PPTX, Dashboard web, Poster/Infographic, XLSX) via the `quality-report` skill. Skip it for the Chat format — the chat response is free-form markdown, no format-specific decisions are needed.
 
 The guide is format-agnostic where possible (same anatomy everywhere) and format-specific where a deliverable type dictates composition (section §6).
 
@@ -156,6 +156,27 @@ Data budget: quality reports are dense but not transactional. One row per rule +
 - Bottom right column: top 3 recommendations (from §6).
 - Format: A3 portrait by default, single PDF or PNG. Let the user pick the size if they state a preference.
 
+### 6.6 Excel (XLSX) — multi-sheet coverage workbook
+
+Multi-sheet workbook with a fixed sheet order for audit stability. Sheets render in the user's language for headings and labels; status codes (`OK` / `KO` / `WARNING` / `NOT_EXECUTED`) and priority codes (`CRITICO` / `ALTO` / `MEDIO` / `BAJO`) are NOT translated.
+
+Fixed sheet order:
+
+1. **Cover** — title (row 1), domain + scope + generation date (rows 2-4), then a 4-cell KPI band at row 6 matching §5 in the exact order (Coverage %, Rules OK %, Critical gaps, Rules created this session). Each KPI spans 3 columns: a merged primary-filled label row, a merged display-font value row (2 rows tall), and a merged subtitle row. KPI values are displayed values (not formulas) so the workbook opens correctly without a recalc step.
+2. **Coverage** — native Table (`openpyxl.worksheet.table.Table`) with one row per analysed table and one column per dimension in the stable order from §11 (Table name first, then Completeness, Uniqueness, Validity, Consistency, then alphabetical domain-specific dimensions returned by `get_quality_rule_dimensions`, then Coverage % last). Cells populated with the status icons from §3 (`✓` / `✗` / `◐` / `—`). Conditional formatting on dimension cells: `PatternFill` tinted with `state_ok` / `state_danger` / `state_warn` / `muted` per the status-to-token mapping in §3. Freeze first row + first column.
+3. **Rules** — native Table grouped by table: columns "Table / Rule / Dimension / Status / % Pass / Description". Rows coloured faintly by status via conditional formatting on the Status column. Autofilter enabled.
+4. **Gaps** — native Table ordered per §11 (priority → table → column): columns "Priority / Table / Column / Dimension / Description / Recommendation". The Priority cell is tinted by priority code per §4 via conditional formatting.
+5. **Rules created in this session** (conditional) — only present if at least one rule was created via `create-quality-rules` in the current conversation. Same Table pattern as Rules.
+6. **Recommendations** — plain prose sheet: numbered bullets from the canonical §6 Recommendations section. One bullet per row; no Table.
+
+Item limits: up to 50 gaps visible in the Gaps sheet; if more, append one row `"… and N more gaps of lower priority"`. The Recommendations sheet carries every bullet (no cap).
+
+Column widths: column A = 28 (table / rule name), column B = 18 (dimension / status), other columns auto-fit. Set `print_area` on Coverage and Gaps so a user who prints gets one-page-per-sheet where possible (landscape for Coverage).
+
+**No Excel formulas** in cell values — everything is displayed data. This keeps the workbook portable across viewers (Google Sheets, LibreOffice first-open, Python readers with `data_only=True`) and removes the need for a `refresh_formulas.py` pass when `xlsx-writer` is invoked from `quality-report`.
+
+**No native charts** — the coverage matrix IS the heatmap (status-tinted cells replace a chart). Keeps the workbook lean and editable.
+
 ## 7. Brand tokens integration
 
 The theme fixed in the agent's branding cascade produces a token bundle. Quality reports consume it like any other deliverable:
@@ -174,13 +195,14 @@ The theme fixed in the agent's branding cascade produces a token bundle. Quality
   - Position 2 → KO
   - Position 3 → NOT_EXECUTED
 - Typography: `display` for KPI values and section H1; `body` for running text; `mono` for SQL excerpts and rule names (rule names often contain underscores — mono reads better).
+- **XLSX-specific**: header fills use `primary`, band rows alternate `bg_alt`, KPI value cells use `display` font, status cells use `state_ok` / `state_warn` / `state_danger` / `muted` via conditional formatting (never as direct cell fills, which would fight the Table's own banding). Chart-related tokens (`chart_categorical`, `chart_sequential`) are NOT used — the workbook has no charts. `display` / `body` font tokens map onto `openpyxl.styles.Font(name=...)` but XLSX relies on the reader's installed fonts, so pair every theme face with a safe fallback (Calibri / Arial / Cambria).
 
 If the theme declares `print` extensions, `pdf-writer` and `canvas-craft` honour them (a cream `paper` beats a pure white `bg` on paper).
 
 ## 8. Language
 
 - `lang` is passed by the agent to each writer skill. Every heading, label, subtitle, KPI label, column header, footer text renders in that language.
-- The `<html lang="...">` attribute (web-craft) and the DOCX language property (docx-writer) must match.
+- The `<html lang="...">` attribute (web-craft), the DOCX language property (docx-writer) and the XLSX sheet titles / column headers (xlsx-writer) must match.
 - Status codes (`OK`, `KO`, `WARNING`, `NOT_EXECUTED`) and priority codes (`CRITICO`, `ALTO`, `MEDIO`, `BAJO`) are NOT translated — they are canonical identifiers and must read the same across languages so cross-locale audit diffs align.
 - Dimension names come from `get_quality_rule_dimensions` — they are domain-specific and locale-specific per the governance model; pass them through as-is.
 
@@ -227,8 +249,9 @@ For reports repeated periodically (governance, compliance) the structural skelet
   - PPTX: top 10 gaps only (one slide).
   - Dashboard web: no limit — use filters and sortable tables.
   - Poster / Infographic: top 3 critical + top 3 recommendations.
+  - XLSX: up to 50 gaps in the Gaps sheet; rest aggregated into a `"… and N more gaps of lower priority"` row. The Recommendations sheet carries every bullet (no cap).
 - **Empty-section markers**: every canonical section (§2.1–§2.6) always emits its heading. If it has no content, a single explicit line replaces the content ("No rules defined for this table yet", "No gaps detected in the current scope", "No rules created in this session"). The section is never skipped silently — the heading presence is what makes month-over-month diffs align.
 - **Generation date format**: ISO 8601 (`YYYY-MM-DD`) in the document metadata and internal `quality-report.md`. The writer skills may render a localised display form (`24 April 2026` / `24 de abril de 2026`) in the cover, but the underlying metadata field stays ISO.
-- **Filenames**: `<slug>-quality-report.<ext>` for PDF/DOCX/HTML, `<slug>-quality-summary.pptx`, `<slug>-quality-poster.pdf` or `.png`. `<slug>` is the normalised domain or scope (lowercase ASCII, underscores, ≤30 chars). Consistent filenames let tools diff across folders.
+- **Filenames**: `<slug>-quality-report.<ext>` for PDF/DOCX/HTML/XLSX, `<slug>-quality-summary.pptx`, `<slug>-quality-poster.pdf` or `.png`. `<slug>` is the normalised domain or scope (lowercase ASCII, underscores, ≤30 chars). Consistent filenames let tools diff across folders.
 
 The combination of fixed section order, fixed KPI order, fixed column order, fixed ordering rules and filename convention makes two runs of the same dataset produce visually comparable reports — which is what audit readers expect.

@@ -1,12 +1,12 @@
 # Quality Report Layout — Guía
 
-Guía consumida por las writer skills (`pdf-writer`, `docx-writer`, `pptx-writer`, `web-craft`, `canvas-craft`) cuando el agente delega un entregable de informe de cobertura de calidad a través de la skill `quality-report`.
+Guía consumida por las writer skills (`pdf-writer`, `docx-writer`, `pptx-writer`, `web-craft`, `canvas-craft`, `xlsx-writer`) cuando el agente delega un entregable de informe de cobertura de calidad a través de la skill `quality-report`.
 
 Esta guía captura las convenciones que hacen reconocible un informe de cobertura de calidad del dato en cualquier formato: una anatomía estable de seis secciones (portada → resumen ejecutivo → matriz de cobertura → detalle de reglas → gaps → recomendaciones), una iconografía fija para el estado de reglas, KPI cards pensadas para lectura de auditoría y un layout determinista para que el mismo dataset reproduzca el mismo esqueleto mes a mes. Las writer skills aplican su propio oficio por encima — los tokens los da la skill centralizada de theming elegida en la cascada de branding del agente; esta guía aporta los **patrones del informe de calidad**.
 
 ## 1. Propósito y alcance
 
-Aplicar esta guía siempre que el agente produzca un informe de cobertura de calidad en un formato de fichero (PDF, DOCX, PPTX, Dashboard web, Póster/Infografía) vía la skill `quality-report`. Saltarla para el formato Chat — la respuesta de chat es markdown libre, no necesita decisiones específicas de formato.
+Aplicar esta guía siempre que el agente produzca un informe de cobertura de calidad en un formato de fichero (PDF, DOCX, PPTX, Dashboard web, Póster/Infografía, XLSX) vía la skill `quality-report`. Saltarla para el formato Chat — la respuesta de chat es markdown libre, no necesita decisiones específicas de formato.
 
 La guía es agnóstica al formato donde puede serlo (misma anatomía en todos) y específica donde el tipo de entregable dicta la composición (§6).
 
@@ -156,6 +156,27 @@ Presupuesto de datos: los informes de calidad son densos pero no transaccionales
 - Columna inferior derecha: top 3 recomendaciones (de §6).
 - Formato: A3 vertical por defecto, PDF o PNG de una sola página. Dejar al usuario elegir el tamaño si expresa preferencia.
 
+### 6.6 Excel (XLSX) — libro de cobertura multi-hoja
+
+Libro multi-hoja con orden fijo de hojas para estabilidad de auditoría. Las hojas se renderizan en el idioma del usuario para cabeceras y labels; los códigos de estado (`OK` / `KO` / `WARNING` / `NOT_EXECUTED`) y códigos de prioridad (`CRITICO` / `ALTO` / `MEDIO` / `BAJO`) NO se traducen.
+
+Orden fijo de hojas:
+
+1. **Cover** — título (fila 1), dominio + scope + fecha de generación (filas 2-4), luego una banda KPI de 4 celdas en la fila 6 siguiendo el orden exacto de §5 (Coverage %, Rules OK %, Critical gaps, Rules created this session). Cada KPI ocupa 3 columnas: una fila de label combinada con fill primary, una fila de valor combinada con fuente display (2 filas de alto) y una fila de subtítulo combinada. Los valores de KPI son datos mostrados (no fórmulas) para que el libro abra correctamente sin un pase de recálculo.
+2. **Coverage** — Table nativa (`openpyxl.worksheet.table.Table`) con una fila por tabla analizada y una columna por dimensión en el orden estable de §11 (nombre de Tabla primero, luego Completeness, Uniqueness, Validity, Consistency, luego dimensiones específicas de dominio devueltas por `get_quality_rule_dimensions` en orden alfabético, y Coverage % al final). Celdas pobladas con los iconos de estado de §3 (`✓` / `✗` / `◐` / `—`). Formato condicional en las celdas de dimensión: `PatternFill` tintado con `state_ok` / `state_danger` / `state_warn` / `muted` según el mapeo status-a-token de §3. Freeze primera fila + primera columna.
+3. **Rules** — Table nativa agrupada por tabla: columnas "Tabla / Regla / Dimensión / Status / % Pass / Descripción". Filas tintadas levemente por status vía formato condicional en la columna Status. Autofilter habilitado.
+4. **Gaps** — Table nativa ordenada según §11 (prioridad → tabla → columna): columnas "Prioridad / Tabla / Columna / Dimensión / Descripción / Recomendación". La celda de Prioridad se tinta por código de prioridad vía formato condicional según §4.
+5. **Reglas creadas en esta sesión** (condicional) — solo presente si se creó al menos una regla vía `create-quality-rules` en la conversación actual. Mismo patrón de Table que Rules.
+6. **Recomendaciones** — hoja de prosa plana: bullets numerados de la sección canónica §6 Recomendaciones. Un bullet por fila; sin Table.
+
+Límites de ítems: hasta 50 gaps visibles en la hoja Gaps; si hay más, añadir una fila `"… y N gaps más de prioridad menor"`. La hoja Recomendaciones lleva todos los bullets (sin tope).
+
+Anchos de columna: columna A = 28 (nombre de tabla / regla), columna B = 18 (dimensión / status), resto auto-fit. Definir `print_area` en Coverage y Gaps para que un usuario que imprima obtenga una-página-por-hoja donde sea posible (landscape en Coverage).
+
+**Sin fórmulas de Excel** en valores de celda — todo son datos mostrados. Esto mantiene el libro portable entre visores (Google Sheets, LibreOffice en primera apertura, lectores Python con `data_only=True`) y elimina la necesidad de un pase de `refresh_formulas.py` cuando `xlsx-writer` es invocado desde `quality-report`.
+
+**Sin gráficos nativos** — la matriz de cobertura ES en sí el heatmap (las celdas tintadas por estado sustituyen al gráfico). Mantiene el libro ligero y editable.
+
 ## 7. Integración con los tokens de marca
 
 El tema fijado en la cascada de branding del agente produce un bundle de tokens. El informe de calidad los consume como cualquier otro entregable:
@@ -174,13 +195,14 @@ El tema fijado en la cascada de branding del agente produce un bundle de tokens.
   - Posición 2 → KO
   - Posición 3 → NOT_EXECUTED
 - Tipografía: `display` para valores de KPI y H1 de sección; `body` para texto corrido; `mono` para fragmentos SQL y nombres de regla (los nombres de regla suelen llevar underscores — mono lee mejor).
+- **Específico de XLSX**: los fills de cabecera usan `primary`, las filas banda alternan `bg_alt`, las celdas de valor KPI usan la fuente `display`, las celdas de status usan `state_ok` / `state_warn` / `state_danger` / `muted` vía formato condicional (nunca como fills directos de celda, que pelearían con el propio banding del Table). Los tokens de chart (`chart_categorical`, `chart_sequential`) NO se usan — el libro no tiene gráficos. Los tokens de fuente `display` / `body` mapean sobre `openpyxl.styles.Font(name=...)` pero XLSX se apoya en las fuentes instaladas del lector, así que empareja cada cara del tema con un safe fallback (Calibri / Arial / Cambria).
 
 Si el tema declara extensiones `print`, `pdf-writer` y `canvas-craft` las honran (un `paper` crema queda mejor que un `bg` blanco puro sobre papel).
 
 ## 8. Idioma
 
 - `lang` lo pasa el agente a cada writer skill. Cada cabecera, etiqueta, subtítulo, label de KPI, título de columna y texto de pie se renderiza en ese idioma.
-- El atributo `<html lang="...">` (web-craft) y la propiedad de idioma de DOCX (docx-writer) deben coincidir.
+- El atributo `<html lang="...">` (web-craft), la propiedad de idioma de DOCX (docx-writer) y los títulos de hoja / cabeceras de columna XLSX (xlsx-writer) deben coincidir.
 - Los códigos de estado (`OK`, `KO`, `WARNING`, `NOT_EXECUTED`) y códigos de prioridad (`CRITICO`, `ALTO`, `MEDIO`, `BAJO`) NO se traducen — son identificadores canónicos y deben leerse igual en todos los idiomas para que los diffs de auditoría cross-locale alineen.
 - Los nombres de dimensión vienen de `get_quality_rule_dimensions` — son específicos de dominio y locale según el modelo de gobernanza; pasarlos tal cual.
 
@@ -227,8 +249,9 @@ Para informes que se repiten periódicamente (gobierno, compliance) el esqueleto
   - PPTX: top 10 gaps solamente (una slide).
   - Dashboard web: sin límite — usar filtros y tablas ordenables.
   - Póster / Infografía: top 3 críticos + top 3 recomendaciones.
+  - XLSX: hasta 50 gaps en la hoja Gaps; el resto se agrega en una fila `"… y N gaps más de prioridad menor"`. La hoja Recomendaciones lleva todos los bullets (sin tope).
 - **Marcadores de sección vacía**: cada sección canónica (§2.1–§2.6) emite siempre su cabecera. Si no tiene contenido, una única línea explícita reemplaza al contenido ("No hay reglas definidas para esta tabla todavía", "No se han detectado gaps en el scope actual", "No se han creado reglas en esta sesión"). Nunca se salta la sección silenciosamente — la presencia de la cabecera es lo que hace que los diffs mes a mes alineen.
 - **Formato de fecha de generación**: ISO 8601 (`YYYY-MM-DD`) en los metadatos del documento y en el `quality-report.md` interno. Las writer skills pueden renderizar una forma visible localizada (`24 April 2026` / `24 de abril de 2026`) en la portada, pero el metadato subyacente se queda en ISO.
-- **Nombres de fichero**: `<slug>-quality-report.<ext>` para PDF/DOCX/HTML, `<slug>-quality-summary.pptx`, `<slug>-quality-poster.pdf` o `.png`. `<slug>` es el dominio o scope normalizado (ASCII minúsculas, underscores, ≤30 caracteres). Nombres consistentes facilitan hacer diff entre carpetas con herramientas externas.
+- **Nombres de fichero**: `<slug>-quality-report.<ext>` para PDF/DOCX/HTML/XLSX, `<slug>-quality-summary.pptx`, `<slug>-quality-poster.pdf` o `.png`. `<slug>` es el dominio o scope normalizado (ASCII minúsculas, underscores, ≤30 caracteres). Nombres consistentes facilitan hacer diff entre carpetas con herramientas externas.
 
 La combinación de orden de secciones fijo, orden de KPIs fijo, orden de columnas fijo, reglas de ordenación fijas y convención de nombres hace que dos ejecuciones sobre el mismo dataset produzcan informes visualmente comparables — que es lo que los lectores de auditoría esperan.

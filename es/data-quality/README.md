@@ -9,7 +9,7 @@ Agente experto en Gobernanza y Calidad del Dato. Evalua la cobertura de calidad 
 - Propuesta razonada de reglas de calidad basada en contexto semántico y datos reales
 - Creación de reglas de calidad con aprobación humana obligatoria
 - Planificación de ejecución automática de reglas de calidad
-- Generación de informes de cobertura (chat, PDF, DOCX, Markdown)
+- Generación de informes de cobertura (chat, PDF, DOCX, PPTX, Dashboard web, Póster/Infografía, XLSX, Markdown)
 
 ## Requisitos
 
@@ -36,11 +36,13 @@ La configuración de MCPs está en `.mcp.json` (Claude Code / claude.ai) y en `o
 | Evaluación de calidad | `/assess-quality` | Evaluar cobertura de calidad por dominio o tabla: dimensiones cubiertas, gaps y prioridades |
 | Creación de reglas | `/create-quality-rules` | Diseñar y crear reglas de calidad para cubrir gaps, con aprobación humana obligatoria |
 | Planificación de calidad | `/create-quality-schedule` | Crear planificaciones de ejecución automática de reglas de calidad por dominio/colección |
-| Informe de calidad | `/quality-report` | Generar informe formal de cobertura en chat, PDF, DOCX o Markdown |
+| Informe de calidad | `/quality-report` | Generar informe formal de cobertura en chat, PDF, DOCX, PPTX, Dashboard web, Póster/Infografía, XLSX o Markdown |
 | Lectura de PDF | `/pdf-reader` | Extraer texto, tablas y datos de archivos PDF proporcionados por el usuario |
 | Escritura de PDF | `/pdf-writer` | Crear PDFs personalizados, combinar/dividir, marca de agua, cifrar, rellenar formularios |
 | Lectura de DOCX | `/docx-reader` | Extraer texto, tablas, imágenes, metadatos y cambios rastreados de ficheros `.docx` o `.doc` heredado |
 | Escritura de DOCX | `/docx-writer` | DOCX genéricos (cartas, memos, contratos, notas de política). Combinar/dividir, find-replace, convertir `.doc` a `.docx`, preview visual |
+| Lectura de XLSX | `/xlsx-reader` | Extraer valores de celda, tablas, fórmulas, imágenes y metadatos de ficheros `.xlsx`/`.xlsm` (o `.xls`/`.xlsb` heredado vía conversión con LibreOffice) |
+| Escritura de XLSX | `/xlsx-writer` | Libros multi-hoja de cobertura de calidad + XLSX ad-hoc (templates de rule-specs, exports de catálogo de términos). Combinar/dividir, find-replace, conversión `.xls` legacy, refresco de fórmulas |
 
 ## Scripts de empaquetado
 
