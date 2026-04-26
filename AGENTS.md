@@ -120,6 +120,20 @@ Usage: `bash pack_claude_code.sh --agent <agent-path> [--name <kebab-case-name>]
 
 All pack scripts accept `--lang <code>` to generate output in a specific language. Without `--lang` (or with `--lang en`), English is used. With `--lang es`, the script resolves Spanish content from the `es/` overlay and generates the output in `dist/es/...` for traceability.
 
+## Claude Code test skills (OpenCode)
+
+Repo-local Claude Code skills under `.claude/skills/` automate the test deployment of an agent into the team's shared OpenCode test directory `~/genai-agents-tests/opencode/<agent>/`. The naming convention `test-opencode-<agent>` makes the target platform explicit (we may add `test-claude-code-<agent>` siblings later for the Claude Code packaging). They are committed to the repo so any teammate gets them on clone.
+
+| Skill | Slash form | Packs |
+|-------|-----------|-------|
+| `test-opencode-data-analytics` | `/test-opencode-data-analytics` | data-analytics opencode-es |
+| `test-opencode-data-quality` | `/test-opencode-data-quality` | data-quality opencode-es |
+| `test-opencode-governance-officer` | `/test-opencode-governance-officer` | governance-officer opencode-es |
+
+Each skill runs `pack_opencode.sh --agent <agent> --lang es` and `rsync -a` (no `--delete`) the output into the test folder, so existing extra content in the destination (notably an `output/` folder with previous run artifacts) is preserved. Paths use `git rev-parse --show-toplevel` for the source and `~/genai-agents-tests/opencode/...` for the destination so the skills work regardless of where the repo is cloned.
+
+To add a new test skill for another agent, copy one of the existing folders under `.claude/skills/test-opencode-*/` and adjust the agent name in three places (frontmatter `name`/`description`, `pack_opencode.sh --agent <name>`, and the rsync source/destination paths).
+
 ## Shared skills
 
 ### Reference rules
