@@ -1,6 +1,6 @@
 ---
 name: quality-report
-description: "Generate a formal data quality coverage report in the format chosen by the user — chat, PDF, DOCX, PPTX, web dashboard, poster or XLSX coverage matrix. Delegates file generation to the agent's writer skills (pdf-writer, docx-writer, pptx-writer, web-craft, canvas-craft, xlsx-writer) plus the centralized theming skill; chat format works standalone, file formats are offered only when the host agent declares the matching writer skill. Use when the user wants a quality report, coverage summary, quality dashboard, executive deck of quality findings, or any deliverable that consolidates assess-quality results."
+description: "Generate a formal data quality coverage report in the format chosen by the user — chat, PDF, DOCX, PPTX, web dashboard, web article, poster or XLSX coverage matrix. Delegates file generation to the agent's writer skills (pdf-writer, docx-writer, pptx-writer, web-craft, canvas-craft, xlsx-writer) plus the centralized theming skill; chat format works standalone, file formats are offered only when the host agent declares the matching writer skill. Use when the user wants a quality report, coverage summary, quality dashboard, executive deck of quality findings, or any deliverable that consolidates assess-quality results."
 argument-hint: "[format: chat|pdf|docx|pptx|web|poster|xlsx] [filename (optional)]"
 ---
 
@@ -44,6 +44,7 @@ If at least one writer skill is declared, ask the user following the user questi
 - **DOCX** — editable Word document. Requires `docx-writer`.
 - **PowerPoint** — executive summary deck (16:9 by default). Requires `pptx-writer`.
 - **Dashboard web** — interactive HTML with filters, KPI cards and sortable tables. Requires `web-craft`.
+- **Web article / Narrative report** — self-contained HTML page, narrative or editorial layout. Requires `web-craft`.
 - **Poster / Infographic** — single-page visual summary for print or publication. Requires `canvas-craft`.
 - **Excel (XLSX)** — multi-sheet tabular coverage workbook (cover + coverage matrix with conditional formatting + rules detail + gaps + recommendations). Requires `xlsx-writer`.
 
@@ -90,7 +91,7 @@ If the user asks for a `.md` file on disk (not Chat, not one of the writer-backe
 
 Use the same folder convention as §5.3.
 
-### 5.3 File formats (PDF, DOCX, PPTX, Dashboard web, Poster)
+### 5.3 File formats (PDF, DOCX, PPTX, Dashboard web, Web article, Poster)
 
 1. **Folder**: create `output/YYYY-MM-DD_HHMM_quality_<slug>/` (all artefacts live here). `<slug>` = domain or scope normalised (lowercase ASCII, accents stripped, spaces replaced by underscores, max 30 chars). Example: `2026-04-24_1530_quality_analiticabanca`.
 
@@ -104,6 +105,7 @@ Use the same folder convention as §5.3.
    - **DOCX** → load `docx-writer`. Output: `<slug>-quality-report.docx`. Same six sections; use Word-native tables for the coverage matrix and rules detail so the user can edit them. Preserve heading styles (`Heading 1`, `Heading 2`, …).
    - **PowerPoint** → load `pptx-writer`. Output: `<slug>-quality-summary.pptx`. 16:9 by default; 4:3 only if the user asked explicitly. Target ≤12 slides following the outline in `quality-report-layout.md` §6.3.
    - **Dashboard web** → load `web-craft`. Output: `<slug>-quality-dashboard.html`. Apply the quality-specific layout from §6.4 (exactly the four KPI cards from §5, interactive coverage heatmap, filters for dimension/status/priority, sortable tables). If the host agent also declares a general `analytical-dashboard.md` guide, load it alongside so the generic dashboard patterns (global filters, Plotly via CDN, data budget, responsive, motion, language) apply on top.
+   - **Web article / Narrative report** → load `web-craft`. Output: `<slug>-quality-article.html`. Do NOT apply the dashboard layout from §6.4. Use artifact class `Page` or `Article`. Render the six canonical sections as a scrollable, self-contained HTML page: narrative headings, inline KPI callouts, embedded Plotly coverage charts as figures, static HTML tables (not sortable). Same content as other formats; presentation is editorial, not interactive.
    - **Poster / Infographic** → load `canvas-craft`. Output: `<slug>-quality-poster.pdf` or `<slug>-quality-poster.png`. Single-page composition per §6.5 (KPI band top, central heatmap, top-3 gaps + top-3 recommendations in flanking columns, A3 portrait by default).
    - **Excel (XLSX)** → load `xlsx-writer`. Output: `<slug>-quality-report.xlsx`. Multi-sheet workbook per `quality-report-layout.md` §6.6 (Cover with 4 KPI cards as merged-cell band, Coverage matrix as native Table with conditional formatting for OK/KO/WARNING/NOT_EXECUTED, Rules detail grouped by table, Gaps prioritised, optional Rules-created-this-session, Recommendations). No Excel formulas (all values are displayed data); no native charts (the coverage matrix is itself the heatmap). Brand tokens apply to fill colors, border colors and state colors only — XLSX uses the reader's system fonts, not embedded fonts.
 

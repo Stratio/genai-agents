@@ -1,6 +1,6 @@
 ---
 name: analyze
-description: "Análisis completo de datos BI/BA — descubrimiento de dominio, EDA y calidad de datos, planificación de métricas y KPIs con framework analítico, queries de datos vía MCP, análisis Python con pandas, visualizaciones, generación de informes multi-formato (PDF, DOCX, PowerPoint, Dashboard web, Póster/Infografía, Excel/XLSX) y documentación del razonamiento. Usar cuando el usuario necesite analizar datos de negocio, calcular KPIs, producir visualizaciones, generar resúmenes gráficos, obtener insights o responder preguntas analíticas sobre dominios gobernados. También se activa para comparaciones multi-métrica, resúmenes de KPIs, peticiones de entregables (informes, dashboards, libros) o cualquier petición que requiera cruzar datos entre dimensiones."
+description: "Análisis completo de datos BI/BA — descubrimiento de dominio, EDA y calidad de datos, planificación de métricas y KPIs con framework analítico, queries de datos vía MCP, análisis Python con pandas, visualizaciones, generación de informes multi-formato (PDF, DOCX, PowerPoint, Dashboard web, Informe web/Artículo web, Póster/Infografía, Excel/XLSX) y documentación del razonamiento. Usar cuando el usuario necesite analizar datos de negocio, calcular KPIs, producir visualizaciones, generar resúmenes gráficos, obtener insights o responder preguntas analíticas sobre dominios gobernados. También se activa para comparaciones multi-métrica, resúmenes de KPIs, peticiones de entregables (informes, dashboards, libros) o cualquier petición que requiera cruzar datos entre dimensiones."
 argument-hint: "[pregunta o tema de análisis]"
 ---
 
@@ -97,14 +97,14 @@ Una sola interacción:
 |---|----------|---------------------|-----------|-----------|
 | 1 | ¿Qué profundidad de análisis prefieres? | **Rápido** · **Estándar** (Recomendado) · **Profundo** | Única | Siempre |
 | 2 | ¿Para que audiencia es el análisis? | **C-level/Direccion** · **Manager/Responsable** · **Equipo técnico/Data** · **Mixta/General** | Única | Siempre |
-| 3 | ¿En que formatos quieres los deliverables? | **PDF** · **DOCX** · **PowerPoint** (.pptx) · **Dashboard web** (HTML interactivo con Plotly) · **Póster/Infografía** (visual de una página) · **Excel** (libro .xlsx) | Múltiple | Siempre |
+| 3 | ¿En que formatos quieres los deliverables? | **PDF** · **DOCX** · **PowerPoint** (.pptx) · **Dashboard web** (HTML interactivo con Plotly) · **Informe web / Artículo web** (página HTML autocontenida, narrativa o editorial) · **Póster/Infografía** (visual de una página) · **Excel** (libro .xlsx) | Múltiple | Siempre |
 | 4 | ¿Quieres que se generen y ejecuten tests unitarios sobre el código Python? | **Sí** (Recomendado): mejora precisión y calidad, pero consume más tiempo, coste y contexto · **No**: ejecución directa sin tests | Única | Solo Estándar/Profundo |
 
 **Regla adaptativa**: Si la petición del usuario ya especifica información que responde a alguna de estas preguntas, pre-rellenar esa respuesta y no volver a preguntarla. Por ejemplo: si el usuario dijo "dame un informe en PDF", pre-rellenar formato como Document; si dijo "análisis rápido", pre-rellenar profundidad como Quick; si dijo "dashboard ejecutivo", pre-rellenar audiencia como C-level/Executive y formato como Web. Solo preguntar aquello cuya respuesta no pueda inferirse de la petición.
 
 - Los tests validan transformaciones y cálculos antes de ejecutar con datos reales. Mejoran la precisión pero consumen más tokens, tiempo y coste. **En profundidad Rápido, testing se desactiva automáticamente sin preguntar al usuario.**
 - La pregunta de formato SIEMPRE permite selección múltiple
-- Las opciones de formato son EXACTAMENTE 6: PDF, DOCX, PowerPoint, Dashboard web, Póster/Infografía, Excel. Cada una enruta a su skill writer dedicada (ver instrucciones del agente §8). No inventar, no omitir, no sustituir
+- Las opciones de formato son EXACTAMENTE 7: PDF, DOCX, PowerPoint, Dashboard web, Informe web/Artículo web, Póster/Infografía, Excel. Cada una enruta a su skill writer dedicada (ver instrucciones del agente §8). No inventar, no omitir, no sustituir
 - Si no selecciona formato → no hay deliverables, el análisis se entrega solo en chat + report.md automático
 - **Si selecciona uno o más formatos → los deliverables SE GENERAN SIEMPRE, independientemente de la profundidad elegida. Rápido/Estándar/Profundo afecta al análisis, no a los entregables.**
 - Requisitos adicionales vía opción "Other" (filtros temporales, segmentos, métricas obligatorias)
@@ -329,6 +329,7 @@ Si durante la ejecución se detecta un hallazgo que excede el alcance del nivel 
    - **DOCX** → `docx-writer`. Salida: `<slug>-report.docx`.
    - **PowerPoint** → `pptx-writer`. 16:9 por defecto; 4:3 solo si el usuario lo pidió explícitamente. Salida: `<slug>-presentation.pptx`.
    - **Dashboard web** → `web-craft`. **También cargar `analytical-dashboard.md`** (de esta misma carpeta de skill) como input a web-craft, SALVO que el usuario señalara libertad de diseño al aprobar el plan (disclosure de §5.11). Salida: `<slug>-dashboard.html`.
+   - **Informe web / Artículo web** → `web-craft`. NO cargar `analytical-dashboard.md`. Usar artifact class `Page` o `Article`. Layout: secciones narrativas, callouts KPI inline, figuras Plotly incrustadas como figuras estáticas, filtros mínimos o ninguno. Salida: `<slug>-article.html`.
    - **Póster/Infografía** → `canvas-craft`. Salida: `<slug>-poster.pdf` o `<slug>-poster.png`.
    - **Excel** → `xlsx-writer`. Composición analítica según `xlsx-writer` SKILL.md §8: hoja cover/KPI con 3-4 métricas clave del resumen ejecutivo, hoja de parámetros documentando filtros / rango de fechas / selecciones de segmento, hojas de detalle (una por dimensión principal) con `openpyxl.worksheet.table.Table` objects y formato condicional en columnas de delta (vs período anterior / benchmark / target), hoja opcional de validación de hipótesis en profundidad Standard/Deep, apéndice opcional de raw data cuando el dataset sea pequeño. Si el libro usa fórmulas, ejecutar `shared-skills/xlsx-writer/scripts/refresh_formulas.py <ruta> --json` post-build para poblar los valores cacheados. Salida: `<slug>-workbook.xlsx`.
 3. Escribir `output/[ANALISIS_DIR]/report.md` (tablas + mermaid) como documentación interna, siempre — independientemente de los formatos seleccionados. Es la fuente de verdad que consumen las skills writer.

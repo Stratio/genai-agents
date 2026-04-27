@@ -18,7 +18,7 @@ Agente governance officer que combina la construcción de capas semánticas y la
 - Propuesta razonada de reglas de calidad basada en contexto semántico y datos reales
 - Creación de reglas de calidad con aprobación humana obligatoria
 - Planificación de ejecución automática de reglas de calidad
-- Generación de informes de cobertura (chat, PDF, DOCX, PPTX, Dashboard web, Póster/Infografía, XLSX, Markdown)
+- Generación de informes de cobertura (chat, PDF, DOCX, PPTX, Dashboard web, Informe web / Artículo web, Póster/Infografía, XLSX, Markdown)
 
 ## Requisitos
 
@@ -53,7 +53,7 @@ La configuración MCP está en `.mcp.json` (Claude Code / claude.ai) y en `openc
 | Evaluación de calidad | `/assess-quality` | Evaluar la cobertura de calidad por dominio o tabla |
 | Creación de reglas | `/create-quality-rules` | Diseñar y crear reglas de calidad con aprobación humana |
 | Planificación de calidad | `/create-quality-schedule` | Crear planificaciones de ejecución automática |
-| Informe de calidad | `/quality-report` | Generar informe formal de cobertura (PDF, DOCX, PPTX, Dashboard web, Póster/Infografía, XLSX, Markdown, Chat) |
+| Informe de calidad | `/quality-report` | Generar informe formal de cobertura (PDF, DOCX, PPTX, Dashboard web, Informe web / Artículo web, Póster/Infografía, XLSX, Markdown, Chat) |
 | Lectura de PDF | `/pdf-reader` | Extraer texto, tablas y datos de archivos PDF proporcionados por el usuario |
 | Escritura de PDF | `/pdf-writer` | Crear PDFs personalizados, combinar/dividir, marca de agua, cifrar, rellenar formularios |
 | Lectura de DOCX | `/docx-reader` | Extraer texto, tablas, imágenes y metadatos de ficheros `.docx` o `.doc` heredado (políticas, specs de ontología, documentos de negocio) |

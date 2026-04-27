@@ -6,7 +6,7 @@ Esta guía captura las convenciones que hacen reconocible un informe de cobertur
 
 ## 1. Propósito y alcance
 
-Aplicar esta guía siempre que el agente produzca un informe de cobertura de calidad en un formato de fichero (PDF, DOCX, PPTX, Dashboard web, Póster/Infografía, XLSX) vía la skill `quality-report`. Saltarla para el formato Chat — la respuesta de chat es markdown libre, no necesita decisiones específicas de formato.
+Aplicar esta guía siempre que el agente produzca un informe de cobertura de calidad en un formato de fichero (PDF, DOCX, PPTX, Dashboard web, Informe web/Artículo web, Póster/Infografía, XLSX) vía la skill `quality-report`. Saltarla para el formato Chat — la respuesta de chat es markdown libre, no necesita decisiones específicas de formato.
 
 La guía es agnóstica al formato donde puede serlo (misma anatomía en todos) y específica donde el tipo de entregable dicta la composición (§6).
 

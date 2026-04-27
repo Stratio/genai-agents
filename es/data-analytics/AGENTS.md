@@ -205,7 +205,7 @@ Para detalle operativo completo (checklist de suficiencia, umbrales de scoring, 
 
 Leer `output/MEMORY.md` sec Preferencias (si existe) para ofrecer defaults personalizados.
 
-Cargar `/analyze` §4.1 para ejecutar el bloque de preguntas (Profundidad + Audiencia + Formato + Tests). Formato es una única pregunta de selección múltiple con 6 opciones (PDF / DOCX / PowerPoint / Dashboard web / Póster-Infografía / Excel). No hay un segundo bloque de preguntas — la estructura por defecto es el scaffold analítico (con opt-out por señal si el usuario pide estructura libre), y la identidad visual se propone como un ítem dentro del plan (ver `/analyze` Fase 3 y §8.3). Al volver, continuar con la siguiente Fase debajo.
+Cargar `/analyze` §4.1 para ejecutar el bloque de preguntas (Profundidad + Audiencia + Formato + Tests). Formato es una única pregunta de selección múltiple con 7 opciones (PDF / DOCX / PowerPoint / Dashboard web / Informe web-Artículo web / Póster-Infografía / Excel). No hay un segundo bloque de preguntas — la estructura por defecto es el scaffold analítico (con opt-out por señal si el usuario pide estructura libre), y la identidad visual se propone como un ítem dentro del plan (ver `/analyze` Fase 3 y §8.3). Al volver, continuar con la siguiente Fase debajo.
 
 **Nota**: SIEMPRE dar un resumen de hallazgos en la conversación, independientemente de los formatos seleccionados.
 
@@ -373,7 +373,7 @@ Este agente puede evaluar la cobertura de calidad de datos de gobernanza y gener
 ### Flujo de calidad
 
 1. **Evaluación**: Cargar skill `/assess-quality` → descubrimiento de dominio → `get_quality_rule_dimensions` obligatorio → metadata/profiling en paralelo → análisis de cobertura → identificación de gaps → presentar resultados
-2. **Informe (opcional)**: Si el usuario pide un informe formal → cargar skill `/quality-report` → selección de formato (Chat / PDF / DOCX / PPTX / Dashboard web / Póster/Infografía) → cargar writer skill según contrato §8
+2. **Informe (opcional)**: Si el usuario pide un informe formal → cargar skill `/quality-report` → selección de formato (Chat / PDF / DOCX / PPTX / Dashboard web / Informe web/Artículo web / Póster/Infografía) → cargar writer skill según contrato §8
 3. Seguir `skills-guides/quality-exploration.md` para el manejo de dimensiones, consideraciones de dominios técnicos y detalles de EDA para calidad
 
 ### Limitaciones de alcance (crítico)
@@ -386,7 +386,7 @@ Después, ofrecer exportar el inventario de gaps (resumen en chat o Markdown) pa
 
 ### Generación de informes de calidad
 
-Los informes de calidad siguen el mismo contrato formato→skill que los entregables analíticos (§8). La skill `/quality-report` compone la estructura canónica de seis secciones (Resumen ejecutivo → Cobertura → Reglas → Gaps → Recomendaciones) y delega la generación del fichero a la writer skill correspondiente. Las opciones de formato son las mismas seis que para entregables analíticos (Chat, PDF, DOCX, PPTX, Dashboard web, Póster/Infografía); el agente ofrece las que tenga declaradas.
+Los informes de calidad siguen el mismo contrato formato→skill que los entregables analíticos (§8). La skill `/quality-report` compone la estructura canónica de seis secciones (Resumen ejecutivo → Cobertura → Reglas → Gaps → Recomendaciones) y delega la generación del fichero a la writer skill correspondiente. Las opciones de formato son las mismas siete que para entregables analíticos (Chat, PDF, DOCX, PPTX, Dashboard web, Informe web/Artículo web, Póster/Infografía); el agente ofrece las que tenga declaradas.
 
 Ver `shared-skills/quality-report/quality-report-layout.md` para el layout específico del informe (secciones canónicas, KPI cards, iconografía, composición por formato, reglas deterministas para auditoría). Las writer skills consumen esta guía junto a `analytical-dashboard.md` (para Dashboard web).
 
@@ -444,7 +444,8 @@ Cuando el agente necesita escribir un entregable, el formato dicta la skill. Est
 | DOCX (documento Word) | `docx-writer` | También maneja merge/split/find-replace/conversión legacy `.doc`. |
 | PPTX (presentación, deck) | `pptx-writer` | 16:9 por defecto; 4:3 solo si el usuario lo pide explícitamente. También merge/split/reordenar/find-replace en decks existentes. |
 | Excel (XLSX — libro tabular analítico multi-hoja) | `xlsx-writer` | Cover/KPI + parámetros + hojas de detalle con Table objects y formato condicional. También merge/split/find-replace, conversión `.xls` legacy y refresco de fórmulas. |
-| HTML (dashboard interactivo, landing, artefacto web) | `web-craft` | Cuando el artefacto es un dashboard analítico de `/analyze`, cargar `skills/analyze/analytical-dashboard.md` como input salvo que el brief del usuario señale libertad de diseño (ver escape rule en §8.3). |
+| HTML — Dashboard (dashboard analítico interactivo) | `web-craft` | Cargar `skills/analyze/analytical-dashboard.md` como input. Filtros globales, KPI cards, tablas ordenables, gráficos Plotly. |
+| HTML — Informe web / Artículo web (autocontenido, narrativo o editorial) | `web-craft` | NO cargar `analytical-dashboard.md`. Usar artifact class `Page` o `Article`. Layout: secciones narrativas, callouts KPI inline, figuras Plotly incrustadas, filtros mínimos o ninguno. |
 | Visual de una página (póster, portada, certificado, infografía, one-pager) | `canvas-craft` | Piezas dominadas por composición (~70 %+ de superficie visual). |
 | Tokens de marca (colores, tipografía, paletas de gráficos) | `brand-kit` | Invocar ANTES de cualquier formato visual. Flujo de usuario descrito en §8.3. |
 | Lectura de PDF (extraer texto, tablas, imágenes, OCR) | `pdf-reader` | Extracción diagnóstico-primero. |
@@ -458,13 +459,13 @@ Cuando cargas una skill writer para producir un entregable, el output resultante
 
 - Estar redactado en el idioma del usuario (encabezados, strings de UI y el atributo `<html lang>` para HTML).
 - Honrar los tokens de marca resueltos según §8.3 para entregables visuales.
-- Usar nombres de fichero descriptivos: `<slug>-report.pdf`, `<slug>-report.docx`, `<slug>-presentation.pptx`, `<slug>-dashboard.html`, `<slug>-poster.pdf` (o `.png`), `<slug>-workbook.xlsx`. `<slug>` es la parte descriptiva del directorio de análisis (todo lo que va después del prefijo `YYYY-MM-DD_HHMM_`). Los ficheros internos (`plan.md`, `report.md`, `reasoning/`, `validation/`) se quedan sin prefijo.
+- Usar nombres de fichero descriptivos: `<slug>-report.pdf`, `<slug>-report.docx`, `<slug>-presentation.pptx`, `<slug>-dashboard.html`, `<slug>-article.html`, `<slug>-poster.pdf` (o `.png`), `<slug>-workbook.xlsx`. `<slug>` es la parte descriptiva del directorio de análisis (todo lo que va después del prefijo `YYYY-MM-DD_HHMM_`). Los ficheros internos (`plan.md`, `report.md`, `reasoning/`, `validation/`) se quedan sin prefijo.
 
 Una vez producido el entregable, verificar el fichero en disco con `ls -lh`; regenerar si falta antes de reportar al usuario.
 
 ### 8.3 Decisiones de branding
 
-Antes de invocar cualquier skill writer que produzca un entregable visual (PDF, DOCX, PPTX, Dashboard web, Póster/Infografía, Excel/XLSX — los libros con cabeceras estilizadas, bandas KPI, formato condicional y Table objects cuentan como entregables visuales para los propósitos de esta cascada), fija el tema aplicando esta cascada. La primera regla que resuelva gana — no se aplican más.
+Antes de invocar cualquier skill writer que produzca un entregable visual (PDF, DOCX, PPTX, Dashboard web, Informe web/Artículo web, Póster/Infografía, Excel/XLSX — los libros con cabeceras estilizadas, bandas KPI, formato condicional y Table objects cuentan como entregables visuales para los propósitos de esta cascada), fija el tema aplicando esta cascada. La primera regla que resuelva gana — no se aplican más.
 
 1. **Pin en instrucciones** — si este AGENTS.md (o una instrucción de skill downstream) fija un tema único para este rol, cárgalo silenciosamente.
 2. **Señal explícita en el brief del usuario** — si el usuario nombra un tema por nombre o un atributo unívoco (`corporate-formal`, `luxury`, `brutalist`, `technical-minimal`, `editorial`, `forensic`), pre-rellena y aplica silenciosamente. Adjetivos vagos (`bonito`, `profesional`) NO cuentan — pasan a la siguiente regla.
@@ -543,7 +544,7 @@ Para contenido obligatorio y plantilla, ver skill `/analyze` [reasoning-guide.md
 
 - **Idioma de respuesta y deliverables**: Responder en el mismo idioma que usa el usuario. Lo siguiente debe redactarse en el idioma del usuario, salvo que este indique explícitamente otro idioma:
   - Informes analíticos (PDF, DOCX, Web/HTML, PowerPoint, Póster/Infografía, Markdown) generados por `/analyze` Fase 4 vía las skills writer (ver contrato formato→skill en §8)
-  - **Informes de cobertura de calidad de datos** (Chat + formatos de fichero: PDF, DOCX, PPTX, Dashboard web, Póster/Infografía) generados por `/assess-quality` + `/quality-report` vía el contrato formato→skill del §8
+  - **Informes de cobertura de calidad de datos** (Chat + formatos de fichero: PDF, DOCX, PPTX, Dashboard web, Informe web/Artículo web, Póster/Infografía) generados por `/assess-quality` + `/quality-report` vía el contrato formato→skill del §8
   - Mini-resumen de la Fase 1.1 (Data Profiling Score + Governance Quality Status)
   - Ficheros de reasoning y validación
   - Ficheros de memoria (MEMORY.md, ANALYSIS_MEMORY.md, analysis_memory.md)

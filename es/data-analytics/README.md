@@ -8,7 +8,7 @@ Agente completo de Business Intelligence y Business Analytics para Claude Code y
 - Análisis avanzado con Python (pandas, numpy, scipy)
 - Segmentación y clustering (scikit-learn)
 - Visualizaciones profesionales (matplotlib, seaborn, plotly)
-- **Entregables analíticos** (multi-formato) — PDF, DOCX, dashboard web interactivo, PowerPoint, póster/infografía, libro Excel/XLSX, generados por `/analyze` Fase 4 vía las skills writer (`pdf-writer`, `docx-writer`, `pptx-writer`, `web-craft`, `canvas-craft`, `xlsx-writer`) + `brand-kit` para los tokens de diseño
+- **Entregables analíticos** (multi-formato) — PDF, DOCX, dashboard web interactivo, informe web / artículo web, PowerPoint, póster/infografía, libro Excel/XLSX, generados por `/analyze` Fase 4 vía las skills writer (`pdf-writer`, `docx-writer`, `pptx-writer`, `web-craft`, `canvas-craft`, `xlsx-writer`) + `brand-kit` para los tokens de diseño
 - **Entregables visuales ligeros sin análisis** — pósteres / infografías / portadas de una sola página (`canvas-craft`), dashboards interactivos standalone (`web-craft`), PDFs ligeros con ≤3 KPIs o documentos tipográficos como facturas y cartas (`pdf-writer`), libros ad-hoc y exports de datos (`xlsx-writer`)
 - **Lectura de PDF** — extraer texto, tablas, imágenes y datos de formulario de PDFs (`pdf-reader`); lectura de Excel — extraer celdas, tablas, fórmulas y metadatos de XLSX (`xlsx-reader`)
 - **Evaluación y reporte de cobertura de calidad de datos** (solo lectura) — evaluar reglas de calidad existentes, identificar gaps de cobertura, generar informes de calidad en Chat/PDF/DOCX/Markdown. La creación y planificación de reglas queda reservada a los agentes Data Quality / Governance Officer.
@@ -46,7 +46,7 @@ Los pack scripts solo son necesarios para distribuir el agente fuera del reposit
 
 | Skill | Comando | Origen | Descripción |
 |-------|---------|--------|-------------|
-| Análisis | `/analyze` | local | Análisis completo de datos BI/BA: descubrimiento de dominio, EDA, planificación de KPIs, queries MCP, análisis Python, visualizaciones y entregables multi-formato (PDF, DOCX, dashboard web, PowerPoint, póster) — delega en las skills writer según el contrato formato→skill en `AGENTS.md §8` |
+| Análisis | `/analyze` | local | Análisis completo de datos BI/BA: descubrimiento de dominio, EDA, planificación de KPIs, queries MCP, análisis Python, visualizaciones y entregables multi-formato (PDF, DOCX, dashboard web, informe web, PowerPoint, póster) — delega en las skills writer según el contrato formato→skill en `AGENTS.md §8` |
 | Exploración | `/explore-data` | **shared** | Exploración rápida de dominios, tablas, columnas y terminología de negocio |
 | Evaluación de calidad | `/assess-quality` | **shared** | Evaluación de cobertura de calidad para un dominio, tabla o columna; identifica dimensiones cubiertas, gaps y prioridades |
 | Informe de calidad | `/quality-report` | **shared** | Generar un informe formal de cobertura de calidad de datos (Chat / PDF / DOCX / Markdown) |

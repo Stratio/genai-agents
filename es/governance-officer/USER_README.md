@@ -42,6 +42,7 @@ Para informes de cobertura de calidad y otros entregables multi-formato, puedes 
 | **DOCX** | Documentos Word editables para policy briefs e informes de compliance |
 | **PPTX** | Decks de resumen ejecutivo, briefings a comités de dirección, walkthroughs de ontología |
 | **Dashboard web** | HTML interactivo con KPI cards, filtros y tablas ordenables |
+| **Informe web / Artículo web** | Página HTML editorial autocontenida con secciones narrativas, callouts KPI inline y gráficos incrustados |
 | **Póster / Infografía** | Resumen visual de una página para comunicación o exposición |
 | **XLSX** | Workbook multi-hoja de cobertura, export de ontología, catálogo de términos, matriz de compliance con conditional formatting |
 | **Markdown** | Formato de texto ligero para sistemas de documentación y wikis |
@@ -102,7 +103,7 @@ Cada formato visual aplica el tema que elijas al inicio del entregable (o el tem
 | `/assess-quality` | Evaluar cobertura de calidad por dominio o tabla: dimensiones cubiertas, gaps y prioridades |
 | `/create-quality-rules` | Diseñar y crear reglas de calidad con aprobación humana obligatoria |
 | `/create-quality-schedule` | Crear planificaciones de ejecución automática de reglas de calidad |
-| `/quality-report` | Generar informe formal de cobertura en Chat, PDF, DOCX, PPTX, Dashboard web, Póster/Infografía, XLSX o Markdown |
+| `/quality-report` | Generar informe formal de cobertura en Chat, PDF, DOCX, PPTX, Dashboard web, Informe web / Artículo web, Póster/Infografía, XLSX o Markdown |
 
 ### Lectores de contenido
 | Comando | Descripción |

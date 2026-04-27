@@ -205,7 +205,7 @@ For full operational detail (sufficiency checklist, scoring thresholds, mini-sum
 
 Read `output/MEMORY.md` sec Preferences (if it exists) for personalised defaults.
 
-Load `/analyze` §4.1 to run the question block (Depth + Audience + Format + Tests). Format is one multi-select question with 6 options (PDF / DOCX / PowerPoint / Dashboard web / Poster-Infographic / Excel). There is no second question block — structure defaults to the analytical scaffold (with signal-based opt-out if the user asks for free structure), and visual identity is proposed as an item inside the plan (see `/analyze` Phase 3 and §8.3). Upon return, continue with the next Phase below.
+Load `/analyze` §4.1 to run the question block (Depth + Audience + Format + Tests). Format is one multi-select question with 7 options (PDF / DOCX / PowerPoint / Dashboard web / Web article-Narrative report / Poster-Infographic / Excel). There is no second question block — structure defaults to the analytical scaffold (with signal-based opt-out if the user asks for free structure), and visual identity is proposed as an item inside the plan (see `/analyze` Phase 3 and §8.3). Upon return, continue with the next Phase below.
 
 **Note**: ALWAYS provide a summary of findings in chat, regardless of the selected formats.
 
@@ -373,7 +373,7 @@ This agent can assess data quality governance coverage and generate quality repo
 ### Quality workflow
 
 1. **Assessment**: Load skill `/assess-quality` → domain discovery → mandatory `get_quality_rule_dimensions` → parallel metadata/profiling → coverage analysis → gap identification → present results
-2. **Report (optional)**: If the user asks for a formal report → load skill `/quality-report` → format selection (Chat / PDF / DOCX / PPTX / Dashboard web / Poster/Infographic) → load writer skill per §8 contract
+2. **Report (optional)**: If the user asks for a formal report → load skill `/quality-report` → format selection (Chat / PDF / DOCX / PPTX / Dashboard web / Web article/Narrative report / Poster/Infographic) → load writer skill per §8 contract
 3. Follow `skills-guides/quality-exploration.md` for dimension handling, technical-domain considerations, and EDA-for-quality details
 
 ### Scope limitations (critical)
@@ -386,7 +386,7 @@ Then offer to export the gap inventory (chat summary or Markdown) so the user ca
 
 ### Quality report generation
 
-Quality reports follow the same format→skill contract as analytical deliverables (§8). The `/quality-report` skill composes the canonical six-section structure (Executive summary → Coverage → Rules → Gaps → Recommendations) and delegates the file generation to the matching writer skill. Format options are the same six as for analytical deliverables (Chat, PDF, DOCX, PPTX, Dashboard web, Poster/Infographic); the agent offers the ones whose writer skill it declares.
+Quality reports follow the same format→skill contract as analytical deliverables (§8). The `/quality-report` skill composes the canonical six-section structure (Executive summary → Coverage → Rules → Gaps → Recommendations) and delegates the file generation to the matching writer skill. Format options are the same seven as for analytical deliverables (Chat, PDF, DOCX, PPTX, Dashboard web, Web article/Narrative report, Poster/Infographic); the agent offers the ones whose writer skill it declares.
 
 See `shared-skills/quality-report/quality-report-layout.md` for the report-specific layout (canonical sections, KPI cards, iconography, per-format composition, deterministic rules for audit). The writer skills consume this guide alongside `analytical-dashboard.md` (for Dashboard web).
 
@@ -444,7 +444,8 @@ When the agent needs to write a deliverable, the format dictates the skill. This
 | DOCX (Word document) | `docx-writer` | Also handles merge/split/find-replace/legacy `.doc` conversion. |
 | PPTX (presentation, deck) | `pptx-writer` | 16:9 default; 4:3 only if the user asks for it explicitly. Also handles merge/split/reorder/find-replace in existing decks. |
 | Excel (XLSX workbook — tabular analytical deliverable, multi-sheet) | `xlsx-writer` | Cover/KPI + parameters + detail sheets with Table objects and conditional formatting. Also handles merge/split/find-replace, legacy `.xls` conversion and formula refresh. |
-| HTML (interactive dashboard, landing, web artifact) | `web-craft` | When the artifact is an analytical dashboard from `/analyze`, load `skills/analyze/analytical-dashboard.md` as input unless the user's brief signals design freedom (see §8.3 escape rule). |
+| HTML — Dashboard (interactive analytical dashboard) | `web-craft` | Load `skills/analyze/analytical-dashboard.md` as input. Global filters, KPI cards, sortable tables, Plotly charts. |
+| HTML — Web article / Narrative report (self-contained, narrative or editorial) | `web-craft` | Do NOT load `analytical-dashboard.md`. Use artifact class `Page` or `Article`. Layout: narrative sections, inline KPI callouts, embedded Plotly figures, minimal or no interactive filters. |
 | Single-page visual (poster, cover, certificate, infographic, one-pager) | `canvas-craft` | Composition-dominated pieces (~70 %+ visual surface). |
 | Brand tokens (colors, typography, chart palettes) | `brand-kit` | Invoke BEFORE any visual format. User flow described in §8.3. |
 | PDF reading (extract text, tables, images, OCR) | `pdf-reader` | Diagnose-first extraction. |
@@ -458,13 +459,13 @@ When you load a writer skill to produce a deliverable, the resulting output must
 
 - Be written in the user's language (headings, UI strings, and the `<html lang>` attribute for HTML).
 - Honour the brand tokens resolved per §8.3 for visual deliverables.
-- Use descriptive filenames: `<slug>-report.pdf`, `<slug>-report.docx`, `<slug>-presentation.pptx`, `<slug>-dashboard.html`, `<slug>-poster.pdf` (or `.png`), `<slug>-workbook.xlsx`. `<slug>` is the descriptive part of the analysis directory (everything after the `YYYY-MM-DD_HHMM_` prefix). Internal files (`plan.md`, `report.md`, `reasoning/`, `validation/`) stay without prefix.
+- Use descriptive filenames: `<slug>-report.pdf`, `<slug>-report.docx`, `<slug>-presentation.pptx`, `<slug>-dashboard.html`, `<slug>-article.html`, `<slug>-poster.pdf` (or `.png`), `<slug>-workbook.xlsx`. `<slug>` is the descriptive part of the analysis directory (everything after the `YYYY-MM-DD_HHMM_` prefix). Internal files (`plan.md`, `report.md`, `reasoning/`, `validation/`) stay without prefix.
 
 After the deliverable is produced, verify the file on disk with `ls -lh`; regenerate if missing before reporting to the user.
 
 ### 8.3 Branding decisions
 
-Before invoking any writer skill that produces a visual deliverable (PDF, DOCX, PPTX, Dashboard web, Poster/Infographic, Excel/XLSX — workbooks with styled headers, KPI bands, conditional formatting and Table objects count as visual deliverables for the purposes of this cascade), fix the theme using this cascade. The first rule that resolves wins — no further rules apply.
+Before invoking any writer skill that produces a visual deliverable (PDF, DOCX, PPTX, Dashboard web, Web article/Narrative report, Poster/Infographic, Excel/XLSX — workbooks with styled headers, KPI bands, conditional formatting and Table objects count as visual deliverables for the purposes of this cascade), fix the theme using this cascade. The first rule that resolves wins — no further rules apply.
 
 1. **Pin in instructions** — if this AGENTS.md (or a downstream skill instruction) fixes a single theme for this role, load it silently.
 2. **Explicit signal in the user's brief** — if the user names a theme by name or an unambiguous attribute (`corporate-formal`, `luxury`, `brutalist`, `technical-minimal`, `editorial`, `forensic`), pre-fill and apply silently. Vague adjectives (`nice`, `professional`, `bonito`) do NOT count — fall through to the next rule.
@@ -543,7 +544,7 @@ For mandatory content and template, see skill `/analyze` [reasoning-guide.md](re
 
 - **Response and deliverable language**: Respond in the same language the user uses. The following must be written in the user's language, unless the user explicitly indicates a different language:
   - Analytical reports (PDF, DOCX, Web/HTML, PowerPoint, Poster/Infographic, Markdown) generated by `/analyze` Phase 4 via the writer skills (see §8 format→skill contract)
-  - **Data quality coverage reports** (Chat + file formats: PDF, DOCX, PPTX, Dashboard web, Poster/Infographic) generated by `/assess-quality` + `/quality-report` via the §8 format→skill contract
+  - **Data quality coverage reports** (Chat + file formats: PDF, DOCX, PPTX, Dashboard web, Web article/Narrative report, Poster/Infographic) generated by `/assess-quality` + `/quality-report` via the §8 format→skill contract
   - Phase 1.1 mini-summary (Data Profiling Score + Governance Quality Status)
   - Reasoning files, validation files
   - Memory files (MEMORY.md, ANALYSIS_MEMORY.md, analysis_memory.md)
