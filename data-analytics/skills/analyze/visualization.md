@@ -35,6 +35,26 @@ Choose based on the analytical question:
   3. Moving average: only add it if it provides visual information. If the moving average is nearly identical to the original series (small window, smooth series), do NOT add it — it generates overlapping lines that confuse without adding insight
   4. Comparative grouped bars: if values of one category fluctuate 5pp and the other 50pp, the first one's bars look flat. Use separate subplots or normalize both to index
 
+**Mandatory implementation**: Whenever a Python script plots multiple series on the same axis, include the following helper and call it before `px.bar` / `px.line`. If it returns `False`, replace the combined chart with `make_subplots(rows=N, cols=1)` — one series per row — or normalize both series to index base 100 when relative comparison is the focus.
+
+```python
+def _compatible_scales(series: dict) -> bool:
+    """Return True if series share a comparable scale (single-axis is safe).
+    series: {label: pd.Series, ...}
+    Thresholds from visualization.md sec 2: max-ratio <= 3, range-ratio <= 10.
+    """
+    maxs = {k: v.abs().max() for k, v in series.items()}
+    ranges = {k: v.max() - v.min() for k, v in series.items()}
+    max_ratio = max(maxs.values()) / (min(maxs.values()) + 1e-9)
+    range_ratio = max(ranges.values()) / (min(ranges.values()) + 1e-9)
+    return max_ratio <= 3 and range_ratio <= 10
+
+# Example: MoM chart with two business segments
+# series = {"Comercial": df_com["MoM_Growth"], "Empresas": df_emp["MoM_Growth"]}
+# if not _compatible_scales(series):
+#     # build make_subplots(rows=2, cols=1) instead of a single px.bar
+```
+
 ## 3. Data Storytelling
 
 Narrative structure for presenting findings (not just sequential):

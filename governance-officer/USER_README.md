@@ -42,6 +42,7 @@ For quality coverage reports and other multi-format deliverables, you can pick a
 | **DOCX** | Editable Word documents for policy briefs and compliance reports |
 | **PPTX** | Executive summary decks, steering-committee briefings, ontology walkthroughs |
 | **Dashboard web** | Interactive HTML with KPI cards, filters and sortable tables |
+| **Web article / Narrative report** | Self-contained editorial HTML page with narrative sections, inline KPI callouts and embedded charts |
 | **Poster / Infographic** | Single-page visual summary for communication or display |
 | **XLSX** | Multi-sheet quality-coverage workbook, ontology export, term catalog, compliance matrix with conditional formatting |
 | **Markdown** | Lightweight text format for documentation systems and wikis |
@@ -102,7 +103,7 @@ Every visual format applies the theme you choose at the start of the deliverable
 | `/assess-quality` | Assess quality coverage by domain or table: covered dimensions, gaps and priorities |
 | `/create-quality-rules` | Design and create quality rules with mandatory human approval |
 | `/create-quality-schedule` | Create automatic execution schedules for quality rules |
-| `/quality-report` | Generate a formal coverage report in Chat, PDF, DOCX, PPTX, Dashboard web, Poster/Infographic, XLSX or Markdown |
+| `/quality-report` | Generate a formal coverage report in Chat, PDF, DOCX, PPTX, Dashboard web, Web article / Narrative report, Poster/Infographic, XLSX or Markdown |
 
 ### Content readers
 | Command | Description |

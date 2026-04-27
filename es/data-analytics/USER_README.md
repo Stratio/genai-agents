@@ -4,7 +4,7 @@ Agente analista senior de BI/BA que convierte preguntas de negocio en análisis 
 
 ## Qué es este agente
 
-Data Analytics es un asistente de BI/BA completo que conecta con los datos gobernados de tu organización para realizar análisis avanzados. Puede descubrir dominios de datos, ejecutar consultas, realizar análisis estadísticos, generar visualizaciones profesionales y entregar los resultados en **seis formatos analíticos**: informes PDF, documentos Word, presentaciones PowerPoint, workbooks Excel, dashboards web interactivos y pósters/infografías de una página.
+Data Analytics es un asistente de BI/BA completo que conecta con los datos gobernados de tu organización para realizar análisis avanzados. Puede descubrir dominios de datos, ejecutar consultas, realizar análisis estadísticos, generar visualizaciones profesionales y entregar los resultados en **siete formatos analíticos**: informes PDF, documentos Word, presentaciones PowerPoint, workbooks Excel, dashboards web interactivos, informes web / artículos web y pósters/infografías de una página.
 
 También puede ingerir contexto local (contratos PDF, briefs Word, decks PowerPoint, hojas Excel), aplicar identidad visual consistente mediante un catálogo centralizado de temas, y mantener memoria entre sesiones — recordando tus preferencias de análisis, patrones conocidos y heurísticas aprendidas.
 
@@ -15,10 +15,10 @@ También puede ingerir contexto local (contratos PDF, briefs Word, decks PowerPo
 - Realizar análisis estadísticos avanzados (correlaciones, distribuciones, tests de hipótesis)
 - Segmentación y clustering automático de datos (RFM, KMeans, DBSCAN)
 - Generar visualizaciones profesionales (gráficas, charts, dashboards)
-- **Informes analíticos** en seis formatos (PDF, DOCX, PowerPoint, Excel, web interactiva, póster/infografía) — generados cuando pides un análisis con un entregable
+- **Informes analíticos** en siete formatos (PDF, DOCX, PowerPoint, Excel, dashboard web interactivo, informe web / artículo web, póster/infografía) — generados cuando pides un análisis con un entregable
 - **Entregables visuales ligeros** sin ejecutar un análisis — pósters e infografías rápidas, dashboards interactivos standalone, PDFs simples con pocos KPIs, documentos Word y Excel ad-hoc
 - **Leer documentos existentes** — PDFs, Word (`.docx`/`.doc`), PowerPoint (`.pptx`/`.ppt`) y Excel (`.xlsx`/`.xls`) — para extraer texto, tablas, diapositivas, valores de celda y metadatos
-- **Evaluar la cobertura de calidad del dato** y generar informes de calidad en 8 formatos (Chat, PDF, DOCX, PPTX, Dashboard web, Póster/Infografía, XLSX, Markdown) — solo lectura, no crea ni programa reglas
+- **Evaluar la cobertura de calidad del dato** y generar informes de calidad en 9 formatos (Chat, PDF, DOCX, PPTX, Dashboard web, Informe web / Artículo web, Póster/Infografía, XLSX, Markdown) — solo lectura, no crea ni programa reglas
 - Aplicar identidad visual consistente (colores, tipografía, paletas de gráficos) a cada entregable mediante el catálogo centralizado de temas (10 temas curados, extensible por cliente)
 - Recordar preferencias y análisis previos entre sesiones (memoria persistente)
 - Proponer términos de negocio al diccionario de gobernanza
@@ -34,6 +34,7 @@ Cuando pides un entregable, elige el formato que encaje con la audiencia:
 | **PPTX** | Decks ejecutivos, briefings a comités de dirección |
 | **XLSX** | Workbooks analíticos (cover/KPI + parámetros + detalle + apéndice), matrices pivot, exports tabulares, modelos cuantitativos |
 | **Dashboard web** | HTML interactivo con KPI cards, filtros y tablas ordenables |
+| **Informe web / Artículo web** | Página HTML editorial autocontenida con secciones narrativas, callouts KPI inline y gráficos incrustados |
 | **Póster / Infografía** | Resumen visual de una página para comunicación o exposición |
 
 Cada formato visual aplica el tema que elijas al inicio (o el tema corporativo por defecto).
@@ -112,7 +113,7 @@ Tras explorar un dominio, una evaluación de calidad o una consulta MCP rápida,
 | Comando | Descripción |
 |---------|-------------|
 | `/assess-quality` | Evaluación de cobertura de calidad (dimensiones, reglas existentes, gaps) |
-| `/quality-report` | Generar un informe formal de cobertura de calidad en Chat, PDF, DOCX, PPTX, Dashboard web, Póster/Infografía, XLSX o Markdown |
+| `/quality-report` | Generar un informe formal de cobertura de calidad en Chat, PDF, DOCX, PPTX, Dashboard web, Informe web / Artículo web, Póster/Infografía, XLSX o Markdown |
 
 ### Lectores de contenido
 | Comando | Descripción |

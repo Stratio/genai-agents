@@ -32,6 +32,7 @@ Para `/quality-report` puedes elegir cualquiera de:
 | **DOCX** | Documento Word editable para equipos de auditoría y policy briefs |
 | **PPTX** | Deck de resumen ejecutivo, briefing a comité de dirección |
 | **Dashboard web** | HTML interactivo con KPI cards, filtros, tablas ordenables |
+| **Informe web / Artículo web** | Página HTML editorial autocontenida con secciones narrativas, callouts KPI inline y gráficos incrustados |
 | **Póster / Infografía** | Resumen visual de una página con cobertura por dominio |
 | **XLSX** | Workbook multi-hoja de cobertura con conditional formatting para auditoría y compliance |
 | **Markdown** | Formato de texto ligero para sistemas de documentación y wikis |
@@ -83,7 +84,7 @@ Cada formato visual aplica el tema que elijas al inicio (o el tema corporativo p
 | `/assess-quality` | Evaluar cobertura de calidad por dominio o tabla: dimensiones cubiertas, gaps y prioridades |
 | `/create-quality-rules` | Diseñar y crear reglas de calidad para cubrir gaps, con aprobación humana obligatoria |
 | `/create-quality-schedule` | Crear planificaciones de ejecución automática de reglas de calidad |
-| `/quality-report` | Generar informe formal de cobertura en Chat, PDF, DOCX, PPTX, Dashboard web, Póster/Infografía, XLSX o Markdown |
+| `/quality-report` | Generar informe formal de cobertura en Chat, PDF, DOCX, PPTX, Dashboard web, Informe web / Artículo web, Póster/Infografía, XLSX o Markdown |
 
 ### Lectores de contenido
 | Comando | Descripción |

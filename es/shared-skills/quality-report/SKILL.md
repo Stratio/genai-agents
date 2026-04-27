@@ -1,6 +1,6 @@
 ---
 name: quality-report
-description: "Generar un informe formal de cobertura de calidad del dato en el formato que elija el usuario — chat, PDF, DOCX, PPTX, dashboard web, póster o matriz de cobertura en XLSX. Delega la generación de ficheros a las writer skills del agente (pdf-writer, docx-writer, pptx-writer, web-craft, canvas-craft, xlsx-writer) más la skill centralizada de theming; el formato chat funciona en solitario, los formatos-fichero solo se ofrecen si el agente host declara la writer skill correspondiente. Usar cuando el usuario quiera un informe de calidad, un resumen de cobertura, un dashboard de calidad, un deck ejecutivo de hallazgos de calidad, o cualquier entregable que consolide resultados de assess-quality."
+description: "Generar un informe formal de cobertura de calidad del dato en el formato que elija el usuario — chat, PDF, DOCX, PPTX, dashboard web, informe web, póster o matriz de cobertura en XLSX. Delega la generación de ficheros a las writer skills del agente (pdf-writer, docx-writer, pptx-writer, web-craft, canvas-craft, xlsx-writer) más la skill centralizada de theming; el formato chat funciona en solitario, los formatos-fichero solo se ofrecen si el agente host declara la writer skill correspondiente. Usar cuando el usuario quiera un informe de calidad, un resumen de cobertura, un dashboard de calidad, un deck ejecutivo de hallazgos de calidad, o cualquier entregable que consolide resultados de assess-quality."
 argument-hint: "[formato: chat|pdf|docx|pptx|web|poster|xlsx] [nombre-fichero (opcional)]"
 ---
 
@@ -44,6 +44,7 @@ Si al menos una writer skill está declarada, preguntar al usuario siguiendo la 
 - **DOCX** — documento Word editable. Requiere `docx-writer`.
 - **PowerPoint** — deck ejecutivo (16:9 por defecto). Requiere `pptx-writer`.
 - **Dashboard web** — HTML interactivo con filtros, KPI cards y tablas ordenables. Requiere `web-craft`.
+- **Informe web / Artículo web** — página HTML autocontenida, layout narrativo o editorial. Requiere `web-craft`.
 - **Póster / Infografía** — resumen visual de una página para imprenta o publicación. Requiere `canvas-craft`.
 - **Excel (XLSX)** — libro tabular de cobertura multi-hoja (portada + matriz de cobertura con formato condicional + detalle de reglas + gaps + recomendaciones). Requiere `xlsx-writer`.
 
@@ -90,7 +91,7 @@ Si el usuario pide un fichero `.md` en disco (no Chat, no uno de los formatos co
 
 Usar la misma convención de carpeta que §5.3.
 
-### 5.3 Formatos de fichero (PDF, DOCX, PPTX, Dashboard web, Póster)
+### 5.3 Formatos de fichero (PDF, DOCX, PPTX, Dashboard web, Informe web, Póster)
 
 1. **Carpeta**: crear `output/YYYY-MM-DD_HHMM_quality_<slug>/` (todos los artefactos viven aquí). `<slug>` = dominio o scope normalizado (ASCII en minúsculas, acentos eliminados, espacios por guiones bajos, máximo 30 caracteres). Ejemplo: `2026-04-24_1530_quality_analiticabanca`.
 
@@ -104,6 +105,7 @@ Usar la misma convención de carpeta que §5.3.
    - **DOCX** → cargar `docx-writer`. Salida: `<slug>-quality-report.docx`. Las mismas seis secciones; usar tablas nativas de Word para la matriz de cobertura y el detalle de reglas para que el usuario pueda editarlas. Preservar estilos de cabecera (`Heading 1`, `Heading 2`, …).
    - **PowerPoint** → cargar `pptx-writer`. Salida: `<slug>-quality-summary.pptx`. 16:9 por defecto; 4:3 solo si el usuario lo pide explícitamente. Objetivo ≤12 slides siguiendo el guion de `quality-report-layout.md` §6.3.
    - **Dashboard web** → cargar `web-craft`. Salida: `<slug>-quality-dashboard.html`. Aplicar el layout específico de calidad de §6.4 (exactamente los cuatro KPI cards de §5, heatmap interactivo de cobertura, filtros por dimensión/status/prioridad, tablas ordenables). Si el agente host también declara una guía general `analytical-dashboard.md`, cargarla en paralelo para que los patrones genéricos de dashboard (filtros globales, Plotly vía CDN, presupuesto de datos, responsive, motion, idioma) apliquen por encima.
+   - **Informe web / Artículo web** → cargar `web-craft`. Salida: `<slug>-quality-article.html`. NO aplicar el layout de dashboard de §6.4. Usar artifact class `Page` o `Article`. Renderizar las seis secciones canónicas como página HTML scrollable y autocontenida: headings narrativos, callouts KPI inline, gráficos Plotly de cobertura incrustados como figuras, tablas HTML estáticas (no ordenables). El contenido es el mismo que en los demás formatos; la presentación es editorial, no interactiva.
    - **Póster / Infografía** → cargar `canvas-craft`. Salida: `<slug>-quality-poster.pdf` o `<slug>-quality-poster.png`. Composición de página única según §6.5 (banda superior de KPIs, heatmap central, top 3 gaps + top 3 recomendaciones en columnas laterales, A3 vertical por defecto).
    - **Excel (XLSX)** → cargar `xlsx-writer`. Salida: `<slug>-quality-report.xlsx`. Libro multi-hoja según `quality-report-layout.md` §6.6 (Cover con 4 KPI cards en banda de celdas combinadas, matriz de Coverage como Table nativa con formato condicional para OK/KO/WARNING/NOT_EXECUTED, detalle de Rules agrupado por tabla, Gaps priorizados, opcional Rules-created-this-session, Recomendaciones). Sin fórmulas de Excel (todos los valores son datos mostrados); sin gráficos nativos (la matriz de cobertura es en sí el heatmap). Los tokens de marca aplican solo a colores de fill, bordes y estados — XLSX usa las fuentes del sistema del lector, no fuentes embebidas.
 

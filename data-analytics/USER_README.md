@@ -4,7 +4,7 @@ A senior BI/BA analyst agent that turns business questions into actionable analy
 
 ## What is this agent
 
-Data Analytics is a complete BI/BA assistant that connects to your organization's governed data to perform advanced analyses. It can discover data domains, execute queries, perform statistical analyses, generate professional visualizations, and deliver results in **six analytical formats**: PDF reports, Word documents, PowerPoint presentations, Excel workbooks, interactive web dashboards and single-page posters/infographics.
+Data Analytics is a complete BI/BA assistant that connects to your organization's governed data to perform advanced analyses. It can discover data domains, execute queries, perform statistical analyses, generate professional visualizations, and deliver results in **seven analytical formats**: PDF reports, Word documents, PowerPoint presentations, Excel workbooks, interactive web dashboards, web articles / narrative reports and single-page posters/infographics.
 
 It can also ingest local context (PDF contracts, Word briefs, PowerPoint decks, Excel spreadsheets), apply consistent visual identity through a centralized theming catalog, and maintain memory between sessions — remembering your analysis preferences, known data patterns and learned heuristics.
 
@@ -15,10 +15,10 @@ It can also ingest local context (PDF contracts, Word briefs, PowerPoint decks, 
 - Perform advanced statistical analyses (correlations, distributions, hypothesis tests)
 - Automatic data segmentation and clustering (RFM, KMeans, DBSCAN)
 - Generate professional visualizations (charts, graphs, dashboards)
-- **Analytical reports** in six formats (PDF, DOCX, PowerPoint, Excel, interactive web, poster/infographic) — generated when you ask for an analysis with a deliverable
+- **Analytical reports** in seven formats (PDF, DOCX, PowerPoint, Excel, interactive web dashboard, web article / narrative report, poster/infographic) — generated when you ask for an analysis with a deliverable
 - **Lightweight visual deliverables** without running an analysis — quick posters and infographics, standalone interactive dashboards, simple PDFs with a few KPIs, ad-hoc Word and Excel documents
 - **Read existing documents** — PDFs, Word (`.docx`/`.doc`), PowerPoint (`.pptx`/`.ppt`) and Excel (`.xlsx`/`.xls`) — to extract text, tables, slides, cell values and metadata
-- **Assess data quality coverage** and generate quality reports in 8 formats (Chat, PDF, DOCX, PPTX, Dashboard web, Poster/Infographic, XLSX, Markdown) — read-only, does not create or schedule rules
+- **Assess data quality coverage** and generate quality reports in 9 formats (Chat, PDF, DOCX, PPTX, Dashboard web, Web article / Narrative report, Poster/Infographic, XLSX, Markdown) — read-only, does not create or schedule rules
 - Apply consistent visual identity (colors, typography, chart palettes) to every deliverable using the centralized theming catalog (10 curated themes, extensible per client)
 - Remember preferences and previous analyses between sessions (persistent memory)
 - Propose business terms to the governance dictionary
@@ -34,6 +34,7 @@ When you ask for a deliverable, pick the format that matches the audience:
 | **PPTX** | Executive decks, steering-committee briefings |
 | **XLSX** | Analytical workbooks (cover/KPI + parameters + detail + appendix), pivot matrices, tabular exports, quantitative models |
 | **Dashboard web** | Interactive HTML with KPI cards, filters and sortable tables |
+| **Web article / Narrative report** | Self-contained editorial HTML page with narrative sections, inline KPI callouts and embedded charts |
 | **Poster / Infographic** | Single-page visual summary for communication or display |
 
 Every visual format applies the theme you choose at the start (or the default corporate theme).
@@ -112,7 +113,7 @@ After exploring a domain, a quality assessment, or a quick MCP lookup, you can a
 | Command | Description |
 |---------|-------------|
 | `/assess-quality` | Quality coverage assessment (dimensions, existing rules, gaps) |
-| `/quality-report` | Generate a formal quality coverage report in Chat, PDF, DOCX, PPTX, Dashboard web, Poster/Infographic, XLSX or Markdown |
+| `/quality-report` | Generate a formal quality coverage report in Chat, PDF, DOCX, PPTX, Dashboard web, Web article / Narrative report, Poster/Infographic, XLSX or Markdown |
 
 ### Content readers
 | Command | Description |

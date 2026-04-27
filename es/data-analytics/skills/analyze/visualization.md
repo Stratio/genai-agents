@@ -35,6 +35,26 @@ Elegir según la pregunta analítica:
   3. Media móvil: solo añadirla si aporta información visual. Si la media móvil es casi idéntica a la serie original (ventana pequeña, serie suave), NO añadirla — genera líneas superpuestas que confunden sin aportar insight
   4. Barras agrupadas comparativas: si los valores de una categoría oscilan 5pp y la otra 50pp, las barras de la primera se ven planas. Usar subplots separados o normalizar ambas a índice
 
+**Implementación obligatoria**: Siempre que un script Python pinte múltiples series en el mismo eje, incluir el siguiente helper y llamarlo antes de `px.bar` / `px.line`. Si devuelve `False`, sustituir el gráfico combinado por `make_subplots(rows=N, cols=1)` — una serie por fila — o normalizar ambas series a índice base 100 cuando el foco es la comparación relativa.
+
+```python
+def _escalas_compatibles(series: dict) -> bool:
+    """Devuelve True si las series comparten una escala comparable (eje único es seguro).
+    series: {etiqueta: pd.Series, ...}
+    Umbrales de visualization.md sec 2: ratio-máximos <= 3, ratio-rangos <= 10.
+    """
+    maxs = {k: v.abs().max() for k, v in series.items()}
+    rangos = {k: v.max() - v.min() for k, v in series.items()}
+    ratio_max = max(maxs.values()) / (min(maxs.values()) + 1e-9)
+    ratio_rango = max(rangos.values()) / (min(rangos.values()) + 1e-9)
+    return ratio_max <= 3 and ratio_rango <= 10
+
+# Ejemplo: gráfico MoM con dos segmentos de negocio
+# series = {"Comercial": df_com["MoM_Growth"], "Empresas": df_emp["MoM_Growth"]}
+# if not _escalas_compatibles(series):
+#     # construir make_subplots(rows=2, cols=1) en lugar de un único px.bar
+```
+
 ## 3. Data Storytelling
 
 Estructura narrativa para presentar hallazgos (no solo secuencial):

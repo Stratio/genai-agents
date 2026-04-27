@@ -6,7 +6,7 @@ This guide captures the conventions that make a data quality coverage report rec
 
 ## 1. Purpose and scope
 
-Apply this guide whenever the agent produces a quality-coverage report in a file format (PDF, DOCX, PPTX, Dashboard web, Poster/Infographic, XLSX) via the `quality-report` skill. Skip it for the Chat format — the chat response is free-form markdown, no format-specific decisions are needed.
+Apply this guide whenever the agent produces a quality-coverage report in a file format (PDF, DOCX, PPTX, Dashboard web, Web article/Narrative report, Poster/Infographic, XLSX) via the `quality-report` skill. Skip it for the Chat format — the chat response is free-form markdown, no format-specific decisions are needed.
 
 The guide is format-agnostic where possible (same anatomy everywhere) and format-specific where a deliverable type dictates composition (section §6).
 
