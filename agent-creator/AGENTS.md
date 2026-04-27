@@ -217,6 +217,8 @@ Generate the Stratio Cowork `agents/v1` bundle:
 4. Create the container ZIP: `output/{agent-name}/{name}-stratio-cowork.zip`
 5. Verify integrity and report to the user: file path, size, bundle contents, and next steps
 
+After packaging, the `/agent-packager` skill (section 7) also offers to upload the bundle directly to Stratio Cowork (`genai-api`) when the agent is running inside the Stratio sandbox. Follow that section if the preconditions are met; otherwise stop after step 5.
+
 ## 3. Agent Design Reference
 
 The complete reference for agent design is in the `/agent-designer` skill. Always load it when designing or reviewing an agent. It contains:

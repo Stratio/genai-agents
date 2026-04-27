@@ -183,7 +183,11 @@ Output skills (`docx-writer`, `pptx-writer`, `pdf-writer`, `xlsx-writer`, `web-c
 - Do not reference `AGENTS.md` or `CLAUDE.md` directly — use generic phrasing such as "according to the agent's instructions" or "following the user question convention". The pack scripts substitute these names depending on the target platform, but a direct reference may not work correctly on some platforms
 - Do not depend on Python tools, styles, templates or paths specific to a particular agent — if the skill needs those, it should be local
 - References to `output/MEMORY.md` are acceptable if conditioned on the file's existence (`if it exists`) — agents without memory simply ignore it
-- Guide references in the SKILL.md must use the path `skills-guides/<file>` (without platform prefix) — the generic pack scripts copy each guide **inside** the skill folder and rewrite the references to make them local (self-contained). Guides declared in the agent's `shared-guides` are also copied to `skills-guides/` so that `AGENTS.md` can reference them
+- Guide references in any `.md` file inside a skill (SKILL.md or any nested file) must always use the path `skills-guides/<file>` — independently of how deep the referencing file lives. The pack scripts:
+  - Copy each declared guide **flat into the skill root** (sibling of SKILL.md, not into a nested `skills-guides/` folder).
+  - Run a recursive `sed 's|skills-guides/||g'` over every `.md` in the skill, so all references become flat filenames after packing.
+  - Resolution at runtime is by context, not by filesystem path — the LLM has the skill loaded and finds `<file>.md` regardless of where the referencing file sits within the skill.
+- Guides declared at the agent level (in `<agent>/shared-guides`) are copied to `<agent>/skills-guides/` so that `AGENTS.md` can reference them with the same `skills-guides/<file>` path. `AGENTS.md` is **not** rewritten by the pack — the path stays literal because the folder physically exists at agent level.
 
 ### Using a shared skill in an agent
 

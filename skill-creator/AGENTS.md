@@ -163,6 +163,14 @@ For each file generated:
    - File size
    - Package contents (list of files)
 
+4. **Offer direct deployment to Stratio Cowork** (only when running inside the Stratio sandbox):
+
+   Load the `/cowork-api` skill and follow its `tasks/upload-skill.md` end-to-end. That sub-file owns: the pre-check (via `skills-guides/external-api-calls.md` §2), the question to the user about `on_conflict`, the curl invocation against `/v1/agents/skills/bundle/import`, and how to surface the HTTP code and JSON response.
+
+   The ZIP path to pass is `output/<skill-name>.zip` (the artifact produced in step 1 of this phase).
+
+   If the pre-check in `cowork-api` fails (missing `GENAI_API_URL` or certificates), **skip this step silently** and finish the workflow as in step 3 — the agent is not running inside the Stratio sandbox.
+
 ## 3. Skill Design Reference
 
 The complete reference for skill creation is in the `/skill-creator` skill. Always load it when designing any skill. It contains:
