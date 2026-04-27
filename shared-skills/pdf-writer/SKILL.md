@@ -322,13 +322,15 @@ hardcoding values that total 168 mm will silently overflow and push the rightmos
 column outside the frame.
 
 ```python
-# Always derive from doc.width (accounts for margins automatically)
-TW = doc.width          # points; equivalent to W - 2*MARGIN_X
+# Compute once from module-level constants (always available, even before doc is created)
+W, H = A4
+TW = W - 2 * MARGIN_X  # usable frame width in points
+# (equivalent to doc.width once the BaseDocTemplate exists)
 
 # Option A — proportional (most robust)
 col_widths = [0.25*TW, 0.60*TW, 0.15*TW]
 
-# Option B — explicit mm, but always assert
+# Option B — explicit mm, but always assert before use
 col_widths = [42*mm, 26*mm, 18*mm, 80*mm]
 assert sum(col_widths) <= TW, (
     f"Table overflow: {sum(col_widths)/mm:.1f} mm > {TW/mm:.1f} mm"

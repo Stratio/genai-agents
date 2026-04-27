@@ -336,13 +336,15 @@ disponible es 166 mm — hardcodear valores que sumen 168 mm desbordará el fram
 en silencio y desplazará la columna más a la derecha fuera del área imprimible.
 
 ```python
-# Siempre derivar de doc.width (ya tiene en cuenta los márgenes)
-TW = doc.width          # en puntos; equivale a W - 2*MARGIN_X
+# Calcular una vez desde constantes de módulo (siempre disponibles, incluso antes de crear el doc)
+W, H = A4
+TW = W - 2 * MARGIN_X  # ancho útil del frame en puntos
+# (equivale a doc.width una vez que el BaseDocTemplate existe)
 
 # Opción A — proporcional (más robusto)
 col_widths = [0.25*TW, 0.60*TW, 0.15*TW]
 
-# Opción B — mm explícitos, pero siempre con aserción
+# Opción B — mm explícitos, pero siempre con aserción antes de usar
 col_widths = [42*mm, 26*mm, 18*mm, 80*mm]
 assert sum(col_widths) <= TW, (
     f"Desbordamiento de tabla: {sum(col_widths)/mm:.1f} mm > {TW/mm:.1f} mm"
