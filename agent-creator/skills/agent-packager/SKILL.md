@@ -230,3 +230,13 @@ After successful packaging, report:
    - Upload the ZIP to the Stratio Cowork agent management interface
    - Configure MCP servers from the web interface (if the agent needs external tools)
    - Test the agent with the usage scenarios defined during design
+
+## 7. Offer direct deployment to Stratio Cowork
+
+This step is **only offered when running inside the Stratio sandbox**. Load the `/cowork-api` skill and follow its `tasks/upload-agent.md` end-to-end. That sub-file owns: the pre-check (via `skills-guides/external-api-calls.md` §2), the question to the user about `on_conflict`, the curl invocation against `/v1/agents/bundle/import`, and how to surface the HTTP code and JSON response.
+
+The ZIP path to pass is `output/<agent-name>/<agent-name>-stratio-cowork.zip` (the container ZIP produced in section 5).
+
+The `metadata.yaml` generated in section 4 already carries `name`, so the API reads it from the bundle — `cowork-api` does not need to ask for or pass it.
+
+If the pre-check in `cowork-api` fails (missing `GENAI_API_URL` or certificates), **skip this step silently** and finish the workflow as in section 6 — the agent is not running inside the Stratio sandbox.
