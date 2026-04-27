@@ -110,7 +110,7 @@ Documentar en reasoning si se usó muestreo.
 
 ### 5.2 Cobertura de Calidad de Gobierno — `get_tables_quality_details`
 
-`get_tables_quality_details(domain_name, tablas)` devuelve las reglas de calidad de gobierno actualmente definidas para las tablas indicadas y su último estado de ejecución.
+`get_tables_quality_details(domain_name, table_names=[...])` devuelve las reglas de calidad de gobierno actualmente definidas para las tablas indicadas y su último estado de ejecución.
 
 Se devuelve para cada tabla:
 - Reglas registradas sobre la tabla, con dimensión (completitud, unicidad, validez, consistencia, etc.) y columna afectada

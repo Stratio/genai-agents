@@ -34,6 +34,8 @@ Esta pausa es el paso más importante de toda la skill. Si hay dudas sobre si el
 
 ## 1. Determinar Tablas con Gaps
 
+**Modo CDE (si proviene de un assessment con CDEs activos)**: Si el assessment anterior identificó CDEs (`cde_mode=true`), el scope de esta skill está acotado a los assets marcados como críticos. Proponer reglas únicamente para las tablas y columnas que son CDEs, salvo que el usuario indique explícitamente lo contrario. Al inicio, informar al usuario del scope activo: "Las reglas propuestas cubren los Elementos de Dato Críticos del dominio. Si deseas incluir otros assets, indícalo."
+
 A partir del resultado de la evaluación de cobertura, recuperar el inventario de reglas existentes obtenido vía `get_tables_quality_details`. Este inventario es la fuente de verdad: **solo diseñar reglas para dimensiones/columnas que NO estén ya cubiertas por una regla existente**.
 
 Identificar:
@@ -76,14 +78,14 @@ Para cada gap identificado, diseñar la regla de calidad correspondiente.
 ### 3.1 Estructura de una regla
 
 Cada regla tiene los siguientes campos:
-- `rule_name`: nombre descriptivo en kebab-case. Convención: `dq-[tabla]-[dimension]-[columna-o-descripcion]`
+- `rule_name`: nombre descriptivo en kebab-case. Convención: `dq-[tabla]-[dimension]-[columna-o-descripcion]`. El nombre debe describir qué mide la regla — no incluir información de planificación, configuración de medición ni estado activo/inactivo.
 - `primary_table`: tabla principal a la que pertenece la regla
 - `table_names`: lista de tablas referenciadas en los SQLs (incluir primary_table siempre)
-- `description`: descripción en lenguaje natural de forma concisa y en términos claros de negocio (sin jerga técnica) que comprueba esta regla, describiendo el resultado esperado. **Reglas obligatorias**: (1) NO incluir información de planificación ni scheduling (frecuencia, horarios, cron). (2) NO usar nombres técnicos de columnas (como `card_id`, `district_id`); en su lugar, usar la definición semántica/de negocio del campo obtenida de `get_table_columns_details`. (3) NO mencionar la dimensión de la regla (completeness, uniqueness, validity, etc.) — la dimensión ya es un campo separado. Ejemplo correcto: "Validates that every account record has a non-null district identifier, ensuring all accounts are assigned to a district". Ejemplo incorrecto: "Completeness check: Checks that district_id is never null. Scheduled daily at 09:00"
+- `description`: descripción en lenguaje natural de forma concisa y en términos claros de negocio (sin jerga técnica) que comprueba esta regla, describiendo el resultado esperado. **Reglas obligatorias**: (1) NO incluir información de planificación ni scheduling (frecuencia, horarios, cron). (2) NO usar nombres técnicos de columnas (como `card_id`, `district_id`); en su lugar, usar la definición semántica/de negocio del campo obtenida de `get_table_columns_details`. (3) NO mencionar la dimensión de la regla (completeness, uniqueness, validity, etc.) — la dimensión ya es un campo separado. (4) NO incluir información de medición (tipo de medición, valores de umbral ni modo de threshold) — la medición se configura por separado. (5) NO indicar el estado activo/inactivo de la regla — es un parámetro operativo separado. Ejemplo correcto: "Valida que cada registro de cuenta tiene un identificador de distrito no nulo, asegurando que todas las cuentas están asignadas a un distrito". Ejemplo incorrecto: "Check de completeness: Comprueba que district_id nunca es nulo. Planificado diariamente a las 09:00, umbral 100%, activa."
 - `query`: SQL que cuenta los registros que PASAN el check (numerador)
 - `query_reference`: SQL que cuenta el total de registros (denominador)
 - `dimension`: completeness / uniqueness / validity / consistency
-- `collection_name`: el domain_name del dominio
+- `domain_name`: el nombre del dominio, exactamente como lo devuelve `search_domains` o `list_domains`
 - `measurement_type`: (opcional) cómo se mide el resultado de calidad. Valores posibles:
   - `percentage` (por defecto): compara query vs query_reference como porcentaje
   - `count`: usa el conteo absoluto de registros de la query
@@ -103,8 +105,11 @@ Cada regla tiene los siguientes campos:
 - `cron_expression`: (opcional) expresión Quartz cron para ejecución automática. Si no se indica, la regla no se planifica
 - `cron_timezone`: (opcional) timezone del cron; si hay cron y no se específica, usar `Europe/Madrid`
 - `cron_start_datetime`: (opcional) ISO 8601 con la primera ejecución programada; si no se indica, la planificación empieza inmediatamente tras la creación
+- `active`: (opcional) indica si la regla queda activa tras la creación; por defecto `False` — las reglas se crean inactivas y deben activarse manualmente o por el usuario
 
 ### 3.2 Patrones SQL por dimensión
+
+> **Formato de placeholders SQL**: Cada referencia a tabla en el SQL de una regla de calidad debe usar la sintaxis `${nombre_tabla}`, donde `nombre_tabla` es el **nombre exacto de la tabla** en tu dominio. Por ejemplo, para una tabla llamada `account` → `${account}`; para `card` → `${card}`; en patrones entre tablas, si las tablas son `pedidos` y `clientes` → `${pedidos}` y `${clientes}`. El sistema de gobernanza resuelve automáticamente cada `${nombre_tabla}` a su path físico de almacenamiento cuando la regla se ejecuta. En los patrones que aparecen a continuación, `${tabla}`, `${tabla_a}`, `${tabla_b}`, `${tabla_cabecera}` y `${tabla_detalle}` son placeholders genéricos — reemplazarlos con los nombres reales de las tablas del dominio.
 
 **Completeness** — columna no nula:
 ```sql
@@ -191,7 +196,7 @@ table_names: [tabla_cabecera, tabla_detalle]
 
 ### 3.4 Configuración de Medición y Umbrales
 
-Los parámetros `measurement_type`, `threshold_mode` y (`exact_threshold` o `threshold_breakpoints`) son **opcionales**. Si el usuario elige no configurar la medición, se aplican los valores por defecto: `measurement_type=percentage`, `threshold_mode=exact`, `exact_threshold={value: "100", equal_status: "OK", not_equal_status: "KO"}`. El plan siempre debe informar de la configuración de medición que se aplicara a cada regla (ver sección 4), y la pregunta de medición es obligatoria en el paso de aprobación — no asumir el default sin preguntar.
+Los parámetros `measurement_type`, `threshold_mode` y (`exact_threshold` o `threshold_breakpoints`) son **opcionales**. Si el usuario elige no configurar la medición, se aplican los valores por defecto: `measurement_type=percentage`, `threshold_mode=range`, `threshold_breakpoints=[{value: "80", status: "KO"}, {value: "95", status: "WARNING"}, {status: "OK"}]` — es decir, [0%-80%] → KO, (80%-95%] → WARNING, (95%-100%] → OK. El plan siempre debe informar de la configuración de medición que se aplicará a cada regla (ver sección 4), y la pregunta de medición es obligatoria en el paso de aprobación — no asumir el default sin preguntar.
 
 #### Flujo cuando el usuario pide configurar la medición
 
@@ -214,7 +219,7 @@ No asumir la configuración de medición — siempre iterar con el usuario hasta
 | Rangos (%) | `percentage` | `range` | Compara query/reference como porcentaje, evalúa con rangos |
 | Rangos (conteo) | `count` | `range` | Usa conteo absoluto de la query, evalúa con rangos |
 
-**Comportamiento por defecto** (sin parámetros): `measurement_type=percentage`, `threshold_mode=exact`, `exact_threshold={value: "100", equal_status: "OK", not_equal_status: "KO"}`.
+**Comportamiento por defecto** (sin parámetros): `measurement_type=percentage`, `threshold_mode=range`, `threshold_breakpoints=[{value: "80", status: "KO"}, {value: "95", status: "WARNING"}, {status: "OK"}]` — es decir, [0%-80%] → KO, (80%-95%] → WARNING, (95%-100%] → OK.
 
 #### Directrices para sugerir el tipo de medición
 
@@ -222,22 +227,26 @@ Si el usuario pide recomendación o no tiene claro que tipo de medición usar, e
 
 | Dimensión / Caso | Tipo recomendado | Razon |
 |------------------|-----------------|-------|
-| Completeness, Uniqueness, Validity, Consistency | `percentage` + `exact` (=100% OK) | Se espera paso total; cualquier fallo es KO (**este es el default**) |
+| Completeness, Uniqueness, Validity, Consistency | `percentage` + `range` (niveles 80/95) | **Default**: [0%-80%] KO, (80%-95%] WARNING, (95%-100%] OK |
 | Timeliness (frescura) | `count` + `exact` | El resultado se mide en número absoluto de registros recientes |
-| Reglas con tolerancia explícita del usuario | `percentage` + `range` (2-3 niveles) | Solo si el usuario pide explícitamente un rango WARNING intermedio |
-| Reglas con umbral de conteo absoluto | `count` + `range` | Cuando los limites se expresan en cantidad de registros, no en porcentaje |
+| Reglas donde solo el paso total es aceptable | `percentage` + `exact` (=100% OK) | Cuando cualquier fallo debe ser KO, sin rango de tolerancia |
+| Reglas con umbral de conteo absoluto | `count` + `range` | Cuando los límites se expresan en cantidad de registros, no en porcentaje |
 
-Son orientaciones para sugerir al usuario — la decisión final es siempre del usuario. Si el usuario indica explícitamente un tipo de medición, usar ese. **Por defecto, siempre usar medición exacta (=100% OK / !=100% KO) salvo que el usuario pida otra cosa.**
+Son orientaciones para sugerir al usuario — la decisión final es siempre del usuario. Si el usuario indica explícitamente un tipo de medición, usar ese. **Por defecto, siempre usar medición por rangos ([0%-80%] KO, (80%-95%] WARNING, (95%-100%] OK) salvo que el usuario pida otra cosa.**
 
 #### Ejemplos completos de parámetros de medición
 
 Cada ejemplo muestra los parámetros tal como deben pasarse a `create_quality_rule`:
 
-**Ejemplo 1 — Exact percentage (=100% OK / !=100% KO) [DEFAULT]:**
+**Ejemplo 1 — Range percentage 3 niveles ([0%-80%] KO, (80%-95%] WARNING, (95%-100%] OK) [DEFAULT]:**
 ```json
 measurement_type: "percentage"
-threshold_mode: "exact"
-exact_threshold: {"value": "100", "equal_status": "OK", "not_equal_status": "KO"}
+threshold_mode: "range"
+threshold_breakpoints: [
+  {"value": "80", "status": "KO"},
+  {"value": "95", "status": "WARNING"},
+  {"status": "OK"}
+]
 ```
 
 **Ejemplo 2 — Exact count (=0 registros fallidos OK):**
@@ -287,7 +296,7 @@ Antes de presentar el plan al usuario, se debe verificar la validez técnica de 
 
 **Procedimiento de validación:**
 1. Para cada regla diseñada, preparar la `query` y la `query_reference`.
-2. Resolver los placeholders `${tabla}` sustituyéndolos por el nombre real de la tabla.
+2. Resolver los placeholders `${nombre_tabla}` (p.ej., `${account}` → `account`) eliminando el envoltorio `${}` para obtener el nombre de tabla plano que se usará con `execute_sql`. Nota: en `create_quality_rule`, mantener siempre el formato completo `${nombre_tabla}` — el sistema de gobernanza resuelve los placeholders a paths físicos en el momento de ejecución de la regla. La validación con `execute_sql` verifica únicamente la lógica y sintaxis SQL; no garantiza que el path físico que usa el sistema de gobernanza coincida con el del catálogo del dominio.
 3. Ejecutar ambas queries usando `execute_sql(query=[sql], limit=1)`.
 4. Si alguna query devuelve error:
    - Revisar la sintaxis SQL.
@@ -318,10 +327,8 @@ Este flujo aplica cuando el usuario describe directamente una regla que quiere c
    Paralelo:
      A. get_table_columns_details(domain_name, tabla)  [por cada tabla involucrada]
      B. get_tables_details(domain_name, [tablas])
-     C. get_quality_rule_dimensions(collection_name=domain_name)
-     D. quality_rules_metadata(domain_name=domain_name)  <-- solo si no se ejecutó antes
+     C. get_quality_rule_dimensions(domain_name=domain_name)
    ```
-   **Nota sobre `quality_rules_metadata`**: actualiza la metadata AI de las reglas existentes (descripción, dimensión). Se ejecuta sin `force_update` — solo procesa reglas sin metadata o modificadas, lo que cubre reglas creadas fuera de este agente. Si falla, continuar sin bloquear.
 3. **Verificar existencia**: confirmar que las tablas y columnas mencionadas por el usuario existen en el dominio. Si alguna no existe, informar y preguntar.
 
 ### B.2 Diseñar la Regla
@@ -332,14 +339,14 @@ Con la metadata obtenida y la descripción del usuario, diseñar la regla:
 - **`query`**: SQL que cuenta los registros que PASAN el check. Para las partes que involucren tablas gobernadas, usar `generate_sql` para obtener los nombres correctos de tablas/columnas. Para lógica de negocio específica (joins, condiciones complejas), construir el SQL manualmente respetando los nombres resueltos.
 - **`query_reference`**: SQL que cuenta el total de registros (denominador).
 - **`rule_name`**: seguir la convención `dq-[tabla]-[dimension]-[descripcion]` en kebab-case.
-- **`description`**: descripción en lenguaje natural de forma concisa y en términos claros de negocio (sin jerga técnica) que comprueba esta regla, describiendo el resultado esperado. Aplicar las mismas reglas obligatorias que en la sección 3.1: no incluir scheduling, no usar nombres técnicos de columnas, no mencionar la dimensión — usar la definición semántica del campo.
+- **`description`**: descripción en lenguaje natural de forma concisa y en términos claros de negocio (sin jerga técnica) que comprueba esta regla, describiendo el resultado esperado. Aplicar las mismas reglas obligatorias que en la sección 3.1: no incluir scheduling, no usar nombres técnicos de columnas, no mencionar la dimensión, no incluir información de medición, no indicar el estado activo/inactivo — usar la definición semántica del campo.
 
 Seguir las directrices de diseño de la sección 3.3 y los patrones SQL de la sección 3.2.
 
 ### B.3 Validación SQL (OBLIGATORIO)
 
 Igual que en la sección 3.5:
-1. Resolver los placeholders `${tabla}` por el nombre real de la tabla.
+1. Resolver los placeholders `${nombre_tabla}` (p.ej., `${account}` → `account`) eliminando el envoltorio `${}` para uso con `execute_sql`. Mantener el formato completo `${nombre_tabla}` en `create_quality_rule`.
 2. Ejecutar `query` y `query_reference` con `execute_sql(query=[sql], limit=1)`.
 3. Si alguna query falla, revisar y corregir hasta que ambas sean exitosas.
 4. Calcular el resultado y el estado de la regla aplicando la lógica del paso 5 de la sección 3.5 (measurement_type, threshold_mode y umbrales configurados).
@@ -351,13 +358,20 @@ Igual que en la sección 3.5:
 
 Tras informar del resultado, continuar directamente con la sección 4 (Presentar Plan y Esperar Aprobación). En el flujo B, el plan contendrá típicamente una sola regla. Incluir el resultado de la validación SQL con el estado calculado en la presentación.
 
-**Nota**: Tras la creación de la regla (sección 5), se generará automáticamente metadata AI vía `quality_rules_metadata`.
-
 ---
 
 ## 4. PAUSA: Presentar Plan y Esperar Aprobación
 
 Antes de ejecutar ninguna llamada a `create_quality_rule`, presentar el plan completo al usuario.
+
+> **ORDEN OBLIGATORIO**: El plan DEBE mostrarse al usuario antes de procesar ninguna aprobación.
+> Si el mensaje que activó esta skill ya contiene una señal de aprobación o detalles de
+> scheduling (p.ej., el usuario respondió al follow-up de assess-quality con "crea las reglas,
+> todos los días a las 8:00AM"), NO omitir la presentación del plan. Mostrar el plan primero
+> y luego incluir los detalles de scheduling/medición ya proporcionados como sugerencia
+> pre-rellenada en la pregunta de aprobación, para que el usuario pueda confirmar o ajustar
+> sin tener que repetir. Los shortcuts de "Interpretación de la respuesta del usuario" solo
+> aplican a respuestas dadas DESPUÉS de que el plan haya sido mostrado.
 
 **Nota para Flujo B (regla concreta)**: El plan contendrá típicamente una sola regla. Incluir además el resultado de la validación SQL con el estado calculado (OK/KO/WARNING/SIN_DATOS).
 
@@ -373,7 +387,7 @@ Antes de ejecutar ninguna llamada a `create_quality_rule`, presentar el plan com
 ---
 
 ### Regla 1: dq-account-completeness-id
-- **Tabla**: account
+- **Tabla**: account *(CDE)*
 - **Dimensión**: completeness
 - **Columna**: id
 - **Descripción**: Validates that every account record has a non-null primary identifier, ensuring data integrity across the system
@@ -392,6 +406,8 @@ Antes de ejecutar ninguna llamada a `create_quality_rule`, presentar el plan com
 - **Flujo A** (con EDA previo): si el EDA ya aportaba datos de situación actual, combinar ambos en un campo único. Formato: `**Situación actual** (EDA previo): 0 nulos de 45.230 registros; **validación SQL**: 45.230 de 45.230 pasan → 100,0% → OK`.
 - Si `query_reference` devuelve 0: `**Resultado de validación**: SIN_DATOS — query_reference devuelve 0 registros`.
 
+**Nota sobre el badge CDE**: En modo CDE (`cde_mode=true`), añadir `*(CDE)*` tras el nombre de la tabla en cada regla cuya tabla o columna sea un Elemento de Dato Crítico. Omitir el badge cuando no hay CDEs definidos en el dominio.
+
 ---
 
 ```
@@ -406,7 +422,7 @@ Además, ¿quieres programar la ejecución automática de las reglas?
 
 ¿Quieres configurar la medición de las reglas?
 1. Sí, quiero configurar cómo se miden (te preguntaré los detalles)
-2. No, usar la medición por defecto (porcentaje, valor exacto: =100% OK / !=100% KO)
+2. No, usar la medición por defecto (porcentaje, rangos: [0%-80%] KO, (80%-95%] WARNING, (95%-100%] OK)
 ```
 
 ### Interpretación de la respuesta del usuario
@@ -423,7 +439,7 @@ Antes de proceder, necesito saber:
 
 2. **Medición**: ¿quieres configurar cómo se miden las reglas?
    1. Sí, quiero configurar cómo se miden (te preguntaré los detalles)
-   2. No, usar la medición por defecto (porcentaje, valor exacto: =100% OK / !=100% KO)
+   2. No, usar la medición por defecto (porcentaje, rangos: [0%-80%] KO, (80%-95%] WARNING, (95%-100%] OK)
 ```
 
 **Aprobación + opción 3 de scheduling + opción 2 de medición (ambas indicadas explícitamente)** → Crear las reglas sin parámetros de scheduling ni medición personalizada.
@@ -437,7 +453,7 @@ Antes de proceder, necesito saber:
 - `cron_start_datetime` (opcional): preguntar "¿Cuándo quieres que empiece a ejecutarse? (deja en blanco para que empiece inmediatamente)". Si el usuario indica una fecha/hora en lenguaje natural, convertirla a ISO 8601. Ejemplo: `2026-04-01T09:00:00`
 - `cron_timezone`: **NO preguntar** salvo que el usuario mencione otra zona horaria. Usar `Europe/Madrid` por defecto.
 
-Si el usuario proporciona los detalles del cron en la misma respuesta de aprobación (ej: "sí, opción 1, diariamente a las 9"), no preguntar de nuevo — usar directamente esos datos.
+Si el usuario proporciona los detalles del cron en su respuesta al plan presentado (ej: "sí, opción 1, diariamente a las 9"), no preguntar de nuevo — usar directamente esos datos.
 
 **Aprobación + opción 2** → Para cada regla (o bloque de reglas que el usuario quiera tratar igual), preguntar los mismos campos anteriores. Permitir que algunas reglas tengan scheduling y otras no.
 
@@ -507,16 +523,6 @@ Por cada regla aprobada (secuencial, NO en paralelo):
 [OK]  dq-card-completeness-card-id — creada correctamente (planificada: cada lunes a las 9:00, desde 2026-04-01)
 ```
 
-### 5.1 Generar Metadata para Reglas Creadas
-
-Tras crear todas las reglas (exitosas o no), ejecutar una única llamada para enriquecer las reglas recién creadas con metadata AI:
-
-```
-quality_rules_metadata(domain_name=domain_name)
-```
-
-Sin `force_update` — las reglas recién creadas no tendrán metadata aún, así que se procesarán automáticamente. Si falla, informar al usuario pero no bloquear el resumen final.
-
 ## 6. Resumen Final
 
 Al terminar la creación, presentar resumen:
@@ -526,7 +532,6 @@ Al terminar la creación, presentar resumen:
 
 - Reglas creadas exitosamente: N/M
 - Reglas fallidas: X/M
-- Metadata AI generada: Si/No (indicar si la llamada a `quality_rules_metadata` fue exitosa)
 
 ### Cobertura antes y después
 

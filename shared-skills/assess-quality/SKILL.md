@@ -20,6 +20,28 @@ Before executing any MCP call, determine exactly what will be assessed:
 - **Multiple tables**: assess the indicated subset
 - **Specific column**: assess a single column within a table (requires domain + table + column)
 
+## 1.5 CDE Check
+
+Before launching data collection, check whether the domain has Critical Data Elements defined. This determines the effective assessment scope.
+
+Call `get_critical_data_elements(collection_name=domain_name)`.
+
+**If CDEs exist** (`critical_tables` or `columns_by_table` are non-empty):
+- Inform the user: "This domain has Critical Data Elements defined. The assessment will focus on the marked critical assets."
+- Build the effective scope:
+  - Tables in `critical_tables` → assess all their columns (entire table is critical)
+  - Tables in `columns_by_table` → include in assessment, but in section 3.2 (gap analysis) restrict to the listed columns for that table; mention to the user which columns are CDEs
+  - Tables not in either list → exclude from assessment unless explicitly requested by the user
+- Store in working context: `cde_mode=true`, `cde_full_tables` (list from `critical_tables`), `cde_partial_tables` (dict from `columns_by_table`)
+
+**If no CDEs** (both `critical_tables` and `columns_by_table` are empty or absent):
+- Inform the user: "No Critical Data Elements are defined for this domain. The assessment will cover all domain assets."
+- Continue with the standard workflow (`cde_mode=false`).
+
+**Special cases:**
+- **Specific table or column explicitly requested by the user**: if the requested asset is not in any CDE list, still evaluate it as requested (user request overrides CDE filter). Always mention whether the asset is a CDE or not.
+- **Specific column scope**: the CDE check is informative only — evaluate the requested column normally and mention if it is or is not marked as a Critical Data Element.
+
 ## 2. Data Collection (in parallel)
 
 Once the scope is determined, launch in parallel. It is **MANDATORY** to include `get_quality_rule_dimensions` to understand what dimensions the domain supports and their definitions.
@@ -30,7 +52,7 @@ Once the scope is determined, launch in parallel. It is **MANDATORY** to include
 ```
 Parallel:
   A. list_domain_tables(domain_name)
-  B. get_quality_rule_dimensions(collection_name=domain_name)  <-- MANDATORY
+  B. get_quality_rule_dimensions(domain_name=domain_name)  <-- MANDATORY
   C. quality_rules_metadata(domain_name=domain_name)           <-- update AI metadata, only if not executed before
 ```
 Then, with the table list obtained from A, launch in parallel for ALL tables:
@@ -48,7 +70,7 @@ Finally, use the generated SQLs to launch `profile_data(query=[sql])` in paralle
 Parallel:
   A. get_tables_quality_details(domain_name, [table])
   B. get_table_columns_details(domain_name, table)
-  C. get_quality_rule_dimensions(collection_name=domain_name)  <-- only if not obtained before
+  C. get_quality_rule_dimensions(domain_name=domain_name)  <-- only if not obtained before
   D. get_tables_details(domain_name, [table])                  <-- only if not obtained before
   E. generate_sql("get all fields from table [table] without filters", domain_name)
   F. quality_rules_metadata(domain_name=domain_name)           <-- only if not executed before
@@ -60,14 +82,14 @@ After obtaining E, launch `profile_data(query=[sql])`.
 Parallel:
   A. get_tables_quality_details(domain_name, [table])
   B. get_table_columns_details(domain_name, table)
-  C. get_quality_rule_dimensions(collection_name=domain_name)  <-- only if not obtained before
+  C. get_quality_rule_dimensions(domain_name=domain_name)  <-- only if not obtained before
   D. generate_sql("get only the [column] field from table [table] without filters", domain_name)
   E. quality_rules_metadata(domain_name=domain_name)           <-- only if not executed before
 ```
 After obtaining D, launch `profile_data(query=[sql])`.
 In the subsequent analysis (section 3), filter everything to that column's scope: inventory of rules affecting that column, gaps only for that column, EDA only for that column.
 
-**Note about `quality_rules_metadata`**: This call updates the AI metadata of the rules (description, dimension). It is executed without `force_update` — it only processes rules without metadata or modified ones. If it fails, continue without blocking: the workflow does not depend on it.
+**Note about `quality_rules_metadata`**: This call updates the AI metadata of the rules (description, dimension). It is executed without `quality_rules_metadata_force_update` — it only processes rules without metadata or modified ones. If it fails, continue without blocking: the workflow does not depend on it. **Note on permissions**: this tool requires write-level access; users with read-only roles will receive a 403 error. In that case, skip and continue — assessment is not blocked.
 
 **Note**: Profiling (EDA) is fundamental for detecting real gaps (e.g., existing nulls without a completeness rule). If the domain has >10 tables, assess first those the user explicitly mentions and ask if they want to continue with the rest.
 
@@ -129,6 +151,8 @@ Consistency  → cross related columns to detect inconsistencies
 
 **The EDA is never the reason to NOT propose a rule** that semantics justify. If the EDA shows 0 nulls in an ID, the `completeness` rule is still necessary: it protects against future nulls. If it shows 100% nulls in a supposedly mandatory field, propose the rule informing the user of the current state.
 
+**CDE gap escalation**: If `cde_mode=true` and a table or column is a Critical Data Element, escalate its gap priority one level: MEDIUM → HIGH, HIGH → CRITICAL. CDE assets represent business-critical data — any unprotected dimension carries a higher business risk by definition.
+
 **Technical domains — gap analysis adjustment:**
 
 When the domain is technical (discovered via `list_domains(domain_type="technical")`), business descriptions, table context, and terminology may be absent or very limited. In this case:
@@ -154,6 +178,7 @@ Structure the output in chat with the following sections:
 ```
 Domain/Table: [name]
 Assessment date: [today]
+Assessment mode: CDEs active — N full critical tables, M tables with specific CDE columns | Full domain assessment (no CDEs defined)
 Tables analyzed: N
 Existing rules: N
 Estimated coverage: XX% (summarized reasoning)
@@ -164,18 +189,23 @@ Gaps identified: N critical, N moderate
 
 For **domain or table** scope:
 ```markdown
-| Table | Completeness | Uniqueness | Validity | Consistency | Coverage |
-|-------|-------------|------------|----------|-------------|----------|
-| account | Partial (2/4) | OK | Gap | N/A | ~50% |
-| card | OK | OK | Partial | Gap | ~70% |
+| Table | CDE | Completeness | Uniqueness | Validity | Consistency | Coverage |
+|-------|-----|-------------|------------|----------|-------------|----------|
+| account | CDE | Partial (2/4) | OK | Gap | N/A | ~50% |
+| card | CDE* | OK | OK | Partial | Gap | ~70% |
+| order | — | Gap | N/A | N/A | N/A | ~10% |
 ```
+
+`CDE` = entire table is a Critical Data Element; `CDE*` = only specific columns in the table are CDEs; `—` = not a CDE. Omit the CDE column when `cde_mode=false` (no CDEs defined in the domain).
 
 For **specific column** scope:
 ```markdown
-| Column | Type | Completeness | Uniqueness | Validity | Consistency | Coverage |
-|--------|------|-------------|------------|----------|-------------|----------|
-| customer_id | INTEGER | OK | Gap | N/A | N/A | ~50% |
+| Column | Type | CDE | Completeness | Uniqueness | Validity | Consistency | Coverage |
+|--------|------|-----|-------------|------------|----------|-------------|----------|
+| customer_id | INTEGER | CDE | OK | Gap | N/A | N/A | ~50% |
 ```
+
+Omit the CDE column when `cde_mode=false`.
 
 Use icons for better readability:
 - OK / covered: indicates rule exists and passes

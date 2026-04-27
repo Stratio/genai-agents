@@ -14,9 +14,11 @@ For the standard discovery workflow (list domains, critical domain_name rule, ex
 
 Dimension definitions must always be obtained before assessing:
 
-`get_quality_rule_dimensions(collection_name=domain_name)` to know exactly what each dimension means in this specific domain and how many dimensions it supports.
+`get_quality_rule_dimensions(domain_name=domain_name)` to know exactly what each dimension means in this specific domain and how many dimensions it supports.
 
 Additionally, execute `quality_rules_metadata(domain_name=domain_name)` before assessing to have fresh AI metadata on the rules (description, dimension). Without `force_update` — only processes rules without metadata or modified ones. Non-blocking: if it fails, continue with the workflow normally.
+
+Also call `get_critical_data_elements(collection_name=domain_name)` to retrieve the Critical Data Elements (CDEs) for the domain. If CDEs exist, the assessment must prioritize those tables and columns; gaps on CDE assets escalate one priority level (MEDIUM → HIGH, HIGH → CRITICAL). Non-blocking: if the domain has no CDEs configured, continue normally.
 
 This step is **MANDATORY** and fundamental for the following reasons:
 - **Domain-Specific Dimensions**: Each domain may have its own dimensions defined in its quality document, beyond the standard ones.

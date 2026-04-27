@@ -10,7 +10,7 @@ Workflow for creating a schedule that automatically executes all quality rules c
 
 ## CRITICAL APPROVAL PAUSE
 
-**NEVER call `create_quality_rule_planification` without the user having explicitly confirmed the plan.**
+**NEVER call `create_quality_rule_scheduler` without the user having explicitly confirmed the plan.**
 
 If there are doubts about whether the user has approved, ask again. Do not interpret silence or ambiguous responses as approval.
 
@@ -23,7 +23,7 @@ If there are doubts about whether the user has approved, ask again. Do not inter
 From the user's request, determine which collections (domains) to include in the schedule.
 
 - If the user specifies domain names: validate them using `search_domains` or `list_domains` with the corresponding `domain_type` (semantic or technical). If they do not specify the type, ask the user with options following the user question convention.
-- **CRITICAL rule**: the collection names used in the call to `create_quality_rule_planification` must be **exactly** the values returned by the listing tools. NEVER translate, interpret, or paraphrase them.
+- **CRITICAL rule**: the collection names used in the call to `create_quality_rule_scheduler` must be **exactly** the values returned by the listing tools. NEVER translate, interpret, or paraphrase them.
 - If the user does not specify specific domains: list the available ones and ask which to include.
 - The schedule supports **multiple collections** in a single call (`collection_names` is a list).
 
@@ -78,10 +78,13 @@ Collect the parameters needed to create the schedule. Some are asked to the user
 
 ### 3.1 Name (`name`) — mandatory
 
-Suggest a name following the convention `plan-[domain]-[frequency]`:
-- `plan-financial-daily`
-- `plan-payments-weekly`
-- `plan-financial-payments-monthly`
+Suggest a name following the convention `plan-[domain]-[scope]`, where `scope` describes WHAT is validated (tables, domain, area of coverage), not WHEN:
+- `plan-financial`
+- `plan-financial-accounts`
+- `plan-payments-transactions`
+- `plan-financial-payments`
+
+The name must not include scheduling information (frequency, cron), measurement configuration, or active/inactive status — it should only reflect the scope of what is being validated.
 
 The user can accept the suggestion or propose another name. If there are multiple collections, combine the relevant names or use a descriptive generic name.
 
@@ -91,9 +94,11 @@ Generate a business-language description that explains the purpose of the schedu
 1. Do NOT include technical scheduling details (frequency, cron, times) — that information is already in the schedule fields
 2. Do NOT use technical table or column names
 3. Describe the business purpose of the schedule
+4. Do NOT include measurement information (measurement type, threshold values) — that belongs to the individual rules
+5. Do NOT indicate active/inactive status — that is a separate operational parameter
 
 Correct example: "Periodic execution of quality validations for the financial domain to ensure data integrity of accounts and transactions"
-Incorrect example: "Daily cron at 9:00 that executes the rules in the financial_domain collection on the account and transaction tables"
+Incorrect example: "Daily cron at 9:00 that executes the rules in the financial_domain collection on the account and transaction tables, with 95% threshold, active."
 
 Present the proposed description to the user for validation.
 
@@ -135,7 +140,7 @@ If the user asks or the schedule covers a large volume of rules/tables, guide:
 
 ## 4. PAUSE: Present Plan and Wait for Approval
 
-Before executing the call to `create_quality_rule_planification`, present the complete plan to the user.
+Before executing the call to `create_quality_rule_scheduler`, present the complete plan to the user.
 
 ### Plan format
 
@@ -180,7 +185,7 @@ If the user modifies any parameter: update the plan and present again for approv
 
 Only after explicit user approval:
 
-1. Call `create_quality_rule_planification` with all configured parameters:
+1. Call `create_quality_rule_scheduler` with all configured parameters:
    - `name`: schedule name
    - `description`: business description
    - `collection_names`: list of collections/domains

@@ -14,9 +14,11 @@ Para el workflow estándar de descubrimiento (listar dominios, regla crítica de
 
 Debe obtenerse siempre las definiciones de dimensiones antes de evaluar:
 
-`get_quality_rule_dimensions(collection_name=domain_name)` para conocer exactamente qué significa cada dimensión en este dominio específico y cuántas dimensiones soporta.
+`get_quality_rule_dimensions(domain_name=domain_name)` para conocer exactamente qué significa cada dimensión en este dominio específico y cuántas dimensiones soporta.
 
 Además, ejecutar `quality_rules_metadata(domain_name=domain_name)` antes de evaluar para tener metadata AI fresca en las reglas (descripción, dimensión). Sin `force_update` — solo procesa reglas sin metadata o modificadas. No bloqueante: si falla, continuar con el workflow normalmente.
+
+Llamar también a `get_critical_data_elements(collection_name=domain_name)` para obtener los Critical Data Elements (CDEs) del dominio. Si existen CDEs, el assessment debe priorizar esas tablas y columnas; las brechas en activos CDE escalan un nivel de prioridad (MEDIO → ALTO, ALTO → CRÍTICO). No bloqueante: si el dominio no tiene CDEs configurados, continuar con normalidad.
 
 Este paso es **OBLIGATORIO** y fundamental por las siguientes razones:
 - **Dimensiones Propias del Dominio**: Cada dominio puede tener definidas sus propias dimensiones en su documento de calidad, más allá de las estándar.
