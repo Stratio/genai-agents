@@ -328,6 +328,53 @@ tbl.setStyle(TableStyle([
 ]))
 ```
 
+### Los anchos de columna deben caber dentro del frame
+
+Los valores de `colWidths` deben sumar **como máximo** el ancho del frame, no el
+de la página. A4 tiene 210 mm pero con márgenes de 22 mm a cada lado el ancho
+disponible es 166 mm — hardcodear valores que sumen 168 mm desbordará el frame
+en silencio y desplazará la columna más a la derecha fuera del área imprimible.
+
+```python
+# Siempre derivar de doc.width (ya tiene en cuenta los márgenes)
+TW = doc.width          # en puntos; equivale a W - 2*MARGIN_X
+
+# Opción A — proporcional (más robusto)
+col_widths = [0.25*TW, 0.60*TW, 0.15*TW]
+
+# Opción B — mm explícitos, pero siempre con aserción
+col_widths = [42*mm, 26*mm, 18*mm, 80*mm]
+assert sum(col_widths) <= TW, (
+    f"Desbordamiento de tabla: {sum(col_widths)/mm:.1f} mm > {TW/mm:.1f} mm"
+)
+```
+
+### Las cadenas plain en celdas no se ajustan automáticamente
+
+reportlab solo ajusta el texto cuando el valor de la celda es un `Paragraph`.
+Una cadena plain se dibuja en una sola línea y desbordará la columna sin aviso.
+
+```python
+# MAL — desborda sin wrapping
+["Segmento", "RETAIL · CORPORATIVA · PRIVADA · PYMES · EXTRANJEROS · INSTITUCIONAL"]
+
+# BIEN — se ajusta dentro del ancho de columna
+[Paragraph("RETAIL · CORPORATIVA · PRIVADA · PYMES · EXTRANJEROS · INSTITUCIONAL", body)]
+```
+
+Usa `Paragraph` para cualquier celda cuyo contenido pueda superar el ancho de
+columna. Las etiquetas cortas y los valores numéricos pueden seguir siendo strings.
+
+### Estrategias para tablas anchas
+
+Cuando los datos no caben en portrait con un tamaño de fuente legible:
+
+1. **Reducir el tamaño de fuente de la tabla** a 8–9 pt solo para esa tabla.
+2. **Página en landscape** para la tabla — añade un `PageTemplate` con
+   `pagesize=landscape(A4)` y cámbialo con `NextPageTemplate` + `PageBreak`.
+3. **Dividir la tabla** — muestra las columnas clave en una tabla principal y las
+   columnas secundarias en una tabla de detalle debajo o en la página siguiente.
+
 ## 6. Problemas frecuentes con reportlab
 
 ### Subíndices y superíndices Unicode
@@ -360,6 +407,29 @@ el tamaño, reportlab la dibuja con sus dimensiones nativas en píxeles.
 Para una salida de impresión de alta calidad, ajusta tus imágenes
 fuente a 300 DPI para el tamaño de impresión objetivo. Las alternativas
 vectoriales (SVG mediante `svglib`) escalan sin pérdida de calidad.
+
+### Portada / documentos multi-plantilla
+
+Un `PageBreak()` en la posición 0 de la historia vacía la página 1 antes de que
+aparezca ningún contenido. Para un documento con dos plantillas (Portada y Cuerpo)
+el patrón correcto es colocar el contenido de portada **antes** del `PageBreak`,
+no después:
+
+```python
+# MAL — página 1 en blanco; el texto de portada acaba en la página 2 con el chrome de Cuerpo
+story = [PageBreak(), Spacer(1, 60*mm), Paragraph("Título", h1), ...]
+story.insert(1, NextPageTemplate("Body"))
+
+# BIEN — el contenido de portada ocupa la página 1; PageBreak avanza a la página 2
+story = [
+    Spacer(1, 60*mm),
+    Paragraph("Título", h1),
+    # ... resto del contenido de portada ...
+    NextPageTemplate("Body"),
+    PageBreak(),          # la página 2 ya usa la plantilla Body
+    Paragraph("Capítulo 1", h2),
+]
+```
 
 ### Tablas muy largas
 

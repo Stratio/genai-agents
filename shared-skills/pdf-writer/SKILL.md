@@ -314,6 +314,53 @@ tbl.setStyle(TableStyle([
 ]))
 ```
 
+### Column widths must fit inside the frame
+
+`colWidths` values must sum to **at most** the frame width, not the page width.
+A4 is 210 mm but with 22 mm margins on each side the available width is 166 mm —
+hardcoding values that total 168 mm will silently overflow and push the rightmost
+column outside the frame.
+
+```python
+# Always derive from doc.width (accounts for margins automatically)
+TW = doc.width          # points; equivalent to W - 2*MARGIN_X
+
+# Option A — proportional (most robust)
+col_widths = [0.25*TW, 0.60*TW, 0.15*TW]
+
+# Option B — explicit mm, but always assert
+col_widths = [42*mm, 26*mm, 18*mm, 80*mm]
+assert sum(col_widths) <= TW, (
+    f"Table overflow: {sum(col_widths)/mm:.1f} mm > {TW/mm:.1f} mm"
+)
+```
+
+### Plain strings in cells do not wrap
+
+reportlab only wraps text when the cell value is a `Paragraph`. A bare string is
+drawn on a single line and will overflow the column silently.
+
+```python
+# WRONG — overflows without wrapping
+["Segment", "RETAIL · CORPORATE · PRIVATE · SME · FOREIGN · INSTITUTIONAL"]
+
+# CORRECT — wraps inside the column width
+[Paragraph("RETAIL · CORPORATE · PRIVATE · SME · FOREIGN · INSTITUTIONAL", body)]
+```
+
+Use `Paragraph` for any cell whose content might exceed the column width. Short
+labels and numeric values can stay as strings.
+
+### Wide-table strategies
+
+When data does not fit in portrait layout at a readable font size:
+
+1. **Reduce table font size** to 8–9 pt for that table only.
+2. **Landscape page** for the table — add a `PageTemplate` with
+   `pagesize=landscape(A4)` and switch to it with `NextPageTemplate` + `PageBreak`.
+3. **Split the table** — put key columns in a primary table and secondary columns
+   in a detail table on the next page or below.
+
 ## 6. Common gotchas with reportlab
 
 ### Unicode subscripts and superscripts
@@ -343,6 +390,28 @@ If you pass a small raster image to `Image()` without specifying size,
 reportlab draws it at its native pixel dimensions. For high-quality
 print output, size your source images at 300 DPI for the target print
 size. Vector alternatives (SVG via `svglib`) scale cleanly.
+
+### Cover page / multi-template documents
+
+A `PageBreak()` at story position 0 flushes an empty page 1 before any content
+appears. For a two-template document (Cover then Body) the correct pattern is to
+place the cover content **before** the `PageBreak`, not after it:
+
+```python
+# WRONG — blank page 1; cover text ends up on page 2 with Body chrome
+story = [PageBreak(), Spacer(1, 60*mm), Paragraph("Title", h1), ...]
+story.insert(1, NextPageTemplate("Body"))
+
+# CORRECT — cover content fills page 1; PageBreak advances to page 2
+story = [
+    Spacer(1, 60*mm),
+    Paragraph("Title", h1),
+    # ... rest of cover content ...
+    NextPageTemplate("Body"),
+    PageBreak(),          # page 2 now uses Body template
+    Paragraph("Chapter 1", h2),
+]
+```
 
 ### Very long tables
 
