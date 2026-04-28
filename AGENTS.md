@@ -189,6 +189,15 @@ Output skills (`docx-writer`, `pptx-writer`, `pdf-writer`, `xlsx-writer`, `web-c
   - Resolution at runtime is by context, not by filesystem path — the LLM has the skill loaded and finds `<file>.md` regardless of where the referencing file sits within the skill.
 - Guides declared at the agent level (in `<agent>/shared-guides`) are copied to `<agent>/skills-guides/` so that `AGENTS.md` can reference them with the same `skills-guides/<file>` path. `AGENTS.md` is **not** rewritten by the pack — the path stays literal because the folder physically exists at agent level.
 
+**SKILL.md frontmatter limits (enforced by Anthropic / OpenCode / GitHub Copilot Code at runtime):**
+
+- `name`: 1–64 chars, regex `^[a-z0-9]+(-[a-z0-9]+)*$`, must equal the parent directory name, must not contain reserved words `anthropic` or `claude`, no XML/HTML tags
+- `description`: 1–1024 chars, no XML/HTML tags (only the first ~250 are shown in `/skills` UI listings)
+- File must be named exactly `SKILL.md` (case-sensitive); frontmatter must be valid YAML between `---` markers
+- Soft recommendation: SKILL.md body under ~500 lines (Anthropic best practice — beyond that, extract to supporting files)
+
+The `pack_claude_code.sh` and `pack_opencode.sh` scripts re-validate `description` length in their integrity-check phase and abort with a clear error if any `SKILL.md` exceeds 1024 chars. Use the `skill-creator` shared-skill (`shared-skills/skill-creator/SKILL.md`) as the authoring guide — it covers anatomy, progressive disclosure, writing patterns, and the full quality checklist.
+
 ### Using a shared skill in an agent
 
 Add the skill name to the `<agent>/shared-skills` file (one line per skill). If AGENTS.md directly references any guide from `shared-skill-guides/`, add it to `<agent>/shared-guides`. All pack scripts read these manifests automatically.
