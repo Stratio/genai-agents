@@ -1,0 +1,19 @@
+{
+  "name": "genai-generic-skills",
+  "version": "1.0.0",
+  "description": "Generic agent skills for document processing and creative output — readers and writers for PDF, DOCX, PPTX, XLSX, web, canvas, and brand-kit theming.",
+  "skills": [
+    "../../../shared-skills/brand-kit",
+    "../../../shared-skills/canvas-craft",
+    "../../../shared-skills/docx-reader",
+    "../../../shared-skills/docx-writer",
+    "../../../shared-skills/pdf-reader",
+    "../../../shared-skills/pdf-writer",
+    "../../../shared-skills/pptx-reader",
+    "../../../shared-skills/pptx-writer",
+    "../../../shared-skills/skill-creator",
+    "../../../shared-skills/web-craft",
+    "../../../shared-skills/xlsx-reader",
+    "../../../shared-skills/xlsx-writer"
+  ]
+}

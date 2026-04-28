@@ -1,0 +1,19 @@
+{
+  "name": "genai-agents-plugins",
+  "owner": {
+    "name": "Stratio GenAI Team",
+    "email": "jneira@stratio.com"
+  },
+  "plugins": [
+    {
+      "name": "genai-generic-skills",
+      "source": "./genai-generic-skills",
+      "description": "Generic agent skills for document processing and creative output — readers and writers for PDF, DOCX, PPTX, XLSX, web, canvas, and brand-kit theming."
+    },
+    {
+      "name": "genai-stratio-skills",
+      "source": "./genai-stratio-skills",
+      "description": "Agent skills for Stratio platform operations — data exploration, semantic layer construction, governance, data quality, and Cowork API integration."
+    }
+  ]
+}
