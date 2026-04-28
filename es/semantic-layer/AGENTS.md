@@ -41,7 +41,7 @@ Antes de activar cualquier skill, evaluar que necesita el usuario:
 | Crear vistas de negocio | `/create-business-views` | "Crea las vistas de negocio" |
 | Actualizar mappings SQL | `/create-sql-mappings` | "Actualiza los mappings SQL de las vistas" |
 | Términos semánticos | `/create-semantic-terms` | "Genera los términos semánticos" |
-| Business terms | `/manage-business-terms` | "Crea un business term para CLV" |
+| Business terms / entradas de glosario | `/manage-business-terms` | "Crea un business term para CLV", "Añade este KPI al glosario", "Documenta esta métrica en el diccionario de negocio", "Registra estos acrónimos de negocio", "Añade una entrada de glosario para <concepto>", "Define un concepto de negocio y enlázalo con estas tablas", "Añade una definición de <término> al diccionario", "Documenta este concepto de dominio y conéctalo a <tabla>.<columna>" |
 | Borrar clases de ontología | `/create-ontology` | "Elimina las clases X de la ontología Y" |
 | Borrar vistas de negocio | `/create-business-views` | "Elimina las vistas X del dominio Y" |
 | Publicar vistas de negocio | Triage directo: `publish_business_views` | "Publica las vistas del dominio X", "Cambia las vistas a Pending Publish" |
