@@ -9,6 +9,7 @@ Agente experto en Gobernanza y Calidad del Dato. Evalua la cobertura de calidad 
 - Propuesta razonada de reglas de calidad basada en contexto semántico y datos reales
 - Creación de reglas de calidad con aprobación humana obligatoria
 - Planificación de ejecución automática de reglas de calidad
+- Consulta y definición de Critical Data Elements (CDEs): identificar los assets más críticos del dominio, recomendarlos y tagearlos con aprobación humana obligatoria
 - Generación de informes de cobertura (chat, PDF, DOCX, PPTX, Dashboard web, Informe web / Artículo web, Póster/Infografía, XLSX, Markdown)
 
 ## Requisitos
@@ -37,6 +38,7 @@ La configuración de MCPs está en `.mcp.json` (Claude Code / claude.ai) y en `o
 | Creación de reglas | `/create-quality-rules` | Diseñar y crear reglas de calidad para cubrir gaps, con aprobación humana obligatoria |
 | Planificación de calidad | `/create-quality-schedule` | Crear planificaciones de ejecución automática de reglas de calidad por dominio/colección |
 | Informe de calidad | `/quality-report` | Generar informe formal de cobertura en chat, PDF, DOCX, PPTX, Dashboard web, Informe web / Artículo web, Póster/Infografía, XLSX o Markdown |
+| Elementos Críticos del Dato | `/manage-critical-data-elements` | Consultar o definir Critical Data Elements (CDEs) de un dominio gobernado, con aprobación humana obligatoria antes de etiquetar |
 | Lectura de PDF | `/pdf-reader` | Extraer texto, tablas y datos de archivos PDF proporcionados por el usuario |
 | Escritura de PDF | `/pdf-writer` | Crear PDFs personalizados, combinar/dividir, marca de agua, cifrar, rellenar formularios |
 | Lectura de DOCX | `/docx-reader` | Extraer texto, tablas, imágenes, metadatos y cambios rastreados de ficheros `.docx` o `.doc` heredado |

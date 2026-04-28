@@ -34,6 +34,8 @@ This pause is the most important step in the entire skill. If there are doubts a
 
 ## 1. Determine Tables with Gaps
 
+**CDE mode (if coming from an assessment with active CDEs)**: If the prior assessment identified CDEs (`cde_mode=true`), the scope of this skill is limited to assets marked as critical. Propose rules only for tables and columns that are CDEs, unless the user explicitly indicates otherwise. At the start, inform the user of the active scope: "The proposed rules cover the Critical Data Elements of the domain. If you want to include other assets, let me know."
+
 From the coverage assessment results, retrieve the existing rules inventory obtained via `get_tables_quality_details`. This inventory is the source of truth: **only design rules for dimensions/columns NOT already covered by an existing rule**.
 
 Identify:
@@ -76,14 +78,14 @@ For each identified gap, design the corresponding quality rule.
 ### 3.1 Rule structure
 
 Each rule has the following fields:
-- `rule_name`: descriptive name in kebab-case. Convention: `dq-[table]-[dimension]-[column-or-description]`
+- `rule_name`: descriptive name in kebab-case. Convention: `dq-[table]-[dimension]-[column-or-description]`. The name must describe what the rule measures — do not include scheduling information, measurement configuration, or active/inactive status.
 - `primary_table`: main table the rule belongs to
 - `table_names`: list of tables referenced in the SQLs (always include primary_table)
-- `description`: concise natural language description in clear business terms (no technical jargon) of what this rule checks, describing the expected outcome. **Mandatory rules**: (1) Do NOT include scheduling or planning information (frequency, schedules, cron). (2) Do NOT use technical column names (like `card_id`, `district_id`); instead, use the semantic/business definition of the field obtained from `get_table_columns_details`. (3) Do NOT mention the rule dimension (completeness, uniqueness, validity, etc.) — the dimension is already a separate field. Correct example: "Validates that every account record has a non-null district identifier, ensuring all accounts are assigned to a district". Incorrect example: "Completeness check: Checks that district_id is never null. Scheduled daily at 09:00"
+- `description`: concise natural language description in clear business terms (no technical jargon) of what this rule checks, describing the expected outcome. **Mandatory rules**: (1) Do NOT include scheduling or planning information (frequency, schedules, cron). (2) Do NOT use technical column names (like `card_id`, `district_id`); instead, use the semantic/business definition of the field obtained from `get_table_columns_details`. (3) Do NOT mention the rule dimension (completeness, uniqueness, validity, etc.) — the dimension is already a separate field. (4) Do NOT include measurement information (measurement type, threshold values, or threshold mode) — measurement is configured separately. (5) Do NOT indicate active/inactive status of the rule — that is a separate operational parameter. Correct example: "Validates that every account record has a non-null district identifier, ensuring all accounts are assigned to a district". Incorrect example: "Completeness check: Checks that district_id is never null. Scheduled daily at 09:00, threshold 100%, active."
 - `query`: SQL that counts the records that PASS the check (numerator)
 - `query_reference`: SQL that counts the total number of records (denominator)
 - `dimension`: completeness / uniqueness / validity / consistency
-- `collection_name`: the domain's domain_name
+- `domain_name`: the domain name, exactly as returned by `search_domains` or `list_domains`
 - `measurement_type`: (optional) how the quality result is measured. Possible values:
   - `percentage` (default): compares query vs query_reference as a percentage
   - `count`: uses the absolute record count from the query
@@ -103,8 +105,11 @@ Each rule has the following fields:
 - `cron_expression`: (optional) Quartz cron expression for automatic execution. If not specified, the rule is not scheduled
 - `cron_timezone`: (optional) cron timezone; if there is a cron and none is specified, use `Europe/Madrid`
 - `cron_start_datetime`: (optional) ISO 8601 with the first scheduled execution; if not specified, scheduling starts immediately after creation
+- `active`: (optional) whether the rule is active after creation; default `False` — rules are created inactive and must be activated manually or by the user
 
 ### 3.2 SQL patterns by dimension
+
+> **SQL placeholder format**: Each table reference in a quality rule SQL must use the `${table_name}` syntax, where `table_name` is the **exact table name** from your domain. For example, for a table named `account` → `${account}`; for `card` → `${card}`; for cross-table patterns where the tables are `orders` and `clients` → `${orders}` and `${clients}`. The governance system automatically resolves each `${table_name}` to its physical storage path when the rule executes. In the patterns below, `${table}`, `${table_a}`, `${table_b}`, `${header_table}`, and `${detail_table}` are generic placeholders — replace them with the real table names of your domain.
 
 **Completeness** — non-null column:
 ```sql
@@ -191,7 +196,7 @@ table_names: [header_table, detail_table]
 
 ### 3.4 Measurement and Threshold Configuration
 
-The parameters `measurement_type`, `threshold_mode`, and (`exact_threshold` or `threshold_breakpoints`) are **optional**. If the user chooses not to configure measurement, the defaults apply: `measurement_type=percentage`, `threshold_mode=exact`, `exact_threshold={value: "100", equal_status: "OK", not_equal_status: "KO"}`. The plan must always report the measurement configuration that will be applied to each rule (see section 4), and the measurement question is mandatory in the approval step — do not assume the default without asking.
+The parameters `measurement_type`, `threshold_mode`, and (`exact_threshold` or `threshold_breakpoints`) are **optional**. If the user chooses not to configure measurement, the defaults apply: `measurement_type=percentage`, `threshold_mode=range`, `threshold_breakpoints=[{value: "80", status: "KO"}, {value: "95", status: "WARNING"}, {status: "OK"}]` — i.e. [0%-80%] → KO, (80%-95%] → WARNING, (95%-100%] → OK. The plan must always report the measurement configuration that will be applied to each rule (see section 4), and the measurement question is mandatory in the approval step — do not assume the default without asking.
 
 #### Flow when the user asks to configure measurement
 
@@ -214,7 +219,7 @@ Do not assume the measurement configuration — always iterate with the user unt
 | Ranges (%) | `percentage` | `range` | Compares query/reference as percentage, evaluates with ranges |
 | Ranges (count) | `count` | `range` | Uses absolute count from query, evaluates with ranges |
 
-**Default behavior** (without parameters): `measurement_type=percentage`, `threshold_mode=exact`, `exact_threshold={value: "100", equal_status: "OK", not_equal_status: "KO"}`.
+**Default behavior** (without parameters): `measurement_type=percentage`, `threshold_mode=range`, `threshold_breakpoints=[{value: "80", status: "KO"}, {value: "95", status: "WARNING"}, {status: "OK"}]` — i.e. [0%-80%] → KO, (80%-95%] → WARNING, (95%-100%] → OK.
 
 #### Guidelines for suggesting measurement type
 
@@ -222,22 +227,26 @@ If the user asks for a recommendation or is unsure which measurement type to use
 
 | Dimension / Case | Recommended type | Reason |
 |------------------|-----------------|--------|
-| Completeness, Uniqueness, Validity, Consistency | `percentage` + `exact` (=100% OK) | Total pass is expected; any failure is KO (**this is the default**) |
+| Completeness, Uniqueness, Validity, Consistency | `percentage` + `range` (80/95 levels) | **Default**: [0%-80%] KO, (80%-95%] WARNING, (95%-100%] OK |
 | Timeliness (freshness) | `count` + `exact` | The result is measured in absolute number of recent records |
-| Rules with explicit user tolerance | `percentage` + `range` (2-3 levels) | Only if the user explicitly asks for an intermediate WARNING range |
+| Rules where only total pass is acceptable | `percentage` + `exact` (=100% OK) | When any failure must be KO, with no tolerance range |
 | Rules with absolute count threshold | `count` + `range` | When limits are expressed in record count, not percentage |
 
-These are guidelines for suggesting to the user — the final decision is always the user's. If the user explicitly indicates a measurement type, use that. **By default, always use exact measurement (=100% OK / !=100% KO) unless the user requests otherwise.**
+These are guidelines for suggesting to the user — the final decision is always the user's. If the user explicitly indicates a measurement type, use that. **By default, always use range measurement ([0%-80%] KO, (80%-95%] WARNING, (95%-100%] OK) unless the user requests otherwise.**
 
 #### Complete measurement parameter examples
 
 Each example shows the parameters as they should be passed to `create_quality_rule`:
 
-**Example 1 — Exact percentage (=100% OK / !=100% KO) [DEFAULT]:**
+**Example 1 — Range percentage 3 levels ([0%-80%] KO, (80%-95%] WARNING, (95%-100%] OK) [DEFAULT]:**
 ```json
 measurement_type: "percentage"
-threshold_mode: "exact"
-exact_threshold: {"value": "100", "equal_status": "OK", "not_equal_status": "KO"}
+threshold_mode: "range"
+threshold_breakpoints: [
+  {"value": "80", "status": "KO"},
+  {"value": "95", "status": "WARNING"},
+  {"status": "OK"}
+]
 ```
 
 **Example 2 — Exact count (=0 failing records OK):**
@@ -287,7 +296,7 @@ Before presenting the plan to the user, the technical validity of the designed q
 
 **Validation procedure:**
 1. For each designed rule, prepare the `query` and the `query_reference`.
-2. Resolve the `${table}` placeholders by substituting them with the actual table name.
+2. Resolve the `${table_name}` placeholders (e.g., `${account}` → `account`) by stripping the `${}` wrapper to obtain a plain table name for use with `execute_sql`. Note: in `create_quality_rule`, always keep the full `${table_name}` format — the governance system resolves placeholders to physical storage paths at rule execution time. The validation with `execute_sql` verifies SQL logic and syntax only; it does not guarantee that the physical path used by the governance system matches the one in the domain catalog.
 3. Execute both queries using `execute_sql(query=[sql], limit=1)`.
 4. If any query returns an error:
    - Review the SQL syntax.
@@ -318,10 +327,8 @@ This flow applies when the user directly describes a rule they want to create, w
    Parallel:
      A. get_table_columns_details(domain_name, table)  [for each table involved]
      B. get_tables_details(domain_name, [tables])
-     C. get_quality_rule_dimensions(collection_name=domain_name)
-     D. quality_rules_metadata(domain_name=domain_name)  <-- only if not executed before
+     C. get_quality_rule_dimensions(domain_name=domain_name)
    ```
-   **Note about `quality_rules_metadata`**: updates the AI metadata of existing rules (description, dimension). Executed without `force_update` — only processes rules without metadata or modified, which covers rules created outside this agent. If it fails, continue without blocking.
 3. **Verify existence**: confirm that the tables and columns mentioned by the user exist in the domain. If any do not exist, inform and ask.
 
 ### B.2 Design the Rule
@@ -332,14 +339,14 @@ With the obtained metadata and the user's description, design the rule:
 - **`query`**: SQL that counts the records that PASS the check. For parts involving governed tables, use `generate_sql` to obtain the correct table/column names. For specific business logic (joins, complex conditions), build the SQL manually respecting the resolved names.
 - **`query_reference`**: SQL that counts the total number of records (denominator).
 - **`rule_name`**: follow the convention `dq-[table]-[dimension]-[description]` in kebab-case.
-- **`description`**: concise natural language description in clear business terms (no technical jargon) of what this rule checks, describing the expected outcome. Apply the same mandatory rules as in section 3.1: do not include scheduling, do not use technical column names, do not mention the dimension — use the semantic definition of the field.
+- **`description`**: concise natural language description in clear business terms (no technical jargon) of what this rule checks, describing the expected outcome. Apply the same mandatory rules as in section 3.1: do not include scheduling, do not use technical column names, do not mention the dimension, do not include measurement information, do not indicate active/inactive status — use the semantic definition of the field.
 
 Follow the design guidelines in section 3.3 and the SQL patterns in section 3.2.
 
 ### B.3 SQL Validation (MANDATORY)
 
 Same as section 3.5:
-1. Resolve the `${table}` placeholders with the actual table name.
+1. Resolve the `${table_name}` placeholders (e.g., `${account}` → `account`) by stripping the `${}` wrapper for use with `execute_sql`. Keep the full `${table_name}` format in `create_quality_rule`.
 2. Execute `query` and `query_reference` with `execute_sql(query=[sql], limit=1)`.
 3. If any query fails, review and correct until both are successful.
 4. Calculate the result and rule status applying the logic from step 5 of section 3.5 (measurement_type, threshold_mode, and configured thresholds).
@@ -351,13 +358,20 @@ Same as section 3.5:
 
 After informing of the result, continue directly with section 4 (Present Plan and Wait for Approval). In Flow B, the plan will typically contain a single rule. Include the SQL validation result with the calculated status in the presentation.
 
-**Note**: After rule creation (section 5), AI metadata will be automatically generated via `quality_rules_metadata`.
-
 ---
 
 ## 4. PAUSE: Present Plan and Wait for Approval
 
 Before executing any call to `create_quality_rule`, present the complete plan to the user.
+
+> **MANDATORY ORDER**: The plan MUST be shown to the user before any approval is processed.
+> If the message that triggered this skill already contains an approval signal or scheduling
+> details (e.g., the user responded to an assess-quality follow-up with "create the rules,
+> schedule daily at 9am"), do NOT skip the plan presentation. Show the plan first, then
+> include the provided scheduling/measurement details as a pre-filled suggestion in the
+> approval question so the user can confirm or adjust without having to repeat themselves.
+> The shortcuts in "Interpreting the user's response" only apply to answers given AFTER the
+> plan has been displayed.
 
 **Note for Flow B (specific rule)**: The plan will typically contain a single rule. Also include the SQL validation result with the calculated status (OK/KO/WARNING/NO_DATA).
 
@@ -373,7 +387,7 @@ Before executing any call to `create_quality_rule`, present the complete plan to
 ---
 
 ### Rule 1: dq-account-completeness-id
-- **Table**: account
+- **Table**: account *(CDE)*
 - **Dimension**: completeness
 - **Column**: id
 - **Description**: Validates that every account record has a non-null primary identifier, ensuring data integrity across the system
@@ -392,6 +406,8 @@ Before executing any call to `create_quality_rule`, present the complete plan to
 - **Flow A** (with prior EDA): if the EDA already provided current situation data, combine both in a single field. Format: `**Current situation** (prior EDA): 0 nulls of 45,230 records; **SQL validation**: 45,230 of 45,230 pass → 100.0% → OK`.
 - If `query_reference` returns 0: `**Validation result**: NO_DATA — query_reference returns 0 records`.
 
+**Note on the CDE badge**: In CDE mode (`cde_mode=true`), add `*(CDE)*` after the table name for each rule whose table or column is a Critical Data Element. Omit the badge when no CDEs are defined in the domain.
+
 ---
 
 ```
@@ -406,7 +422,7 @@ Additionally, do you want to schedule automatic execution of the rules?
 
 Do you want to configure rule measurement?
 1. Yes, I want to configure how they are measured (I will ask you the details)
-2. No, use the default measurement (percentage, exact value: =100% OK / !=100% KO)
+2. No, use the default measurement (percentage, ranges: [0%-80%] KO, (80%-95%] WARNING, (95%-100%] OK)
 ```
 
 ### Interpreting the user's response
@@ -423,7 +439,7 @@ Before proceeding, I need to know:
 
 2. **Measurement**: do you want to configure how the rules are measured?
    1. Yes, I want to configure how they are measured (I will ask you the details)
-   2. No, use the default measurement (percentage, exact value: =100% OK / !=100% KO)
+   2. No, use the default measurement (percentage, ranges: [0%-80%] KO, (80%-95%] WARNING, (95%-100%] OK)
 ```
 
 **Approval + scheduling option 3 + measurement option 2 (both explicitly indicated)** → Create the rules without scheduling parameters or custom measurement.
@@ -437,7 +453,7 @@ Before proceeding, I need to know:
 - `cron_start_datetime` (optional): ask "When do you want execution to start? (leave blank to start immediately)". If the user indicates a date/time in natural language, convert it to ISO 8601. Example: `2026-04-01T09:00:00`
 - `cron_timezone`: **Do NOT ask** unless the user mentions a different timezone. Use `Europe/Madrid` by default.
 
-If the user provides the cron details in the same approval response (e.g., "yes, option 1, daily at 9"), do not ask again — use that data directly.
+If the user provides the cron details in their response to the presented plan (e.g., "yes, option 1, daily at 9"), do not ask again — use that data directly.
 
 **Approval + option 2** → For each rule (or block of rules the user wants to treat the same), ask for the same fields as above. Allow some rules to have scheduling and others not.
 
@@ -507,16 +523,6 @@ For each approved rule (sequential, NOT in parallel):
 [OK]  dq-card-completeness-card-id — created successfully (scheduled: every Monday at 9:00, from 2026-04-01)
 ```
 
-### 5.1 Generate Metadata for Created Rules
-
-After creating all rules (successful or not), execute a single call to enrich the newly created rules with AI metadata:
-
-```
-quality_rules_metadata(domain_name=domain_name)
-```
-
-Without `force_update` — newly created rules will not have metadata yet, so they will be automatically processed. If it fails, inform the user but do not block the final summary.
-
 ## 6. Final Summary
 
 After completing creation, present a summary:
@@ -526,7 +532,6 @@ After completing creation, present a summary:
 
 - Rules created successfully: N/M
 - Failed rules: X/M
-- AI metadata generated: Yes/No (indicate whether the `quality_rules_metadata` call was successful)
 
 ### Coverage before and after
 

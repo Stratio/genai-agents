@@ -1,7 +1,10 @@
 assess-quality
 create-quality-rules
+update-quality-rules
 create-quality-schedule
+update-quality-scheduler
 quality-report
+manage-critical-data-elements
 pdf-reader
 pdf-writer
 docx-reader

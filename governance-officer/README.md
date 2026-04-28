@@ -18,6 +18,7 @@ Governance officer agent combining semantic layer building and data quality mana
 - Reasoned quality rule proposals based on semantic context and real data
 - Quality rule creation with mandatory human approval
 - Automatic execution scheduling for quality rules
+- Critical Data Elements (CDEs) consultation and definition: identify the most critical assets in a domain, recommend them, and tag them with mandatory human approval
 - Coverage report generation (chat, PDF, DOCX, PPTX, Dashboard web, Web article / Narrative report, Poster/Infographic, XLSX, Markdown)
 
 ## Requirements
@@ -54,6 +55,7 @@ MCP configuration is in `.mcp.json` (Claude Code / claude.ai) and in `opencode.j
 | Rule creation | `/create-quality-rules` | Design and create quality rules with human approval |
 | Quality scheduling | `/create-quality-schedule` | Create automatic execution schedules |
 | Quality report | `/quality-report` | Generate formal coverage report (PDF, DOCX, PPTX, Dashboard web, Web article / Narrative report, Poster/Infographic, XLSX, Markdown, Chat) |
+| Critical Data Elements | `/manage-critical-data-elements` | Consult or define Critical Data Elements (CDEs) for a governed domain, with mandatory human approval before tagging |
 | PDF reading | `/pdf-reader` | Extract text, tables and data from user-provided PDF files |
 | PDF writing | `/pdf-writer` | Create custom PDFs, merge/split, watermark, encrypt, fill forms |
 | DOCX reading | `/docx-reader` | Extract text, tables, images and metadata from `.docx` or legacy `.doc` files (policies, ontology specs, business documents) |

@@ -24,6 +24,7 @@ The agent works with Stratio Data Governance via MCP tools, orchestrating the fu
 - Propose reasoned quality rules based on semantic context and real data profiling
 - Create quality rules with mandatory human approval (human-in-the-loop)
 - Schedule automatic execution of quality rules
+- Consult and define Critical Data Elements (CDEs): identify, recommend, and tag the most critical assets in a domain with mandatory human approval
 - Generate coverage reports in 8 formats (see [Output formats](#output-formats))
 
 ### Content handling and branding
@@ -68,6 +69,12 @@ Every visual format applies the theme you choose at the start of the deliverable
 - "Create a rule that verifies the email field has a valid format"
 - "Schedule the automatic execution of rules for the customers domain"
 
+### Critical Data Elements
+- "What are the CDEs of the customers domain?"
+- "Define the critical data elements for domain X"
+- "Recommend which columns should be CDEs in domain Y"
+- "Tag table Z as a critical data element"
+
 ### Reports and deliverables
 - "Generate a PDF coverage report for the sales domain"
 - "Create a PowerPoint executive summary of quality findings"
@@ -104,6 +111,7 @@ Every visual format applies the theme you choose at the start of the deliverable
 | `/create-quality-rules` | Design and create quality rules with mandatory human approval |
 | `/create-quality-schedule` | Create automatic execution schedules for quality rules |
 | `/quality-report` | Generate a formal coverage report in Chat, PDF, DOCX, PPTX, Dashboard web, Web article / Narrative report, Poster/Infographic, XLSX or Markdown |
+| `/manage-critical-data-elements` | Consult or define Critical Data Elements (CDEs) for a governed domain, with mandatory human approval before tagging |
 
 ### Content readers
 | Command | Description |

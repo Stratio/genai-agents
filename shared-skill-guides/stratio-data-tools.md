@@ -110,7 +110,7 @@ Document in reasoning if sampling was used.
 
 ### 5.2 Governance Quality Coverage — `get_tables_quality_details`
 
-`get_tables_quality_details(domain_name, tables)` returns the governance quality rules currently defined for the given tables and their latest execution status.
+`get_tables_quality_details(domain_name, table_names=[...])` returns the governance quality rules currently defined for the given tables and their latest execution status.
 
 Returned for each table:
 - Rules registered against the table, with dimension (completeness, uniqueness, validity, consistency, etc.) and affected column

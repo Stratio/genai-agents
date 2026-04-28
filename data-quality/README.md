@@ -1,4 +1,4 @@
-# data-quality
+# data-quality/
 
 Expert agent in Data Governance and Data Quality. Assesses quality coverage of governed data, identifies gaps, proposes and creates quality rules with human approval, and generates coverage reports.
 
@@ -9,6 +9,7 @@ Expert agent in Data Governance and Data Quality. Assesses quality coverage of g
 - Reasoned quality rule proposals based on semantic context and real data
 - Quality rule creation with mandatory human approval
 - Automatic execution scheduling for quality rules
+- Critical Data Elements (CDEs) consultation and definition: identify the most critical assets in a domain, recommend them, and tag them with mandatory human approval
 - Coverage report generation (chat, PDF, DOCX, PPTX, Dashboard web, Web article / Narrative report, Poster/Infographic, XLSX, Markdown)
 
 ## Requirements
@@ -37,6 +38,7 @@ MCP configuration is in `.mcp.json` (Claude Code / claude.ai) and in `opencode.j
 | Rule creation | `/create-quality-rules` | Design and create quality rules to cover gaps, with mandatory human approval |
 | Quality scheduling | `/create-quality-schedule` | Create automatic execution schedules for quality rules by domain/collection |
 | Quality report | `/quality-report` | Generate a formal coverage report in chat, PDF, DOCX, PPTX, Dashboard web, Web article / Narrative report, Poster/Infographic, XLSX or Markdown |
+| Critical Data Elements | `/manage-critical-data-elements` | Consult or define Critical Data Elements (CDEs) for a governed domain, with mandatory human approval before tagging |
 | PDF reading | `/pdf-reader` | Extract text, tables and data from user-provided PDF files |
 | PDF writing | `/pdf-writer` | Create custom PDFs, merge/split, watermark, encrypt, fill forms |
 | DOCX reading | `/docx-reader` | Extract text, tables, images, metadata and tracked changes from `.docx` (or legacy `.doc`) files |

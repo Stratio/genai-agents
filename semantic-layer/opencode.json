@@ -47,7 +47,9 @@
     "*create_quality_rule": "deny",
     "*quality_rules_metadata": "deny",
     "*get_quality_rule_dimensions": "deny",
-    "*create_quality_rule_planification": "deny",
+    "*create_quality_rule_scheduler": "deny",
+    "*get_critical_data_elements": "deny",
+    "*set_critical_data_elements": "deny",
     "bash": {
       "*": "allow"
     }
