@@ -26,6 +26,7 @@ Scripts at the monorepo root to package any agent in the target platform format:
 | `pack_opencode.sh` | OpenCode | `{agent}/dist/opencode/{name}/` |
 | `pack_stratio_cowork.sh` | Stratio Cowork (OpenCode) | `dist/{name}-stratio-cowork.zip` |
 | `pack_shared_skills.sh` | All (standalone skills) | `dist/shared-skills.zip` or `dist/{skill}.zip` |
+| `pack_plugins.sh` | Claude Code / Copilot plugins | `plugins/*/shared-skills/` (hard links) |
 
 ```bash
 # Package data-analytics for Claude Code (English, default)
@@ -39,6 +40,19 @@ bash pack_opencode.sh --agent data-analytics --name my-agent
 
 # Package semantic-layer for Stratio Cowork
 bash pack_stratio_cowork.sh --agent semantic-layer
+
+# Create hard-linked skill trees for the plugin marketplace (run once after clone)
+bash pack_plugins.sh
+```
+
+`pack_plugins.sh` creates hard-linked skill trees inside `plugins/*/shared-skills/` so the Claude Code / Copilot plugin system can resolve the paths declared in each `plugin.json`. Run it once after cloning, and again whenever new shared skills are added to a plugin. The hard-linked directories are gitignored. After running it, register the marketplace:
+
+```bash
+bash pack_plugins.sh
+claude plugin marketplace add ./plugins
+/plugin install genai-generic-skills@genai-agents-plugins
+/plugin install genai-stratio-skills@genai-agents-plugins
+/reload-plugins
 ```
 
 All pack scripts accept `--lang <code>` to generate output in a specific language. Without `--lang`, English is used. With `--lang es`, the output goes to `dist/es/{format}/{name}/` for traceability. The name must be kebab-case. If omitted, the basename of the agent directory is used. The generated directories are excluded from the repository (`.gitignore`).
