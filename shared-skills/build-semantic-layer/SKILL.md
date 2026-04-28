@@ -48,13 +48,15 @@ Present **status dashboard**:
 | Semantic terms | ✗ Pending | 0/6 views |
 ```
 
-### 3. General context
+### 3. Glossary instruction enrichment (pre-load for the whole pipeline)
 
-Ask the user for global context that applies to all phases:
-- "Do you have reference files (documentation, glossaries, specifications) that I should read to better understand the domain? Are there business definitions, rules, or key concepts that you want reflected in the semantic layer? If not, reply 'Continue'."
-- If the user provides file paths → **read them** and extract relevant information as global context
-- The extracted context will be passed as `user_instructions` in each phase that supports it
-- Only ask again in specific phases if the user needs different instructions
+Apply the Glossary Instruction Enrichment Workflow described in `skills-guides/stratio-semantic-layer-tools.md` §11 **once**, covering the four phases of the pipeline that accept `user_instructions`: technical terms, ontology, SQL mappings, and semantic terms.
+
+When asking the user the four-option question (§11.2), scope it to "for the phases of this pipeline" and treat the answer as the policy for all of them; offer a per-phase override only if the user explicitly asks. Combine the glossary-derived instructions with any reference files the user wants to bring (option 3) and any free-text business rules or definitions they layer on top.
+
+The output is **per-phase enriched text** that this skill keeps in the planning context for the rest of the run. Each phase invocation in step 5 reuses the slice for its phase as `user_instructions` without asking the four-option question again. Phases that the user later decides to skip in step 4 simply do not consume their slice — that is fine.
+
+If the user picked option 4 (skip), no `user_instructions` are produced for any phase and the pipeline runs without enrichment.
 
 ### 4. Execution plan
 
@@ -70,12 +72,12 @@ Request global plan approval before executing.
 Execute each phase in strict order, calling the tools directly:
 
 **Phase 1 — Technical terms** (if needed):
-- `create_technical_terms(domain, table_names?, user_instructions?)` with the global instructions
+- `create_technical_terms(domain, table_names?, user_instructions?)` passing the technical-terms slice of the pre-loaded enrichment as `user_instructions` (omit the parameter if the user chose to skip enrichment in step 3)
 - Present the tool summary to the user
 
 **Phase 2 — Ontology** (if needed):
-- Interactive planning: ask the user about classes, reference files (ontologies .owl/.ttl, business documents, CSVs), naming conventions
-- If the user provides paths to local files → **read them** to extract context and enrich the plan
+- Interactive planning: ask the user about essential classes and naming conventions
+- The ontology slice of the pre-loaded enrichment already covers reference files, glossary instructions and free-text rules — feed it into the planning context. Only re-prompt if the user explicitly wants to add something new for this phase
 - Explore domain: `list_domain_tables` + `get_tables_details` + `get_table_columns_details`
 - Propose ontology plan in Markdown → review with user → iterate (max 3)
 - `create_ontology(domain, name, ontology_plan)` or `update_ontology(domain, name, update_plan)`
@@ -87,7 +89,7 @@ Execute each phase in strict order, calling the tools directly:
 - Offer: "If any view does not look right, I can delete it before continuing with mappings (Published views cannot be deleted)." If the user requests deletion → `delete_business_views(domain, view_names)` → report deleted/skipped
 
 **Phase 4 — SQL Mappings** (if needed; covers new views from Phase 3 and existing views without mapping):
-- `create_sql_mappings(domain, view_names?, user_instructions?)` with the global instructions
+- `create_sql_mappings(domain, view_names?, user_instructions?)` passing the mapping slice of the pre-loaded enrichment as `user_instructions` (omit if skipped in step 3)
 - Present the tool summary to the user
 
 **Publication (optional, between Phase 4 and Phase 5)**:
@@ -97,7 +99,7 @@ Execute each phase in strict order, calling the tools directly:
 
 **Phase 5 — Semantic terms** (if needed):
 - Verify that the views have mappings (prerequisite)
-- `create_semantic_terms(domain, view_names?, user_instructions?)` with the global instructions
+- `create_semantic_terms(domain, view_names?, user_instructions?)` passing the semantic-terms slice of the pre-loaded enrichment as `user_instructions` (omit if skipped in step 3)
 - Present the tool summary to the user
 
 **After each phase**:

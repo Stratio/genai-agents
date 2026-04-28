@@ -17,7 +17,7 @@ Crea descripciones técnicas de tablas y columnas de un dominio en Stratio Gover
 | `list_domain_tables(domain)` | sql | Listar tablas con sus descripciones (indica si ya tienen términos técnicos) |
 | `create_technical_terms(domain, table_names?, user_instructions?, regenerate?)` | gov | Crear términos técnicos. Salta existentes. Con `regenerate=true`: DESTRUCTIVO, borra y recrea |
 
-**Reglas clave**: `domain_name` inmutable (valor exacto de `list_domains` o `search_domains`). Confirmación obligatoria para `regenerate=true`. Ofrecer `user_instructions` antes de invocar.
+**Reglas clave**: `domain_name` inmutable (valor exacto de `list_domains` o `search_domains`). Confirmación obligatoria para `regenerate=true`. Construir `user_instructions` mediante el Workflow de Enriquecimiento con Instrucciones del Glosario (`skills-guides/stratio-semantic-layer-tools.md` §11) antes de invocar.
 
 ## Workflow
 
@@ -49,14 +49,13 @@ Preguntar al usuario con opciones:
 3. **Regenerar todas** — DESTRUCTIVO: borra y recrea. Requiere confirmación explícita
 4. **Regenerar tablas específicas** — DESTRUCTIVO para las seleccionadas. Requiere confirmación explícita
 
-### 4. user_instructions
+### 4. Enriquecimiento con instrucciones del glosario
 
-Antes de ejecutar, ofrecer al usuario la oportunidad de aportar contexto adicional:
-- **Ficheros locales**: Si el usuario tiene documentación, glosarios, diccionarios de datos o especificaciones → **leerlos** y extraer definiciones relevantes para incluirlas como contexto
-- **Definiciones de dominio**: Conceptos de negocio, valores específicos de columnas, relaciones entre entidades que la IA debería conocer
-- Ejemplos: "La columna `status` tiene valores: A=activo, I=inactivo, S=suspendido", "Las tablas `film_*` pertenecen al módulo de catálogo de películas", "El campo `last_update` es un timestamp de auditoría, no de negocio"
+Antes de invocar la tool MCP, aplicar el Workflow de Enriquecimiento con Instrucciones del Glosario descrito en `skills-guides/stratio-semantic-layer-tools.md` §11, acotado a **technical terms** (al llamar a `get_glossary_instructions`, pedir solo la fase de technical terms).
 
-No sugerir opciones que la tool controla internamente (idioma, audiencia, formato). Si el usuario no aporta instrucciones, continuar sin el parámetro. No es bloqueante.
+Si el orquestador ya pre-cargó instrucciones enriquecidas para esta fase durante el flujo de `build-semantic-layer`, reutilizarlas en lugar de volver a preguntar — opcionalmente preguntar al usuario si quiere añadir algo específico para esta fase encima de lo que ya se cargó.
+
+El texto enriquecido se usa como argumento `user_instructions` en la llamada MCP del paso siguiente. Si el usuario eligió la opción 4 (saltar), se omite `user_instructions`.
 
 ### 5. Ejecución
 

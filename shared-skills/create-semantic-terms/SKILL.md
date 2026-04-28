@@ -17,7 +17,7 @@ Generates or regenerates business semantic terms in the Stratio Governance gloss
 | `list_technical_domain_concepts(domain)` | gov | List views with governance state, semantic terms and mappings |
 | `create_semantic_terms(domain, view_names?, user_instructions?, regenerate?)` | gov | Create semantic terms. With `regenerate=true`: DESTRUCTIVE, deletes and recreates |
 
-**Key rules**: `domain_name` immutable. Mandatory confirmation for `regenerate=true`. Offer `user_instructions` before invoking. Pre-requisite: views must have SQL mapping before generating semantic terms.
+**Key rules**: `domain_name` immutable. Mandatory confirmation for `regenerate=true`. Build `user_instructions` through the Glossary Instruction Enrichment Workflow (`skills-guides/stratio-semantic-layer-tools.md` §11) before invoking. Pre-requisite: views must have SQL mapping before generating semantic terms.
 
 ## Workflow
 
@@ -54,14 +54,13 @@ Ask the user with options (only views with mapping):
 3. **Regenerate all** — DESTRUCTIVE: deletes existing terms and recreates. Requires explicit confirmation
 4. **Regenerate specific views** — DESTRUCTIVE for the selected ones. Requires confirmation
 
-### 5. user_instructions
+### 5. Glossary instruction enrichment
 
-Offer the user the opportunity to provide additional context:
-- **Local files**: If the user has business glossaries, functional documentation or terminological style guides → **read them** and extract relevant definitions to include as context
-- **Domain definitions**: Business meaning of key concepts, relationships between entities, rules that the AI should reflect in the terms
-- Examples: "The concept 'actor' in this domain refers to movie actors, not system actors", "The `film` views should reflect that rental_rate is the rental price per day"
+Before invoking the MCP tool, apply the Glossary Instruction Enrichment Workflow described in `skills-guides/stratio-semantic-layer-tools.md` §11, scoped to **semantic terms** (i.e., when calling `get_glossary_instructions`, request only the semantic terms phase). This is where the user can pull GenAI semantic term instructions from the data dictionary, supply an external file (business glossary, functional documentation, terminological style guide) as their source, layer free-text definitions on top, or skip enrichment entirely.
 
-Do not suggest options that the tool controls internally (language, audience, format). If the user does not provide instructions, continue without the parameter. Not blocking.
+If the orchestrator already pre-loaded enriched instructions for this phase during the `build-semantic-layer` flow, reuse them — optionally ask whether the user wants to add anything specific to this phase on top of what was pre-loaded.
+
+The enriched text becomes the `user_instructions` argument of the MCP call in the next step. If the user chose option 4 (skip), `user_instructions` is omitted.
 
 ### 6. Execution
 

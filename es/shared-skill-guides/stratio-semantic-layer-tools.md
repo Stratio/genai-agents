@@ -25,6 +25,7 @@
 | **Business terms** | `create_business_term(domain, name, description, type, related_assets)` | Crear business term en el diccionario con relaciones a activos |
 | | `list_business_asset_types()` | Listar tipos de activos disponibles para business terms |
 | **Colecciones** | `create_data_collection(collection_name, description, table_metadata_paths?, path_metadata_paths?)` | Crear colección de datos (dominio técnico) con tablas y paths. `collection_name` sin espacios (usar underscores). Refresca vista técnica automáticamente |
+| **Instrucciones del glosario** | `get_glossary_instructions(domain, phases?, include_globals?)` | Leer del diccionario de datos los business terms tipados como instrucciones GenAI para un dominio técnico. Filtrable por `phases` (lista entre `ontology` / `mapping` / `technical_terms` / `semantic_terms`; por defecto las cuatro) y por `include_globals` para el tipo global cross-phase `GenAI Instructions`. Para cada fase, la respuesta incluye siempre el tipo primario de la fase más cualquier tipo adicional por fase que tenga configurado el profile (replica lo que la chain consume internamente). Devuelve una sección por tipo de glosario con el contenido Markdown crudo. Solo lectura. Ver §11 para el workflow al usuario |
 | **Utilidad** | `list_technical_domain_concepts(domain)` | Listar vistas de negocio existentes con estado de gobernanza (Draft/Pending Publish/Published), mappings y términos semánticos |
 | | `create_collection_description(domain, user_instructions?)` | Generar SOLO la descripción del dominio/colección (sin tocar tablas) |
 | | `get_mcp_task_result(task_id)` | Obtener el resultado de una tool de larga duración que sigue ejecutándose en segundo plano en el servidor `gov` (ver sección 9) |
@@ -45,7 +46,7 @@
 ## 3. Reglas Estrictas
 
 - **INMUTABILIDAD de `domain_name`**: El parámetro `domain_name` en TODAS las llamadas MCP debe ser **exactamente** el valor devuelto por `list_domains` o `search_domains`. NUNCA traducirlo, interpretarlo, parafrasearlo ni inferirlo. Si el dominio se llama `AnaliticaBanca`, usar `"AnaliticaBanca"` — no `"Banca Particulares"`, no `"Analítica Banca"`, no `"banca"`. Si hay duda sobre el nombre exacto, volver a llamar a `search_domains` o `list_domains` para confirmarlo
-- **Dominios técnicos para creación y publicación**: Las tools de creación (`create_technical_terms`, `create_ontology`, `create_business_views`, `create_sql_mappings`, `create_semantic_terms`) y publicación (`publish_business_views`) usan dominios técnicos. Descubrirlos con `list_domains(domain_type='technical')` o `search_domains(texto, domain_type='technical')`. Dentro de este **pipeline de construcción**, los dominios semánticos (`semantic_*`) son el RESULTADO, no la entrada. **Fuera del alcance de esta regla**: `create_business_term` es una operación **post-publicación**, no forma parte del pipeline de construcción — se ejecuta tras publicar la capa semántica y **prefiere `semantic_<x>`** por defecto. Ver la regla dedicada más abajo
+- **Dominios técnicos para creación, publicación e instrucciones del glosario**: Las tools de creación (`create_technical_terms`, `create_ontology`, `create_business_views`, `create_sql_mappings`, `create_semantic_terms`), publicación (`publish_business_views`) y la tool de solo lectura `get_glossary_instructions` (que alimenta ese mismo pipeline) operan todas sobre **dominios técnicos**. Descubrirlos con `list_domains(domain_type='technical')` o `search_domains(texto, domain_type='technical')`. Dentro de este **pipeline de construcción**, los dominios semánticos (`semantic_*`) son el RESULTADO, no la entrada. Pasar un dominio `semantic_*` a `get_glossary_instructions` devuelve secciones vacías, porque las instrucciones GenAI están ligadas a la colección técnica. **Fuera del alcance de esta regla**: `create_business_term` es una operación **post-publicación**, no forma parte del pipeline de construcción — se ejecuta tras publicar la capa semántica y **prefiere `semantic_<x>`** por defecto. Ver la regla dedicada más abajo
 - **Selección de dominio para business terms (post-publicación)**: `create_business_term` se invoca **después** de construir y publicar la capa semántica, para documentar conceptos de negocio (KPIs, métricas, entradas de glosario). Comportamiento por defecto:
   - **Preferir `semantic_<x>`** como `domain` siempre que exista. Esto archiva el término bajo "Semantic Knowledge" — el dominio padre que ven los consumidores de negocio
   - **Aplicar el mismo prefijo a todos los `related_assets`** — la chain rechaza prefijos mezclados
@@ -53,7 +54,7 @@
   - Ver la skill `manage-business-terms` para el procedimiento completo de discovery, las reglas de decisión y los ejemplos
   - **Alcance**: esta regla aplica **únicamente** a `create_business_term`. Las demás tools de gobernanza listadas en la regla del pipeline de construcción de arriba siguen requiriendo dominios técnicos
 - **Dominios semánticos para exploración**: `list_domains(domain_type='business')`, `search_domains(texto, domain_type='business')` y `search_domain_knowledge` permiten explorar capas semánticas ya publicadas
-- **`user_instructions` siempre ofrecido**: Antes de invocar cualquier tool que acepte `user_instructions`, ofrecer al usuario la oportunidad de aportar contexto adicional. El agente puede **leer ficheros locales** del usuario (documentación, glosarios, especificaciones, CSVs, ontologías .owl/.ttl) para extraer información relevante y pasarla como contexto. Preguntar si tiene ficheros o contexto de dominio que quiera aportar. No es bloqueante — si el usuario no aporta, continuar sin el parámetro. **No sugerir opciones que la tool controla internamente** (idioma, formato de salida) — centrarse en contexto de dominio, definiciones de negocio y reglas específicas
+- **`user_instructions` construido mediante el workflow de enriquecimiento**: Para las cuatro tools de fase que aceptan `user_instructions` (`create_technical_terms`, `create_sql_mappings`, `create_semantic_terms`, y análogamente el paso de planificación de `create_ontology` / `update_ontology` aunque ahí el texto se incorpore al plan Markdown), construir el valor mediante el Workflow de Enriquecimiento con Instrucciones del Glosario descrito en §11. Ese workflow consolida instrucciones del glosario, ficheros externos opcionales (.owl/.ttl, documentos de negocio, CSVs, etc.) y reglas en texto libre en un único texto. **Nunca inyectar contenido del glosario silenciosamente** sin pasar por la pregunta al usuario de §11.2 — el usuario debe ver y poder modificar lo que se va a aplicar. El enriquecimiento no es bloqueante: la opción 4 (saltar) está siempre disponible. **No sugerir opciones que la tool controla internamente** (idioma, formato de salida). Para `create_collection_description`, que no tiene un tipo específico de glossary item por fase, simplemente ofrecer `user_instructions` en texto libre directamente (queda intencionadamente fuera de §11)
 - **Operaciones destructivas (`regenerate=true`, `delete_*`)**: SIEMPRE confirmación explícita del usuario con advertencia clara de que se pierde. Patrón: detectar existencia → informar que se pierde → preguntar (saltar/ejecutar/cancelar) → confirmación adicional para la acción destructiva
 - **Publicación de vistas (`publish_business_views`)**: Confirmar con el usuario listando las vistas que se van a publicar. Verificar estado previo con `list_technical_domain_concepts`. No es destructiva ni requiere confirmación de tipo "destructiva", pero es un cambio de estado de gobernanza que el usuario debe aprobar. Presentar resultado: vistas publicadas + fallidas + no encontradas
 - **Ontologías son ADD+DELETE**: `update_ontology` añade clases nuevas. `delete_ontology_classes` borra clases específicas (protegido: clases con vistas Published dependientes se saltan automáticamente). No se pueden modificar clases existentes
@@ -178,3 +179,76 @@ Esto aplica a TODAS las tools MCP de ambos servidores. Comprobar siempre si la r
 3. Continuar el workflow (non-blocking). Las comprobaciones de detección de estado de §6 siguen aplicando: si se usa `search_ontologies(name)` para idempotencia, sustituir por `list_ontologies` + filtro local. El presupuesto de reintentos de §7 se agota antes de declarar indisponibilidad.
 4. Parar únicamente si la alternativa no cubre la necesidad del usuario — típicamente `search_data_dictionary` sin hint de dominio cuando el usuario no puede acotar el alcance. En ese caso, informar al usuario y detener la sub-tarea.
 5. Registrar la degradación en el resumen al final de la fase.
+
+## 11. Workflow de Enriquecimiento con Instrucciones del Glosario
+
+Algunos dominios técnicos llevan **instrucciones GenAI** que los stewards de datos definen en la UI de Stratio Governance como business terms tipados en el diccionario de datos. Esas instrucciones guían cómo el LLM genera la ontología, los mappings SQL, los términos técnicos y los términos semánticos para ese dominio. Tienen dos alcances:
+
+- **Globales** — aplican a todas las fases (tipo por defecto: `GenAI Instructions`).
+- **Específicas por fase** — un tipo por cada fase: `GenAI Ontology Instructions`, `GenAI Mapping Instructions`, `GenAI Technical Term Instructions`, `GenAI Semantic Term Instructions`. Un profile puede además configurar tipos globales adicionales por fase.
+
+Históricamente estas instrucciones se consumían de forma implícita dentro de la chain. La tool `get_glossary_instructions` las expone para que el agente pueda mostrárselas al usuario, discutirlas, mezclarlas con un fichero externo o saltarlas — *antes* de invocar cualquier tool de creación que acepte `user_instructions`.
+
+### 11.1 Cuándo aplicar
+
+- En cualquier skill de fase que vaya a invocar `create_technical_terms`, `create_ontology` / `update_ontology`, `create_sql_mappings` o `create_semantic_terms` — **justo antes** del step actual de `user_instructions`.
+- Una sola vez al principio de un pipeline completo dirigido por `build-semantic-layer`, cubriendo todas las fases incluidas en el plan propuesto; las sub-skills reutilizan el texto enriquecido por fase sin volver a preguntar.
+
+`create_collection_description` queda intencionadamente **fuera** de este workflow: no tiene un tipo específico de glossary item asociado, así que el agente simplemente ofrece `user_instructions` en texto libre directamente al invocarlo.
+
+### 11.2 Pregunta al usuario
+
+Siguiendo la convención de preguntas del agente, presentar estas cuatro opciones mutuamente excluyentes:
+
+1. Usar solo las instrucciones del glosario **específicas** de esta fase.
+2. Usar **específicas + globales** del glosario.
+3. Aportar un **fichero externo** (ruta local) en lugar de (o además de) el glosario.
+4. **Saltar** — continuar sin enriquecimiento.
+
+Cuando el workflow se ejecuta desde `build-semantic-layer`, plantear la pregunta para "las fases incluidas en el plan propuesto" y tratar la respuesta del usuario como política para todas; ofrecer override por fase solo si el usuario lo pide explícitamente.
+
+### 11.3 Lectura desde el glosario (opciones 1 y 2)
+
+Invocar `get_glossary_instructions` para el dominio actual y la(s) fase(s) relevante(s):
+
+- `domain` — **siempre el dominio técnico** que alimenta el pipeline. Las cuatro tools de fase (`create_technical_terms`, `create_ontology`, `create_sql_mappings`, `create_semantic_terms`) operan sobre la colección técnica, y `get_glossary_instructions` igual. Pasar un dominio `semantic_*` devuelve secciones vacías porque las instrucciones GenAI no se guardan en el dominio semántico publicado.
+- `phases` — la fase actual si se invoca desde una skill de fase, o la lista de fases incluidas en el plan cuando se invoca desde `build-semantic-layer`.
+- `include_globals` — elegir según la opción que escoja el usuario:
+  - **Opción 1 (solo específicas)**: `include_globals=false`. Devuelve solo los tipos específicos de cada fase pedida (primario + cualquier tipo adicional por fase configurado en el profile).
+  - **Opción 2 (específicas + globales)**: `include_globals=true`. Igual que la opción 1 más el tipo global cross-phase `GenAI Instructions`.
+
+Mostrar al usuario un resumen compacto del retorno (una entrada por sección `(glossary_type, scope)`, conteo de items o preview del contenido bajo demanda). Preguntarle si quiere:
+
+- aceptarlo todo tal cual,
+- excluir items concretos de alguna sección,
+- añadir comentarios propios en texto libre por encima.
+
+Si la respuesta trae `error` o todas las secciones vienen vacías, informar al usuario y ofrecer caer a la opción 3 o 4.
+
+### 11.4 Lectura desde fichero externo (opción 3)
+
+Pedir una ruta local. Leer el fichero con la skill adecuada: Markdown / TXT directamente, DOCX vía `/docx-reader`, PPTX vía `/pptx-reader`, PDF vía `/pdf-reader`. Extraer el texto relevante; no inventar contenido que no esté en el fichero.
+
+La opción 3 puede combinarse con las opciones 1 o 2 si el usuario quiere superponer ambas fuentes.
+
+### 11.5 Consolidación
+
+Combinar las fuentes elegidas en un único texto Markdown con encabezados explícitos: una sección para las instrucciones globales del glosario, una sección por tipo específico de fase, una sección para el contenido del fichero externo y una sección para los comentarios libres del usuario. Las secciones vacías pueden omitirse.
+
+Cómo se consume el texto consolidado depende de la tool MCP destino:
+
+- Para `create_technical_terms`, `create_sql_mappings`, `create_semantic_terms`: pasarlo directamente como argumento `user_instructions`.
+- Para `create_ontology` / `update_ontology`: esas tools **no** aceptan `user_instructions` hoy. El texto consolidado se incorpora al `ontology_plan` / `update_plan` Markdown que el agente prepara antes de invocar la tool — orienta propuestas de clases, convenciones de nomenclatura, relaciones, etc. Si una versión futura de la tool empieza a aceptar `user_instructions`, ese mismo texto se pasará también a la llamada.
+
+### 11.6 Reutilización del pre-load del orquestador
+
+Cuando `build-semantic-layer` ya ha ejecutado este workflow al inicio del pipeline, el texto enriquecido por fase forma parte del contexto de planificación de la ejecución. Las sub-skills de fase deben:
+
+1. Detectar que ya hay enriquecimiento pre-cargado para su fase y reutilizarlo como `user_instructions` sin volver a hacer las cuatro preguntas.
+2. Opcionalmente preguntar al usuario una sola pregunta corta — si quiere añadir algo específico para esta fase encima del enriquecimiento ya cargado — y anexar la respuesta al texto consolidado si la hay.
+
+Si una skill de fase se invoca **fuera** del orquestador (petición directa del usuario), ejecuta §11.2–§11.5 por su cuenta.
+
+### 11.7 Sin enriquecimiento silencioso
+
+Nunca invocar `get_glossary_instructions` e inyectar el resultado como `user_instructions` sin pasar por §11.2 (o el equivalente del orquestador). El sentido del workflow es que el usuario vea y pueda dar forma a lo que se va a aplicar.

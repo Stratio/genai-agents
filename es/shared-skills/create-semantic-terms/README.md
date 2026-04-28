@@ -7,7 +7,7 @@ Genera o regenera **términos semánticos** (descripciones orientadas a negocio 
 - Resuelve el dominio técnico e inspecciona las views existentes con su estado, mappings y términos semánticos (`list_technical_domain_concepts`).
 - Impone el prerrequisito: **las views deben tener un SQL mapping** para producir términos semánticos. Las views sin mapping se muestran y se excluyen, con un puntero a `create-sql-mappings` o `create-business-views`.
 - Ofrece cuatro opciones de alcance: crear para views sin términos (idempotente), un subconjunto específico, regeneración completa (destructiva) o regeneración de views seleccionadas (destructiva).
-- Ofrece al usuario la oportunidad de aportar `user_instructions` — incluyendo lectura de ficheros locales (glosarios de negocio, docs funcionales, guías de estilo terminológico) para guiar al generador.
+- Construye `user_instructions` mediante el **Workflow de Enriquecimiento con Instrucciones del Glosario** (`stratio-semantic-layer-tools.md` §11): el usuario puede traerse las GenAI Semantic Term Instructions del diccionario de datos (específicas de la fase, opcionalmente más globales), aportar un fichero externo (glosario de negocio, doc funcional, guía de estilo terminológico), superponer definiciones en texto libre, o saltar el enriquecimiento por completo.
 - Invoca `create_semantic_terms` y reporta el resumen; reintenta las views fallidas hasta dos veces con instrucciones mejoradas.
 
 ## Cuándo usarla

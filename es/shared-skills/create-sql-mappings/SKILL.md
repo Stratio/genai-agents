@@ -18,7 +18,7 @@ Crea o actualiza SQL mappings para vistas de negocio existentes en Stratio Gover
 | `create_sql_mappings(domain, view_names?, user_instructions?)` | gov | Crear o actualizar mappings SQL de vistas existentes |
 | `publish_business_views(domain, view_names?)` | gov | Publicar vistas (Draft → Pending Publish). Sin `view_names`, publica todas |
 
-**Reglas clave**: `domain_name` inmutable. Ofrecer `user_instructions` antes de invocar. `create_sql_mappings` sobrescribe mappings existentes (no es destructivo a nivel de vista, solo reemplaza el mapping SQL).
+**Reglas clave**: `domain_name` inmutable. Construir `user_instructions` mediante el Workflow de Enriquecimiento con Instrucciones del Glosario (`skills-guides/stratio-semantic-layer-tools.md` §11) antes de invocar. `create_sql_mappings` sobrescribe mappings existentes (no es destructivo a nivel de vista, solo reemplaza el mapping SQL).
 
 ## Workflow
 
@@ -47,14 +47,13 @@ Preguntar al usuario con opciones:
 2. **Vistas específicas** — selección múltiple (puede incluir vistas con mapping existente para actualizarlo)
 3. **Actualizar mappings existentes** — sobrescribe el mapping SQL, no borra la vista ni sus términos semánticos
 
-### 4. user_instructions
+### 4. Enriquecimiento con instrucciones del glosario
 
-Ofrecer al usuario la oportunidad de aportar contexto adicional:
-- **Ficheros locales**: Si el usuario tiene documentación técnica, diagramas ER, especificaciones de integracion o scripts SQL de referencia → **leerlos** y extraer información relevante para incluirla como contexto
-- **Reglas de mapping**: Relaciones entre tablas, tipo de JOINs preferidos, filtros de exclusion, transformaciones de datos
-- Ejemplos: "Usa LEFT JOIN para preservar registros sin correspondencia", "Tabla principal para los JOINs: accounts", "Excluir registros con estado='DELETED'", "Usar COALESCE para campos nullable", "Fechas en formato epoch milliseconds"
+Antes de invocar la tool MCP, aplicar el Workflow de Enriquecimiento con Instrucciones del Glosario descrito en `skills-guides/stratio-semantic-layer-tools.md` §11, acotado a **SQL mappings** (al llamar a `get_glossary_instructions`, pedir solo la fase de mapping). Aquí es donde el usuario puede traerse las instrucciones GenAI de mapping desde el diccionario de datos, aportar un fichero externo (documentación técnica, diagramas ER, especificaciones de integración, scripts SQL de referencia) como su fuente, superponer reglas de mapping en texto libre, o saltar el enriquecimiento por completo.
 
-No sugerir opciones que la tool controla internamente (idioma, formato de salida). Si el usuario no aporta instrucciones, continuar sin el parámetro. No es bloqueante.
+Si el orquestador ya pre-cargó instrucciones enriquecidas para esta fase durante el flujo de `build-semantic-layer`, reutilizarlas — opcionalmente preguntar al usuario si quiere añadir algo específico para esta fase encima de lo que ya se cargó.
+
+El texto enriquecido se usa como argumento `user_instructions` en la llamada MCP del paso siguiente. Si el usuario eligió la opción 4 (saltar), se omite `user_instructions`.
 
 ### 5. Ejecución
 

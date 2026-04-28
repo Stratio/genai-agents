@@ -9,11 +9,11 @@ This skill does **not** call MCP tools — it loads the contract that every gove
 - Loads the full governance-MCP reference (`stratio-semantic-layer-tools.md`) into the conversation.
 - Covers:
   - The complete tool catalogue split by server (`gov` + `sql`), with parameters and purpose.
-  - Strict rules: immutability of `domain_name`, technical-vs-semantic domain usage, always-offered `user_instructions`, mandatory confirmation for destructive operations (`regenerate=true`, `delete_*`), view-publishing approval, ADD+DELETE ontology semantics, naming conventions for collections and ontologies.
+  - Strict rules: immutability of `domain_name`, technical-vs-semantic domain usage, `user_instructions` built through the §11 Glossary Instruction Enrichment Workflow (no silent injection), mandatory confirmation for destructive operations (`regenerate=true`, `delete_*`), view-publishing approval, ADD+DELETE ontology semantics, naming conventions for collections and ontologies.
   - Technical domain discovery workflow (search → list → explore tables → details → columns → knowledge).
   - Exploration of **published** semantic domains (`semantic_*` prefix).
   - State-detection table for idempotency: how to detect existing collections, technical terms, ontologies, views, mappings, semantic terms and publishing status before acting.
-  - Error handling and recovery (retry with improved `user_instructions`, max 2 retries per entity).
+  - Error handling and recovery (retry with improved `user_instructions` built through §11, max 2 retries per entity).
   - Parallel execution rules (read tools in parallel, creations sequential within a phase, strict phase sequence between phases).
   - Long-running task polling protocol (`task_id` → `get_mcp_task_result` with `pending` / `done` / `error` / `not_found`).
   - OpenSearch-availability fallback (deterministic `list_*` + local substring filter when search endpoints fail).

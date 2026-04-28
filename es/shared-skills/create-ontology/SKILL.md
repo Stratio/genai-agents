@@ -25,7 +25,7 @@ Crea, amplia o borra clases de una ontología en Stratio Governance mediante pla
 | `update_ontology(domain, name, update_plan)` | gov | Añadir clases nuevas a ontología existente |
 | `delete_ontology_classes(ontology_name, class_names)` | gov | DESTRUCTIVO: borrar clases específicas (protegido por Published) |
 
-**Reglas clave**: `domain_name` inmutable. Ontologías son ADD+DELETE: `update` añade clases, `delete_ontology_classes` borra clases (protegido: clases con vistas Published dependientes se saltan). No se pueden modificar clases existentes. Nomenclatura: sin espacios (→ guiones bajos), sin caracteres especiales. Ofrecer `user_instructions` antes de invocar.
+**Reglas clave**: `domain_name` inmutable. Ontologías son ADD+DELETE: `update` añade clases, `delete_ontology_classes` borra clases (protegido: clases con vistas Published dependientes se saltan). No se pueden modificar clases existentes. Nomenclatura: sin espacios (→ guiones bajos), sin caracteres especiales. Construir el contexto de planificación mediante el Workflow de Enriquecimiento con Instrucciones del Glosario (`skills-guides/stratio-semantic-layer-tools.md` §11) antes de proponer el plan de ontología.
 
 ## Workflow
 
@@ -50,11 +50,17 @@ Si aplica, ejecutar `get_ontology_info(name)` para mostrar estructura existente.
 Este es el nucleo de la skill. Preguntar al usuario agrupando para minimizar interacciones:
 
 **Bloque de preguntas** (una sola interacción):
-- ¿Tiene ficheros adicionales con información relevante? (ontologías .owl/.ttl, documentos de negocio, CSVs). Si proporciona rutas → **leer los ficheros** para extraer contexto
-- ¿Tiene ontologías existentes como referencia? (si si → `get_ontology_info` o leer fichero local)
-- ¿Que clases o entidades considera indispensables?
+- ¿Tiene una ontología existente para tomar como referencia? (si sí → `get_ontology_info` o leer fichero local)
+- ¿Qué clases o entidades considera indispensables?
 - ¿Aspectos importantes sobre formato y nomenclaturas?
-- ¿Instrucciones adicionales para la IA que generará la ontología?
+
+**Enriquecimiento con instrucciones del glosario**:
+
+Antes de proponer el plan, aplicar el Workflow de Enriquecimiento con Instrucciones del Glosario descrito en `skills-guides/stratio-semantic-layer-tools.md` §11, acotado a **ontology** (al llamar a `get_glossary_instructions`, pedir solo la fase de ontology). Aquí es donde el usuario puede traerse las instrucciones GenAI de ontología desde el diccionario de datos, aportar un fichero externo (.owl/.ttl, documento de negocio, CSV) como su fuente, superponer comentarios libres, o saltar el enriquecimiento por completo.
+
+Si el orquestador ya pre-cargó instrucciones enriquecidas para esta fase durante el flujo de `build-semantic-layer`, reutilizarlas — opcionalmente preguntar si el usuario quiere añadir algo específico para esta fase.
+
+El texto enriquecido pasa a formar parte del contexto de planificación que alimenta el plan en Markdown propuesto más abajo. Cuando el MCP subyacente acepte `user_instructions` para `create_ontology` / `update_ontology`, ese mismo texto se pasará también a la llamada.
 
 **Exploración del dominio** (en paralelo con la interacción si es posible):
 - `list_domain_tables(domain)` + `get_tables_details(domain, tables)` → entender tablas y su contexto

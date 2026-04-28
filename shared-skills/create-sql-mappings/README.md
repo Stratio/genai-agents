@@ -6,7 +6,7 @@ Creates or updates the SQL mappings of existing business views in Stratio Govern
 
 - Resolves the technical domain and inspects existing views (`list_technical_domain_concepts`) with their governance state and mapping presence.
 - Offers three scopes: all views without mapping (safe), specific views (can include views that already have a mapping, to update it), or an explicit "update existing mappings" path.
-- Offers the user the chance to provide `user_instructions` — including reading local files (ER diagrams, integration specs, reference SQL) to feed JOIN rules, transformations and exclusion filters into the generator.
+- Builds `user_instructions` through the **Glossary Instruction Enrichment Workflow** (`stratio-semantic-layer-tools.md` §11): the user can pull GenAI Mapping Instructions from the data dictionary (specific to the phase, optionally plus globals), supply an external file (ER diagrams, integration specs, reference SQL), layer free-text JOIN rules / transformations / exclusion filters on top, or skip enrichment entirely.
 - Invokes `create_sql_mappings` and reports the tool summary; retries failed views up to twice with improved instructions.
 - After updating, offers optional publication of the affected Draft views.
 
