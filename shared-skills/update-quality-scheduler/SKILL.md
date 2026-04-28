@@ -82,7 +82,7 @@ What do you want to change in this scheduler?
 
 **`cron_timezone` and `cron_start_datetime`**: only used when `cron_expression` is provided.
 
-**Change description**: apply the same mandatory rules as in the `create-quality-scheduler` skill section 3.2 — no scheduling information, no technical table or column names, no measurement information, no active/inactive status.
+**Change description**: apply the same mandatory rules as in the `create-quality-schedule` skill section 3.2 — no scheduling information, no technical table or column names, no measurement information, no active/inactive status.
 
 **Cron expression**: accept frequency in **natural language** and translate to a Quartz cron expression (6 or 7 fields). Examples:
 - "daily at 9:00" → `0 0 9 * * ?`
@@ -238,6 +238,6 @@ If the update fails, clearly indicate the error and suggest alternatives (retry,
 
 At the end, ask the user with options how they want to continue, following the user question convention:
 - **Update another scheduler**
-- **Create a new scheduler** (load `create-quality-scheduler`)
+- **Create a new scheduler** (load `create-quality-schedule`)
 - **List current schedulers**
 - **Finish**

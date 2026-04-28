@@ -38,6 +38,10 @@ Call `get_critical_data_elements(collection_name=domain_name)`.
 - Inform the user: "No Critical Data Elements are defined for this domain. The assessment will cover all domain assets."
 - Continue with the standard workflow (`cde_mode=false`).
 
+**If the call fails** (permission denied / 403, MCP error, tool not available):
+- Do not block the assessment. Log the error briefly to the user — for example: "Could not retrieve Critical Data Elements for this domain (permission or service issue). Continuing with full domain assessment."
+- Continue with the standard workflow (`cde_mode=false`). The CDE column in the result tables is omitted in this case.
+
 **Special cases:**
 - **Specific table or column explicitly requested by the user**: if the requested asset is not in any CDE list, still evaluate it as requested (user request overrides CDE filter). Always mention whether the asset is a CDE or not.
 - **Specific column scope**: the CDE check is informative only — evaluate the requested column normally and mention if it is or is not marked as a Critical Data Element.

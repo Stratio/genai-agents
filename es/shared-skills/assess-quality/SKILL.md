@@ -38,6 +38,10 @@ Llamar a `get_critical_data_elements(collection_name=domain_name)`.
 - Informar al usuario: "No hay Elementos de Dato Críticos definidos para este dominio. El assessment cubrirá todos los assets del dominio."
 - Continuar con el workflow estándar (`cde_mode=false`).
 
+**Si la llamada falla** (permiso denegado / 403, error MCP, herramienta no disponible):
+- No bloquear el assessment. Informar brevemente al usuario — por ejemplo: "No se ha podido recuperar la lista de Elementos de Dato Críticos para este dominio (problema de permisos o servicio). Continuamos con el assessment completo del dominio."
+- Continuar con el workflow estándar (`cde_mode=false`). En este caso se omite la columna CDE en las tablas de resultado.
+
 **Casos especiales:**
 - **Tabla o columna específica pedida explícitamente por el usuario**: si el asset pedido no aparece en ninguna lista CDE, evaluarlo igualmente según lo solicitado (la petición del usuario prevalece sobre el filtro CDE). Siempre mencionar si el asset es o no un CDE.
 - **Scope de columna específica**: la comprobación CDE es solo informativa — evaluar la columna pedida con normalidad y mencionar si está o no marcada como Elemento de Dato Crítico.

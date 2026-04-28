@@ -82,7 +82,7 @@ Esta pausa es obligatoria. No interpretar silencio ni respuestas ambiguas como a
 
 **`cron_timezone` y `cron_start_datetime`**: solo se usan cuando se proporciona `cron_expression`.
 
-**Cambiar descripción**: aplicar las mismas reglas obligatorias que en la sección 3.2 de la skill `create-quality-scheduler` — sin información de scheduling, sin nombres técnicos de tablas o columnas, sin información de medición, sin estado activo/inactivo.
+**Cambiar descripción**: aplicar las mismas reglas obligatorias que en la sección 3.2 de la skill `create-quality-schedule` — sin información de scheduling, sin nombres técnicos de tablas o columnas, sin información de medición, sin estado activo/inactivo.
 
 **Expresión cron**: aceptar la frecuencia en **lenguaje natural** y traducir a expresión Quartz cron (6 o 7 campos). Ejemplos:
 - "diariamente a las 9:00" → `0 0 9 * * ?`
@@ -238,6 +238,6 @@ Si la actualización falla, indicar claramente el error y sugerir alternativas (
 
 Al finalizar, preguntar al usuario con opciones cómo quiere continuar, siguiendo la convención de preguntas al usuario:
 - **Actualizar otro scheduler**
-- **Crear una nueva planificación** (cargar `create-quality-scheduler`)
+- **Crear una nueva planificación** (cargar `create-quality-schedule`)
 - **Listar las planificaciones actuales**
 - **Finalizar**

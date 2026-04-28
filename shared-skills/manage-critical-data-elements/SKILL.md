@@ -301,7 +301,7 @@ Parse the response and present a result table:
 
 ---
 
-## 7. Follow-up Question
+## 2. Follow-up Question
 
 Ask the user with options following the user question convention:
 - **Assess quality coverage focused on CDEs** (load `assess-quality`)

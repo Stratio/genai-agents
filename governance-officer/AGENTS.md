@@ -151,8 +151,8 @@ Step 0 runs in Phase 0 and therefore does not violate the "never proceed to subs
 | "Change the threshold / SQL / schedule of rule X" | — | `update-quality-rules` |
 | "Remove the schedule from rule X" | — | `update-quality-rules` |
 | "Generate a quality report" / "Write a PDF" | — | `assess-quality` → `quality-report` |
-| "Schedule/plan the execution of [domain] rules" | — | `create-quality-scheduler` |
-| "Create a quality schedule for [domain]" | — | `create-quality-scheduler` |
+| "Schedule/plan the execution of [domain] rules" | — | `create-quality-schedule` |
+| "Create a quality schedule for [domain]" | — | `create-quality-schedule` |
 | "What schedulers/plans exist?" / "Show me the quality schedulers" | `list_quality_rule_schedulers` | none |
 | "Modify/update scheduler X" / "Change the cron of scheduler X" | — | `update-quality-scheduler` |
 | "Activate/deactivate scheduler X" | — | `update-quality-scheduler` |
@@ -253,19 +253,19 @@ In addition to the tools listed in `skills-guides/stratio-data-tools.md`, this a
 - **NEVER** call `create_quality_rule`, `update_quality_rule`, `create_quality_rule_scheduler`, `update_quality_rule_scheduler`, or `set_critical_data_elements` without explicit user confirmation
 - **`update_quality_rule`**: requires the rule's UUID (obtain it via `get_tables_quality_details` if not already in context); only pass the fields that actually change — omit fields that remain unchanged. To remove scheduling, pass `cron_expression=""` (empty string). If `query` or `query_reference` changes, SQL validation is MANDATORY before presenting the plan to the user. See skill `update-quality-rules` for the full workflow
 - **`set_critical_data_elements`**: HTTP 409 responses mean the asset was already tagged as a CDE — this is NOT an error. Count these as "already tagged" and do not treat them as failures
-- **SQL validation (MANDATORY)**: Before proposing or creating a rule, both the `query` and the `query_reference` must be verified as valid. To do this, execute each SQL using `execute_sql`. The `${table}` placeholders must be resolved to the actual table name before this verification.
+- **SQL validation (MANDATORY)**: Before proposing or creating a rule, both the `query` and the `query_reference` must be verified as valid. To do this, execute each SQL using `execute_sql`. The `${table_name}` placeholders (e.g., `${account}`, `${card}`) must be resolved to the plain table name (stripping the `${}` wrapper) before calling `execute_sql`. Keep the full `${table_name}` format in `create_quality_rule` — the governance system resolves placeholders to physical storage paths at rule execution time.
 - **MANDATORY use of `get_quality_rule_dimensions`**: Must always be executed at the start of any assessment to know the dimensions supported by the domain and their definitions. Do not assume default dimensions.
 - **EDA (Exploratory Data Analysis)**: Always use `profile_data`. Requires first generating the SQL with `generate_sql(data_question="all fields from table X", domain_name="Y")` and passing the result to the `query` parameter.
 - **`create_quality_rule`**: requires `domain_name`, `rule_name`, `primary_table`, `table_names` (list), `description`, `query`, `query_reference`, and optionally `dimension`, `folder_id`, `cron_expression` (Quartz cron expression for automatic execution), `cron_timezone` (cron timezone, default `Europe/Madrid`), `cron_start_datetime` (ISO 8601, date/time of the first scheduled execution), `active` (default `False` — rules are created inactive; pass `True` only if the user explicitly requests it), `measurement_type` (default `percentage`), `threshold_mode` (default `range`), `exact_threshold` (for exact mode: `{value, equal_status, not_equal_status}`), `threshold_breakpoints` (for range mode: list of `{value, status}` where the last element has no `value`; default `[{value: "80", status: "KO"}, {value: "95", status: "WARNING"}, {status: "OK"}]`). These parameters are always passed with their default values unless the user requests a different measurement configuration (see section 3.4 of the `create-quality-rules` skill for the user iteration flow and complete examples)
 - **`quality_rules_metadata`**: generates AI metadata (description and dimension classification) for quality rules. Three usage modes:
-  - **Automatic — before assessment** (`assess-quality`): `quality_rules_metadata(domain_name=X)` without `force_update` — only processes rules without metadata or modified since last generation
-  - **Automatic — after creating rules** (`create-quality-rules`): `quality_rules_metadata(domain_name=X)` without `force_update` — newly created rules will not have metadata and will be automatically processed
+  - **Automatic — before assessment** (`assess-quality`): `quality_rules_metadata(domain_name=X)` without `quality_rules_metadata_force_update` — only processes rules without metadata or modified since last generation
+  - **Automatic — after creating rules** (`create-quality-rules`): `quality_rules_metadata(domain_name=X)` without `quality_rules_metadata_force_update` — newly created rules will not have metadata and will be automatically processed
   - **Explicit user request** — resolve the intent based on what they ask:
     - "generate/update the metadata" → `quality_rules_metadata(domain_name=X)` (default: only without metadata or modified)
     - "regenerate/force all metadata" / "reprocess even if they already have metadata" → `quality_rules_metadata(domain_name=X, quality_rules_metadata_force_update=True)`
     - "generate the metadata for rule [ID]" → `quality_rules_metadata(domain_name=X, quality_rule_id=ID)` — if the user does not know the numeric ID, obtain it first with `get_tables_quality_details`
   - Does not require human approval (not destructive, only enriches metadata). If it fails, continue without blocking the workflow
-- **`create_quality_rule_scheduler`**: creates a schedule that automatically executes all quality rules in one or more folders. Requires `name`, `description`, `collection_names` (list of domains/collections), `cron_expression` (Quartz cron 6-7 fields; never very low frequencies like `* * * * * *`). Optional: `table_names` (table filter within collections), `cron_timezone` (default `Europe/Madrid`), `cron_start_datetime` (ISO 8601, first execution), `execution_size` (default `XS`, options: XS/S/M/L/XL). See skill `create-quality-scheduler` for the full workflow
+- **`create_quality_rule_scheduler`**: creates a schedule that automatically executes all quality rules in one or more folders. Requires `name`, `description`, `collection_names` (list of domains/collections), `cron_expression` (Quartz cron 6-7 fields; never very low frequencies like `* * * * * *`). Optional: `table_names` (table filter within collections), `cron_timezone` (default `Europe/Madrid`), `cron_start_datetime` (ISO 8601, first execution), `execution_size` (default `XS`, options: XS/S/M/L/XL). See skill `create-quality-schedule` for the full workflow
 - **`list_quality_rule_schedulers`**: no parameters — returns all schedulers with UUID, name, active status, cron, planned resources. Use at the start of `update-quality-scheduler` if the user does not have the UUID in context
 - **`update_quality_rule_scheduler`**: requires `planification_uuid` (UUID of the existing scheduler to modify); only pass the fields that actually change. If `collection_names` is provided, it replaces all existing planned resources (validate collections with `search_domains` and verify they contain rules). `table_names` only applies when `collection_names` is provided. `cron_timezone` and `cron_start_datetime` only apply when `cron_expression` is provided. See skill `update-quality-scheduler` for the full workflow
 - If an MCP call fails or returns an error: inform the user, do not retry more than 2 times with the same formulation
@@ -382,7 +382,7 @@ A quality rule is defined with:
 - **`query`**: SQL that counts the records that **PASS** the check (numerator)
 - **`query_reference`**: SQL with the **total number of records** (denominator for % quality)
 - **`dimension`**: completeness / uniqueness / validity / consistency / ...
-- **Placeholders**: use `${table_name}` in SQLs, NEVER direct IDs
+- **Placeholders**: use `${table_name}` in SQLs where `table_name` is the exact table name (e.g., `${account}`, `${card}`). NEVER use direct physical IDs or paths
 
 **SQL patterns**: See skill `create-quality-rules` section 3.2 for the complete catalog of patterns by dimension.
 

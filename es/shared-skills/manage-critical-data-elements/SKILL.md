@@ -301,7 +301,7 @@ Parsear la respuesta y presentar una tabla de resultados:
 
 ---
 
-## 7. Pregunta de Continuación
+## 2. Pregunta de Continuación
 
 Preguntar al usuario con opciones siguiendo la convención de preguntas al usuario:
 - **Evaluar la cobertura de calidad focalizada en los CDEs** (cargar `assess-quality`)
