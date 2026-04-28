@@ -1,43 +1,43 @@
-# agents/plugins — genai-agents Plugin Marketplace
+# plugins — genai-agents Plugin Marketplace
 
-Local Claude Code plugin marketplace for the `genai-agents` monorepo.
+Source definitions for the Claude Code plugin marketplace. Skills are packed dynamically from `shared-skills/` via `pack_plugins.sh`.
 
 ## Plugins
 
 | Plugin | Description |
 |--------|-------------|
-| [`genai-generic-skills`](./genai-generic-skills/README.md) | Generic document processing and creative output skills (PDF, DOCX, PPTX, XLSX, web, canvas) |
-| [`genai-stratio-skills`](./genai-stratio-skills/README.md) | Stratio platform skills (data exploration, semantic layer, governance, data quality) |
+| `genai-generic-skills` | Generic document processing and creative output (PDF, DOCX, PPTX, XLSX, web, canvas) |
+| `genai-stratio-skills` | Stratio platform skills (data exploration, semantic layer, governance, data quality) |
 
-## Installation
-
-Run from the `genai-agents` repository root:
+## Usage
 
 ```bash
-# Register the marketplace once (CLI)
-claude plugin marketplace add ./plugins
-```
-```
-# Install each plugin (slash commands in a Claude Code session)
+# Build the marketplace ZIP
+bash pack_plugins.sh
+
+# Register and install (from repo root)
+claude plugin marketplace add ./dist/plugins.zip
 /plugin install genai-generic-skills@genai-agents-plugins
 /plugin install genai-stratio-skills@genai-agents-plugins
 /reload-plugins
 ```
 
+Single plugin: `bash pack_plugins.sh --plugin genai-generic-skills`  
+With language overlay: `bash pack_plugins.sh --lang es`
+
 ## Structure
 
 ```
-agents/plugins/
+plugins/
+  README.md                              # this file
   .claude-plugin/
-    marketplace.json              # Marketplace manifest
+    marketplace.json                     # marketplace manifest
   genai-generic-skills/
     .claude-plugin/
-      plugin.json                 # Plugin manifest (skills array points into shared-skills/)
-    README.md
+      plugin.json                        # metadata + skills list
   genai-stratio-skills/
     .claude-plugin/
-      plugin.json                 # Plugin manifest (skills array points into shared-skills/)
-    README.md
+      plugin.json                        # metadata + skills list
 ```
 
-Each `plugin.json` lists individual skill paths pointing directly into `shared-skills/` at the repo root — no duplication, single source of truth.
+Skill content is resolved at pack time from `shared-skills/` — no duplication in source.

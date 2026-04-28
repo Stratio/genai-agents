@@ -1,26 +1,34 @@
 #!/usr/bin/env bash
-# pack_plugins.sh — Packages the plugin marketplace into a self-contained dist/plugins/
-# Usage: bash pack_plugins.sh [--plugin <name>] [--lang <code>]
+# pack_plugins.sh — Packages the plugin marketplace into a self-contained ZIP
+# Usage: bash pack_plugins.sh [--name <name>] [--plugin <plugin-name>] [--lang <code>]
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MONOREPO_ROOT="$SCRIPT_DIR"
 
 # ---------------------------------------------------------------------------
-# Phase 0 — Parsing
+# Phase 0 — Parsing and validation
 # ---------------------------------------------------------------------------
+PACK_NAME=""
 PLUGIN_FILTER=""
 LANG_CODE=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    --name)   PACK_NAME="$2";     shift 2 ;;
     --plugin) PLUGIN_FILTER="$2"; shift 2 ;;
     --lang)   LANG_CODE="$2";     shift 2 ;;
     *) echo "ERROR: unknown argument: $1" >&2
-       echo "Usage: bash pack_plugins.sh [--plugin <name>] [--lang <code>]" >&2
+       echo "Usage: bash pack_plugins.sh [--name <name>] [--plugin <plugin-name>] [--lang <code>]" >&2
        exit 1 ;;
   esac
 done
+
+if [[ -n "$PLUGIN_FILTER" ]]; then
+  PACK_NAME="${PACK_NAME:-$PLUGIN_FILTER}"
+else
+  PACK_NAME="${PACK_NAME:-plugins}"
+fi
 
 # ---------------------------------------------------------------------------
 # Language resolution
@@ -45,20 +53,22 @@ if [[ -n "$PLUGIN_FILTER" && ! -d "$PLUGINS_SRC/$PLUGIN_FILTER" ]]; then
   exit 1
 fi
 
-OUTPUT_DIR="$SCRIPT_DIR/dist/plugins"
-rm -rf "$OUTPUT_DIR"
-mkdir -p "$OUTPUT_DIR"
+if [[ -n "$PLUGIN_FILTER" ]]; then
+  echo "==> Packaging individual plugin '$PLUGIN_FILTER' as '$PACK_NAME'"
+else
+  echo "==> Packaging plugin marketplace as '$PACK_NAME'"
+fi
 
 # ---------------------------------------------------------------------------
-# Phase 1 — Marketplace manifest
+# Phase 1 — Staging
 # ---------------------------------------------------------------------------
-cp -r "$PLUGINS_SRC/.claude-plugin" "$OUTPUT_DIR/.claude-plugin"
-echo "==> Marketplace manifest copied"
+STAGING=$(mktemp -d)
+trap 'rm -rf "$STAGING"' EXIT
 
 # ---------------------------------------------------------------------------
-# Phase 2 — Process plugins
+# Phase 2 — Helper: pack one skill into a destination directory
 # ---------------------------------------------------------------------------
-N_PLUGINS=0
+N_GUIDES=0
 
 _pack_one_skill() {
   local skill_src="$1"
@@ -99,6 +109,17 @@ _pack_one_skill() {
     -exec sed -i 's|skills-guides/||g; s|shared-skill-guides/||g' {} \;
 }
 
+# ---------------------------------------------------------------------------
+# Phase 3 — Process plugins
+# ---------------------------------------------------------------------------
+N_PLUGINS=0
+N_SKILLS_TOTAL=0
+
+# Marketplace manifest (only needed when packing all plugins)
+if [[ -z "$PLUGIN_FILTER" ]]; then
+  cp -r "$PLUGINS_SRC/.claude-plugin" "$STAGING/.claude-plugin"
+fi
+
 for plugin_dir in "$PLUGINS_SRC"/*/; do
   [[ -d "$plugin_dir" ]] || continue
   plugin_name="$(basename "$plugin_dir")"
@@ -113,12 +134,17 @@ for plugin_dir in "$PLUGINS_SRC"/*/; do
     continue
   fi
 
-  echo "==> Packaging plugin '$plugin_name'${LANG_CODE:+ ($LANG_CODE)}"
+  echo "    plugin '$plugin_name'"
 
-  out_plugin="$OUTPUT_DIR/$plugin_name"
+  # In single-plugin mode files go directly to staging root; in bulk mode into a subdir
+  if [[ -n "$PLUGIN_FILTER" ]]; then
+    out_plugin="$STAGING"
+  else
+    out_plugin="$STAGING/$plugin_name"
+  fi
   mkdir -p "$out_plugin/.claude-plugin" "$out_plugin/skills"
 
-  # Read metadata and emit a clean plugin.json with skills pointing to ./skills/
+  # Emit a clean plugin.json with skills pointing to ./skills/
   python3 - "$plugin_json" "$out_plugin/.claude-plugin/plugin.json" <<'PYEOF'
 import json, sys
 src, dst = sys.argv[1], sys.argv[2]
@@ -126,13 +152,9 @@ d = json.load(open(src))
 out = {"name": d["name"], "version": d.get("version", "1.0.0"),
        "description": d.get("description", ""), "skills": "./skills/"}
 json.dump(out, open(dst, "w"), indent=2)
-print(json.dumps(out, indent=2))
 PYEOF
 
-  # Copy README if present
-  [[ -f "$plugin_dir/README.md" ]] && cp "$plugin_dir/README.md" "$out_plugin/README.md"
-
-  # Resolve skills list (array of paths or single string) from plugin.json
+  # Resolve skill names from the skills array in plugin.json
   skill_names=$(python3 - "$plugin_json" <<'PYEOF'
 import json, os, sys
 d = json.load(open(sys.argv[1]))
@@ -144,39 +166,78 @@ PYEOF
 )
 
   N_SKILLS=0
-  N_GUIDES=0
-
   while IFS= read -r skill_name || [[ -n "$skill_name" ]]; do
     [[ -z "$skill_name" ]] && continue
-    skill_src="$MONOREPO_ROOT/shared-skills/$skill_name"
-    skill_dst="$out_plugin/skills/$skill_name"
-    _pack_one_skill "$skill_src" "$skill_dst"
+    _pack_one_skill "$MONOREPO_ROOT/shared-skills/$skill_name" "$out_plugin/skills/$skill_name"
     N_SKILLS=$((N_SKILLS + 1))
   done <<< "$skill_names"
 
-  # Non-runtime sweep (tests, caches, editor artefacts)
-  bash "$SCRIPT_DIR/bin/sweep-nonruntime.sh" "$out_plugin"
-
-  echo "    $N_SKILLS skill(s), $N_GUIDES guide(s) packaged"
-
-  # Verify every skill has a SKILL.md
-  ERRORS=0
-  for skill_dir in "$out_plugin/skills"/*/; do
-    [[ -d "$skill_dir" ]] || continue
-    if [[ ! -f "$skill_dir/SKILL.md" ]]; then
-      echo "    ERROR: $(basename "$skill_dir") has no SKILL.md" >&2
-      ERRORS=$((ERRORS + 1))
-    fi
-  done
-  if [[ "$ERRORS" -gt 0 ]]; then
-    echo "==> FAILED: $ERRORS verification error(s) in '$plugin_name'" >&2
-    exit 1
-  fi
-
+  echo "      $N_SKILLS skill(s), $N_GUIDES guide(s) copied"
+  N_SKILLS_TOTAL=$((N_SKILLS_TOTAL + N_SKILLS))
+  N_GUIDES=0
   N_PLUGINS=$((N_PLUGINS + 1))
 done
 
-echo "==> OK — $N_PLUGINS plugin(s) packaged in dist/plugins/"
-echo ""
-echo "Register with:"
-echo "  claude plugin marketplace add ./dist/plugins"
+echo "    $N_PLUGINS plugin(s), $N_SKILLS_TOTAL skill(s) total"
+
+# ---------------------------------------------------------------------------
+# Phase 4 — Path substitutions
+# ---------------------------------------------------------------------------
+find "$STAGING" \
+  -type f \( -name '*.md' -o -name '*.txt' \) \
+  -exec sed -i 's|skills-guides/||g; s|shared-skill-guides/||g' {} \;
+echo "    Path substitutions applied"
+
+# ---------------------------------------------------------------------------
+# Phase 5 — Non-runtime sweep
+# ---------------------------------------------------------------------------
+bash "$SCRIPT_DIR/bin/sweep-nonruntime.sh" "$STAGING"
+
+# ---------------------------------------------------------------------------
+# Phase 6 — Generate ZIP
+# ---------------------------------------------------------------------------
+REAL_DIST="$SCRIPT_DIR/dist"
+mkdir -p "$REAL_DIST"
+ZIP_PATH="$REAL_DIST/${PACK_NAME}.zip"
+rm -f "$ZIP_PATH"
+(cd "$STAGING" && zip -r "$ZIP_PATH" . -q)
+ZIP_SIZE=$(du -sh "$ZIP_PATH" | cut -f1)
+echo "    ZIP generated: dist/${PACK_NAME}.zip ($ZIP_SIZE)"
+
+# ---------------------------------------------------------------------------
+# Phase 7 — Verification
+# ---------------------------------------------------------------------------
+echo "    Verifying integrity..."
+ERRORS=0
+
+# Every skill must have a SKILL.md
+for skill_dir in "$STAGING"/*/skills/*/; do
+  [[ -d "$skill_dir" ]] || continue
+  if [[ ! -f "$skill_dir/SKILL.md" ]]; then
+    echo "    ERROR: $(basename "$skill_dir") has no SKILL.md" >&2
+    ERRORS=$((ERRORS + 1))
+  fi
+done
+
+# No residual skill-guides manifests
+LEFTOVER=$(find "$STAGING" -name 'skill-guides' -type f 2>/dev/null | wc -l) || true
+if [[ "$LEFTOVER" -gt 0 ]]; then
+  echo "    ERROR: residual skill-guides file(s) in the output" >&2
+  ERRORS=$((ERRORS + 1))
+fi
+
+# No residual path references
+for pattern in 'skills-guides/' 'shared-skill-guides/'; do
+  REFS=$(grep -rl "$pattern" "$STAGING" --include='*.md' --include='*.txt' 2>/dev/null | wc -l) || true
+  if [[ "$REFS" -gt 0 ]]; then
+    echo "    ERROR: $REFS file(s) still contain '$pattern'" >&2
+    ERRORS=$((ERRORS + 1))
+  fi
+done
+
+if [[ "$ERRORS" -gt 0 ]]; then
+  echo "==> FAILED: $ERRORS verification error(s)" >&2
+  exit 1
+fi
+
+echo "==> OK — $N_PLUGINS plugin(s) packaged in dist/${PACK_NAME}.zip"
