@@ -427,6 +427,35 @@ for FORBIDDEN in .opencode .agents opencode dist; do
   fi
 done
 
+# SKILL.md description length: Anthropic + OpenCode publish a 1024-char hard limit;
+# GitHub Copilot Code rejects longer descriptions on load.
+if command -v python3 &>/dev/null; then
+  DESC_LIMIT=1024
+  while IFS= read -r -d '' skill_md; do
+    LEN=$(python3 - "$skill_md" <<'PY'
+import re, sys
+t = open(sys.argv[1]).read()
+m = re.match(r'^---\s*\n(.*?)\n---', t, re.DOTALL)
+if not m:
+    print(0); sys.exit(0)
+fm = m.group(1)
+dm = re.search(r'^description:\s*(.+?)(?=^[A-Za-z][\w-]*:|\Z)', fm, re.MULTILINE | re.DOTALL)
+if not dm:
+    print(0); sys.exit(0)
+raw = dm.group(1).strip()
+if (raw.startswith('"') and raw.endswith('"')) or (raw.startswith("'") and raw.endswith("'")):
+    raw = raw[1:-1]
+print(len(re.sub(r'\s+', ' ', raw).strip()))
+PY
+)
+    if [[ "$LEN" -gt "$DESC_LIMIT" ]]; then
+      rel="${skill_md#$OUTPUT_DIR/}"
+      echo "    ERROR: $rel description has $LEN chars (limit $DESC_LIMIT)" >&2
+      ERRORS=$((ERRORS + 1))
+    fi
+  done < <(find "$OUTPUT_DIR" -type f -name 'SKILL.md' -print0)
+fi
+
 # [Final step] Write .agent_lang marker so Python tools can pick up the
 # default language when the agent invokes them without passing --lang.
 # Falls back to "en" when no --lang was supplied at packaging time.
