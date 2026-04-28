@@ -20,6 +20,7 @@
       },
       "allowedTools": [
         "get_quality_rule_dimensions",
+        "get_critical_data_elements"
         "get_mcp_task_result"
       ]
     }
