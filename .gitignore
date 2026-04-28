@@ -21,3 +21,6 @@ __pycache__/
 
 # OpenCode workspace local (generado automáticamente, no versionar)
 **/.opencode/
+
+# Generated hard-linked skill trees (run pack_plugins.sh to recreate)
+plugins/*/shared-skills/
