@@ -117,7 +117,7 @@ Step 0 runs in Phase 0 and therefore does not violate the "never proceed to subs
 | "Delete business views X from domain Y" | — | `create-business-views` |
 | "Update SQL mappings for the views" | — | `create-sql-mappings` |
 | "Generate the semantic terms" | — | `create-semantic-terms` |
-| "Create a business term for CLV" | — | `manage-business-terms` |
+| "Create a business term for CLV" / "Add this KPI to the glossary" / "Document this metric in the business dictionary" / "Register these business acronyms" / "Add a glossary entry for <concept>" / "Define a business concept and link it to these tables" / "Add a definition for <term> to the dictionary" / "Document this domain concept and connect it to <table>.<column>" | — | `manage-business-terms` |
 | "Create a new domain with tables from X" | — | `create-data-collection` |
 | "What tables are there about customers?" | — | `create-data-collection` |
 | "Publish the views for domain X" | `publish_business_views` | none |

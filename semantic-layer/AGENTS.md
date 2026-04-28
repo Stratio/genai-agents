@@ -41,7 +41,7 @@ Before activating any skill, evaluate what the user needs:
 | Create business views | `/create-business-views` | "Create the business views" |
 | Update SQL mappings | `/create-sql-mappings` | "Update the SQL mappings for the views" |
 | Semantic terms | `/create-semantic-terms` | "Generate the semantic terms" |
-| Business terms | `/manage-business-terms` | "Create a business term for CLV" |
+| Business terms / glossary entries | `/manage-business-terms` | "Create a business term for CLV", "Add this KPI to the glossary", "Document this metric in the business dictionary", "Register these business acronyms", "Add a glossary entry for <concept>", "Define a business concept and link it to these tables", "Add a definition for <term> to the dictionary", "Document this domain concept and connect it to <table>.<column>" |
 | Delete ontology classes | `/create-ontology` | "Delete classes X from ontology Y" |
 | Delete business views | `/create-business-views` | "Delete views X from domain Y" |
 | Publish business views | Direct triage: `publish_business_views` | "Publish the views for domain X", "Change the views to Pending Publish" |

@@ -117,7 +117,7 @@ El Paso 0 corre dentro de la Fase 0 y por tanto no viola la regla "nunca avanzar
 | "Elimina las business views X del dominio Y" | — | `create-business-views` |
 | "Actualiza los SQL mappings de las vistas" | — | `create-sql-mappings` |
 | "Genera los términos semánticos" | — | `create-semantic-terms` |
-| "Crea un business term para CLV" | — | `manage-business-terms` |
+| "Crea un business term para CLV" / "Añade este KPI al glosario" / "Documenta esta métrica en el diccionario de negocio" / "Registra estos acrónimos de negocio" / "Añade una entrada de glosario para <concepto>" / "Define un concepto de negocio y enlázalo con estas tablas" / "Añade una definición de <término> al diccionario" / "Documenta este concepto de dominio y conéctalo a <tabla>.<columna>" | — | `manage-business-terms` |
 | "Crea un nuevo dominio con tablas de X" | — | `create-data-collection` |
 | "Qué tablas hay sobre clientes?" | — | `create-data-collection` |
 | "Publica las vistas del dominio X" | `publish_business_views` | ninguna |
