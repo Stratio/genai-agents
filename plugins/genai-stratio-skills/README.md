@@ -8,7 +8,7 @@ From the `genai-agents` workspace root:
 
 ```bash
 # Register the marketplace once (CLI)
-claude plugin marketplace add ./agents/plugins
+claude plugin marketplace add ./plugins
 ```
 ```
 # Install the plugin (slash command in a Claude Code session)

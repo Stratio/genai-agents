@@ -15,7 +15,7 @@ Run from the `genai-agents` repository root:
 
 ```bash
 # Register the marketplace once (CLI)
-claude plugin marketplace add ./agents/plugins
+claude plugin marketplace add ./plugins
 ```
 ```
 # Install each plugin (slash commands in a Claude Code session)
