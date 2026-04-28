@@ -1,6 +1,6 @@
 # plugins — genai-agents Plugin Marketplace
 
-Source definitions for the Claude Code plugin marketplace. Skills are packed dynamically from `shared-skills/` via `pack_plugins.sh`.
+Source definitions for the Claude Code plugin marketplace. Skills are packed dynamically from `shared-skills/` via `setup-plugins.sh`.
 
 ## Plugins
 
@@ -13,7 +13,7 @@ Source definitions for the Claude Code plugin marketplace. Skills are packed dyn
 
 ```bash
 # Build the marketplace ZIP
-bash pack_plugins.sh
+bash setup-plugins.sh
 
 # Register and install (from repo root)
 claude plugin marketplace add ./dist/plugins.zip
@@ -22,8 +22,8 @@ claude plugin marketplace add ./dist/plugins.zip
 /reload-plugins
 ```
 
-Single plugin: `bash pack_plugins.sh --plugin genai-generic-skills`  
-With language overlay: `bash pack_plugins.sh --lang es`
+Single plugin: `bash setup-plugins.sh --plugin genai-generic-skills`  
+With language overlay: `bash setup-plugins.sh --lang es`
 
 ## Structure
 
