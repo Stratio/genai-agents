@@ -25,7 +25,7 @@ Paralelo:
   A. get_tables_quality_details(domain_name, tablas)
   B. get_table_columns_details(domain_name, tabla)  [por cada tabla]
   C. get_quality_rule_dimensions(domain_name=domain_name)
-  D. get_critical_data_elements(collection_name=domain_name)  [si no están ya en contexto; no bloqueante — si falla por permisos o error, omitir la columna CDE del informe]
+  D. get_critical_data_elements(domain_name=domain_name)  [si no están ya en contexto; no bloqueante — si falla por permisos o error, omitir la columna CDE del informe]
 ```
 
 ## 2. Selección de formato

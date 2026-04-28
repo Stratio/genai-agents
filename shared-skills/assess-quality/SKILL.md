@@ -24,7 +24,7 @@ Before executing any MCP call, determine exactly what will be assessed:
 
 Before launching data collection, check whether the domain has Critical Data Elements defined. This determines the effective assessment scope.
 
-Call `get_critical_data_elements(collection_name=domain_name)`.
+Call `get_critical_data_elements(domain_name=domain_name)`.
 
 **If CDEs exist** (`critical_tables` or `columns_by_table` are non-empty):
 - Inform the user: "This domain has Critical Data Elements defined. The assessment will focus on the marked critical assets."

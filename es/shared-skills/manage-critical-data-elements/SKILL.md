@@ -22,7 +22,7 @@ Workflow para consultar y definir Elementos de Dato Críticos (CDEs) en un domin
 
 Si `$ARGUMENTS` proporciona un nombre de dominio, buscar con `search_domains($ARGUMENTS)`. Si no se encuentra, reintentar con `search_domains($ARGUMENTS, refresh=true)`. Si sigue sin encontrarse, o si no se proporcionó argumento, listar dominios con `list_domains()` y preguntar al usuario con opciones siguiendo la convención de preguntas al usuario.
 
-**Regla CRITICA**: el `collection_name` usado en todas las llamadas MCP debe ser **exactamente** el valor devuelto por `search_domains` o `list_domains`. NUNCA traducirlo, interpretarlo, parafrasearlo ni inferirlo.
+**Regla CRITICA**: el `domain_name` usado en todas las llamadas MCP debe ser **exactamente** el valor devuelto por `search_domains` o `list_domains`. NUNCA traducirlo, interpretarlo, parafrasearlo ni inferirlo.
 
 ### 1.2 Determinar flujo
 
@@ -41,7 +41,7 @@ Si no está claro, preguntar al usuario con opciones siguiendo la convención de
 
 ### A.1 Obtener y presentar los CDEs actuales
 
-Llamar a `get_critical_data_elements(collection_name=domain_name)`.
+Llamar a `get_critical_data_elements(domain_name=domain_name)`.
 
 Presentar los resultados con estructura clara:
 
@@ -98,7 +98,7 @@ Antes de recomendar o recopilar input del usuario, obtener el estado actual:
 ```
 Paralelo:
   A. list_domain_tables(domain_name)
-  B. get_critical_data_elements(collection_name=domain_name)   ← baseline: CDEs actuales
+  B. get_critical_data_elements(domain_name=domain_name)   ← baseline: CDEs actuales
 ```
 
 ### B.2 Determinar método de definición
@@ -223,7 +223,7 @@ Antes de llamar a `set_critical_data_elements`, presentar el plan completo de ta
 ```markdown
 ## Plan de Tagueado de CDEs — [domain_name]
 
-**Dominio**: [collection_name]
+**Dominio**: [domain_name]
 **Origen**: [Especificación manual | Recomendación del agente | Combinado]
 
 ### Assets a taggear como críticos (nuevos — no presentes en el baseline)
@@ -265,7 +265,7 @@ La llamada recibe un único objeto `collection` (no tres parámetros separados):
 
 ```json
 set_critical_data_elements(collection={
-  "collection_name": "domain_name",
+  "domain_name": "domain_name",
   "critical_tables": ["account", "district", "loan"],
   "columns_by_table": {
     "card": ["card_id", "disp_id"],

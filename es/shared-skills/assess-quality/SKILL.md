@@ -24,7 +24,7 @@ Antes de ejecutar ninguna llamada MCP, determinar exactamente que se va a evalua
 
 Antes de lanzar la recopilación de datos, comprobar si el dominio tiene Elementos de Dato Críticos definidos. Esto determina el scope efectivo del assessment.
 
-Llamar a `get_critical_data_elements(collection_name=domain_name)`.
+Llamar a `get_critical_data_elements(domain_name=domain_name)`.
 
 **Si hay CDEs** (`critical_tables` o `columns_by_table` no están vacíos):
 - Informar al usuario: "Este dominio tiene Elementos de Dato Críticos definidos. El assessment se focalizará en los assets marcados como críticos."
