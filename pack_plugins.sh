@@ -144,6 +144,9 @@ for plugin_dir in "$PLUGINS_SRC"/*/; do
   fi
   mkdir -p "$out_plugin/.claude-plugin" "$out_plugin/skills"
 
+  # Copy README if present
+  [[ -f "$plugin_dir/README.md" ]] && cp "$plugin_dir/README.md" "$out_plugin/README.md"
+
   # Emit a clean plugin.json with skills pointing to ./skills/
   python3 - "$plugin_json" "$out_plugin/.claude-plugin/plugin.json" <<'PYEOF'
 import json, sys
