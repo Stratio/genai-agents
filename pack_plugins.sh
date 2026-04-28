@@ -118,6 +118,7 @@ N_SKILLS_TOTAL=0
 # Marketplace manifest (only needed when packing all plugins)
 if [[ -z "$PLUGIN_FILTER" ]]; then
   cp -r "$PLUGINS_SRC/.claude-plugin" "$STAGING/.claude-plugin"
+  [[ -f "$PLUGINS_SRC/README.md" ]] && cp "$PLUGINS_SRC/README.md" "$STAGING/README.md"
 fi
 
 for plugin_dir in "$PLUGINS_SRC"/*/; do
