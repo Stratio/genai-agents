@@ -16,6 +16,9 @@ __pycache__/
 # Claude local settings: ignorado globalmente, re-incluir los de los agentes (subdirectorios)
 !*/.claude/settings.local.json
 
+# Claude local notes (per-developer, no versionar)
+CLAUDE.local.md
+
 # Generated packaging artifacts (pack scripts + CI/CD build)
 **/dist/
 

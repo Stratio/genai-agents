@@ -48,13 +48,15 @@ Presentar **dashboard de estado**:
 | Términos semánticos | ✗ Pendiente | 0/6 vistas |
 ```
 
-### 3. Contexto general
+### 3. Enriquecimiento con instrucciones del glosario (pre-carga para todo el pipeline)
 
-Pedir al usuario contexto global que aplique a todas las fases:
-- "¿Tienes ficheros de referencia (documentación, glosarios, especificaciones) que deba leer para entender mejor el dominio? ¿Hay definiciones de negocio, reglas o conceptos clave que quieras que se reflejen en la capa semántica? Si no, responde 'Continuar'."
-- Si el usuario proporciona rutas a ficheros → **leerlos** y extraer información relevante como contexto global
-- El contexto extraido se pasara como `user_instructions` en cada fase que lo soporte
-- Solo preguntar de nuevo en fases específicas si el usuario necesita instrucciones diferentes
+Aplicar el Workflow de Enriquecimiento con Instrucciones del Glosario descrito en `skills-guides/stratio-semantic-layer-tools.md` §11 **una sola vez**, cubriendo las cuatro fases del pipeline que aceptan `user_instructions`: technical terms, ontology, SQL mappings y semantic terms.
+
+Al hacer la pregunta de cuatro opciones (§11.2), plantearla como "para las fases de este pipeline" y tratar la respuesta como política para todas; ofrecer override por fase solo si el usuario lo pide explícitamente. Combinar las instrucciones del glosario con cualquier fichero de referencia que el usuario quiera aportar (opción 3) y cualquier regla o definición de negocio en texto libre que quiera superponer.
+
+El resultado es **texto enriquecido por fase** que esta skill mantiene en el contexto de planificación durante el resto de la ejecución. Cada invocación de fase en el paso 5 reutiliza el bloque correspondiente como `user_instructions` sin volver a hacer la pregunta de cuatro opciones. Las fases que el usuario decida saltar en el paso 4 simplemente no consumen su bloque — sin problema.
+
+Si el usuario eligió la opción 4 (saltar), no se produce `user_instructions` para ninguna fase y el pipeline corre sin enriquecimiento.
 
 ### 4. Plan de ejecución
 
@@ -70,12 +72,12 @@ Pedir aprobación global del plan antes de ejecutar.
 Ejecutar cada fase en orden estricto, llamando a las tools directamente:
 
 **Fase 1 — Términos técnicos** (si necesario):
-- `create_technical_terms(domain, table_names?, user_instructions?)` con las instrucciones globales
+- `create_technical_terms(domain, table_names?, user_instructions?)` pasando como `user_instructions` el bloque de technical terms del enriquecimiento pre-cargado (omitir el parámetro si el usuario eligió saltar el enriquecimiento en el paso 3)
 - Presentar resumen de la tool al usuario
 
 **Fase 2 — Ontología** (si necesario):
-- Planificación interactiva: preguntar al usuario sobre clases, ficheros de referencia (ontologías .owl/.ttl, documentos de negocio, CSVs), nomenclaturas
-- Si el usuario proporciona rutas a ficheros locales → **leerlos** para extraer contexto y enriquecer el plan
+- Planificación interactiva: preguntar al usuario sobre clases esenciales y nomenclaturas
+- El bloque de ontology del enriquecimiento pre-cargado ya cubre ficheros de referencia, instrucciones del glosario y reglas en texto libre — alimentarlo en el contexto de planificación. Solo volver a preguntar si el usuario quiere añadir explícitamente algo nuevo para esta fase
 - Explorar dominio: `list_domain_tables` + `get_tables_details` + `get_table_columns_details`
 - Proponer plan de ontología en Markdown → revisar con usuario → iterar (max 3)
 - `create_ontology(domain, name, ontology_plan)` o `update_ontology(domain, name, update_plan)`
@@ -87,7 +89,7 @@ Ejecutar cada fase en orden estricto, llamando a las tools directamente:
 - Ofrecer: "Si alguna vista no te convence, puedo eliminarla antes de continuar con mappings (vistas Published no se pueden borrar)." Si el usuario pide borrar → `delete_business_views(domain, view_names)` → informar de borradas/saltadas
 
 **Fase 4 — SQL Mappings** (si necesario; cubre vistas nuevas de Fase 3 y existentes sin mapping):
-- `create_sql_mappings(domain, view_names?, user_instructions?)` con las instrucciones globales
+- `create_sql_mappings(domain, view_names?, user_instructions?)` pasando como `user_instructions` el bloque de mapping del enriquecimiento pre-cargado (omitir si se saltó en el paso 3)
 - Presentar resumen de la tool al usuario
 
 **Publicación (opcional, entre Fase 4 y Fase 5)**:
@@ -97,7 +99,7 @@ Ejecutar cada fase en orden estricto, llamando a las tools directamente:
 
 **Fase 5 — Términos semánticos** (si necesario):
 - Verificar que las vistas tienen mapping (pre-requisito)
-- `create_semantic_terms(domain, view_names?, user_instructions?)` con las instrucciones globales
+- `create_semantic_terms(domain, view_names?, user_instructions?)` pasando como `user_instructions` el bloque de semantic terms del enriquecimiento pre-cargado (omitir si se saltó en el paso 3)
 - Presentar resumen de la tool al usuario
 
 **Tras cada fase**:

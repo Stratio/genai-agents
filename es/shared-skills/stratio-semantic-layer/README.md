@@ -9,11 +9,11 @@ Esta skill **no** invoca MCPs — carga el contrato que toda skill o agente rela
 - Carga la referencia completa de MCPs de gobierno (`stratio-semantic-layer-tools.md`) en la conversación.
 - Cubre:
   - El catálogo completo de herramientas dividido por servidor (`gov` + `sql`), con parámetros y propósito.
-  - Reglas estrictas: inmutabilidad de `domain_name`, uso técnico-vs-semántico de dominios, `user_instructions` siempre ofrecido, confirmación obligatoria para operaciones destructivas (`regenerate=true`, `delete_*`), aprobación de publicación de views, semántica ADD+DELETE de ontologías, convenciones de naming para colecciones y ontologías.
+  - Reglas estrictas: inmutabilidad de `domain_name`, uso técnico-vs-semántico de dominios, `user_instructions` construido mediante el §11 Workflow de Enriquecimiento con Instrucciones del Glosario (sin inyección silenciosa), confirmación obligatoria para operaciones destructivas (`regenerate=true`, `delete_*`), aprobación de publicación de views, semántica ADD+DELETE de ontologías, convenciones de naming para colecciones y ontologías.
   - Workflow de descubrimiento de dominio técnico (search → list → explorar tablas → detalles → columnas → conocimiento).
   - Exploración de dominios semánticos **publicados** (prefijo `semantic_*`).
   - Tabla de detección de estado para idempotencia: cómo detectar collections, términos técnicos, ontologías, views, mappings, términos semánticos y estado de publicación existentes antes de actuar.
-  - Manejo de errores y recuperación (reintentar con `user_instructions` mejoradas, máx. 2 reintentos por entidad).
+  - Manejo de errores y recuperación (reintentar con `user_instructions` mejoradas vía §11, máx. 2 reintentos por entidad).
   - Reglas de ejecución paralela (lectura en paralelo, creaciones secuenciales dentro de una fase, secuencia estricta entre fases).
   - Protocolo de polling de tareas largas (`task_id` → `get_mcp_task_result` con `pending` / `done` / `error` / `not_found`).
   - Fallback de disponibilidad de OpenSearch (determinista `list_*` + filtro local por substring cuando los endpoints de search fallan).

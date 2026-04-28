@@ -7,7 +7,7 @@ Creates or regenerates technical descriptions (tables and columns) for a technic
 - Resolves the technical domain (`search_domains` with `domain_type='technical'`, falling back to `list_domains`).
 - Reports the current state: total tables, tables already documented, tables pending, and whether the collection has a description.
 - Offers four scope options: all pending tables (idempotent), a specific subset, full regeneration (destructive), or regeneration of specific tables (destructive).
-- Offers the user the chance to provide `user_instructions` before the call — including reading local files (data dictionaries, specs, glossaries) to feed definitions into the generator.
+- Builds `user_instructions` through the **Glossary Instruction Enrichment Workflow** (`stratio-semantic-layer-tools.md` §11): the user can pull GenAI Technical Term Instructions from the data dictionary (specific to the phase, optionally plus globals), supply an external file (data dictionaries, specs, glossaries), layer free-text rules on top, or skip enrichment entirely.
 - Invokes `create_technical_terms` and reports the tool summary directly; retries failed entities up to twice with improved instructions.
 
 ## When to use it
@@ -45,4 +45,4 @@ None.
 - **`regenerate=true` is destructive.** Explicit confirmation is mandatory; existing descriptions are deleted and recreated.
 - **Idempotent by default:** the tool skips tables that already have a description unless `regenerate=true` is passed.
 - **Collection description is generated automatically** the first time, so there is no dedicated step for it.
-- **`user_instructions`** never asks about language or output format (those are controlled internally) — only about domain context, business definitions and naming rules.
+- **`user_instructions` is built through §11**, the Glossary Instruction Enrichment Workflow defined in `stratio-semantic-layer-tools.md`. Never injects glossary content silently; never asks about language or output format (those are controlled internally) — only about domain context, business definitions and naming rules.

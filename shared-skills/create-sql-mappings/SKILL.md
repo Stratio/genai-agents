@@ -18,7 +18,7 @@ Creates or updates SQL mappings for existing business views in Stratio Governanc
 | `create_sql_mappings(domain, view_names?, user_instructions?)` | gov | Create or update SQL mappings for existing views |
 | `publish_business_views(domain, view_names?)` | gov | Publish views (Draft → Pending Publish). Without `view_names`, publishes all |
 
-**Key rules**: `domain_name` immutable. Offer `user_instructions` before invoking. `create_sql_mappings` overwrites existing mappings (not destructive at the view level, only replaces the SQL mapping).
+**Key rules**: `domain_name` immutable. Build `user_instructions` through the Glossary Instruction Enrichment Workflow (`skills-guides/stratio-semantic-layer-tools.md` §11) before invoking. `create_sql_mappings` overwrites existing mappings (not destructive at the view level, only replaces the SQL mapping).
 
 ## Workflow
 
@@ -47,14 +47,13 @@ Ask the user with options:
 2. **Specific views** — multiple selection (can include views with existing mapping to update it)
 3. **Update existing mappings** — overwrites the SQL mapping, does not delete the view or its semantic terms
 
-### 4. user_instructions
+### 4. Glossary instruction enrichment
 
-Offer the user the opportunity to provide additional context:
-- **Local files**: If the user has technical documentation, ER diagrams, integration specifications or reference SQL scripts → **read them** and extract relevant information to include as context
-- **Mapping rules**: Relationships between tables, preferred JOIN types, exclusion filters, data transformations
-- Examples: "Use LEFT JOIN to preserve records without matches", "Main table for JOINs: accounts", "Exclude records with status='DELETED'", "Use COALESCE for nullable fields", "Dates in epoch milliseconds format"
+Before invoking the MCP tool, apply the Glossary Instruction Enrichment Workflow described in `skills-guides/stratio-semantic-layer-tools.md` §11, scoped to **SQL mappings** (i.e., when calling `get_glossary_instructions`, request only the mapping phase). This is where the user can pull GenAI mapping instructions from the data dictionary, supply an external file (technical documentation, ER diagrams, integration specs, reference SQL scripts) as their source, layer free-text mapping rules on top, or skip enrichment entirely.
 
-Do not suggest options that the tool controls internally (language, output format). If the user does not provide instructions, continue without the parameter. Not blocking.
+If the orchestrator already pre-loaded enriched instructions for this phase during the `build-semantic-layer` flow, reuse them — optionally ask whether the user wants to add anything specific to this phase on top of what was pre-loaded.
+
+The enriched text becomes the `user_instructions` argument of the MCP call in the next step. If the user chose option 4 (skip), `user_instructions` is omitted.
 
 ### 5. Execution
 

@@ -17,7 +17,7 @@ Creates technical descriptions for tables and columns of a domain in Stratio Gov
 | `list_domain_tables(domain)` | sql | List tables with their descriptions (indicates if they already have technical terms) |
 | `create_technical_terms(domain, table_names?, user_instructions?, regenerate?)` | gov | Create technical terms. Skips existing. With `regenerate=true`: DESTRUCTIVE, deletes and recreates |
 
-**Key rules**: `domain_name` immutable (exact value from `list_domains` or `search_domains`). Mandatory confirmation for `regenerate=true`. Offer `user_instructions` before invoking.
+**Key rules**: `domain_name` immutable (exact value from `list_domains` or `search_domains`). Mandatory confirmation for `regenerate=true`. Build `user_instructions` through the Glossary Instruction Enrichment Workflow (`skills-guides/stratio-semantic-layer-tools.md` §11) before invoking.
 
 ## Workflow
 
@@ -49,14 +49,13 @@ Ask the user with options:
 3. **Regenerate all** — DESTRUCTIVE: deletes and recreates. Requires explicit confirmation
 4. **Regenerate specific tables** — DESTRUCTIVE for the selected ones. Requires explicit confirmation
 
-### 4. user_instructions
+### 4. Glossary instruction enrichment
 
-Before executing, offer the user the opportunity to provide additional context:
-- **Local files**: If the user has documentation, glossaries, data dictionaries or specifications → **read them** and extract relevant definitions to include as context
-- **Domain definitions**: Business concepts, specific column values, relationships between entities that the AI should know
-- Examples: "The column `status` has values: A=active, I=inactive, S=suspended", "The `film_*` tables belong to the movie catalog module", "The field `last_update` is an audit timestamp, not a business one"
+Before invoking the MCP tool, apply the Glossary Instruction Enrichment Workflow described in `skills-guides/stratio-semantic-layer-tools.md` §11, scoped to **technical terms** (i.e., when calling `get_glossary_instructions`, request only the technical terms phase).
 
-Do not suggest options that the tool controls internally (language, audience, format). If the user does not provide instructions, continue without the parameter. Not blocking.
+If the orchestrator already pre-loaded enriched instructions for this phase during the `build-semantic-layer` flow, reuse them instead of asking again — optionally ask the user whether they want to add anything specific to this phase on top of what was pre-loaded.
+
+The enriched text becomes the `user_instructions` argument of the MCP call in the next step. If the user chose option 4 (skip), `user_instructions` is omitted.
 
 ### 5. Execution
 

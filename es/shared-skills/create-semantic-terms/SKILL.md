@@ -17,7 +17,7 @@ Genera o regenera términos semánticos de negocio en el glosario de Stratio Gov
 | `list_technical_domain_concepts(domain)` | gov | Listar vistas con estado de gobernanza, términos semánticos y mappings |
 | `create_semantic_terms(domain, view_names?, user_instructions?, regenerate?)` | gov | Crear términos semánticos. Con `regenerate=true`: DESTRUCTIVO, borra y recrea |
 
-**Reglas clave**: `domain_name` inmutable. Confirmación obligatoria para `regenerate=true`. Ofrecer `user_instructions` antes de invocar. Pre-requisito: las vistas deben tener SQL mapping antes de generar términos semánticos.
+**Reglas clave**: `domain_name` inmutable. Confirmación obligatoria para `regenerate=true`. Construir `user_instructions` mediante el Workflow de Enriquecimiento con Instrucciones del Glosario (`skills-guides/stratio-semantic-layer-tools.md` §11) antes de invocar. Pre-requisito: las vistas deben tener SQL mapping antes de generar términos semánticos.
 
 ## Workflow
 
@@ -54,14 +54,13 @@ Preguntar al usuario con opciones (solo vistas con mapping):
 3. **Regenerar todas** — DESTRUCTIVO: borra términos existentes y recrea. Requiere confirmación explícita
 4. **Regenerar vistas específicas** — DESTRUCTIVO para las seleccionadas. Requiere confirmación
 
-### 5. user_instructions
+### 5. Enriquecimiento con instrucciones del glosario
 
-Ofrecer al usuario la oportunidad de aportar contexto adicional:
-- **Ficheros locales**: Si el usuario tiene glosarios de negocio, documentación funcional o guías de estilo terminológico → **leerlos** y extraer definiciones relevantes para incluirlas como contexto
-- **Definiciones de dominio**: Significado de negocio de conceptos clave, relaciones entre entidades, reglas que la IA debería reflejar en los términos
-- Ejemplos: "El concepto 'actor' en este dominio se refiere a actores de cine, no a actores del sistema", "Las vistas de `film` deben reflejar que rental_rate es el precio de alquiler por día"
+Antes de invocar la tool MCP, aplicar el Workflow de Enriquecimiento con Instrucciones del Glosario descrito en `skills-guides/stratio-semantic-layer-tools.md` §11, acotado a **semantic terms** (al llamar a `get_glossary_instructions`, pedir solo la fase de semantic terms). Aquí es donde el usuario puede traerse las instrucciones GenAI de semantic terms desde el diccionario de datos, aportar un fichero externo (glosario de negocio, documentación funcional, guía de estilo terminológico) como su fuente, superponer definiciones en texto libre, o saltar el enriquecimiento por completo.
 
-No sugerir opciones que la tool controla internamente (idioma, audiencia, formato). Si el usuario no aporta instrucciones, continuar sin el parámetro. No es bloqueante.
+Si el orquestador ya pre-cargó instrucciones enriquecidas para esta fase durante el flujo de `build-semantic-layer`, reutilizarlas — opcionalmente preguntar al usuario si quiere añadir algo específico para esta fase encima de lo que ya se cargó.
+
+El texto enriquecido se usa como argumento `user_instructions` en la llamada MCP del paso siguiente. Si el usuario eligió la opción 4 (saltar), se omite `user_instructions`.
 
 ### 6. Ejecución
 

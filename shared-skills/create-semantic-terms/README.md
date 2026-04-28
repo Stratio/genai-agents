@@ -7,7 +7,7 @@ Generates or regenerates **semantic terms** (business-facing descriptions of vie
 - Resolves the technical domain and inspects existing views with their state, mappings and semantic terms (`list_technical_domain_concepts`).
 - Enforces the prerequisite: **views must have a SQL mapping** to produce semantic terms. Views without mapping are surfaced and excluded, with a pointer to `create-sql-mappings` or `create-business-views`.
 - Offers four scope options: create for views without terms (idempotent), a specific subset, full regeneration (destructive), or regeneration of selected views (destructive).
-- Offers the user the chance to provide `user_instructions` — including reading local files (business glossaries, functional docs, terminology style guides) to guide the generator.
+- Builds `user_instructions` through the **Glossary Instruction Enrichment Workflow** (`stratio-semantic-layer-tools.md` §11): the user can pull GenAI Semantic Term Instructions from the data dictionary (specific to the phase, optionally plus globals), supply an external file (business glossary, functional doc, terminology style guide), layer free-text definitions on top, or skip enrichment entirely.
 - Invokes `create_semantic_terms` and reports the tool summary; retries failed views up to twice with improved instructions.
 
 ## When to use it

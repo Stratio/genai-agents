@@ -7,7 +7,7 @@ Crea o regenera descripciones técnicas (tablas y columnas) para un dominio téc
 - Resuelve el dominio técnico (`search_domains` con `domain_type='technical'`, con fallback a `list_domains`).
 - Reporta el estado actual: total de tablas, ya documentadas, pendientes, y si la colección tiene descripción.
 - Ofrece cuatro opciones de alcance: todas las tablas pendientes (idempotente), un subconjunto específico, regeneración completa (destructiva) o regeneración de tablas específicas (destructiva).
-- Ofrece al usuario la oportunidad de aportar `user_instructions` antes de la llamada — incluyendo lectura de ficheros locales (diccionarios de datos, specs, glosarios) para inyectar definiciones en el generador.
+- Construye `user_instructions` mediante el **Workflow de Enriquecimiento con Instrucciones del Glosario** (`stratio-semantic-layer-tools.md` §11): el usuario puede traerse las GenAI Technical Term Instructions del diccionario de datos (específicas de la fase, opcionalmente más globales), aportar un fichero externo (diccionarios de datos, specs, glosarios), superponer reglas en texto libre, o saltar el enriquecimiento por completo.
 - Invoca `create_technical_terms` y reporta el resumen directamente; reintenta las entidades fallidas hasta dos veces con instrucciones mejoradas.
 
 ## Cuándo usarla
@@ -45,4 +45,4 @@ Ninguno.
 - **`regenerate=true` es destructivo.** Confirmación explícita obligatoria; las descripciones existentes se borran y recrean.
 - **Idempotente por defecto:** la herramienta omite las tablas que ya tienen descripción salvo que se pase `regenerate=true`.
 - **La descripción de la colección se genera automáticamente** la primera vez, por lo que no hay un paso dedicado.
-- **`user_instructions`** nunca pregunta por idioma o formato de salida (se controlan internamente) — solo por contexto de dominio, definiciones de negocio y reglas de naming.
+- **`user_instructions` se construye mediante §11**, el Workflow de Enriquecimiento con Instrucciones del Glosario definido en `stratio-semantic-layer-tools.md`. Nunca inyecta contenido del glosario silenciosamente; nunca pregunta por idioma ni formato de salida (se controlan internamente) — solo por contexto de dominio, definiciones de negocio y reglas de naming.

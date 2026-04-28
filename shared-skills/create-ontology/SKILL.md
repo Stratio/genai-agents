@@ -25,7 +25,7 @@ Creates, extends or deletes classes of an ontology in Stratio Governance through
 | `update_ontology(domain, name, update_plan)` | gov | Add new classes to existing ontology |
 | `delete_ontology_classes(ontology_name, class_names)` | gov | DESTRUCTIVE: delete specific classes (protected by Published) |
 
-**Key rules**: `domain_name` immutable. Ontologies are ADD+DELETE: `update` adds classes, `delete_ontology_classes` deletes classes (protected: classes with dependent Published views are skipped). Existing classes cannot be modified. Naming: no spaces (→ underscores), no special characters. Offer `user_instructions` before invoking.
+**Key rules**: `domain_name` immutable. Ontologies are ADD+DELETE: `update` adds classes, `delete_ontology_classes` deletes classes (protected: classes with dependent Published views are skipped). Existing classes cannot be modified. Naming: no spaces (→ underscores), no special characters. Build the planning context through the Glossary Instruction Enrichment Workflow (`skills-guides/stratio-semantic-layer-tools.md` §11) before proposing the ontology plan.
 
 ## Workflow
 
@@ -50,11 +50,17 @@ If applicable, execute `get_ontology_info(name)` to show existing structure.
 This is the core of the skill. Ask the user, grouping to minimize interactions:
 
 **Question block** (a single interaction):
-- Do you have additional files with relevant information? (ontologies .owl/.ttl, business documents, CSVs). If they provide paths → **read the files** to extract context
-- Do you have existing ontologies as reference? (if yes → `get_ontology_info` or read local file)
+- Do you have an existing ontology to take as reference? (if yes → `get_ontology_info` or read local file)
 - What classes or entities do you consider essential?
 - Any important aspects about format and naming conventions?
-- Any additional instructions for the AI that will generate the ontology?
+
+**Glossary instruction enrichment**:
+
+Before proposing the plan, apply the Glossary Instruction Enrichment Workflow described in `skills-guides/stratio-semantic-layer-tools.md` §11, scoped to **ontology** (i.e., when calling `get_glossary_instructions`, request only the ontology phase). This is where the user can pull GenAI ontology instructions from the data dictionary, supply an external file (.owl/.ttl, business document, CSV) as their source, layer free-text comments on top, or skip enrichment entirely.
+
+If the orchestrator already pre-loaded enriched instructions for this phase during the `build-semantic-layer` flow, reuse them — optionally ask whether the user wants to add anything specific to this phase.
+
+The enriched text becomes part of the planning context that feeds the proposed Markdown plan below. When the underlying MCP starts accepting `user_instructions` for `create_ontology` / `update_ontology`, that same text will also be passed through to the call.
 
 **Domain exploration** (in parallel with the interaction if possible):
 - `list_domain_tables(domain)` + `get_tables_details(domain, tables)` → understand tables and their context

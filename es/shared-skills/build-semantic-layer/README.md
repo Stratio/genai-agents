@@ -8,7 +8,7 @@ La skill invoca las herramientas MCP de gobierno inline — **no** delega en las
 
 - Resuelve el dominio técnico y ejecuta un **diagnóstico completo en paralelo**: descripción de la colección, cobertura de términos técnicos, ontologías existentes, business views, mappings y términos semánticos — incluyendo su estado de gobierno.
 - Presenta un dashboard de estado por fase y propone un plan de ejecución, señalando lo completo, parcial o pendiente, y las dependencias entre fases.
-- Recoge **contexto global del usuario** una sola vez: ficheros de referencia (ontologías, specs, glosarios), definiciones de negocio, reglas de naming. Ese contexto se pasa como `user_instructions` a cada fase que lo acepte.
+- Pre-carga las instrucciones enriquecidas para todo el pipeline una sola vez mediante el **Workflow de Enriquecimiento con Instrucciones del Glosario** (`stratio-semantic-layer-tools.md` §11): business terms tipados como instrucciones GenAI desde el diccionario de datos (específicas por fase, opcionalmente más globales), ficheros de referencia aportados por el usuario y reglas en texto libre, consolidados en textos por fase. Cada fase reutiliza su bloque como `user_instructions` (o, para ontología, lo incorpora al plan en Markdown) sin volver a preguntar.
 - Ejecuta cada fase en orden estricto, reportando progreso y el resumen de la herramienta tras cada una. La Fase 2 (ontología) ejecuta el mismo bucle de planning interactivo que `create-ontology`.
 - Ofrece publicación opcional de las views entre la fase 4 y la fase 5.
 - En caso de fallo, ofrece tres caminos de recuperación por fase: reintentar con instrucciones mejoradas, saltar (con aviso de dependencias) o abortar.
@@ -29,7 +29,7 @@ La skill invoca las herramientas MCP de gobierno inline — **no** delega en las
 - **Siguiente paso típico:** `manage-business-terms` para enriquecer el diccionario con business terms transversales.
 
 ### Guides
-- `stratio-semantic-layer-tools.md` — referencia completa de los MCPs de gobierno: listado de herramientas, inmutabilidad de `domain_name`, contrato de `user_instructions`, protocolo de operaciones destructivas, reglas ADD+DELETE de ontologías, tabla de detección de estado para idempotencia y fallback de disponibilidad de OpenSearch.
+- `stratio-semantic-layer-tools.md` — referencia completa de los MCPs de gobierno: listado de herramientas, inmutabilidad de `domain_name`, el §11 Workflow de Enriquecimiento con Instrucciones del Glosario que produce todo `user_instructions`, protocolo de operaciones destructivas, reglas ADD+DELETE de ontologías, tabla de detección de estado para idempotencia y fallback de disponibilidad de OpenSearch.
 
 ### MCPs
 - **Governance (`gov`):** `search_ontologies`, `list_ontologies`, `get_ontology_info`, `create_ontology`, `update_ontology`, `delete_ontology_classes`, `create_technical_terms`, `list_technical_domain_concepts`, `create_business_views`, `delete_business_views`, `publish_business_views`, `create_sql_mappings`, `create_semantic_terms`.
