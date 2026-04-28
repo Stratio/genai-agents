@@ -83,11 +83,29 @@ Every SKILL.md starts with YAML frontmatter between `---` markers. The frontmatt
 
 | Field | Required | Description |
 |-------|----------|-------------|
-| `name` | Yes | Unique identifier. Becomes the `/slash-command`. Lowercase, hyphens, max 64 chars |
+| `name` | Yes | Unique identifier. Becomes the `/slash-command`. Must equal the parent directory name |
 | `description` | Yes (strongly recommended) | What the skill does and when to use it. This is the **primary triggering mechanism** |
 | `argument-hint` | No | Placeholder shown in autocomplete: `[domain] [table (optional)]` |
 
 **Formatting rule**: Always wrap `description` and `argument-hint` values in double quotes on a single line. This prevents YAML parsing issues with special characters (colons, brackets) and ensures portable frontmatter across platforms.
+
+### 2.1.1 Hard limits and validation rules
+
+Anthropic, OpenCode and the GitHub Copilot Code plugin enforce these constraints at runtime. A skill that violates any of them fails to load — and our packaging scripts (`pack_claude_code.sh`, `pack_opencode.sh`) re-validate the description length at pack time so the failure surfaces locally instead of at install.
+
+| Field | Constraint |
+|-------|-----------|
+| `name` | 1–64 characters |
+| `name` | Regex `^[a-z0-9]+(-[a-z0-9]+)*$` (lowercase letters, digits, single hyphens) |
+| `name` | Must not contain the reserved words `anthropic` or `claude` |
+| `name` | No XML/HTML tags |
+| `name` | Must equal the parent directory name (`<name>/SKILL.md`) |
+| `description` | 1–1024 characters (only the first ~250 are shown in `/skills` UI listings) |
+| `description` | No XML/HTML tags |
+| File name | Exactly `SKILL.md` (case-sensitive) |
+| Frontmatter | Valid YAML between `---` opening and closing markers |
+
+Soft recommendation: keep the SKILL.md body under ~500 lines (Anthropic best practice). Beyond that, extract supporting files (see §4).
 
 ### 2.2 Description — the most important field
 
@@ -110,7 +128,8 @@ The bad description is too vague — it will rarely trigger. The good descriptio
 **Optimization rules:**
 - Front-load the primary use case (first sentence)
 - Include 3-5 keywords the user is likely to say
-- Maximum ~250 characters recommended
+- Soft target: ~250 characters for the triggering signal — only the first 250 chars are shown in the `/skills` list UI to save context
+- Hard limit: **1024 characters** (Anthropic / OpenCode / Copilot — see §2.1.1; pack scripts will abort if exceeded)
 - Always include a "Use when..." clause
 - If the skill should NOT trigger in some cases, mention that: "Do NOT use for X"
 
@@ -255,7 +274,8 @@ Run this checklist before finalizing any skill:
 9. ✅ Human-in-the-loop for destructive or irreversible actions
 10. ✅ Instructions in imperative voice
 11. ✅ At least one input/output example included
-12. ✅ Name in kebab-case (lowercase, hyphens)
+12. ✅ `name` ≤ 64 chars, matches `^[a-z0-9]+(-[a-z0-9]+)*$`, equals the parent directory name, no reserved words (`anthropic`/`claude`), no XML tags
 13. ✅ All necessary knowledge is embedded — skill does not depend on unverifiable external knowledge
 14. ✅ Description is proactive enough to activate when relevant
 15. ✅ `description` and `argument-hint` values are double-quoted on a single line
+16. ✅ `description` ≤ 1024 chars (hard limit enforced by Anthropic / OpenCode / Copilot — pack scripts will abort if exceeded)

@@ -83,11 +83,29 @@ Todo SKILL.md comienza con un frontmatter YAML entre marcadores `---`. El frontm
 
 | Campo | Obligatorio | Descripción |
 |-------|-------------|-------------|
-| `name` | Sí | Identificador único. Se convierte en el `/slash-command`. Minúsculas, guiones, máximo 64 caracteres |
+| `name` | Sí | Identificador único. Se convierte en el `/slash-command`. Debe coincidir con el nombre del directorio padre |
 | `description` | Sí (muy recomendado) | Qué hace la skill y cuándo usarla. Es el **mecanismo principal de activación** |
 | `argument-hint` | No | Texto de ejemplo mostrado en el autocompletado: `[domain] [table (optional)]` |
 
 **Regla de formato**: Envuelve siempre los valores de `description` y `argument-hint` entre comillas dobles en una sola línea. Esto previene problemas de parseo YAML con caracteres especiales (dos puntos, corchetes) y asegura un frontmatter portable entre plataformas.
+
+### 2.1.1 Límites duros y reglas de validación
+
+Anthropic, OpenCode y el plugin de GitHub Copilot Code aplican estas restricciones en runtime. Una skill que viole cualquiera de ellas no se carga — y nuestros scripts de empaquetado (`pack_claude_code.sh`, `pack_opencode.sh`) re-validan la longitud de la descripción en el momento del pack para que el fallo aparezca localmente en vez de al instalar.
+
+| Campo | Restricción |
+|-------|-------------|
+| `name` | 1–64 caracteres |
+| `name` | Regex `^[a-z0-9]+(-[a-z0-9]+)*$` (minúsculas, dígitos, guiones simples) |
+| `name` | No puede contener las palabras reservadas `anthropic` ni `claude` |
+| `name` | Sin etiquetas XML/HTML |
+| `name` | Debe coincidir con el nombre del directorio padre (`<name>/SKILL.md`) |
+| `description` | 1–1024 caracteres (solo los primeros ~250 se muestran en el listado UI de `/skills`) |
+| `description` | Sin etiquetas XML/HTML |
+| Nombre del fichero | Exactamente `SKILL.md` (case-sensitive) |
+| Frontmatter | YAML válido entre marcadores `---` de apertura y cierre |
+
+Recomendación blanda: mantén el cuerpo del SKILL.md por debajo de ~500 líneas (best practice de Anthropic). Si lo superas, extrae a archivos complementarios (ver §4).
 
 ### 2.2 Descripción — el campo más importante
 
@@ -110,7 +128,8 @@ La mala descripción es demasiado vaga — rara vez se activará. La buena descr
 **Reglas de optimización:**
 - Coloca el caso de uso principal al principio (primera frase)
 - Incluye 3-5 palabras clave que el usuario probablemente usará
-- Se recomiendan ~250 caracteres como máximo
+- Objetivo blando: ~250 caracteres para la señal de activación — solo los primeros 250 chars se muestran en el listado UI de `/skills` para ahorrar contexto
+- Límite duro: **1024 caracteres** (Anthropic / OpenCode / Copilot — ver §2.1.1; los pack scripts abortan si se excede)
 - Incluye siempre una cláusula "Use when..."
 - Si la skill NO debe activarse en algunos casos, menciónalo: "Do NOT use for X"
 
@@ -255,7 +274,8 @@ Ejecuta esta lista de verificación antes de finalizar cualquier skill:
 9. Human-in-the-loop para acciones destructivas o irreversibles
 10. Instrucciones en voz imperativa
 11. Al menos un ejemplo de entrada/salida incluido
-12. Nombre en kebab-case (minúsculas, guiones)
+12. `name` ≤ 64 chars, cumple `^[a-z0-9]+(-[a-z0-9]+)*$`, coincide con el nombre del directorio padre, sin palabras reservadas (`anthropic`/`claude`), sin etiquetas XML
 13. Todo el conocimiento necesario está integrado — la skill no depende de conocimiento externo no verificable
 14. La descripción es lo suficientemente proactiva para activarse cuando sea relevante
 15. Los valores de `description` y `argument-hint` están entre comillas dobles en una sola línea
+16. `description` ≤ 1024 chars (límite duro de Anthropic / OpenCode / Copilot — los pack scripts abortan si se excede)
