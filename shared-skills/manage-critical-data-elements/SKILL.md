@@ -22,7 +22,7 @@ Workflow for consulting and defining Critical Data Elements (CDEs) in a governed
 
 If `$ARGUMENTS` provides a domain name, search with `search_domains($ARGUMENTS)`. If not found, retry with `search_domains($ARGUMENTS, refresh=true)`. If still not found, or no argument was provided, list domains with `list_domains()` and ask the user with options following the user question convention.
 
-**CRITICAL rule**: the `collection_name` used in all MCP calls must be **exactly** the value returned by `search_domains` or `list_domains`. NEVER translate, interpret, paraphrase, or infer it.
+**CRITICAL rule**: the `domain_name` used in all MCP calls must be **exactly** the value returned by `search_domains` or `list_domains`. NEVER translate, interpret, paraphrase, or infer it.
 
 ### 1.2 Determine flow
 
@@ -41,7 +41,7 @@ Otherwise, ask the user with options following the user question convention:
 
 ### A.1 Retrieve and present current CDEs
 
-Call `get_critical_data_elements(collection_name=domain_name)`.
+Call `get_critical_data_elements(domain_name=domain_name)`.
 
 Present results with clear structure:
 
@@ -98,7 +98,7 @@ Before recommending or collecting user input, fetch the current state:
 ```
 Parallel:
   A. list_domain_tables(domain_name)
-  B. get_critical_data_elements(collection_name=domain_name)   ← baseline: current CDEs
+  B. get_critical_data_elements(domain_name=domain_name)   ← baseline: current CDEs
 ```
 
 ### B.2 Determine definition method
@@ -223,7 +223,7 @@ Before calling `set_critical_data_elements`, present the complete tagging plan:
 ```markdown
 ## CDE Tagging Plan — [domain_name]
 
-**Domain**: [collection_name]
+**Domain**: [domain_name]
 **Source**: [Manual specification | Agent recommendation | Combined]
 
 ### Assets to tag as critical (new — not yet in the baseline)
@@ -265,7 +265,7 @@ The call takes a single `collection` object (not three separate parameters):
 
 ```json
 set_critical_data_elements(collection={
-  "collection_name": "domain_name",
+  "domain_name": "domain_name",
   "critical_tables": ["account", "district", "loan"],
   "columns_by_table": {
     "card": ["card_id", "disp_id"],

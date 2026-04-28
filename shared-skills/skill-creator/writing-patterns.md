@@ -191,7 +191,7 @@ Once the scope is determined, launch in parallel:
 ```
 Parallel:
   A. list_domain_tables(domain_name)
-  B. get_quality_rule_dimensions(collection_name=domain_name)
+  B. get_quality_rule_dimensions(domain_name=domain_name)
   C. quality_rules_metadata(domain_name=domain_name)
 ```
 
