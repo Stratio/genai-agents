@@ -5,6 +5,8 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MONOREPO_ROOT="$SCRIPT_DIR"
+SOURCE_DATE_EPOCH=$(git -C "$SCRIPT_DIR" log -1 --format=%ct 2>/dev/null || echo 0)
+export SOURCE_DATE_EPOCH
 
 # ---------------------------------------------------------------------------
 # Phase 0 — Parsing and validation
@@ -133,7 +135,7 @@ REAL_DIST="$SCRIPT_DIR/dist"
 mkdir -p "$REAL_DIST"
 ZIP_PATH="$REAL_DIST/${PACK_NAME}.zip"
 rm -f "$ZIP_PATH"
-(cd "$STAGING" && zip -r "$ZIP_PATH" . -q)
+bash "$SCRIPT_DIR/bin/zip-deterministic.sh" "$STAGING" "$ZIP_PATH"
 ZIP_SIZE=$(du -sh "$ZIP_PATH" | cut -f1)
 echo "    ZIP generated: dist/${PACK_NAME}.zip ($ZIP_SIZE)"
 
