@@ -135,7 +135,7 @@ REAL_DIST="$SCRIPT_DIR/dist"
 mkdir -p "$REAL_DIST"
 ZIP_PATH="$REAL_DIST/${PACK_NAME}.zip"
 rm -f "$ZIP_PATH"
-bash "$SCRIPT_DIR/bin/zip-reproducible.sh" "$STAGING" "$ZIP_PATH"
+bash "$SCRIPT_DIR/bin/zip-deterministic.sh" "$STAGING" "$ZIP_PATH"
 ZIP_SIZE=$(du -sh "$ZIP_PATH" | cut -f1)
 echo "    ZIP generated: dist/${PACK_NAME}.zip ($ZIP_SIZE)"
 

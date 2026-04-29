@@ -62,7 +62,7 @@ for lang in "${LANGUAGES[@]}"; do
       INTERMEDIATE="$MODULE_DIR/dist/claude_code/$module"
     fi
     if [[ -d "$INTERMEDIATE" ]]; then
-      bash "$REPO_ROOT/bin/zip-reproducible.sh" "$INTERMEDIATE" "$DIST_DIR/${module}-claude-code${LANG_SUFFIX}-${VERSION}.zip"
+      bash "$REPO_ROOT/bin/zip-deterministic.sh" "$INTERMEDIATE" "$DIST_DIR/${module}-claude-code${LANG_SUFFIX}-${VERSION}.zip"
       echo "    -> dist/${module}-claude-code${LANG_SUFFIX}-${VERSION}.zip"
     fi
 
@@ -74,7 +74,7 @@ for lang in "${LANGUAGES[@]}"; do
       INTERMEDIATE="$MODULE_DIR/dist/opencode/$module"
     fi
     if [[ -d "$INTERMEDIATE" ]]; then
-      bash "$REPO_ROOT/bin/zip-reproducible.sh" "$INTERMEDIATE" "$DIST_DIR/${module}-opencode${LANG_SUFFIX}-${VERSION}.zip"
+      bash "$REPO_ROOT/bin/zip-deterministic.sh" "$INTERMEDIATE" "$DIST_DIR/${module}-opencode${LANG_SUFFIX}-${VERSION}.zip"
       echo "    -> dist/${module}-opencode${LANG_SUFFIX}-${VERSION}.zip"
     fi
 
@@ -146,7 +146,7 @@ for lang in "${LANGUAGES[@]}"; do
 
       local output_dir="$agent_dir/$output_subdir"
       if [[ -d "$output_dir" ]]; then
-        bash "$REPO_ROOT/bin/zip-reproducible.sh" "$output_dir" "$DIST_DIR/${agent_name}-claude-${zip_type}${LANG_SUFFIX}-${VERSION}.zip"
+        bash "$REPO_ROOT/bin/zip-deterministic.sh" "$output_dir" "$DIST_DIR/${agent_name}-claude-${zip_type}${LANG_SUFFIX}-${VERSION}.zip"
         echo "    -> dist/${agent_name}-claude-${zip_type}${LANG_SUFFIX}-${VERSION}.zip"
       fi
     done
