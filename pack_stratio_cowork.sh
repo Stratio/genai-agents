@@ -10,6 +10,8 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MONOREPO_ROOT="$SCRIPT_DIR"
+SOURCE_DATE_EPOCH=$(git -C "$SCRIPT_DIR" log -1 --format=%ct 2>/dev/null || echo 0)
+export SOURCE_DATE_EPOCH
 
 # ---------------------------------------------------------------------------
 # Phase 0 — Parsing and validation
@@ -175,7 +177,7 @@ mkdir -p "$BUNDLE_STAGING"
 ZIP_NO_SHARED="${AGENT_NAME}-opencode-agent.zip"
 echo "    [4] Generating $ZIP_NO_SHARED..."
 bash "$SCRIPT_DIR/bin/sweep-nonruntime.sh" "$STAGING_NO_SHARED"
-(cd "$STAGING_NO_SHARED" && zip -r "$BUNDLE_STAGING/$ZIP_NO_SHARED" . -q)
+bash "$SCRIPT_DIR/bin/zip-reproducible.sh" "$STAGING_NO_SHARED" "$BUNDLE_STAGING/$ZIP_NO_SHARED"
 ZIP_SIZE=$(du -sh "$BUNDLE_STAGING/$ZIP_NO_SHARED" | cut -f1)
 echo "    [4] $ZIP_NO_SHARED generated ($ZIP_SIZE)"
 
@@ -231,7 +233,7 @@ find "$SKILLS_STAGING" \
 
 if [[ $N_SKILLS_PACKED -gt 0 ]]; then
   bash "$SCRIPT_DIR/bin/sweep-nonruntime.sh" "$SKILLS_STAGING"
-  (cd "$SKILLS_STAGING" && zip -r "$BUNDLE_STAGING/$ZIP_SHARED" . -q)
+  bash "$SCRIPT_DIR/bin/zip-reproducible.sh" "$SKILLS_STAGING" "$BUNDLE_STAGING/$ZIP_SHARED"
   ZIP_SIZE=$(du -sh "$BUNDLE_STAGING/$ZIP_SHARED" | cut -f1)
   echo "    [5] $ZIP_SHARED generated ($N_SKILLS_PACKED skill(s), $N_GUIDES_PACKED guide(s)) ($ZIP_SIZE)"
 else
@@ -282,7 +284,7 @@ REAL_DIST="$SCRIPT_DIR/dist"
 mkdir -p "$REAL_DIST"
 BUNDLE_ZIP="$REAL_DIST/${AGENT_NAME}-stratio-cowork.zip"
 rm -f "$BUNDLE_ZIP"
-(cd "$BUNDLE_STAGING" && zip -r "$BUNDLE_ZIP" . -q)
+bash "$SCRIPT_DIR/bin/zip-reproducible.sh" "$BUNDLE_STAGING" "$BUNDLE_ZIP"
 BUNDLE_SIZE=$(du -sh "$BUNDLE_ZIP" | cut -f1)
 echo "    [6] Bundle generated: dist/${AGENT_NAME}-stratio-cowork.zip ($BUNDLE_SIZE)"
 

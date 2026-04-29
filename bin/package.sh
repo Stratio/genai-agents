@@ -19,8 +19,12 @@ else
   LANGUAGES=(en)
 fi
 
+SOURCE_DATE_EPOCH=$(git -C "$REPO_ROOT" log -1 --format=%ct 2>/dev/null || echo 0)
+export SOURCE_DATE_EPOCH
+
 echo "==> Packaging genai-agents v$VERSION..."
 echo "    Languages: ${LANGUAGES[*]}"
+echo "    SOURCE_DATE_EPOCH: $SOURCE_DATE_EPOCH"
 
 rm -rf "$DIST_DIR"
 mkdir -p "$DIST_DIR"
@@ -58,7 +62,7 @@ for lang in "${LANGUAGES[@]}"; do
       INTERMEDIATE="$MODULE_DIR/dist/claude_code/$module"
     fi
     if [[ -d "$INTERMEDIATE" ]]; then
-      (cd "$INTERMEDIATE" && zip -r "$DIST_DIR/${module}-claude-code${LANG_SUFFIX}-${VERSION}.zip" . -q)
+      bash "$REPO_ROOT/bin/zip-reproducible.sh" "$INTERMEDIATE" "$DIST_DIR/${module}-claude-code${LANG_SUFFIX}-${VERSION}.zip"
       echo "    -> dist/${module}-claude-code${LANG_SUFFIX}-${VERSION}.zip"
     fi
 
@@ -70,7 +74,7 @@ for lang in "${LANGUAGES[@]}"; do
       INTERMEDIATE="$MODULE_DIR/dist/opencode/$module"
     fi
     if [[ -d "$INTERMEDIATE" ]]; then
-      (cd "$INTERMEDIATE" && zip -r "$DIST_DIR/${module}-opencode${LANG_SUFFIX}-${VERSION}.zip" . -q)
+      bash "$REPO_ROOT/bin/zip-reproducible.sh" "$INTERMEDIATE" "$DIST_DIR/${module}-opencode${LANG_SUFFIX}-${VERSION}.zip"
       echo "    -> dist/${module}-opencode${LANG_SUFFIX}-${VERSION}.zip"
     fi
 
@@ -142,7 +146,7 @@ for lang in "${LANGUAGES[@]}"; do
 
       local output_dir="$agent_dir/$output_subdir"
       if [[ -d "$output_dir" ]]; then
-        (cd "$output_dir" && zip -r "$DIST_DIR/${agent_name}-claude-${zip_type}${LANG_SUFFIX}-${VERSION}.zip" . -q)
+        bash "$REPO_ROOT/bin/zip-reproducible.sh" "$output_dir" "$DIST_DIR/${agent_name}-claude-${zip_type}${LANG_SUFFIX}-${VERSION}.zip"
         echo "    -> dist/${agent_name}-claude-${zip_type}${LANG_SUFFIX}-${VERSION}.zip"
       fi
     done
