@@ -67,6 +67,19 @@ Based on the tool's response:
 - Mappings created/updated
 - Errors if any
 
+### 6.5 Optional pre-publication validation (sample data)
+
+After creating or updating the mappings and before offering publication, offer the user a sample-data check:
+
+- "Do you want me to run the mapping SQL (LIMIT 5) of each processed view and show you the results before deciding on publication?"
+- The response of `create_sql_mappings` from §5 already includes `processed_views`: a list of `BusinessViewSummary` entries for the views just processed, each with the freshly generated SQL in `sql_definition`. Use that SQL verbatim, wrapping it as `SELECT * FROM (<sql_definition>) AS m LIMIT 5` so the original projection is preserved. **No need** to call `list_technical_domain_concepts` again here.
+- Restrict validation to the views in `processed_views` (those actually processed in §5). **Cap by default at 5 views**; if §5 processed more, ask the user which subset to validate.
+- For each selected view: run `execute_sql` with the wrapped query. Launch all selected views **in parallel** in the same response.
+- Render results as Markdown tables following `skills-guides/stratio-data-tools.md` §3.5 (default cap of 10 rows in chat).
+- **No improvisation**: if `sql_definition` comes back empty for a view inside `processed_views` (gov backend not yet exposing the field, or the just-created mapping failed to persist), do NOT improvise a SELECT over source tables. Tell the user: "I cannot validate this mapping's SQL from here because the backend is not exposing it. You can validate it from the Governance UI under the view." Skip that view and continue with the others.
+- If `execute_sql` is not available in this agent, do not fall back to a natural-language `query_data` over source tables (it would not validate the mapping). Inform the user and point to the Governance UI.
+- This step is non-blocking: regardless of the validation outcome, continue to §7 Publication.
+
 ### 7. Publication (optional)
 
 After creating or updating mappings, offer publication of the processed views that are in Draft state (verify with `list_technical_domain_concepts`; views already in Pending Publish or Published do not apply):

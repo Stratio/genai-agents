@@ -67,6 +67,19 @@ Basado en la respuesta de la tool:
 - Mappings creados/actualizados
 - Errores si los hubo
 
+### 6.5 Validación opcional pre-publicación (datos de muestra)
+
+Tras crear o actualizar los mappings y antes de ofrecer la publicación, ofrecer al usuario una verificación con datos de muestra:
+
+- "¿Quieres que ejecute la SQL del mapping (LIMIT 5) de cada vista procesada y te muestre los resultados antes de decidir sobre la publicación?"
+- La respuesta de `create_sql_mappings` de §5 ya incluye `processed_views`: una lista de `BusinessViewSummary` de las vistas recién procesadas, cada una con la SQL recién generada en `sql_definition`. Usar esa SQL tal cual, envolviéndola como `SELECT * FROM (<sql_definition>) AS m LIMIT 5` para preservar la proyección original. **No hace falta** volver a llamar a `list_technical_domain_concepts` aquí.
+- Restringir la validación a las vistas presentes en `processed_views` (las realmente procesadas en §5). **Cap por defecto en 5 vistas**; si en §5 se procesaron más, preguntar al usuario qué subconjunto validar.
+- Para cada vista seleccionada: ejecutar `execute_sql` con la query envuelta. Lanzar todas las vistas seleccionadas **en paralelo** en la misma respuesta.
+- Renderizar resultados como tablas Markdown siguiendo `skills-guides/stratio-data-tools.md` §3.5 (cap por defecto de 10 filas en chat).
+- **Sin improvisación**: si `sql_definition` viene vacío para alguna vista dentro de `processed_views` (backend de gov no expone aún el campo, o el mapping recién creado no se persistió correctamente), NO improvisar un SELECT sobre las tablas fuente. Decirle al usuario: "No puedo validar la SQL de este mapping desde aquí porque el backend no la está exponiendo. Puedes validarla desde la UI de Governance, en la vista." Saltar esa vista y continuar con las demás.
+- Si `execute_sql` no está disponible en este agente, no caer al fallback de `query_data` con lenguaje natural sobre las tablas fuente (no validaría el mapping). Informar al usuario y derivar a la UI de Governance.
+- Este paso es no-bloqueante: independientemente del resultado de la validación, continuar con §7 Publicación.
+
 ### 7. Publicación (opcional)
 
 Tras crear o actualizar mappings, ofrecer publicación de las vistas procesadas que esten en estado Draft (verificar con `list_technical_domain_concepts`; las vistas ya en Pending Publish o Published no aplican):

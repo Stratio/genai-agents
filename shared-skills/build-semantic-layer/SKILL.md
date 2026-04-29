@@ -91,6 +91,16 @@ Execute each phase in strict order, calling the tools directly:
 **Phase 4 — SQL Mappings** (if needed; covers new views from Phase 3 and existing views without mapping):
 - `create_sql_mappings(domain, view_names?, user_instructions?)` passing the mapping slice of the pre-loaded enrichment as `user_instructions` (omit if skipped in step 3)
 - Present the tool summary to the user
+- The response includes `processed_views`: each entry carries `sql_definition` — the freshly generated mapping SQL. **Keep this list in the orchestration context**; the optional pre-publication validation block below uses it directly (no need to re-fetch with `list_technical_domain_concepts`)
+
+**Optional pre-publication validation (mappings)**:
+- Before asking about publication, offer the user a sample-data check on the freshly created mappings: "Do you want me to run the mapping SQL (LIMIT 5) of each view and show you the results before deciding on publication?"
+- Use the `processed_views` list returned by Phase 4's `create_sql_mappings` call (each entry carries the freshly generated SQL in `sql_definition`). Use that SQL verbatim, wrapping it as `SELECT * FROM (<sql_definition>) AS m LIMIT 5` so the original projection is preserved. No need to call `list_technical_domain_concepts` again here.
+- If the user accepts, list the candidate views and **cap by default at 5 views**. If `processed_views` has more, ask the user which subset to validate.
+- For each selected view: run `execute_sql` with the wrapped query. Launch all selected views **in parallel** in the same response.
+- Render results as Markdown tables following `skills-guides/stratio-data-tools.md` §3.5 (default cap of 10 rows in chat).
+- **No improvisation**: if `sql_definition` comes back empty for a view inside `processed_views` (gov backend not yet exposing the field, or mapping failed to persist), do NOT improvise a SELECT over source tables. Tell the user: "I cannot validate this mapping's SQL from here because the backend is not exposing it. You can validate it from the Governance UI under the view." Skip that view and continue with the others.
+- If `execute_sql` is not available in this agent, do not fall back to a natural-language `query_data` over source tables (it would not validate the mapping). Inform the user and point to the Governance UI.
 
 **Publication (optional, between Phase 4 and Phase 5)**:
 - The business views and their mappings are complete. Ask the user: "Do you want to publish the views now (Pending Publish) or continue first with the semantic terms?"
@@ -132,3 +142,18 @@ Include:
   - If the views were published during the pipeline: "The views are in Pending Publish status, awaiting publication to the data virtualizer"
   - If the views were NOT published: "The views remain in Draft status. You can publish them by requesting it directly or from the Governance UI"
   - "Once published to the virtualizer, the semantic layer will be available as domain `semantic_[name]`"
+
+### 7. Optional post-publication validation (semantic layer)
+
+If the views were published during the pipeline (or were already published), offer a sanity check on the live semantic layer:
+
+- "The semantic domain `semantic_[name]` is now available. Do you want me to run 1–3 business questions against it to confirm the views and terms respond as expected?"
+- **Propagation latencies to handle**:
+  - **After `publish_business_views`**: views typically become queryable within ~60 seconds.
+  - **After `create_semantic_terms`** (Phase 5): semantic terms are typically queryable as part of the live layer after ~90 seconds — `query_data` may not yet resolve a question that relies on a freshly created semantic term.
+  - **Pattern**: if the first `query_data` / `execute_sql` call fails because the domain or term is not yet visible, inform the user, wait the appropriate window (60s post-publish, 90s post-Phase-5), retry once. If still failing, propose continuing later. Tell the user explicitly which propagation window is being respected so they understand the wait.
+- If the user accepts, ask them for 1–3 business questions OR propose them. **Pattern for proposed questions** (deterministic, not free-form): pick one ontology class with the highest number of mapped attributes and propose: (a) `count(*)` of the corresponding view, (b) top-5 grouping by a categorical attribute if any exists, (c) min/max/avg over a numeric attribute if any exists. List the proposals as numbered options before executing.
+- Resolve each question with `query_data` (preferred — uses the governed semantic layer with NL). If the user wants to see / tweak the generated SQL before running, use `generate_sql` first and offer `execute_sql` afterwards.
+- Render results following `skills-guides/stratio-data-tools.md` §3.5 (default cap 10 rows).
+- If validation surfaces unexpected results (empty, type mismatches, semantic terms not found), report it and suggest next steps: `/create-semantic-terms` to refine, or `/create-sql-mappings` to fix the SQL.
+- If the agent does not have data tools (`query_data`, `execute_sql`, `generate_sql`), point the user to the Governance UI / data analytics agent and skip.

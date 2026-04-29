@@ -8,6 +8,7 @@ Agente governance officer que combina la construcción de capas semánticas y la
 - Construcción y mantenimiento de capas semánticas vía MCPs de gobierno
 - Publicación de business views (Draft → Pending Publish)
 - Exploración de dominios técnicos y capas semánticas publicadas
+- Validación con datos de muestra de la SQL del mapping antes de publicar, y sanity-checks del `semantic_<domain>` publicado
 - Planificación interactiva de ontologías con lectura de ficheros locales
 - Creación de data collections a partir de busquedas en el diccionario de datos
 - Gestión de business terms en el diccionario de gobierno
