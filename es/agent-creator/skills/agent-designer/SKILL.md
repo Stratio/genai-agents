@@ -27,9 +27,23 @@ Las skills extienden las capacidades del agente. Hay tres categorías:
 |------|-------------|---------------|
 | **Skill interna** | Dentro del agent ZIP en `.opencode/skills/{nombre}/SKILL.md` | Específica de este agente — no reutilizable por otros |
 | **Skill compartida (nueva)** | ZIP separado junto al agente | El usuario quiere que esté disponible para otros agentes también |
-| **Skill de plataforma (existente)** | Ya disponible en la plataforma | Se referencia por nombre en AGENTS.md — la plataforma la carga en runtime |
+| **Skill de plataforma (existente)** | Ya disponible en el catálogo de la plataforma **Stratio Cowork** (NO en tu runtime anfitrión) | Se referencia por nombre en AGENTS.md solo cuando el usuario la nombra explícitamente — Stratio Cowork la carga en runtime |
 
 Las skills internas y compartidas se crean usando la skill `/skill-creator`. Las skills de plataforma solo se referencian.
+
+### Reglas de descomposición de skills
+
+Estas reglas previenen el error de diseño más común: inflar un agente con skills que el usuario no pidió.
+
+1. **Default = el agente no referencia ninguna skill externa.** Muchos agentes no necesitan ninguna skill — su flujo son unas pocas fases inline. Empieza por ahí y solo añade skills cuando esté justificado.
+
+2. **Añade una skill de plataforma existente SOLO cuando el usuario la nombre por nombre exacto** (en la pregunta de la Fase 1 sobre reutilización de skills de plataforma). La referencia debe ser una skill del **catálogo de la plataforma Stratio Cowork** que el usuario sabe que existe y pide explícitamente. Nunca inventes ni asumas entradas del catálogo.
+
+3. **Crea una skill nueva (interna o compartida) SOLO cuando** el flujo del agente realmente necesita que el detalle operativo viva en un fichero separado (p. ej. una tarea multi-paso que inflaría AGENTS.md más allá de ~300 líneas), Y el usuario aprobó esa creación durante la fase de diseño.
+
+4. **NUNCA incluyas skills cargadas en tu runtime anfitrión** (el runtime donde tú, agent-creator, estás corriendo — típicamente OpenCode con sus skills auxiliares como `caveman`, `update-config`, `keybindings-help`, plugins, etc.). Esas skills son herramientas para ti, no parte del catálogo del agente que estás construyendo. El agente que generas correrá en **Stratio Cowork**, un runtime distinto con su propio catálogo.
+
+5. **Ante la duda, no añadas la skill.** Preguntar al usuario está bien. Mostrar las skills de tu propio runtime como un "catálogo navegable" no lo está.
 
 ## 2. Escribir un AGENTS.md Efectivo
 

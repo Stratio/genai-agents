@@ -33,7 +33,7 @@ La API extrae el contenido, parsea cualquier `SKILL.md` que encuentre (uno o var
 
 ## Procedimiento
 
-1. **Pre-check** — sigue `skills-guides/external-api-calls.md` §2 (`preflight_external_api`). Si falla, detente y dile al usuario que la operación requiere el sandbox de Stratio.
+1. **Pre-check** — sigue `skills-guides/external-api-calls.md` §2 (`preflight_external_api`). El pre-check es un health check del entorno (variables de entorno, rutas de certificados). Si falla, detente y reporta al usuario qué prerequisites faltan — no silencies el fallo y no rechaces con un genérico "no puedo". El bundle ya está empaquetado correctamente; solo el paso de despliegue no se completó, y el usuario puede decidir cómo proceder.
 
 2. **Pregunta al usuario** qué estrategia de conflicto aplicar (usa la convención de preguntas que provea el entorno; en su defecto, presenta opciones numeradas):
 

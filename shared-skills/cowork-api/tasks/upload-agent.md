@@ -35,7 +35,7 @@ The container ZIP must follow the format documented in the `agent-packager` skil
 
 ## Procedure
 
-1. **Pre-check** — follow `skills-guides/external-api-calls.md` §2 (`preflight_external_api`). If it fails, stop and tell the user the operation requires the Stratio sandbox.
+1. **Pre-check** — follow `skills-guides/external-api-calls.md` §2 (`preflight_external_api`). The pre-check is an environment health check (env vars, certificate paths). If it fails, stop and report to the user which prerequisites are missing — do not silence the failure and do not refuse with a generic "I can't". The bundle is already packaged correctly; only the deployment step did not complete, and the user can decide how to proceed.
 
 2. **Ask the user** which conflict strategy to apply (use the question convention provided by the environment; otherwise present numbered options):
 

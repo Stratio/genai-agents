@@ -23,6 +23,10 @@ A Stratio Cowork bundle is a ZIP file containing:
 
 The agent ZIP contains all files needed to run the agent.
 
+### Staging directory convention
+
+All staging during packaging happens under `output/<agent-name>/.pack-staging/` (workdir-local, hidden). **Do not use `/tmp/` or `mktemp -d`** — in some execution environments (e.g. the Stratio sandbox) those paths are not writable, and silent improvisation leaks staging dirs into the final bundle. The cleanup of `.pack-staging/` happens **once, at the end of section 5**, after the container ZIP is built.
+
 ### Files to include
 
 | File/Directory | Required | Notes |
@@ -45,14 +49,15 @@ The agent ZIP contains all files needed to run the agent.
 ### Commands
 
 ```bash
-# Create a clean staging directory
+# Staging dir lives under the agent workdir (hidden, workdir-local)
 AGENT_NAME="{name}"
-STAGING=$(mktemp -d)
+STAGING="output/$AGENT_NAME/.pack-staging/agent"
+mkdir -p "$STAGING"
 
 # Copy agent files to staging
-cp output/$AGENT_NAME/AGENTS.md "$STAGING/"
-cp output/$AGENT_NAME/README.md "$STAGING/"
-cp output/$AGENT_NAME/opencode.json "$STAGING/"
+cp "output/$AGENT_NAME/AGENTS.md"     "$STAGING/"
+cp "output/$AGENT_NAME/README.md"     "$STAGING/"
+cp "output/$AGENT_NAME/opencode.json" "$STAGING/"
 
 # Copy internal skills (if they exist)
 if [ -d "output/$AGENT_NAME/.opencode" ]; then
@@ -60,15 +65,16 @@ if [ -d "output/$AGENT_NAME/.opencode" ]; then
 fi
 
 # Copy any additional agent files (scripts, templates, etc.)
-for item in output/$AGENT_NAME/scripts output/$AGENT_NAME/templates; do
+for item in "output/$AGENT_NAME/scripts" "output/$AGENT_NAME/templates"; do
   [ -d "$item" ] && cp -r "$item" "$STAGING/"
 done
 
-# Create the agent ZIP
-(cd "$STAGING" && zip -r "$OLDPWD/output/$AGENT_NAME/${AGENT_NAME}-opencode-agent.zip" .)
+# Create the agent ZIP (destination lives outside the staging dir)
+(cd "$STAGING" && zip -rq "$OLDPWD/output/$AGENT_NAME/${AGENT_NAME}-opencode-agent.zip" .)
 
-# Clean up
-rm -rf "$STAGING"
+# IMPORTANT: do NOT delete .pack-staging here. Section 5 owns the cleanup
+# after the container ZIP is built, so the bundle staging can reuse the same
+# parent dir without a race.
 ```
 
 ## 3. Generate the Shared Skills ZIP
@@ -169,25 +175,26 @@ Assemble the final bundle:
 
 ```bash
 AGENT_NAME="{name}"
-BUNDLE_DIR=$(mktemp -d)
+BUNDLE_DIR="output/$AGENT_NAME/.pack-staging/bundle"
+mkdir -p "$BUNDLE_DIR"
 
 # Copy components to bundle staging
-cp "output/$AGENT_NAME/metadata.yaml" "$BUNDLE_DIR/"
-cp "output/$AGENT_NAME/${AGENT_NAME}-opencode-agent.zip" "$BUNDLE_DIR/"
+cp "output/$AGENT_NAME/metadata.yaml"                       "$BUNDLE_DIR/"
+cp "output/$AGENT_NAME/${AGENT_NAME}-opencode-agent.zip"    "$BUNDLE_DIR/"
 
 # Include shared skills ZIP only if it exists
 if [ -f "output/$AGENT_NAME/${AGENT_NAME}-shared-skills.zip" ]; then
   cp "output/$AGENT_NAME/${AGENT_NAME}-shared-skills.zip" "$BUNDLE_DIR/"
 fi
 
-# Create the container ZIP
-(cd "$BUNDLE_DIR" && zip -r "$OLDPWD/output/$AGENT_NAME/${AGENT_NAME}-stratio-cowork.zip" .)
+# Create the container ZIP (destination lives outside the staging dir)
+(cd "$BUNDLE_DIR" && zip -rq "$OLDPWD/output/$AGENT_NAME/${AGENT_NAME}-stratio-cowork.zip" .)
 
-# Clean up
-rm -rf "$BUNDLE_DIR"
+# Cleanup ALL packaging staging in one shot (covers section 2 and section 5)
+rm -rf "output/$AGENT_NAME/.pack-staging"
 ```
 
-**Fallback**: If `zip` is not available, use `tar`:
+**Fallback**: If `zip` is not available, use `tar` (run before the cleanup above so `$BUNDLE_DIR` still exists):
 
 ```bash
 (cd "$BUNDLE_DIR" && tar -czf "$OLDPWD/output/$AGENT_NAME/${AGENT_NAME}-stratio-cowork.tar.gz" .)
@@ -221,22 +228,52 @@ unzip -p "$BUNDLE" "${AGENT_NAME}-opencode-agent.zip" | funzip | unzip -l /dev/s
 
 ## 6. Deliver to the User
 
+### Pre-delivery check
+
+Before reporting to the user, ensure `output/<agent-name>/` is in a clean state.
+
+**Must be present** (open list — the exact contents depend entirely on the agent's design):
+
+- The agent's source files and directories generated during the workflow. At minimum: `AGENTS.md`, `README.md`, `opencode.json`. Beyond that, **anything** the design defines — `.opencode/`, `scripts/`, `templates/`, internal data dirs, prompt libraries, additional docs, custom subfolders, etc. There is no fixed list: any file or folder that the agent legitimately needs is valid.
+- `metadata.yaml`
+- `<name>-opencode-agent.zip`
+- `<name>-stratio-cowork.zip`
+- Optional: `<name>-shared-skills.zip` (only if new shared skills were created)
+
+**Must NOT be present** (this is a closed list — these are forbidden artefacts):
+
+- `.pack-staging/` — packaging staging from sections 2 and 5. The cleanup at the end of section 5 should have removed it; if it still exists, the cleanup did not run.
+- `_pack_tmp/` — legacy staging name from earlier improvisations. Should never be created by the current flow, but clean it defensively if found.
+- Partial or temporary files left by failed runs (e.g. half-built ZIPs, `.tmp` suffixes).
+
+If any forbidden artefact is present, remove it before reporting. The directory must be clean enough that the user — or the sandbox-export mechanism — can identify the deliverable unambiguously.
+
+```bash
+AGENT_NAME="{name}"
+ls -la "output/$AGENT_NAME/"
+[ -d "output/$AGENT_NAME/.pack-staging" ] && rm -rf "output/$AGENT_NAME/.pack-staging"
+[ -d "output/$AGENT_NAME/_pack_tmp" ]     && rm -rf "output/$AGENT_NAME/_pack_tmp"
+```
+
+### Report
+
 After successful packaging, report:
 
 1. **File path**: full path to the container ZIP
 2. **File size**: human-readable size
 3. **Bundle contents**: list the files inside the container ZIP
 4. **Next steps**:
-   - Upload the ZIP to the Stratio Cowork agent management interface
-   - Configure MCP servers from the web interface (if the agent needs external tools)
-   - Test the agent with the usage scenarios defined during design
+   - Proceed to section 7 (deployment to Stratio Cowork) — that is the next step of the workflow.
+   - For reference: the artifact identified as the deployable unit is `<name>-stratio-cowork.zip` (the container ZIP). If a manual upload is ever needed, that is the file to use — do NOT use the agent ZIP, the shared-skills ZIP, or the workdir folder.
+   - After deployment, configure MCP servers from the web interface (if the agent needs external tools).
+   - Test the agent with the usage scenarios defined during design.
 
-## 7. Offer direct deployment to Stratio Cowork
+## 7. Deploy the bundle to Stratio Cowork
 
-This step is **only offered when running inside the Stratio sandbox**. Load the `/cowork-api` skill and follow its `tasks/upload-agent.md` end-to-end. That sub-file owns: the pre-check (via `skills-guides/external-api-calls.md` §2), the question to the user about `on_conflict`, the curl invocation against `/v1/agents/bundle/import`, and how to surface the HTTP code and JSON response.
+This is a **mandatory step** of the packaging workflow, not an option. Load the `/cowork-api` skill and run `tasks/upload-agent.md` end-to-end. That sub-file owns: the pre-check (via `skills-guides/external-api-calls.md` §2), the question to the user about `on_conflict`, the curl invocation against `/v1/agents/bundle/import`, and how to surface the HTTP code and JSON response.
 
 The ZIP path to pass is `output/<agent-name>/<agent-name>-stratio-cowork.zip` (the container ZIP produced in section 5).
 
 The `metadata.yaml` generated in section 4 already carries `name`, so the API reads it from the bundle — `cowork-api` does not need to ask for or pass it.
 
-If the pre-check in `cowork-api` fails (missing `GENAI_API_URL` or certificates), **skip this step silently** and finish the workflow as in section 6 — the agent is not running inside the Stratio sandbox.
+The pre-check inside `cowork-api` is an **environment health check** (env vars, certificates), not a sandbox detector. The host agent always runs inside the Stratio sandbox; if the pre-check reports missing prerequisites (e.g. `GENAI_API_URL`, `USER_CERT_PATH`, `USER_KEY_PATH`, `CA_CERT_PATH`), surface the missing pieces to the user as an environment incident — do NOT silence the failure and do NOT refuse with a generic "I can't". The bundle is already packaged correctly; only the deployment step did not complete, and the user can decide how to proceed.
