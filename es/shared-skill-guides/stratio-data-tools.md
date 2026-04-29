@@ -39,6 +39,26 @@
 - **Profiling (`profile_data`)**: Requiere SQL como parámetro — generarla SIEMPRE con `generate_sql`, nunca escribirla manualmente. NUNCA añadir LIMIT a la SQL; usar el parámetro `limit` de la tool
 - **Ejecución en paralelo**: Cuando el plan define múltiples preguntas de datos independientes (ninguna necesita el resultado de otra para formularse), lanzar TODAS las llamadas a `query_data` en una sola respuesta para que se ejecuten en paralelo. Aplica también a llamadas de metadata (`get_table_columns_details`, `profile_data`, etc.). Solo serializar cuando una query depende del resultado de otra (ej: necesitas un valor de la query A para formular la query B)
 
+## 3.5 Mostrar resultados de queries al usuario
+
+Siempre que el usuario pida ver el resultado de una query — señales explícitas o implícitas: *muéstrame*, *enséñame*, *show me*, *dame*, *top N*, *primeras N*, *no veo los resultados*, *preview*, *validación*, *una muestra*, *los datos*, *los resultados*, *qué devuelve* — renderizar el resultado en línea en chat como tabla Markdown con **todas** las columnas devueltas. El agente nunca sustituye el resultado por un resumen, ni muestra solo "una fila representativa".
+
+Aplica a `query_data`, `execute_sql` y a cualquier otro flujo que devuelva datos tabulares al usuario.
+
+### Reglas de presentación de filas
+
+- **Cap por defecto (sin N explícito)**: renderizar hasta **10 filas** en chat. La query puede haber usado un `LIMIT` distinto internamente — el cap solo controla qué se pinta al usuario.
+- **N explícito del usuario**: cuando el usuario pidió un número concreto (`top 50`, `primeras 25`, `muéstrame 100`, `dame 30`), respetar esa intención hasta un **techo absoluto de 50 filas** pintadas en chat. Por encima de 50, aplicar el cap y reportar el total en la línea de cierre.
+- **Línea de cierre** (una línea breve en cursiva justo después de la tabla):
+  - `N_devueltas ≤ pintadas`: sin línea de cierre. Solo la tabla.
+  - `N_devueltas > pintadas`: añadir `_Mostrando {pintadas} de {N_devueltas} filas — query ejecutada con LIMIT {LIMIT_query}_` (en el idioma del usuario).
+  - `N_devueltas == 0`: no pintar tabla. Emitir un mensaje breve `_La query no devolvió filas._` (en el idioma del usuario).
+- **Cabeceras**: incluir todas las columnas devueltas por la tool, en el orden devuelto. No abreviar ni ocultar columnas.
+
+### Fuera de scope
+
+Esta regla rige **solo la presentación final al usuario en chat**. Los datos que se pasan a otra skill (p. ej. una skill writer que producirá un artefacto PDF/DOCX/PPTX/XLSX/web, o una skill de gráficos) son intermedios y no están sujetos al cap.
+
 ## 4. Workflow de Descubrimiento de Dominio
 
 Pasos para explorar un dominio gobernado y entender sus datos antes de un análisis.

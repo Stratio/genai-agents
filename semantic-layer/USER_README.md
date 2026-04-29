@@ -8,7 +8,7 @@ Semantic Layer Builder guides you in the creation, maintenance and publication o
 
 The agent can also ingest local context to enrich planning: Word specifications with glossaries and business rules, PowerPoint decks with architecture walkthroughs, plain CSV catalogs and ontology files (`.owl`, `.ttl`).
 
-It does not execute data queries or generate files on disk — its output is direct interaction with the governance tools and summaries in chat.
+It can run read-only data queries to validate the SQL of mappings before publishing and to sanity-check the published semantic layer end-to-end. It does not generate files on disk — its main output is direct interaction with the governance tools and summaries in chat.
 
 ## Capabilities
 
@@ -21,6 +21,8 @@ It does not execute data queries or generate files on disk — its output is dir
 - Manage business terms with relationships to data assets
 - Create data collections (technical domains) from dictionary searches
 - Diagnose the status of a domain's semantic layer
+- Validate the SQL of mappings with a sample query (LIMIT 5) before publishing
+- Sanity-check the published `semantic_<domain>` with 1–3 business questions
 - Ingest local specification documents to enrich planning: Word files (`.docx`/`.doc`), PowerPoint decks (`.pptx`/`.ppt`), CSV catalogs and ontology files (`.owl`, `.ttl`)
 
 ## What you can ask
@@ -50,6 +52,11 @@ It does not execute data queries or generate files on disk — its output is dir
 - "What is the status of the semantic layer for domain X?"
 - "What tables are there about customers in the data dictionary?"
 - "What data domains are available?"
+
+### Validation
+- "Run a top 5 of each mapping before I OK the publication"
+- "Validate the queries before publishing"
+- "Run a sanity check on the published semantic layer of X"
 
 ## Available skills
 

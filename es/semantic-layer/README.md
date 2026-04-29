@@ -11,8 +11,9 @@ Agente especializado en construcción y mantenimiento de capas semánticas en St
 - Diagnóstico de estado de la capa semántica de un dominio
 - Gestión de business terms en el diccionario de gobernanza
 - Creación de colecciones de datos (dominios técnicos) a partir de busquedas en el diccionario de datos
+- Validación de datos de solo lectura: validación con datos de muestra de la SQL del mapping antes de publicar, y sanity-checks del `semantic_<domain>` publicado con `query_data` / `generate_sql` / `execute_sql`
 
-Este agente no ejecuta queries de datos, no genera ficheros en disco y no analiza datos — su output es interacción con tools MCP de gobernanza + resúmenes en chat.
+Este agente ejecuta queries de datos de solo lectura (`query_data`, `generate_sql`, `execute_sql`) para validación y sanity checks. No ejecuta `profile_data`, no genera ficheros en disco y no analiza datos — su output principal es interacción con tools MCP de gobernanza + resúmenes en chat.
 
 ## Requisitos
 

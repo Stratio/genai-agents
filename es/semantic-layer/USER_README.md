@@ -8,7 +8,7 @@ Semantic Layer Builder te guía en la creación, mantenimiento y publicación de
 
 El agente también puede ingerir contexto local para enriquecer la planificación: especificaciones Word con glosarios y reglas de negocio, decks PowerPoint con walkthroughs de arquitectura, catálogos CSV y ficheros de ontología (`.owl`, `.ttl`).
 
-No ejecuta queries de datos ni genera ficheros en disco — su output es la interacción directa con las herramientas de gobernanza y resúmenes en chat.
+Puede ejecutar queries de datos de solo lectura para validar la SQL de los mappings antes de publicar y para hacer sanity-checks end-to-end de la capa semántica publicada. No genera ficheros en disco — su output principal es la interacción directa con las herramientas de gobernanza y resúmenes en chat.
 
 ## Capacidades
 
@@ -21,6 +21,8 @@ No ejecuta queries de datos ni genera ficheros en disco — su output es la inte
 - Gestionar business terms con relaciones a activos de datos
 - Crear data collections (dominios técnicos) desde búsquedas en el diccionario
 - Diagnosticar el estado de la capa semántica de un dominio
+- Validar la SQL de los mappings con una query de muestra (LIMIT 5) antes de publicar
+- Sanity-check del `semantic_<domain>` publicado con 1–3 preguntas de negocio
 - Ingerir documentos locales de especificación para enriquecer la planificación: ficheros Word (`.docx`/`.doc`), decks PowerPoint (`.pptx`/`.ppt`), catálogos CSV y ficheros de ontología (`.owl`, `.ttl`)
 
 ## Qué puedes preguntarle
@@ -50,6 +52,11 @@ No ejecuta queries de datos ni genera ficheros en disco — su output es la inte
 - "¿Cuál es el estado de la capa semántica del dominio X?"
 - "¿Qué tablas hay sobre clientes en el diccionario de datos?"
 - "¿Qué dominios de datos hay disponibles?"
+
+### Validación
+- "Hazme un top 5 de cada mapping antes de que dé el OK a publicar"
+- "Valida las queries antes de publicar"
+- "Sanity check de la capa semántica publicada de X"
 
 ## Skills disponibles
 

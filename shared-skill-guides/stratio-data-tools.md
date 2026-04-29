@@ -39,6 +39,26 @@
 - **Profiling (`profile_data`)**: Requires SQL as a parameter — ALWAYS generate it with `generate_sql`, never write it manually. NEVER add LIMIT to the SQL; use the tool's `limit` parameter instead
 - **Parallel execution**: When the plan defines multiple independent data questions (none needs the result of another to be formulated), launch ALL `query_data` calls in a single response so they execute in parallel. This also applies to metadata calls (`get_table_columns_details`, `profile_data`, etc.). Only serialize when one query depends on the result of another (e.g., you need a value from query A to formulate query B)
 
+## 3.5 Showing query results to the user
+
+Whenever the user asks to see the result of a query — explicit or implicit signals: *muéstrame*, *enseñame*, *show me*, *dame*, *top N*, *primeras N*, *no veo los resultados*, *preview*, *validation*, *una muestra*, *los datos*, *los resultados*, *qué devuelve* — render the result inline in chat as a Markdown table with **all** columns returned. The agent never substitutes the result with a summary, and never shows just "one representative row".
+
+Applies to `query_data`, `execute_sql`, and any other flow that returns tabular data to the user.
+
+### Row presentation rules
+
+- **Default cap (no explicit N)**: render up to **10 rows** in chat. The query may have used a different `LIMIT` internally — the cap only controls what is painted to the user.
+- **Explicit user N**: when the user asked for a specific count (`top 50`, `primeras 25`, `muéstrame 100`, `give me 30`), respect that intent up to a **hard ceiling of 50 rows** painted in chat. Above 50, fall back to the cap and report the total in the closing line.
+- **Closing line** (one short italic line right after the table):
+  - `N_returned ≤ painted`: no closing line. Just the table.
+  - `N_returned > painted`: add `_Showing {painted} of {N_returned} rows — query executed with LIMIT {LIMIT_query}_` (use the user's language).
+  - `N_returned == 0`: do not paint a table. Emit a single short message `_The query returned no rows._` (in the user's language).
+- **Headers**: include all columns returned by the tool, in the order returned. Do not abbreviate or hide columns.
+
+### Out of scope
+
+This rule governs the **final user-facing presentation in chat** only. Data being passed to another skill (e.g., a writer skill that will produce a PDF/DOCX/PPTX/XLSX/web artifact, or a chart skill) is intermediate and is not subject to the cap.
+
 ## 4. Domain Discovery Workflow
 
 Steps to explore a governed domain and understand its data before analysis.

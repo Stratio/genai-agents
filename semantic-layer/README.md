@@ -11,8 +11,9 @@ Agent specialized in building and maintaining semantic layers in Stratio Data Go
 - Diagnosing the status of a domain's semantic layer
 - Managing business terms in the governance dictionary
 - Creating data collections (technical domains) from data dictionary searches
+- Read-only data validation: sample-query validation of mapping SQL before publishing, and sanity checks of the published `semantic_<domain>` with `query_data` / `generate_sql` / `execute_sql`
 
-This agent does not execute data queries, does not generate files on disk, and does not analyze data — its output is interaction with governance MCP tools + summaries in chat.
+This agent runs read-only data queries (`query_data`, `generate_sql`, `execute_sql`) for validation and sanity checks. It does not run `profile_data`, does not generate files on disk, and does not analyze data — its main output is interaction with governance MCP tools + summaries in chat.
 
 ## Requirements
 

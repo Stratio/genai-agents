@@ -8,6 +8,7 @@ Governance officer agent combining semantic layer building and data quality mana
 - Building and maintaining semantic layers via governance MCPs
 - Publishing business views (Draft → Pending Publish)
 - Exploring technical domains and published semantic layers
+- Sample-data validation of mapping SQL before publishing, and sanity checks of the published `semantic_<domain>`
 - Interactive ontology planning with local file reading
 - Creating data collections from data dictionary searches
 - Managing business terms in the governance dictionary
