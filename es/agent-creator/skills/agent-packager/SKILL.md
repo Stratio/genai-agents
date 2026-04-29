@@ -23,6 +23,10 @@ Un bundle de Stratio Cowork es un fichero ZIP que contiene:
 
 El agent ZIP contiene todos los ficheros necesarios para ejecutar el agente.
 
+### Convención del directorio de staging
+
+Todo el staging durante el empaquetado ocurre bajo `output/<nombre-agente>/.pack-staging/` (oculto, dentro del workdir). **No usar `/tmp/` ni `mktemp -d`** — en algunos entornos de ejecución (p. ej. el sandbox de Stratio) esas rutas no son escribibles, y la improvisación silenciosa filtra directorios de staging dentro del bundle final. La limpieza de `.pack-staging/` ocurre **una sola vez, al final de la sección 5**, después de construir el ZIP contenedor.
+
 ### Ficheros a incluir
 
 | Fichero/Directorio | Obligatorio | Notas |
@@ -45,14 +49,15 @@ El agent ZIP contiene todos los ficheros necesarios para ejecutar el agente.
 ### Comandos
 
 ```bash
-# Crear un directorio de staging limpio
+# El staging vive bajo el workdir del agente (oculto, dentro del workdir)
 AGENT_NAME="{nombre}"
-STAGING=$(mktemp -d)
+STAGING="output/$AGENT_NAME/.pack-staging/agent"
+mkdir -p "$STAGING"
 
 # Copiar ficheros del agente al staging
-cp output/$AGENT_NAME/AGENTS.md "$STAGING/"
-cp output/$AGENT_NAME/README.md "$STAGING/"
-cp output/$AGENT_NAME/opencode.json "$STAGING/"
+cp "output/$AGENT_NAME/AGENTS.md"     "$STAGING/"
+cp "output/$AGENT_NAME/README.md"     "$STAGING/"
+cp "output/$AGENT_NAME/opencode.json" "$STAGING/"
 
 # Copiar skills internas (si existen)
 if [ -d "output/$AGENT_NAME/.opencode" ]; then
@@ -60,15 +65,16 @@ if [ -d "output/$AGENT_NAME/.opencode" ]; then
 fi
 
 # Copiar ficheros adicionales del agente (scripts, templates, etc.)
-for item in output/$AGENT_NAME/scripts output/$AGENT_NAME/templates; do
+for item in "output/$AGENT_NAME/scripts" "output/$AGENT_NAME/templates"; do
   [ -d "$item" ] && cp -r "$item" "$STAGING/"
 done
 
-# Crear el agent ZIP
-(cd "$STAGING" && zip -r "$OLDPWD/output/$AGENT_NAME/${AGENT_NAME}-opencode-agent.zip" .)
+# Crear el agent ZIP (el destino vive fuera del directorio de staging)
+(cd "$STAGING" && zip -rq "$OLDPWD/output/$AGENT_NAME/${AGENT_NAME}-opencode-agent.zip" .)
 
-# Limpiar
-rm -rf "$STAGING"
+# IMPORTANTE: NO borrar .pack-staging aquí. La sección 5 se encarga del cleanup
+# después de construir el ZIP contenedor, así el staging del bundle puede reutilizar
+# el mismo directorio padre sin race condition.
 ```
 
 ## 3. Generar el Shared Skills ZIP
@@ -169,25 +175,26 @@ Ensamblar el bundle final:
 
 ```bash
 AGENT_NAME="{nombre}"
-BUNDLE_DIR=$(mktemp -d)
+BUNDLE_DIR="output/$AGENT_NAME/.pack-staging/bundle"
+mkdir -p "$BUNDLE_DIR"
 
 # Copiar componentes al staging del bundle
-cp "output/$AGENT_NAME/metadata.yaml" "$BUNDLE_DIR/"
-cp "output/$AGENT_NAME/${AGENT_NAME}-opencode-agent.zip" "$BUNDLE_DIR/"
+cp "output/$AGENT_NAME/metadata.yaml"                       "$BUNDLE_DIR/"
+cp "output/$AGENT_NAME/${AGENT_NAME}-opencode-agent.zip"    "$BUNDLE_DIR/"
 
 # Incluir shared skills ZIP solo si existe
 if [ -f "output/$AGENT_NAME/${AGENT_NAME}-shared-skills.zip" ]; then
   cp "output/$AGENT_NAME/${AGENT_NAME}-shared-skills.zip" "$BUNDLE_DIR/"
 fi
 
-# Crear el ZIP contenedor
-(cd "$BUNDLE_DIR" && zip -r "$OLDPWD/output/$AGENT_NAME/${AGENT_NAME}-stratio-cowork.zip" .)
+# Crear el ZIP contenedor (el destino vive fuera del directorio de staging)
+(cd "$BUNDLE_DIR" && zip -rq "$OLDPWD/output/$AGENT_NAME/${AGENT_NAME}-stratio-cowork.zip" .)
 
-# Limpiar
-rm -rf "$BUNDLE_DIR"
+# Limpieza de TODO el staging del empaquetado en una sola pasada (cubre sección 2 y 5)
+rm -rf "output/$AGENT_NAME/.pack-staging"
 ```
 
-**Fallback**: Si `zip` no está disponible, usar `tar`:
+**Fallback**: Si `zip` no está disponible, usar `tar` (ejecutar antes del cleanup anterior para que `$BUNDLE_DIR` siga existiendo):
 
 ```bash
 (cd "$BUNDLE_DIR" && tar -czf "$OLDPWD/output/$AGENT_NAME/${AGENT_NAME}-stratio-cowork.tar.gz" .)
@@ -221,22 +228,52 @@ unzip -p "$BUNDLE" "${AGENT_NAME}-opencode-agent.zip" | funzip | unzip -l /dev/s
 
 ## 6. Entregar al Usuario
 
+### Verificación previa a la entrega
+
+Antes de reportar al usuario, asegurarse de que `output/<nombre-agente>/` está en un estado limpio.
+
+**Debe haber** (lista abierta — el contenido exacto depende totalmente del diseño del agente):
+
+- Los ficheros y directorios fuente del agente generados durante el flujo. Como mínimo: `AGENTS.md`, `README.md`, `opencode.json`. Más allá de eso, **cualquier cosa** que el diseño defina — `.opencode/`, `scripts/`, `templates/`, directorios de datos internos, librerías de prompts, documentación adicional, subcarpetas personalizadas, etc. No hay lista fija: cualquier fichero o carpeta que el agente necesite legítimamente es válido.
+- `metadata.yaml`
+- `<nombre>-opencode-agent.zip`
+- `<nombre>-stratio-cowork.zip`
+- Opcional: `<nombre>-shared-skills.zip` (solo si se crearon nuevas shared skills)
+
+**NO debe haber** (lista cerrada — son artefactos prohibidos):
+
+- `.pack-staging/` — staging del empaquetado de las secciones 2 y 5. La limpieza al final de la sección 5 debería haberlo eliminado; si sigue presente, la limpieza no se ejecutó.
+- `_pack_tmp/` — nombre de staging heredado de improvisaciones anteriores. El flujo actual no debería crearlo nunca, pero límpialo defensivamente si aparece.
+- Ficheros parciales o temporales dejados por ejecuciones fallidas (p. ej. ZIPs a medio construir, sufijos `.tmp`).
+
+Si hay cualquier artefacto prohibido, eliminarlo antes de reportar. El directorio debe quedar lo bastante limpio como para que el usuario — o el mecanismo de exportación del sandbox — pueda identificar el entregable sin ambigüedad.
+
+```bash
+AGENT_NAME="{nombre}"
+ls -la "output/$AGENT_NAME/"
+[ -d "output/$AGENT_NAME/.pack-staging" ] && rm -rf "output/$AGENT_NAME/.pack-staging"
+[ -d "output/$AGENT_NAME/_pack_tmp" ]     && rm -rf "output/$AGENT_NAME/_pack_tmp"
+```
+
+### Reporte
+
 Después de empaquetar exitosamente, reportar:
 
 1. **Ruta del fichero**: ruta completa al ZIP contenedor
 2. **Tamaño del fichero**: tamaño legible
 3. **Contenido del bundle**: listar los ficheros dentro del ZIP contenedor
 4. **Próximos pasos**:
-   - Subir el ZIP a la interfaz de gestión de agentes de Stratio Cowork
-   - Configurar servidores MCP desde la interfaz web (si el agente necesita herramientas externas)
-   - Probar el agente con los escenarios de uso definidos durante el diseño
+   - Proceder a la sección 7 (despliegue en Stratio Cowork) — es el siguiente paso del flujo.
+   - Como referencia: el artefacto identificado como unidad desplegable es `<nombre>-stratio-cowork.zip` (el ZIP contenedor). Si en algún momento se necesita una subida manual, ese es el fichero a usar — NO el agent ZIP, ni el shared-skills ZIP, ni la carpeta de trabajo.
+   - Tras el despliegue, configurar servidores MCP desde la interfaz web (si el agente necesita herramientas externas).
+   - Probar el agente con los escenarios de uso definidos durante el diseño.
 
-## 7. Ofrecer despliegue directo en Stratio Cowork
+## 7. Desplegar el bundle a Stratio Cowork
 
-Este paso solo se ofrece **cuando el agente se ejecuta dentro del sandbox de Stratio**. Cargar la skill `/cowork-api` y seguir su `tasks/upload-agent.md` de principio a fin. Ese sub-fichero se encarga de: el pre-check (vía `skills-guides/external-api-calls.md` §2), la pregunta al usuario sobre `on_conflict`, la invocación de curl contra `/v1/agents/bundle/import` y cómo mostrar el código HTTP y la respuesta JSON.
+Este es un **paso obligatorio** del flujo de empaquetado, no una opción. Cargar la skill `/cowork-api` y ejecutar `tasks/upload-agent.md` de principio a fin. Ese sub-fichero se encarga de: el pre-check (vía `skills-guides/external-api-calls.md` §2), la pregunta al usuario sobre `on_conflict`, la invocación de curl contra `/v1/agents/bundle/import` y cómo mostrar el código HTTP y la respuesta JSON.
 
 La ruta del ZIP a pasar es `output/<agent-name>/<agent-name>-stratio-cowork.zip` (el ZIP contenedor producido en la sección 5).
 
 El `metadata.yaml` generado en la sección 4 ya incluye `name`, así que la API lo lee del bundle — `cowork-api` no necesita preguntarlo ni pasarlo.
 
-Si el pre-check de `cowork-api` falla (faltan `GENAI_API_URL` o los certificados), **omitir este paso silenciosamente** y terminar el flujo como en la sección 6 — el agente no se está ejecutando dentro del sandbox de Stratio.
+El pre-check dentro de `cowork-api` es un **health check del entorno** (variables de entorno, certificados), no un detector de sandbox. El agente anfitrión siempre se ejecuta dentro del sandbox de Stratio; si el pre-check reporta prerequisites faltantes (p. ej. `GENAI_API_URL`, `USER_CERT_PATH`, `USER_KEY_PATH`, `CA_CERT_PATH`), trasládale las piezas que faltan al usuario como un incidente del entorno — NO silencies el fallo y NO rechaces con un genérico "no puedo". El bundle ya está empaquetado correctamente; solo el paso de despliegue no se completó, y el usuario puede decidir cómo proceder.

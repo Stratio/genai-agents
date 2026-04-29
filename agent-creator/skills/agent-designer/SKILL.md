@@ -27,9 +27,23 @@ Skills extend the agent's capabilities. There are three categories:
 |------|---------------|-------------|
 | **Internal skill** | Inside the agent ZIP at `.opencode/skills/{name}/SKILL.md` | Specific to this agent — not reusable by others |
 | **Shared skill (new)** | Separate ZIP alongside the agent | The user wants it available for other agents too |
-| **Platform skill (existing)** | Already available on the platform | Referenced by name in AGENTS.md — the platform loads it at runtime |
+| **Platform skill (existing)** | Already available on the **Stratio Cowork** platform catalog (NOT in your host runtime) | Referenced by name in AGENTS.md only when the user explicitly names it — Stratio Cowork loads it at runtime |
 
 Internal and shared skills are created using the `/skill-creator` skill. Platform skills are only referenced.
+
+### Skill decomposition rules
+
+These rules prevent the most common design error: bloating an agent with skills that the user did not request.
+
+1. **Default = the agent has zero external skill references.** Many agents need no skills at all — their workflow is a few inline phases. Start there and only add skills when justified.
+
+2. **Add an existing platform skill ONLY when the user names it by exact name** (in Phase 1's question about platform skill reuse). The reference must be a skill from the **Stratio Cowork platform catalog** that the user knows exists and explicitly wants. Never invent or assume catalog entries.
+
+3. **Create a new internal or shared skill ONLY when** the agent's workflow genuinely requires the operational detail to live in a separate file (e.g. a multi-step task that would bloat AGENTS.md beyond ~300 lines), AND the user agreed to that creation during the design phase.
+
+4. **NEVER include skills loaded in your host runtime** (the runtime where you, the agent-creator, are running — typically OpenCode with its helper skills like `caveman`, `update-config`, `keybindings-help`, plugins, etc.). Those skills are tools for you, not part of the catalog of the agent you are building. The agent you generate runs in **Stratio Cowork**, a different runtime with its own catalog.
+
+5. **When in doubt, do not add the skill.** Asking the user is fine. Surfacing your own runtime's skills as a "browseable catalog" is not.
 
 ## 2. Writing an Effective AGENTS.md
 

@@ -24,7 +24,7 @@ Si falta alguna variable el sandbox arranca igualmente — tu script debe hacer 
 
 ## 2. Pre-check antes de cualquier llamada externa
 
-Verifica siempre que el sandbox provee lo que necesitas antes de emitir una petición. Si el pre-check falla, no llames a la API — informa al usuario de que la operación requiere el sandbox de Stratio.
+Verifica siempre que el entorno provee lo que necesitas antes de emitir una petición. El pre-check de abajo es un health check del entorno (variables de entorno, rutas de certificados) — no un detector de sandbox. Si falla, no llames a la API; reporta al usuario qué prerequisites faltan (p. ej. `GENAI_API_URL`, `USER_CERT_PATH`, `USER_KEY_PATH`, `CA_CERT_PATH`). Traslada las piezas faltantes de forma explícita para que el usuario las pueda corregir; nunca rechaces con un mensaje genérico.
 
 ```bash
 preflight_external_api() {

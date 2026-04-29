@@ -31,24 +31,20 @@ Agente para diseñar y generar agentes IA completos para la plataforma Stratio C
 
 | Script | Plataforma destino | Output | Ejemplo |
 |--------|--------------------|--------|---------|
-| `pack_claude_code.sh` | Claude Code CLI | `dist/claude_code/<name>/` | `bash ../pack_claude_code.sh --agent agent-creator` |
-| `pack_opencode.sh` | OpenCode | `dist/opencode/<name>/` | `bash ../pack_opencode.sh --agent agent-creator` |
-| `pack_stratio_cowork.sh` | Stratio Cowork | `dist/<name>-stratio-cowork.zip` | `bash ../pack_stratio_cowork.sh --agent agent-creator` |
+| `pack_opencode.sh` | OpenCode (el runtime que usa Stratio Cowork) | `dist/opencode/<name>/` | `bash ../pack_opencode.sh --agent agent-creator` |
+| `pack_stratio_cowork.sh` | Bundle de Stratio Cowork (`agents/v1` ZIP) | `dist/<name>-stratio-cowork.zip` | `bash ../pack_stratio_cowork.sh --agent agent-creator` |
 
 Todos los scripts aceptan `--lang <code>` para generar la salida en un idioma específico (ej: `--lang es` para español).
 
 ## Inicio rápido
 
 ```bash
-# Empaquetar para Claude Code
-bash ../pack_claude_code.sh --agent agent-creator
-
-# Empaquetar para OpenCode
+# Empaquetar para OpenCode (desarrollo / testing)
 bash ../pack_opencode.sh --agent agent-creator
 
-# Empaquetar para Stratio Cowork
+# Empaquetar como bundle Stratio Cowork (ZIP agents/v1 desplegable)
 bash ../pack_stratio_cowork.sh --agent agent-creator
 
 # Empaquetar en español
-bash ../pack_claude_code.sh --agent agent-creator --lang es
+bash ../pack_opencode.sh --agent agent-creator --lang es
 ```

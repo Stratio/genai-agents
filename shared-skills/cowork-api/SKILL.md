@@ -1,6 +1,6 @@
 ---
 name: cowork-api
-description: "Capabilities exposed by the Stratio Cowork management REST API (`genai-api`): registering new skills, registering new agent bundles, and any future operation against that API. Use when the agent needs to call the Cowork management plane to deploy or manage skills/agents from inside the Stratio sandbox."
+description: "Upload, import, deploy, publish, register, send or push agent and skill bundles to Stratio Cowork (`genai-api`). Use when the user asks to upload/import/deploy/publish/register a packaged agent or skill ZIP to Cowork — including phrases like 'súbelo', 'deploy this', 'impórtalo', 'publica el agente', 'regístralo en Cowork'. Calls `/v1/agents/bundle/import` and `/v1/agents/skills/bundle/import`."
 ---
 
 # Skill: Stratio Cowork management API (`genai-api`)
@@ -12,7 +12,7 @@ Router skill. Each capability lives in its own file under `tasks/`. **This file 
 Before any call, follow `skills-guides/external-api-calls.md`:
 
 - §1 lists the environment variables and certificate paths the sandbox provides.
-- §2 has the standard pre-check (`preflight_external_api`). Run it; if it fails, stop and inform the user that the operation requires running inside the Stratio sandbox.
+- §2 has the standard pre-check (`preflight_external_api`). Run it; if it fails, stop and report to the user which prerequisites are missing (env vars or certificate paths) — the operation cannot proceed without a healthy environment. Surface the missing pieces explicitly; do not refuse with a generic message.
 - §3 and §4 are the curl / Python templates. Each task below picks one and only adds the endpoint-specific bits (path, multipart field, query params).
 - §5 is the error table to use when surfacing failures back to the user.
 

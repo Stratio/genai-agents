@@ -28,20 +28,16 @@ Agente para diseñar y generar skills de alta calidad para agentes IA (ficheros 
 
 | Script | Plataforma destino | Output | Ejemplo |
 |--------|--------------------|--------|---------|
-| `pack_claude_code.sh` | Claude Code CLI | `dist/claude_code/<name>/` | `bash ../pack_claude_code.sh --agent skill-creator` |
-| `pack_opencode.sh` | OpenCode | `dist/opencode/<name>/` | `bash ../pack_opencode.sh --agent skill-creator` |
+| `pack_opencode.sh` | OpenCode (el runtime que usa Stratio Cowork) | `dist/opencode/<name>/` | `bash ../pack_opencode.sh --agent skill-creator` |
 
 Todos los scripts aceptan `--lang <code>` para generar la salida en un idioma específico (ej: `--lang es` para español).
 
 ## Inicio rápido
 
 ```bash
-# Empaquetar para Claude Code
-bash ../pack_claude_code.sh --agent skill-creator
-
-# Empaquetar para OpenCode
+# Empaquetar para OpenCode (desarrollo / testing)
 bash ../pack_opencode.sh --agent skill-creator
 
 # Empaquetar en español
-bash ../pack_claude_code.sh --agent skill-creator --lang es
+bash ../pack_opencode.sh --agent skill-creator --lang es
 ```
