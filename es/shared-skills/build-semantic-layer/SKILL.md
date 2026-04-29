@@ -91,15 +91,15 @@ Ejecutar cada fase en orden estricto, llamando a las tools directamente:
 **Fase 4 — SQL Mappings** (si necesario; cubre vistas nuevas de Fase 3 y existentes sin mapping):
 - `create_sql_mappings(domain, view_names?, user_instructions?)` pasando como `user_instructions` el bloque de mapping del enriquecimiento pre-cargado (omitir si se saltó en el paso 3)
 - Presentar resumen de la tool al usuario
-- La respuesta incluye `processed_views`: cada entrada lleva `sql_definition` — la SQL del mapping recién generada. **Mantener esta lista en el contexto de orquestación**; el bloque opcional de validación pre-publicación de abajo la usa directamente (no hace falta volver a llamar a `list_technical_domain_concepts`)
+- La respuesta incluye `processed_views`: cada entrada lleva `sql_mapping` — la SQL del mapping recién generada. **Mantener esta lista en el contexto de orquestación**; el bloque opcional de validación pre-publicación de abajo la usa directamente (no hace falta volver a llamar a `list_technical_domain_concepts`)
 
 **Validación opcional pre-publicación (mappings)**:
 - Antes de preguntar por la publicación, ofrecer al usuario una validación con datos de muestra sobre los mappings recién creados: "¿Quieres que ejecute la SQL del mapping (LIMIT 5) de cada vista y te muestre los resultados antes de decidir sobre la publicación?"
-- Usar la lista `processed_views` devuelta por la llamada a `create_sql_mappings` de la Fase 4 (cada entrada lleva la SQL recién generada en `sql_definition`). Usar esa SQL tal cual, envolviéndola como `SELECT * FROM (<sql_definition>) AS m LIMIT 5` para preservar la proyección original. No hace falta volver a llamar a `list_technical_domain_concepts` aquí.
+- Usar la lista `processed_views` devuelta por la llamada a `create_sql_mappings` de la Fase 4 (cada entrada lleva la SQL recién generada en `sql_mapping`). Usar esa SQL tal cual, envolviéndola como `SELECT * FROM (<sql_mapping>) AS m LIMIT 5` para preservar la proyección original. No hace falta volver a llamar a `list_technical_domain_concepts` aquí.
 - Si el usuario acepta, listar las vistas candidatas y **cap por defecto en 5 vistas**. Si `processed_views` tiene más, preguntar al usuario qué subconjunto validar.
 - Para cada vista seleccionada: ejecutar `execute_sql` con la query envuelta. Lanzar todas las vistas seleccionadas **en paralelo** en la misma respuesta.
 - Renderizar resultados como tablas Markdown siguiendo `skills-guides/stratio-data-tools.md` §3.5 (cap por defecto de 10 filas en chat).
-- **Sin improvisación**: si `sql_definition` viene vacío para alguna vista dentro de `processed_views` (backend de gov no expone aún el campo, o el mapping no se persistió correctamente), NO improvisar un SELECT sobre las tablas fuente. Decirle al usuario: "No puedo validar la SQL de este mapping desde aquí porque el backend no la está exponiendo. Puedes validarla desde la UI de Governance, en la vista." Saltar esa vista y continuar con las demás.
+- **Sin improvisación**: si `sql_mapping` viene vacío para alguna vista dentro de `processed_views` (backend de gov no expone aún el campo, o el mapping no se persistió correctamente), NO improvisar un SELECT sobre las tablas fuente. Decirle al usuario: "No puedo validar la SQL de este mapping desde aquí porque el backend no la está exponiendo. Puedes validarla desde la UI de Governance, en la vista." Saltar esa vista y continuar con las demás.
 - Si `execute_sql` no está disponible en este agente, no caer al fallback de `query_data` con lenguaje natural sobre las tablas fuente (no validaría el mapping). Informar al usuario y derivar a la UI de Governance.
 
 **Publicación (opcional, entre Fase 4 y Fase 5)**:

@@ -20,13 +20,13 @@
 | **Business views** | `create_business_views(domain, ontology, class_names?, regenerate?)` | Create views + mappings. Skips existing ones. With `regenerate=true`: DESTRUCTIVE, deletes and recreates |
 | | `delete_business_views(domain, view_names)` | DESTRUCTIVE: delete specific views without recreating (protected by Published) |
 | | `publish_business_views(domain, view_names?)` | Publish views (Draft -> Pending Publish). Without `view_names`, publishes all. Returns `published`, `failed` (transition not allowed), and `not_found`. Idempotent |
-| **SQL Mappings** | `create_sql_mappings(domain, view_names?, user_instructions?)` | Create or update SQL mappings for existing views. Returns `message` (markdown summary) **and** `processed_views`: a list of BusinessViewSummary for the views actually processed in this call (excludes any names not found), each carrying `sql_definition` — the freshly generated mapping SQL ready for sample-data validation (`SELECT * FROM (<sql_definition>) AS m LIMIT 5`) without an extra `list_technical_domain_concepts` call |
+| **SQL Mappings** | `create_sql_mappings(domain, view_names?, user_instructions?)` | Create or update SQL mappings for existing views. Returns `message` (markdown summary) **and** `processed_views`: a list of BusinessViewSummary for the views actually processed in this call (excludes any names not found), each carrying `sql_mapping` — the freshly generated mapping SQL ready for sample-data validation (`SELECT * FROM (<sql_mapping>) AS m LIMIT 5`) without an extra `list_technical_domain_concepts` call |
 | **Semantic terms** | `create_semantic_terms(domain, view_names?, user_instructions?, regenerate?)` | Generate semantic terms. With `regenerate=true`: DESTRUCTIVE, deletes and recreates |
 | **Business terms** | `create_business_term(domain, name, description, type, related_assets)` | Create a business term in the dictionary with asset relationships |
 | | `list_business_asset_types()` | List available asset types for business terms |
 | **Collections** | `create_data_collection(collection_name, description, table_metadata_paths?, path_metadata_paths?)` | Create a data collection (technical domain) with tables and paths. `collection_name` without spaces (use underscores). Automatically refreshes the technical view |
 | **Glossary instructions** | `get_glossary_instructions(domain, phases?, include_globals?)` | Read GenAI instruction-typed business terms from the data dictionary for a technical domain. Filterable by `phases` (list of `ontology` / `mapping` / `technical_terms` / `semantic_terms`; defaults to all four) and by `include_globals` for the cross-phase global `GenAI Instructions` type. For each phase, the response always includes the phase-specific primary type plus any additional per-phase types the profile has configured (mirrors what the chain consumes internally). Returns one section per glossary type with the raw Markdown content. Read-only. See §11 for the user-facing workflow |
-| **Utility** | `list_technical_domain_concepts(domain)` | List existing business views with governance status (Draft/Pending Publish/Published), `has_sql_mapping` boolean, the actual mapping SQL in `sql_definition` (when present — usable for sample-data validation: `SELECT * FROM (<sql_definition>) AS m LIMIT 5`), and `has_semantic_terms` |
+| **Utility** | `list_technical_domain_concepts(domain)` | List existing business views with governance status (Draft/Pending Publish/Published), `has_sql_mapping` boolean, the actual mapping SQL in `sql_mapping` (when present — usable for sample-data validation: `SELECT * FROM (<sql_mapping>) AS m LIMIT 5`), and `has_semantic_terms` |
 | | `create_collection_description(domain, user_instructions?)` | Generate ONLY the domain/collection description (without touching tables) |
 | | `get_mcp_task_result(task_id)` | Retrieve the result of a long-running tool that continues executing in the background on the `gov` server (see section 9) |
 
@@ -92,7 +92,7 @@ Launch 4.3 in parallel when dealing with independent tables.
 
 ### 4.4 Existing Knowledge
 
-- `list_technical_domain_concepts(domain)` -> existing business views with mapping and semantic term status, plus the actual mapping SQL in `sql_definition` when defined (usable for pre-publication sample-data validation against the data MCP)
+- `list_technical_domain_concepts(domain)` -> existing business views with mapping and semantic term status, plus the actual mapping SQL in `sql_mapping` when defined (usable for pre-publication sample-data validation against the data MCP)
 - `search_ontologies(text)` or `list_ontologies` + `get_ontology_info` -> existing ontologies and their structure. Prefer `search_ontologies` if searching for a specific ontology
 - `search_domain_knowledge(question, domain)` -> search terminology and definitions
 
@@ -119,7 +119,7 @@ Before any operation, verify it does not already exist:
 | Ontology | `search_ontologies(name)` or `list_ontologies` + `get_ontology_info` | Options: extend (`update_ontology`) / delete classes (`delete_ontology_classes`) / create new |
 | Business views | `list_technical_domain_concepts(domain)` | Inform of existing views. Options: skip / delete specific ones (`delete_business_views`) / regenerate (`create_business_views(regenerate=true)`) |
 | View publishing | `list_technical_domain_concepts(domain)` -> status of each view | If already Pending Publish or Published, inform. Only Draft views can be published |
-| SQL Mappings | `list_technical_domain_concepts(domain)` -> mapping status per view + `sql_definition` of the mapping when present | `create_sql_mappings` overwrites existing mappings. Use `sql_definition` for pre-publication sample validation (see §3.5 of `stratio-data-tools.md`) |
+| SQL Mappings | `list_technical_domain_concepts(domain)` -> mapping status per view + `sql_mapping` of the mapping when present | `create_sql_mappings` overwrites existing mappings. Use `sql_mapping` for pre-publication sample validation (see §3.5 of `stratio-data-tools.md`) |
 | Semantic terms | `list_technical_domain_concepts(domain)` -> term status per view | Inform. Options: skip / regenerate (destructive) / cancel |
 
 > When any `search_*` tool above is unavailable (not empty, but failing), substitute per §10 and continue.

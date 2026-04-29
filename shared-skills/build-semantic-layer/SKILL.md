@@ -91,15 +91,15 @@ Execute each phase in strict order, calling the tools directly:
 **Phase 4 — SQL Mappings** (if needed; covers new views from Phase 3 and existing views without mapping):
 - `create_sql_mappings(domain, view_names?, user_instructions?)` passing the mapping slice of the pre-loaded enrichment as `user_instructions` (omit if skipped in step 3)
 - Present the tool summary to the user
-- The response includes `processed_views`: each entry carries `sql_definition` — the freshly generated mapping SQL. **Keep this list in the orchestration context**; the optional pre-publication validation block below uses it directly (no need to re-fetch with `list_technical_domain_concepts`)
+- The response includes `processed_views`: each entry carries `sql_mapping` — the freshly generated mapping SQL. **Keep this list in the orchestration context**; the optional pre-publication validation block below uses it directly (no need to re-fetch with `list_technical_domain_concepts`)
 
 **Optional pre-publication validation (mappings)**:
 - Before asking about publication, offer the user a sample-data check on the freshly created mappings: "Do you want me to run the mapping SQL (LIMIT 5) of each view and show you the results before deciding on publication?"
-- Use the `processed_views` list returned by Phase 4's `create_sql_mappings` call (each entry carries the freshly generated SQL in `sql_definition`). Use that SQL verbatim, wrapping it as `SELECT * FROM (<sql_definition>) AS m LIMIT 5` so the original projection is preserved. No need to call `list_technical_domain_concepts` again here.
+- Use the `processed_views` list returned by Phase 4's `create_sql_mappings` call (each entry carries the freshly generated SQL in `sql_mapping`). Use that SQL verbatim, wrapping it as `SELECT * FROM (<sql_mapping>) AS m LIMIT 5` so the original projection is preserved. No need to call `list_technical_domain_concepts` again here.
 - If the user accepts, list the candidate views and **cap by default at 5 views**. If `processed_views` has more, ask the user which subset to validate.
 - For each selected view: run `execute_sql` with the wrapped query. Launch all selected views **in parallel** in the same response.
 - Render results as Markdown tables following `skills-guides/stratio-data-tools.md` §3.5 (default cap of 10 rows in chat).
-- **No improvisation**: if `sql_definition` comes back empty for a view inside `processed_views` (gov backend not yet exposing the field, or mapping failed to persist), do NOT improvise a SELECT over source tables. Tell the user: "I cannot validate this mapping's SQL from here because the backend is not exposing it. You can validate it from the Governance UI under the view." Skip that view and continue with the others.
+- **No improvisation**: if `sql_mapping` comes back empty for a view inside `processed_views` (gov backend not yet exposing the field, or mapping failed to persist), do NOT improvise a SELECT over source tables. Tell the user: "I cannot validate this mapping's SQL from here because the backend is not exposing it. You can validate it from the Governance UI under the view." Skip that view and continue with the others.
 - If `execute_sql` is not available in this agent, do not fall back to a natural-language `query_data` over source tables (it would not validate the mapping). Inform the user and point to the Governance UI.
 
 **Publication (optional, between Phase 4 and Phase 5)**:
