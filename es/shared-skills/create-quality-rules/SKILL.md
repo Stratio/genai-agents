@@ -296,7 +296,7 @@ Antes de presentar el plan al usuario, se debe verificar la validez técnica de 
 
 **Procedimiento de validación:**
 1. Para cada regla diseñada, preparar la `query` y la `query_reference`.
-2. Resolver los placeholders `${nombre_tabla}` (p.ej., `${account}` → `account`) eliminando el envoltorio `${}` para obtener el nombre de tabla plano que se usará con `execute_sql`. Nota: en `create_quality_rule`, mantener siempre el formato completo `${nombre_tabla}` — el sistema de gobernanza resuelve los placeholders a paths físicos en el momento de ejecución de la regla. La validación con `execute_sql` verifica únicamente la lógica y sintaxis SQL; no garantiza que el path físico que usa el sistema de gobernanza coincida con el del catálogo del dominio.
+2. Resolver los placeholders `${nombre_tabla}` para `execute_sql`. **Excepción**: `execute_sql` requiere el nombre físico `coleccion.tabla` (p.ej., `${transaction}` → `semantic_financial.transaction`); `create_quality_rule` mantiene `${transaction}` tal cual — el sistema de gobernanza lo resuelve en el momento de ejecución de la regla. Usar el nombre de colección ya disponible en contexto (obtenido del resultado de `generate_sql` o del scope de dominio/colección).
 3. Ejecutar ambas queries usando `execute_sql(query=[sql], limit=1)`.
 4. Si alguna query devuelve error:
    - Revisar la sintaxis SQL.
@@ -346,7 +346,7 @@ Seguir las directrices de diseño de la sección 3.3 y los patrones SQL de la se
 ### B.3 Validación SQL (OBLIGATORIO)
 
 Igual que en la sección 3.5:
-1. Resolver los placeholders `${nombre_tabla}` (p.ej., `${account}` → `account`) eliminando el envoltorio `${}` para uso con `execute_sql`. Mantener el formato completo `${nombre_tabla}` en `create_quality_rule`.
+1. Resolver los placeholders `${nombre_tabla}` para `execute_sql`. **Excepción**: `execute_sql` requiere el nombre físico `coleccion.tabla` (p.ej., `${transaction}` → `semantic_financial.transaction`); `create_quality_rule` mantiene `${transaction}` tal cual. Usar el nombre de colección ya disponible en contexto (obtenido del resultado de `generate_sql` o del scope de dominio/colección).
 2. Ejecutar `query` y `query_reference` con `execute_sql(query=[sql], limit=1)`.
 3. Si alguna query falla, revisar y corregir hasta que ambas sean exitosas.
 4. Calcular el resultado y el estado de la regla aplicando la lógica del paso 5 de la sección 3.5 (measurement_type, threshold_mode y umbrales configurados).

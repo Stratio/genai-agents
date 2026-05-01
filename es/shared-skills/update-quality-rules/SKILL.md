@@ -92,7 +92,7 @@ Si los cambios propuestos incluyen una nueva `query` o `query_reference`, valida
 
 **Procedimiento de validación:**
 1. Preparar la nueva `query` y la `query_reference`.
-2. Resolver los placeholders `${tabla}` sustituyéndolos por el nombre real de la tabla.
+2. Resolver los placeholders `${nombre_tabla}` para `execute_sql`. **Excepción**: `execute_sql` requiere el nombre físico `coleccion.tabla` (p.ej., `${transaction}` → `semantic_financial.transaction`); `update_quality_rule` mantiene `${transaction}` tal cual — el sistema de gobernanza lo resuelve en el momento de ejecución de la regla. Usar el nombre de colección ya disponible en contexto (obtenido del resultado previo de `get_tables_quality_details` o del scope de dominio/colección).
 3. Ejecutar ambas queries usando `execute_sql(query=[sql], limit=1)`.
 4. Si alguna query devuelve error:
    - Revisar la sintaxis SQL.
