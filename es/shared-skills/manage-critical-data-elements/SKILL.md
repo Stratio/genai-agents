@@ -30,6 +30,8 @@ Si la petición del usuario ya deja clara la intención, proceder directamente:
 - "Muéstrame los CDEs" / "¿Cuáles son los elementos de dato críticos de [dominio]?" → **Flujo A**
 - "Recomienda CDEs" / "Define los CDEs" (sin asset concreto mencionado) → **Flujo B** (preguntar método en B.2)
 - "Taggea [tabla/columna concreta] como crítica" / "Marca [tabla/columna] como CDE" (el usuario nombra assets exactos) → **Flujo B, saltar B.2, ir directamente a B1** con esos assets pre-cargados. NO preguntar al usuario que elija un método — ya especificó qué taggear.
+  - El usuario nombró **columnas concretas** → los assets pre-cargados van en `columns_by_table`, NO en `critical_tables`.
+  - El usuario nombró **tablas completas** (sin lista de columnas) → los assets pre-cargados van en `critical_tables`.
 
 Si no está claro, preguntar al usuario con opciones siguiendo la convención de preguntas al usuario:
 1. **Ver CDEs actuales** — consultar qué está actualmente marcado como crítico en este dominio
@@ -260,6 +262,8 @@ Solo tras aprobación explícita, llamar a `set_critical_data_elements` con **ú
 - Eliminar del payload CUALQUIER asset (tabla o columna) que ya aparezca en el baseline.
 - NO incluir CDEs ya tagueados. La API es aditiva, no reemplaza todo: re-enviar un CDE existente provoca un error 409 y nunca es necesario.
 - Si la especificación del usuario coincide con solo 1 asset nuevo, el payload contiene exactamente 1 asset. Si coincide con 0 assets nuevos, omitir la llamada a la API por completo.
+
+**Distinción columna vs tabla**: si el usuario nombró columnas específicas (no tablas completas), esas columnas DEBEN aparecer en `columns_by_table` — nunca en `critical_tables`. Usar `critical_tables` para una petición a nivel de columna marcaría la tabla entera como CDE.
 
 La llamada recibe un único objeto `collection` (no tres parámetros separados):
 

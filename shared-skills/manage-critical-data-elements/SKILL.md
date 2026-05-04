@@ -30,6 +30,8 @@ If the user's request already makes the intent clear, proceed directly:
 - "Show me the CDEs" / "What are the critical data elements of [domain]?" → **Flow A**
 - "Recommend CDEs" / "Define CDEs" (no specific asset mentioned) → **Flow B** (ask method in B.2)
 - "Tag [specific table/column] as critical" (user names exact tables or columns) → **Flow B, skip B.2, go directly to B1** with those assets pre-filled. Do NOT ask the user to choose a method — they already specified what to tag.
+  - User named **specific columns** → pre-filled assets go in `columns_by_table`, NOT in `critical_tables`.
+  - User named **whole tables** (no column list mentioned) → pre-filled assets go in `critical_tables`.
 
 Otherwise, ask the user with options following the user question convention:
 1. **View current CDEs** — consult what is currently marked as critical in this domain
@@ -260,6 +262,8 @@ Only after explicit approval, call `set_critical_data_elements` with **only the 
 - Remove from the payload ANY asset (table or column) that already appears in the baseline.
 - DO NOT include currently-tagged CDEs. The API is additive, not a full replace: re-sending an existing CDE causes a 409 error and is never necessary.
 - If the user's specification matches only 1 new asset, the payload contains exactly 1 asset. If it matches 0 new assets, skip the API call entirely.
+
+**Column vs table distinction**: if the user named specific columns (not whole tables), those columns MUST appear in `columns_by_table` — never in `critical_tables`. Using `critical_tables` for a column-level request marks the entire table as CDE.
 
 The call takes a single `collection` object (not three separate parameters):
 

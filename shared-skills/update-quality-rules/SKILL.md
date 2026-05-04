@@ -92,7 +92,7 @@ If the proposed changes include a new `query` or `query_reference`, validate bot
 
 **Validation procedure:**
 1. Prepare the new `query` and `query_reference`.
-2. Resolve `${table}` placeholders by substituting them with the actual table name.
+2. Resolve `${table_name}` placeholders for `execute_sql`. **Exception**: `execute_sql` requires the physical `collection.table` name (e.g., `${transaction}` → `semantic_financial.transaction`); `update_quality_rule` keeps `${transaction}` as-is — the governance system resolves it at rule execution time. Use the collection name already in context (from prior `get_tables_quality_details` output or the domain/collection scope).
 3. Execute both queries using `execute_sql(query=[sql], limit=1)`.
 4. If any query returns an error:
    - Review the SQL syntax.

@@ -296,7 +296,7 @@ Before presenting the plan to the user, the technical validity of the designed q
 
 **Validation procedure:**
 1. For each designed rule, prepare the `query` and the `query_reference`.
-2. Resolve the `${table_name}` placeholders (e.g., `${account}` → `account`) by stripping the `${}` wrapper to obtain a plain table name for use with `execute_sql`. Note: in `create_quality_rule`, always keep the full `${table_name}` format — the governance system resolves placeholders to physical storage paths at rule execution time. The validation with `execute_sql` verifies SQL logic and syntax only; it does not guarantee that the physical path used by the governance system matches the one in the domain catalog.
+2. Resolve `${table_name}` placeholders for `execute_sql`. **Exception**: `execute_sql` requires the physical `collection.table` name (e.g., `${transaction}` → `semantic_financial.transaction`); `create_quality_rule` keeps `${transaction}` as-is — the governance system resolves it at rule execution time. Use the collection name already in context (from `generate_sql` output or the domain/collection scope).
 3. Execute both queries using `execute_sql(query=[sql], limit=1)`.
 4. If any query returns an error:
    - Review the SQL syntax.
@@ -346,7 +346,7 @@ Follow the design guidelines in section 3.3 and the SQL patterns in section 3.2.
 ### B.3 SQL Validation (MANDATORY)
 
 Same as section 3.5:
-1. Resolve the `${table_name}` placeholders (e.g., `${account}` → `account`) by stripping the `${}` wrapper for use with `execute_sql`. Keep the full `${table_name}` format in `create_quality_rule`.
+1. Resolve `${table_name}` placeholders for `execute_sql`. **Exception**: `execute_sql` requires the physical `collection.table` name (e.g., `${transaction}` → `semantic_financial.transaction`); `create_quality_rule` keeps `${transaction}` as-is. Use the collection name already in context (from `generate_sql` output or the domain/collection scope).
 2. Execute `query` and `query_reference` with `execute_sql(query=[sql], limit=1)`.
 3. If any query fails, review and correct until both are successful.
 4. Calculate the result and rule status applying the logic from step 5 of section 3.5 (measurement_type, threshold_mode, and configured thresholds).
