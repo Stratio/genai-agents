@@ -59,6 +59,28 @@ Applies to `query_data`, `execute_sql`, and any other flow that returns tabular 
 
 This rule governs the **final user-facing presentation in chat** only. Data being passed to another skill (e.g., a writer skill that will produce a PDF/DOCX/PPTX/XLSX/web artifact, or a chart skill) is intermediate and is not subject to the cap.
 
+## 3.6 Large Tool Outputs — Truncated and Saved to File
+
+When a tool's inline output would exceed the host environment's response limit, the response is replaced by a truncation notice plus a file path where the full content was written. The data is already there — the tool succeeded — but it is no longer inline. This is **distinct from §8.1** (where the response is a `task_id` because the tool is still running): here the work is done; there it is still pending.
+
+**Detection** (any of):
+- The response contains an explicit truncation marker (e.g. `…N bytes truncated…`, "output was truncated", "Full output saved to ...") and a file path
+- The response carries a saved-file path with no `task_id` field
+
+**Protocol** (apply in order):
+1. **Never read the full saved file directly into your own context.** It will trigger the same limit that caused the truncation
+2. **Prefer delegating the file inspection to a subagent** when the host environment exposes one (e.g. an Explore / Task subagent). Brief it with the file path and the specific extraction it should perform, and ask it to return only the fragment you need — not the file contents
+3. **If subagent delegation is not available**, inspect the file yourself with strict caps: `Grep` for targeted patterns first, then `Read` with `offset` and a small `limit` (≤ 200 lines per call). Never read end-to-end in a single call
+4. **Iterate by need**: a first pass typically extracts an inventory (identifiers, names, counts); subsequent passes retrieve full records on demand. Stop as soon as the user's question is answered
+
+**Typical extraction patterns** for list-style payloads:
+- _Inventory_: `Grep` for the JSON key that delimits each entry (e.g. `"name":`) and count / list the matches
+- _Topical subset_: `Grep` for keywords from the user's question over the saved file
+- _Specific record_: `Grep` for the identifier, then `Read` ±N lines around the match for the surrounding context
+- _Sample_: `Read` with `offset=0`, `limit=200` to inspect the structure before issuing more targeted reads
+
+Applies to any tool that may return large payloads, including `list_domain_tables`, `list_domains`, `get_tables_details` over many tables, and `query_data` over wide/long results.
+
 ## 4. Domain Discovery Workflow
 
 Steps to explore a governed domain and understand its data before analysis.
@@ -81,7 +103,8 @@ When a collection is exposed in both layers (semantic + technical), `domain_type
 ### 4.2 Explore Tables
 
 1. `list_domain_tables(domain_name)` to list all tables in the domain
-2. Present the tables with their descriptions in markdown table format
+2. **If the output is truncated** (see §3.6): delegate file inspection to a subagent (or fall back to `Grep` + `Read`-with-limit). Extract the table names and descriptions — or a topical subset matching the user's question — without ingesting the whole file
+3. Present the tables and their descriptions in a markdown table. If the inventory is still too large to render meaningfully (truncation case, or a flat list far beyond chat-presentation size): show only the subset relevant to the user's question, state the total count, and tell the user the criterion you used to filter — e.g. *"Domain has 312 tables; showing the 9 matching `<topic>`. Ask if you want a different slice."*
 
 ### 4.3 Table Details
 
