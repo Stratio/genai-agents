@@ -3,11 +3,10 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-# Use VERSION_ARTIFACT if available (strips qualifiers like -BUILD for final releases)
-if [[ -f "$REPO_ROOT/VERSION_ARTIFACT" ]]; then
-  VERSION=$(cat "$REPO_ROOT/VERSION_ARTIFACT" | tr -d '[:space:]')
-else
-  VERSION=$(cat "$REPO_ROOT/VERSION" | tr -d '[:space:]')
+VERSION=$(cat "$REPO_ROOT/VERSION" | tr -d '[:space:]')
+# RELEASE: VERSION = 0.1.0-BUILD => strip -BUILD for artifact naming
+if [[ "$VERSION" == *-BUILD* ]]; then
+  VERSION="$(echo "$VERSION" | cut -d'-' -f1)"
 fi
 DIST_DIR="$REPO_ROOT/dist"
 USERNAME="stratio"
