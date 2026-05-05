@@ -10,11 +10,12 @@ Manages writing to `output/MEMORY.md` — the agent's curated knowledge file (pr
 
 ## 1. Read Current State
 
-Read `output/MEMORY.md`.
+Use the `list` tool on `output/MEMORY.md` to check whether the file exists before reading it.
 
-If the file does not yet exist, do **not** create it here — section 3 will
-initialize it from the template (`templates/memory/MEMORY.md`) before the first
-write. Just continue with section 2 treating the memory as empty.
+- If the file exists → read `output/MEMORY.md`.
+- If it does not exist → do **not** create it here; section 3 will initialize it
+  from the template (`templates/memory/MEMORY.md`) before the first write.
+  Continue with section 2 treating the memory as empty.
 
 ## 2. Determine Source and Detect Updates
 

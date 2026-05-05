@@ -10,11 +10,12 @@ Gestiona la escritura en `output/MEMORY.md` — el fichero de conocimiento curad
 
 ## 1. Leer Estado Actual
 
-Leer `output/MEMORY.md`.
+Usar la tool `list` sobre `output/MEMORY.md` para comprobar si el fichero existe antes de leerlo.
 
-Si el fichero aún no existe, **no** crearlo aquí — la sección 3 lo inicializará
-a partir del template (`templates/memory/MEMORY.md`) antes de la primera escritura.
-Continúa con la sección 2 tratando la memoria como vacía.
+- Si el fichero existe → leer `output/MEMORY.md`.
+- Si no existe → **no** crearlo aquí; la sección 3 lo inicializará a partir del
+  template (`templates/memory/MEMORY.md`) antes de la primera escritura.
+  Continúa con la sección 2 tratando la memoria como vacía.
 
 ## 2. Determinar Origen y Detectar Actualizaciones
 
