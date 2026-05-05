@@ -59,6 +59,28 @@ Aplica a `query_data`, `execute_sql` y a cualquier otro flujo que devuelva datos
 
 Esta regla rige **solo la presentación final al usuario en chat**. Los datos que se pasan a otra skill (p. ej. una skill writer que producirá un artefacto PDF/DOCX/PPTX/XLSX/web, o una skill de gráficos) son intermedios y no están sujetos al cap.
 
+## 3.6 Salidas de Tools de Gran Tamaño — Truncadas y Guardadas en Fichero
+
+Cuando la salida inline de una tool superaría el límite de respuesta del entorno anfitrión, la respuesta se sustituye por un aviso de truncación y la ruta de un fichero donde se escribió el contenido completo. Los datos están ahí — la tool tuvo éxito — pero ya no son inline. Esto es **distinto de §8.1** (donde la respuesta es un `task_id` porque la tool sigue ejecutándose): aquí el trabajo ya está hecho; allí sigue pendiente.
+
+**Detección** (cualquiera de):
+- La respuesta contiene un marcador de truncación explícito (p. ej. `…N bytes truncated…`, "output was truncated", "Full output saved to ...") y una ruta de fichero
+- La respuesta lleva una ruta de fichero guardado y no hay campo `task_id`
+
+**Protocolo** (aplicar en orden):
+1. **Nunca leas el fichero guardado completo en tu propio contexto.** Disparará el mismo límite que provocó la truncación
+2. **Preferir delegar la inspección del fichero a un subagente** cuando el entorno anfitrión exponga uno (p. ej. un subagente Explore / Task). Bríefea al subagente con la ruta del fichero y la extracción concreta a realizar, y pídele que devuelva solo el fragmento que necesitas — no el contenido del fichero
+3. **Si no hay delegación a subagente disponible**, inspecciona el fichero tú mismo con topes estrictos: primero `Grep` para patrones concretos, luego `Read` con `offset` y `limit` pequeño (≤ 200 líneas por llamada). Nunca leas de extremo a extremo en una sola llamada
+4. **Iterar por necesidad**: una primera pasada suele extraer un inventario (identificadores, nombres, conteos); pasadas posteriores recuperan registros completos bajo demanda. Para en cuanto la pregunta del usuario quede respondida
+
+**Patrones típicos de extracción** para payloads tipo listado:
+- _Inventario_: `Grep` por la clave JSON que delimita cada entrada (p. ej. `"name":`) y cuenta / lista las coincidencias
+- _Subconjunto temático_: `Grep` por palabras clave de la pregunta del usuario sobre el fichero guardado
+- _Registro concreto_: `Grep` por el identificador, luego `Read` ±N líneas alrededor de la coincidencia para obtener el contexto
+- _Muestra_: `Read` con `offset=0`, `limit=200` para inspeccionar la estructura antes de lanzar lecturas más dirigidas
+
+Aplica a cualquier tool que pueda devolver payloads grandes, incluyendo `list_domain_tables`, `list_domains`, `get_tables_details` sobre muchas tablas y `query_data` sobre resultados anchos/largos.
+
 ## 4. Workflow de Descubrimiento de Dominio
 
 Pasos para explorar un dominio gobernado y entender sus datos antes de un análisis.
@@ -81,7 +103,8 @@ Cuando una colección está expuesta en ambas capas (semántica + técnica), `do
 ### 4.2 Explorar Tablas
 
 1. `list_domain_tables(domain_name)` para listar todas las tablas del dominio
-2. Presentar las tablas con sus descripciones en formato tabla markdown
+2. **Si la salida está truncada** (ver §3.6): delegar la inspección del fichero a un subagente (o, en su defecto, recurrir a `Grep` + `Read` con `limit`). Extraer los nombres de tablas y sus descripciones — o un subconjunto temático que coincida con la pregunta del usuario — sin ingerir el fichero completo
+3. Presentar las tablas y sus descripciones en una tabla markdown. Si el inventario sigue siendo demasiado grande para renderizar de forma útil (caso de truncación, o lista plana muy por encima del tamaño presentable en chat): mostrar solo el subconjunto relevante para la pregunta del usuario, indicar el total y explicar el criterio de filtrado — p. ej. *"El dominio tiene 312 tablas; mostrando las 9 que coinciden con `<tema>`. Avisa si quieres otro recorte."*
 
 ### 4.3 Detalle de Tablas
 
