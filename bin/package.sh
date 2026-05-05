@@ -3,7 +3,12 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-VERSION=$(cat "$REPO_ROOT/VERSION" | tr -d '[:space:]')
+# Use VERSION_ARTIFACT if available (strips qualifiers like -BUILD for final releases)
+if [[ -f "$REPO_ROOT/VERSION_ARTIFACT" ]]; then
+  VERSION=$(cat "$REPO_ROOT/VERSION_ARTIFACT" | tr -d '[:space:]')
+else
+  VERSION=$(cat "$REPO_ROOT/VERSION" | tr -d '[:space:]')
+fi
 DIST_DIR="$REPO_ROOT/dist"
 
 # Read languages from the languages file (default: 'en' only)
