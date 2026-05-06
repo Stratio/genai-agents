@@ -294,61 +294,105 @@ echo "    [6] Bundle generated: dist/${AGENT_NAME}-stratio-cowork.zip ($BUNDLE_S
 echo "    [7] Verifying integrity..."
 ERRORS=0
 
+# Helpers: use Python's zipfile module — works without unzip being installed.
+# _zip_namelist <zip>          → one entry per line
+# _zip_read     <zip> <entry>  → file contents (handles optional ./ prefix)
+# _zip_skillrefs <zip>         → count of 'skills-guides/' occurrences in *.SKILL.md entries
+_zip_namelist() {
+  python3 - "$1" <<'PYEOF' 2>/dev/null
+import zipfile, sys
+try:
+    with zipfile.ZipFile(sys.argv[1]) as z:
+        for f in z.namelist():
+            print(f)
+except Exception:
+    pass
+PYEOF
+}
+_zip_read() {
+  python3 - "$1" "$2" <<'PYEOF' 2>/dev/null
+import zipfile, sys
+try:
+    with zipfile.ZipFile(sys.argv[1]) as z:
+        nm = z.namelist()
+        key = sys.argv[2]
+        name = key if key in nm else ('./' + key if './' + key in nm else None)
+        if name:
+            print(z.read(name).decode('utf-8', 'replace'), end='')
+except Exception:
+    pass
+PYEOF
+}
+_zip_skillrefs() {
+  python3 - "$1" <<'PYEOF' 2>/dev/null
+import zipfile, sys
+count = 0
+try:
+    with zipfile.ZipFile(sys.argv[1]) as z:
+        for name in z.namelist():
+            if name.endswith('SKILL.md'):
+                count += z.read(name).decode('utf-8', 'replace').count('skills-guides/')
+except Exception:
+    pass
+print(count)
+PYEOF
+}
+
 # The three required files must be in the bundle
-BUNDLE_CONTENTS=$(unzip -Z1 "$BUNDLE_ZIP" 2>/dev/null) || true
-if ! echo "$BUNDLE_CONTENTS" | grep -q "^metadata\.yaml$"; then
+BUNDLE_CONTENTS=$(_zip_namelist "$BUNDLE_ZIP")
+if ! echo "$BUNDLE_CONTENTS" | grep -qF "metadata.yaml"; then
   echo "    ERROR: metadata.yaml not found in the bundle" >&2
   ERRORS=$((ERRORS + 1))
 fi
-if ! echo "$BUNDLE_CONTENTS" | grep -q "$ZIP_NO_SHARED"; then
+if ! echo "$BUNDLE_CONTENTS" | grep -qF "$ZIP_NO_SHARED"; then
   echo "    ERROR: $ZIP_NO_SHARED not found in the bundle" >&2
   ERRORS=$((ERRORS + 1))
 fi
 if [[ ${#SHARED_SKILLS[@]} -gt 0 ]]; then
-  if ! echo "$BUNDLE_CONTENTS" | grep -q "$ZIP_SHARED"; then
+  if ! echo "$BUNDLE_CONTENTS" | grep -qF "$ZIP_SHARED"; then
     echo "    ERROR: $ZIP_SHARED not found in the bundle" >&2
     ERRORS=$((ERRORS + 1))
   fi
 fi
 
 # metadata.yaml must declare format_version agents/v1
-METADATA_CONTENT=$(unzip -p "$BUNDLE_ZIP" metadata.yaml 2>/dev/null) || true
+METADATA_CONTENT=$(_zip_read "$BUNDLE_ZIP" "metadata.yaml")
 if ! echo "$METADATA_CONTENT" | grep -q 'format_version:.*agents/v1'; then
   echo "    ERROR: metadata.yaml does not contain format_version: \"agents/v1\"" >&2
   ERRORS=$((ERRORS + 1))
 fi
-if ! echo "$METADATA_CONTENT" | grep -q "agent_zip:.*${ZIP_NO_SHARED}"; then
+if ! echo "$METADATA_CONTENT" | grep -qF "agent_zip: \"${ZIP_NO_SHARED}\""; then
   echo "    ERROR: metadata.yaml does not correctly reference agent_zip ($ZIP_NO_SHARED)" >&2
   ERRORS=$((ERRORS + 1))
 fi
 
 # Agent sub-ZIP must contain AGENTS.md
-AGENT_ZIP_CONTENTS=$(unzip -Z1 "$BUNDLE_STAGING/$ZIP_NO_SHARED" 2>/dev/null) || true
-if ! echo "$AGENT_ZIP_CONTENTS" | grep -q 'AGENTS\.md'; then
+AGENT_ZIP_CONTENTS=$(_zip_namelist "$BUNDLE_STAGING/$ZIP_NO_SHARED")
+if ! echo "$AGENT_ZIP_CONTENTS" | grep -qF 'AGENTS.md'; then
   echo "    ERROR: AGENTS.md not found in $ZIP_NO_SHARED" >&2
   ERRORS=$((ERRORS + 1))
 fi
 
 # Agent sub-ZIP must NOT contain the removed shared skills
 for skill_name in "${SHARED_SKILLS[@]}"; do
-  if echo "$AGENT_ZIP_CONTENTS" | grep -q "\.opencode/skills/$skill_name/"; then
+  if echo "$AGENT_ZIP_CONTENTS" | grep -qF ".opencode/skills/$skill_name/"; then
     echo "    ERROR: skill '$skill_name' still present in $ZIP_NO_SHARED" >&2
     ERRORS=$((ERRORS + 1))
   fi
 done
 
 # Skills sub-ZIP must contain SKILL.md for each skill
-for skill_name in "${SHARED_SKILLS[@]}"; do
-  SKILLS_ZIP_CONTENTS=$(unzip -Z1 "$BUNDLE_STAGING/$ZIP_SHARED" 2>/dev/null) || true
-  if ! echo "$SKILLS_ZIP_CONTENTS" | grep -q "${skill_name}/SKILL\.md"; then
-    echo "    ERROR: ${skill_name}/SKILL.md not found in $ZIP_SHARED" >&2
-    ERRORS=$((ERRORS + 1))
-  fi
-done
-
-# No residual references to skill-guides in the skills ZIP
 if [[ ${#SHARED_SKILLS[@]} -gt 0 ]]; then
-  SKILLS_REFS=$(unzip -p "$BUNDLE_STAGING/$ZIP_SHARED" "*/SKILL.md" 2>/dev/null | grep -c 'skills-guides/' || true)
+  SKILLS_ZIP_CONTENTS=$(_zip_namelist "$BUNDLE_STAGING/$ZIP_SHARED")
+  for skill_name in "${SHARED_SKILLS[@]}"; do
+    if ! echo "$SKILLS_ZIP_CONTENTS" | grep -qF "${skill_name}/SKILL.md"; then
+      echo "    ERROR: ${skill_name}/SKILL.md not found in $ZIP_SHARED" >&2
+      ERRORS=$((ERRORS + 1))
+    fi
+  done
+
+  # No residual references to skill-guides in the skills ZIP
+  SKILLS_REFS=$(_zip_skillrefs "$BUNDLE_STAGING/$ZIP_SHARED")
   if [[ "$SKILLS_REFS" -gt 0 ]]; then
     echo "    ERROR: residual references to skills-guides/ in $ZIP_SHARED" >&2
     ERRORS=$((ERRORS + 1))
