@@ -295,7 +295,11 @@ echo "    [7] Verifying integrity..."
 ERRORS=0
 
 # The three required files must be in the bundle
-BUNDLE_CONTENTS=$(unzip -Z1 "$BUNDLE_ZIP" 2>/dev/null) || true
+BUNDLE_CONTENTS=""
+if ! BUNDLE_CONTENTS=$(unzip -Z1 "$BUNDLE_ZIP" 2>/dev/null); then
+  echo "    ERROR: cannot list bundle ZIP '$BUNDLE_ZIP'" >&2
+  ERRORS=$((ERRORS + 1))
+fi
 if ! echo "$BUNDLE_CONTENTS" | grep -q "^metadata\.yaml$"; then
   echo "    ERROR: metadata.yaml not found in the bundle" >&2
   ERRORS=$((ERRORS + 1))
@@ -312,7 +316,11 @@ if [[ ${#SHARED_SKILLS[@]} -gt 0 ]]; then
 fi
 
 # metadata.yaml must declare format_version agents/v1
-METADATA_CONTENT=$(unzip -p "$BUNDLE_ZIP" metadata.yaml 2>/dev/null) || true
+METADATA_CONTENT=""
+if ! METADATA_CONTENT=$(unzip -p "$BUNDLE_ZIP" metadata.yaml 2>/dev/null); then
+  echo "    ERROR: cannot extract metadata.yaml from bundle ZIP" >&2
+  ERRORS=$((ERRORS + 1))
+fi
 if ! echo "$METADATA_CONTENT" | grep -q 'format_version:.*agents/v1'; then
   echo "    ERROR: metadata.yaml does not contain format_version: \"agents/v1\"" >&2
   ERRORS=$((ERRORS + 1))
@@ -323,7 +331,11 @@ if ! echo "$METADATA_CONTENT" | grep -q "agent_zip:.*${ZIP_NO_SHARED}"; then
 fi
 
 # Agent sub-ZIP must contain AGENTS.md
-AGENT_ZIP_CONTENTS=$(unzip -Z1 "$BUNDLE_STAGING/$ZIP_NO_SHARED" 2>/dev/null) || true
+AGENT_ZIP_CONTENTS=""
+if ! AGENT_ZIP_CONTENTS=$(unzip -Z1 "$BUNDLE_STAGING/$ZIP_NO_SHARED" 2>/dev/null); then
+  echo "    ERROR: cannot list agent sub-ZIP '$ZIP_NO_SHARED'" >&2
+  ERRORS=$((ERRORS + 1))
+fi
 if ! echo "$AGENT_ZIP_CONTENTS" | grep -q 'AGENTS\.md'; then
   echo "    ERROR: AGENTS.md not found in $ZIP_NO_SHARED" >&2
   ERRORS=$((ERRORS + 1))
@@ -338,8 +350,14 @@ for skill_name in "${SHARED_SKILLS[@]}"; do
 done
 
 # Skills sub-ZIP must contain SKILL.md for each skill
+SKILLS_ZIP_CONTENTS=""
+if [[ ${#SHARED_SKILLS[@]} -gt 0 ]]; then
+  if ! SKILLS_ZIP_CONTENTS=$(unzip -Z1 "$BUNDLE_STAGING/$ZIP_SHARED" 2>/dev/null); then
+    echo "    ERROR: cannot list skills sub-ZIP '$ZIP_SHARED'" >&2
+    ERRORS=$((ERRORS + 1))
+  fi
+fi
 for skill_name in "${SHARED_SKILLS[@]}"; do
-  SKILLS_ZIP_CONTENTS=$(unzip -Z1 "$BUNDLE_STAGING/$ZIP_SHARED" 2>/dev/null) || true
   if ! echo "$SKILLS_ZIP_CONTENTS" | grep -q "${skill_name}/SKILL\.md"; then
     echo "    ERROR: ${skill_name}/SKILL.md not found in $ZIP_SHARED" >&2
     ERRORS=$((ERRORS + 1))
@@ -348,7 +366,12 @@ done
 
 # No residual references to skill-guides in the skills ZIP
 if [[ ${#SHARED_SKILLS[@]} -gt 0 ]]; then
-  SKILLS_REFS=$(unzip -p "$BUNDLE_STAGING/$ZIP_SHARED" "*/SKILL.md" 2>/dev/null | grep -c 'skills-guides/' || true)
+  _skills_md_content=""
+  if ! _skills_md_content=$(unzip -p "$BUNDLE_STAGING/$ZIP_SHARED" "*/SKILL.md" 2>/dev/null); then
+    echo "    ERROR: cannot extract SKILL.md files from skills sub-ZIP '$ZIP_SHARED'" >&2
+    ERRORS=$((ERRORS + 1))
+  fi
+  SKILLS_REFS=$(echo "$_skills_md_content" | grep -c 'skills-guides/' || true)
   if [[ "$SKILLS_REFS" -gt 0 ]]; then
     echo "    ERROR: residual references to skills-guides/ in $ZIP_SHARED" >&2
     ERRORS=$((ERRORS + 1))

@@ -2,7 +2,7 @@
 
 ## 0.2.0 (upcoming)
 
-* Pending changelog
+* [ROCK-14771] CI/CD Update builder image to fix package verification
 
 ## Previous development
 
