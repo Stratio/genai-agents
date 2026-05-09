@@ -4,9 +4,9 @@ Steps for exploring and validating domains before executing any quality assessme
 
 ## 1. Domain Discovery
 
-For the standard discovery workflow (list domains, critical domain_name rule, explore tables, table and column detail), follow sections 4.1 to 4.4 of `skills-guides/stratio-data-tools.md`.
+For the standard discovery workflow (list domains, critical domain_name rule, explore tables, table and column detail), follow sections 5.1 to 5.4 of `skills-guides/stratio-data-tools.md`.
 
-**Technical domains**: This agent also supports technical domains in addition to semantic ones. If the user requests to work with a technical domain, use `search_domains(search_text, domain_type="technical")` or `list_domains(domain_type="technical")`. For technical domains, steps 4.3 (table detail via `get_tables_details`) and 4.5 (terminology via `search_domain_knowledge`) may return limited or empty information — this is expected and should not block the workflow. Compensate with greater weight on the EDA (section 3) and direct validation with the user.
+**Technical domains**: This agent also supports technical domains in addition to semantic ones. If the user requests to work with a technical domain, use `search_domains(search_text, domain_type="technical")` or `list_domains(domain_type="technical")`. For technical domains, steps 5.3 (table detail via `get_tables_details`) and 5.5 (terminology via `search_domain_knowledge`) may return limited or empty information — this is expected and should not block the workflow. Compensate with greater weight on the EDA (section 3) and direct validation with the user.
 
 **Launch in parallel** when dealing with independent tables.
 
@@ -27,7 +27,7 @@ This step is **MANDATORY** and fundamental for the following reasons:
 
 ## 3. Statistical Profiling (EDA)
 
-For the base rules on using `profile_data` (generate SQL with `generate_sql`, never manual SQL, use the `limit` parameter instead of LIMIT in SQL), see `skills-guides/stratio-data-tools.md` sec 3 and 5.
+For the base rules on using `profile_data` (generate SQL with `generate_sql`, never manual SQL, use the `limit` parameter instead of LIMIT in SQL), see `skills-guides/stratio-data-tools.md` sec 3 and 6.
 
 `profile_data` is the main tool for understanding the reality of the data and grounding quality rules. **It requires a SQL query as a parameter.**
 

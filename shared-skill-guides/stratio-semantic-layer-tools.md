@@ -1,5 +1,7 @@
 # Stratio Semantic Layer MCP Usage Guide
 
+> **Companion guide.** For `task_id` polling and large output truncation — both can occur on any MCP tool below, on either the `gov` or `sql` server — see `stratio-mcp-response-patterns.md`. Quick reference in §9.
+
 ## 1. Fundamental Rule
 
 **The agent never modifies the data model directly.** It operates through governance MCP tools that use internal AI to generate content (descriptions, ontologies, SQL mappings, semantic terms). The agent orchestrates, plans, validates, and provides context — the tools do the generation work.
@@ -28,7 +30,7 @@
 | **Glossary instructions** | `get_glossary_instructions(domain, phases?, include_globals?)` | Read GenAI instruction-typed business terms from the data dictionary for a technical domain. Filterable by `phases` (list of `ontology` / `mapping` / `technical_terms` / `semantic_terms`; defaults to all four) and by `include_globals` for the cross-phase global `GenAI Instructions` type. For each phase, the response always includes the phase-specific primary type plus any additional per-phase types the profile has configured (mirrors what the chain consumes internally). Returns one section per glossary type with the raw Markdown content. Read-only. See §11 for the user-facing workflow |
 | **Utility** | `list_technical_domain_concepts(domain)` | List existing business views with governance status (Draft/Pending Publish/Published), `has_sql_mapping` boolean, the actual mapping SQL in `sql_mapping` (when present — usable for sample-data validation: `SELECT * FROM (<sql_mapping>) AS m LIMIT 5`), and `has_semantic_terms` |
 | | `create_collection_description(domain, user_instructions?)` | Generate ONLY the domain/collection description (without touching tables) |
-| | `get_mcp_task_result(task_id)` | Retrieve the result of a long-running tool that continues executing in the background on the `gov` server (see section 9) |
+| | `get_mcp_task_result(task_id)` | Retrieve the result of a long-running tool that continues executing in the background on the `gov` server (see §9 and `stratio-mcp-response-patterns.md` §1) |
 
 ### `sql` Server (domain exploration)
 
@@ -41,7 +43,7 @@
 | `get_table_columns_details(domain, table)` | Table columns: names, types, business descriptions |
 | `search_domain_knowledge(question, domain)` | Search knowledge in technical and semantic domains |
 | `search_data_dictionary(search_text, search_type?)` | Search tables and paths in the technical data dictionary. `search_type`: `'tables'`, `'paths'`, or `'both'` (default). Results sorted by relevance, with `metadata_path`, `name`, `subtype` (Table/Path), `alias`, `data_store`, `description` |
-| `get_mcp_task_result(task_id)` | Retrieve the result of a long-running tool that continues executing in the background on the `sql` server (see section 9) |
+| `get_mcp_task_result(task_id)` | Retrieve the result of a long-running tool that continues executing in the background on the `sql` server (see §9 and `stratio-mcp-response-patterns.md` §1) |
 
 ## 3. Strict Rules
 
@@ -119,7 +121,7 @@ Before any operation, verify it does not already exist:
 | Ontology | `search_ontologies(name)` or `list_ontologies` + `get_ontology_info` | Options: extend (`update_ontology`) / delete classes (`delete_ontology_classes`) / create new |
 | Business views | `list_technical_domain_concepts(domain)` | Inform of existing views. Options: skip / delete specific ones (`delete_business_views`) / regenerate (`create_business_views(regenerate=true)`) |
 | View publishing | `list_technical_domain_concepts(domain)` -> status of each view | If already Pending Publish or Published, inform. Only Draft views can be published |
-| SQL Mappings | `list_technical_domain_concepts(domain)` -> mapping status per view + `sql_mapping` of the mapping when present | `create_sql_mappings` overwrites existing mappings. Use `sql_mapping` for pre-publication sample validation (see §3.5 of `stratio-data-tools.md`) |
+| SQL Mappings | `list_technical_domain_concepts(domain)` -> mapping status per view + `sql_mapping` of the mapping when present | `create_sql_mappings` overwrites existing mappings. Use `sql_mapping` for pre-publication sample validation (see §4 of `stratio-data-tools.md`) |
 | Semantic terms | `list_technical_domain_concepts(domain)` -> term status per view | Inform. Options: skip / regenerate (destructive) / cancel |
 
 > When any `search_*` tool above is unavailable (not empty, but failing), substitute per §10 and continue.
@@ -138,20 +140,14 @@ Before any operation, verify it does not already exist:
 - **Creation**: Sequential within the same phase
 - **Between phases**: Strict mandatory sequence: technical terms -> ontology -> business views -> SQL mappings -> (optional publishing) -> semantic terms. Each phase depends on the artifacts from the previous one. Publishing can be done after completing mappings or at any later point
 
-## 9. Long-Running Task Polling
+## 9. MCP Response Patterns
 
-Any MCP tool may take longer than expected to complete. When this happens, instead of the normal response, the tool returns a response containing only a `task_id` field. This is not an error — the operation continues running in the background on the server and the result can be retrieved later.
+Two response patterns can occur on **any** MCP tool listed in §2, on either the `gov` or `sql` server. The protocols are in `stratio-mcp-response-patterns.md` — apply them whenever the trigger appears. For polling, always call `get_mcp_task_result` on the **same server** as the original tool. On `status="error"`, apply the recovery strategy from §7.
 
-**Protocol — follow strictly when a response contains a `task_id`:**
-1. Wait **5 seconds**
-2. Call `get_mcp_task_result(task_id=<the received task_id>)` — **use the same server** where the original tool was called (`gov` server tools → `gov` server's `get_mcp_task_result`, `sql` server tools → `sql` server's `get_mcp_task_result`)
-3. Inspect the `status` field in the response:
-   - `"pending"` — the task is still running. Wait **10 seconds** and call `get_mcp_task_result` again. Repeat until the status changes
-   - `"done"` — the `result` field contains the original tool response. Parse and use it as if the tool had returned it directly
-   - `"error"` — the task failed. Read the `error` field for details. Apply the error handling strategy from section 7 or inform the user
-   - `"not_found"` — the task_id expired or is unknown. Retry the original tool call from scratch
-
-This applies to ALL MCP tools on both servers. Always check the response for a `task_id` field before processing the result normally.
+| Trigger | Companion section |
+|---------|-------------------|
+| Response contains only a `task_id` field (no data, no error) | `stratio-mcp-response-patterns.md` §1 — Long-Running Task Polling |
+| Response replaced by a truncation notice + a saved file path, no `task_id` | `stratio-mcp-response-patterns.md` §2 — Large Tool Outputs Truncated |
 
 ## 10. OpenSearch Availability Fallback
 

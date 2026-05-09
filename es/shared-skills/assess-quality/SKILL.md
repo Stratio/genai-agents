@@ -12,7 +12,7 @@ Workflow completo para evaluar el estado de la calidad del dato en un dominio, t
 
 Antes de ejecutar ninguna llamada MCP, determinar exactamente que se va a evaluar:
 
-**Si el dominio no está claro o hay que validar el `domain_name`**: seguir `skills-guides/stratio-data-tools.md` sec 4.1-4.2 para el workflow estándar de discovery. Si el dominio es técnico, usar `search_domains(search_text, domain_type="technical")` o `list_domains(domain_type="technical")` (ver `skills-guides/quality-exploration.md` sec 1 para detalles de dominios técnicos). Tener en cuenta que el análisis semántico será más limitado en dominios técnicos: las descripciones de negocio, contexto de tablas y terminología pueden estar ausentes o ser parciales.
+**Si el dominio no está claro o hay que validar el `domain_name`**: seguir `skills-guides/stratio-data-tools.md` sec 5.1-5.2 para el workflow estándar de discovery. Si el dominio es técnico, usar `search_domains(search_text, domain_type="technical")` o `list_domains(domain_type="technical")` (ver `skills-guides/quality-exploration.md` sec 1 para detalles de dominios técnicos). Tener en cuenta que el análisis semántico será más limitado en dominios técnicos: las descripciones de negocio, contexto de tablas y terminología pueden estar ausentes o ser parciales.
 
 **Determinar scope:**
 - **Dominio completo**: evaluar todas sus tablas

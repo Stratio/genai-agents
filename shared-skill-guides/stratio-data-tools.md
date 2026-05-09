@@ -1,5 +1,7 @@
 # Stratio MCP Usage Guide
 
+> **Companion guide.** For `task_id` polling and large output truncation — both can occur on any MCP tool listed below — see `stratio-mcp-response-patterns.md`. Quick reference in §9.
+
 ## 1. Fundamental Rule
 
 **NEVER write SQL manually.** The MCP system has a sophisticated query generation engine that understands the governed domain, its business rules, table relationships, and constraints. Always delegate query generation and execution to the MCP.
@@ -20,7 +22,7 @@
 | 9 | `profile_data` | Quick statistical EDA |
 | 10 | `get_tables_quality_details` | Coverage of governance quality rules per table (OK/KO/WARNING/not-executed) |
 | 11 | `propose_knowledge` | Propose discovered business terms |
-| — | `get_mcp_task_result(task_id)` | Retrieve the result of a long-running tool that continues executing in the background. Called when any tool returns only a `task_id` (see section 8.1) |
+| — | `get_mcp_task_result(task_id)` | Retrieve the result of a long-running tool that continues executing in the background. Called when any tool returns only a `task_id` — see §9 and `stratio-mcp-response-patterns.md` §1 |
 
 ## 3. Strict Rules
 
@@ -39,7 +41,7 @@
 - **Profiling (`profile_data`)**: Requires SQL as a parameter — ALWAYS generate it with `generate_sql`, never write it manually. NEVER add LIMIT to the SQL; use the tool's `limit` parameter instead
 - **Parallel execution**: When the plan defines multiple independent data questions (none needs the result of another to be formulated), launch ALL `query_data` calls in a single response so they execute in parallel. This also applies to metadata calls (`get_table_columns_details`, `profile_data`, etc.). Only serialize when one query depends on the result of another (e.g., you need a value from query A to formulate query B)
 
-## 3.5 Showing query results to the user
+## 4. Showing query results to the user
 
 Whenever the user asks to see the result of a query — explicit or implicit signals: *muéstrame*, *enseñame*, *show me*, *dame*, *top N*, *primeras N*, *no veo los resultados*, *preview*, *validation*, *una muestra*, *los datos*, *los resultados*, *qué devuelve* — render the result inline in chat as a Markdown table with **all** columns returned. The agent never substitutes the result with a summary, and never shows just "one representative row".
 
@@ -59,39 +61,17 @@ Applies to `query_data`, `execute_sql`, and any other flow that returns tabular 
 
 This rule governs the **final user-facing presentation in chat** only. Data being passed to another skill (e.g., a writer skill that will produce a PDF/DOCX/PPTX/XLSX/web artifact, or a chart skill) is intermediate and is not subject to the cap.
 
-## 3.6 Large Tool Outputs — Truncated and Saved to File
-
-When a tool's inline output would exceed the host environment's response limit, the response is replaced by a truncation notice plus a file path where the full content was written. The data is already there — the tool succeeded — but it is no longer inline. This is **distinct from §8.1** (where the response is a `task_id` because the tool is still running): here the work is done; there it is still pending.
-
-**Detection** (any of):
-- The response contains an explicit truncation marker (e.g. `…N bytes truncated…`, "output was truncated", "Full output saved to ...") and a file path
-- The response carries a saved-file path with no `task_id` field
-
-**Protocol** (apply in order):
-1. **Never read the full saved file directly into your own context.** It will trigger the same limit that caused the truncation
-2. **Prefer delegating the file inspection to a subagent** when the host environment exposes one (e.g. an Explore / Task subagent). Brief it with the file path and the specific extraction it should perform, and ask it to return only the fragment you need — not the file contents
-3. **If subagent delegation is not available**, inspect the file yourself with strict caps: `Grep` for targeted patterns first, then `Read` with `offset` and a small `limit` (≤ 200 lines per call). Never read end-to-end in a single call
-4. **Iterate by need**: a first pass typically extracts an inventory (identifiers, names, counts); subsequent passes retrieve full records on demand. Stop as soon as the user's question is answered
-
-**Typical extraction patterns** for list-style payloads:
-- _Inventory_: `Grep` for the JSON key that delimits each entry (e.g. `"name":`) and count / list the matches
-- _Topical subset_: `Grep` for keywords from the user's question over the saved file
-- _Specific record_: `Grep` for the identifier, then `Read` ±N lines around the match for the surrounding context
-- _Sample_: `Read` with `offset=0`, `limit=200` to inspect the structure before issuing more targeted reads
-
-Applies to any tool that may return large payloads, including `list_domain_tables`, `list_domains`, `get_tables_details` over many tables, and `query_data` over wide/long results.
-
-## 4. Domain Discovery Workflow
+## 5. Domain Discovery Workflow
 
 Steps to explore a governed domain and understand its data before analysis.
 
-### 4.1 Discover Domains
+### 5.1 Discover Domains
 
 **Prefer searching over listing** — `search_domains` returns relevant results without loading the full list (which can be very large).
 
 If the user provides a domain or gives hints about the topic:
 - Execute `search_domains(name_or_hint)` to search for matches
-- If it matches a result -> use it directly and go to step 4.2
+- If it matches a result -> use it directly and go to step 5.2
 - If there are no matches -> execute `list_domains()` as a fallback and ask the user
 
 If there is no clear domain, ask the user which one they are interested in. If the user gives no hints, execute `list_domains()` to show all available domains (present as selectable options).
@@ -100,13 +80,13 @@ If a recently published or created domain does not appear, retry with `refresh=t
 
 When a collection is exposed in both layers (semantic + technical), `domain_type='both'` returns both entries by default. If you only need one entry per collection and prefer the business-friendly semantic name when it exists (falling back to the technical name otherwise), pass `prefer_semantic=true`.
 
-### 4.2 Explore Tables
+### 5.2 Explore Tables
 
 1. `list_domain_tables(domain_name)` to list all tables in the domain
-2. **If the output is truncated** (see §3.6): delegate file inspection to a subagent (or fall back to `Grep` + `Read`-with-limit). Extract the table names and descriptions — or a topical subset matching the user's question — without ingesting the whole file
+2. **If the output is truncated** (see §9 and `stratio-mcp-response-patterns.md` §2): delegate file inspection to a subagent (or fall back to `Grep` + `Read`-with-limit). Extract the table names and descriptions — or a topical subset matching the user's question — without ingesting the whole file
 3. Present the tables and their descriptions in a markdown table. If the inventory is still too large to render meaningfully (truncation case, or a flat list far beyond chat-presentation size): show only the subset relevant to the user's question, state the total count, and tell the user the criterion you used to filter — e.g. *"Domain has 312 tables; showing the 9 matching `<topic>`. Ask if you want a different slice."*
 
-### 4.3 Table Details
+### 5.3 Table Details
 
 For the tables of interest:
 1. `get_tables_details(domain_name, table_names)` to obtain:
@@ -117,15 +97,15 @@ For the tables of interest:
    - SQL behaviors
 2. Present the information in a structured format
 
-### 4.4 Columns
+### 5.4 Columns
 
 For each table of interest:
 1. `get_table_columns_details(domain_name, table_name)` to obtain name, type, and business description
 2. Present in a logically ordered markdown table
 
-**Launch in parallel** steps 4.3 and 4.4 when they are about independent tables. Also launch step 4.5 in parallel if the terms to search are already known.
+**Launch in parallel** steps 5.3 and 5.4 when they are about independent tables. Also launch step 5.5 in parallel if the terms to search are already known.
 
-### 4.5 Business Terminology
+### 5.5 Business Terminology
 
 `search_domain_knowledge(question, domain_name)` to search for:
 - Business term definitions
@@ -133,11 +113,11 @@ For each table of interest:
 - Data policies
 - Domain glossary
 
-## 5. Data Observation: Profiling and Quality Coverage
+## 6. Data Observation: Profiling and Quality Coverage
 
 Two complementary tools characterize the selected tables before an analysis — one gives statistical signal, the other shows governance rule coverage. Launch both **in parallel** when the scope covers the same set of tables.
 
-### 5.1 Statistical Profiling — `profile_data`
+### 6.1 Statistical Profiling — `profile_data`
 
 For `profile_data` usage rules (generate SQL with `generate_sql`, never manual SQL, use the `limit` parameter instead of LIMIT in SQL), see section 3.
 
@@ -151,7 +131,7 @@ Adaptive profiling thresholds based on estimated size:
 
 Document in reasoning if sampling was used.
 
-### 5.2 Governance Quality Coverage — `get_tables_quality_details`
+### 6.2 Governance Quality Coverage — `get_tables_quality_details`
 
 `get_tables_quality_details(domain_name, table_names=[...])` returns the governance quality rules currently defined for the given tables and their latest execution status.
 
@@ -165,7 +145,7 @@ When to use it:
 
 Execution pattern: launch in parallel with `profile_data` over the same set of tables. Profiling reveals statistical anomalies; quality details reveal which of those anomalies are already tracked by a governance rule (and which are not).
 
-## 6. MCP Clarification Responses
+## 7. MCP Clarification Responses
 
 `query_data` and `generate_sql` may respond with a clarification request
 instead of data (e.g., "What period are you referring to?", "Does 'Active' include users with a purchase
@@ -186,7 +166,7 @@ Cascading protocol (follow in order):
 Maximum 2 clarification iterations per query. If after both iterations there is no data,
 inform the user and omit that metric from the analysis.
 
-## 7. Post-Query Validation
+## 8. Post-Query Validation
 
 Each `query_data` result must pass these 7 validations before being used in the analysis. When queries are launched in parallel, validate each result as it is received:
 1. **Non-empty dataset** (>0 rows). If empty: reformulate the question or alert the user
@@ -202,24 +182,16 @@ Each `query_data` result must pass these 7 validations before being used in the 
 
 If any validation fails: reformulate the question to the MCP, inform the user of the limitation, and adjust the plan if necessary.
 
-## 8. Timeouts and Retries
+## 9. MCP Response Patterns
 
-### 8.1. Long-Running Task Polling
+Two response patterns can occur on **any** MCP tool listed in §2. The protocols are in `stratio-mcp-response-patterns.md` — apply them whenever the trigger appears.
 
-Any MCP tool may take longer than expected to complete. When this happens, instead of the normal response, the tool returns a response containing only a `task_id` field. This is not an error — the operation continues running in the background on the server and the result can be retrieved later.
+| Trigger | Companion section |
+|---------|-------------------|
+| Response contains only a `task_id` field (no data, no error) | `stratio-mcp-response-patterns.md` §1 — Long-Running Task Polling |
+| Response replaced by a truncation notice + a saved file path, no `task_id` | `stratio-mcp-response-patterns.md` §2 — Large Tool Outputs Truncated |
 
-**Protocol — follow strictly when a response contains a `task_id`:**
-1. Wait **5 seconds**
-2. Call `get_mcp_task_result(task_id=<the received task_id>)`
-3. Inspect the `status` field in the response:
-   - `"pending"` — the task is still running. Wait **10 seconds** and call `get_mcp_task_result` again. Repeat until the status changes
-   - `"done"` — the `result` field contains the original tool response. Parse and use it as if the tool had returned it directly
-   - `"error"` — the task failed. Read the `error` field for details. Apply the retry strategy from section 8.2 or inform the user
-   - `"not_found"` — the task_id expired or is unknown. Retry the original tool call from scratch
-
-This applies to ALL MCP tools — `query_data`, `profile_data`, `generate_sql`, `execute_sql`, and any other tool. Always check the response for a `task_id` field before processing the result normally.
-
-### 8.2. Query Optimization
+## 10. Query Optimization on Errors/Timeouts
 
 If the MCP takes too long or returns an error:
 1. **Simplify the question**: Reduce dimensions or time period
@@ -227,7 +199,7 @@ If the MCP takes too long or returns an error:
 3. **Reformulate**: Express the same question differently
 4. Do not retry the same question more than 2 times — if it persists, inform the user
 
-## 9. Best Practices for Formulating Questions
+## 11. Best Practices for Formulating Questions
 
 - **Be specific with periods**: "monthly sales for the last year" instead of "sales"
 - **Include dimensions**: "by region and product category"
@@ -244,18 +216,18 @@ If the MCP takes too long or returns an error:
 
 This order is for **planning** the questions. In **execution**, launch all independent queries in parallel — typically categories 1, 2, and 3 can be executed simultaneously. Only category 4 (cross-validation) may require previous results.
 
-## 10. OpenSearch Availability Fallback
+## 12. OpenSearch Availability Fallback
 
-`search_domains` consults OpenSearch internally. OpenSearch may not be available in every environment (on-premises deployments, isolated environments, infrastructure incidents). This section defines the fallback when the tool is unavailable — distinct from the *empty result* fallback already described in §4.1.
+`search_domains` consults OpenSearch internally. OpenSearch may not be available in every environment (on-premises deployments, isolated environments, infrastructure incidents). This section defines the fallback when the tool is unavailable — distinct from the *empty result* fallback already described in §5.1.
 
-### 10.1 Case detection
+### 12.1 Case detection
 
 | Situation | Indicator | Fallback path |
 |-----------|-----------|---------------|
-| Empty result (already documented) | Tool returns a well-formed response with zero matches | §4.1 — call `list_domains()` and ask the user |
-| Unavailability (new) | Error response mentioning OpenSearch / index / connection / timeout, **or** two successive retries per §8.2 still fail (not a `task_id` pending per §8.1) | §10.2 |
+| Empty result (already documented) | Tool returns a well-formed response with zero matches | §5.1 — call `list_domains()` and ask the user |
+| Unavailability (new) | Error response mentioning OpenSearch / index / connection / timeout, **or** two successive retries per §10 still fail (not a `task_id` pending per §9 and `stratio-mcp-response-patterns.md` §1) | §12.2 |
 
-### 10.2 Deterministic fallback
+### 12.2 Deterministic fallback
 
 | OpenSearch tool | Deterministic alternative | Coverage |
 |-----------------|---------------------------|----------|

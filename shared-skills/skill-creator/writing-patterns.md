@@ -331,7 +331,7 @@ The bad version only works in Claude Code. In OpenCode, the tool is called `ques
 ## 1. Scope Determination
 
 If the domain is unclear, follow the standard discovery workflow described in
-`skills-guides/stratio-data-tools.md` section 4.1-4.2.
+`skills-guides/stratio-data-tools.md` section 5.1-5.2.
 ```
 
 The skill references a shared guide by its standard path. Pack scripts copy it alongside the skill automatically.

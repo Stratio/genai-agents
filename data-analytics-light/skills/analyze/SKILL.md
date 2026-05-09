@@ -28,14 +28,14 @@ If the request requires analysis (data cross-referencing, hypotheses, visualizat
 
 If the domain is already known from the conversation (identified and explored in prior turns), skip this section and proceed to section 3. Use the domain and table context already established.
 
-Read and follow `skills-guides/stratio-data-tools.md` sec 4 for domain discovery steps (search or list domains, select, explore tables, columns, and terminology).
+Read and follow `skills-guides/stratio-data-tools.md` sec 5 for domain discovery steps (search or list domains, select, explore tables, columns, and terminology).
 
 ## 3. EDA and Data Profiling
 
 Before asking the user and planning metrics, understand the reality of the data on two complementary dimensions: the **statistical profile** (EDA) and the **governance quality coverage** already defined for those tables. Both run in parallel.
 
 1. **Parallel launch** — For the key tables identified in step 2, launch together:
-   - `profile_data` per table (statistical profiling — follow mechanics and adaptive thresholds from `skills-guides/stratio-data-tools.md` sec 5)
+   - `profile_data` per table (statistical profiling — follow mechanics and adaptive thresholds from `skills-guides/stratio-data-tools.md` sec 6)
    - `get_tables_quality_details(domain_name, [tables])` (existing governance rules and their OK/KO/WARNING status)
 
 2. **Assess statistical profile (from `profile_data`)**:
@@ -156,7 +156,7 @@ For each KPI, document:
 ### 5.4 Data questions
 List of natural language questions for `query_data`. NEVER write SQL.
 
-For formulation best practices and query strategy (planning order, parallel execution), see `skills-guides/stratio-data-tools.md` sec 9.
+For formulation best practices and query strategy (planning order, parallel execution), see `skills-guides/stratio-data-tools.md` sec 11.
 
 ### 5.5 Visualizations
 
@@ -206,7 +206,7 @@ Present the full plan to the user and request approval before execution
 - Save intermediate data as CSV only if a subsequent script needs them as input
 
 ### 6.1 Post-query validation (mandatory)
-Apply the 7 validations from `skills-guides/stratio-data-tools.md` sec 7 to each received result. When queries are launched in parallel, validate each result as it arrives. If any fails: reformulate the question to the MCP, inform the user, adjust the plan.
+Apply the 7 validations from `skills-guides/stratio-data-tools.md` sec 8 to each received result. When queries are launched in parallel, validate each result as it arrives. If any fails: reformulate the question to the MCP, inform the user, adjust the plan.
 
 ### 6.2 Script development
 - Write scripts with descriptive names that include the analysis context
