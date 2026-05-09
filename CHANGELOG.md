@@ -2,7 +2,8 @@
 
 ## 0.2.0 (upcoming)
 
-* Pending changelog
+* **New shared guide `stratio-mcp-response-patterns.md`**: extracts the long-running task polling protocol and large-output truncation handling from `stratio-data-tools.md` and `stratio-semantic-layer-tools.md` into a single companion guide (EN + ES), eliminating the duplication and providing one source of truth for both MCP response patterns. Declared in all 13 manifests that already carry the parent guides.
+* **`stratio-data-tools.md` section renumbering**: false subsections §3.5 and §3.6 (appended post-hoc to §3 Strict Rules without matching §3.1-§3.4) are promoted to proper top-level sections; §4-§10 shift to §5-§12 accordingly. A new §9 "MCP Response Patterns" bridge replaces the inline polling and truncation protocols and directs to the companion guide. All external references updated across agents and skills (EN + ES).
 
 ## Previous development
 
