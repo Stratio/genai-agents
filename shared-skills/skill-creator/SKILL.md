@@ -91,7 +91,7 @@ Every SKILL.md starts with YAML frontmatter between `---` markers. The frontmatt
 
 ### 2.1.1 Hard limits and validation rules
 
-Anthropic, OpenCode and the GitHub Copilot Code plugin enforce these constraints at runtime. A skill that violates any of them fails to load — and our packaging scripts (`pack_claude_code.sh`, `pack_opencode.sh`) re-validate the description length at pack time so the failure surfaces locally instead of at install.
+Anthropic, OpenCode and the GitHub Copilot Code plugin enforce these constraints at runtime. A skill that violates any of them fails to load — and `pack_opencode.sh` re-validates the description length at pack time so the failure surfaces locally instead of at install.
 
 | Field | Constraint |
 |-------|-----------|

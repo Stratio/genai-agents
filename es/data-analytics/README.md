@@ -1,6 +1,6 @@
 # data-analytics
 
-Agente completo de Business Intelligence y Business Analytics para Claude Code y OpenCode.
+Agente completo de Business Intelligence y Business Analytics para OpenCode y Stratio Cowork.
 
 ## Capacidades
 
@@ -18,7 +18,7 @@ Agente completo de Business Intelligence y Business Analytics para Claude Code y
 ## Requisitos
 
 - Python 3.10+ con las dependencias listadas en `requirements.txt`. En Stratio Cowork la imagen del sandbox las provee; en dev local, `python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt`. Paquetes del sistema (poppler-utils, tesseract-ocr, ghostscript, qpdf, pdftk-java, libcairo2, libpango-1.0-0, libpangoft2-1.0-0) — ver la sección "System dependencies" del `README.md` del monorepo
-- Acceso a dos servidores MCP de Stratio (configurados en `.mcp.json` para Claude Code / claude.ai y en `opencode.json` para OpenCode):
+- Acceso a dos servidores MCP de Stratio (configurados en `opencode.json` para OpenCode):
   - **MCP de datos** (`stratio_data`): vía variables de entorno `MCP_SQL_URL` y `MCP_SQL_API_KEY` — obligatorio para flujos analíticos
   - **MCP de gobernanza** (`stratio_gov`): vía variables de entorno `MCP_GOV_URL` y `MCP_GOV_API_KEY` — necesario para la evaluación e informes de cobertura de calidad. Solo se permite la tool de lectura `get_quality_rule_dimensions`; las operaciones de escritura (creación/planificación de reglas, regeneración de metadata IA vía `quality_rules_metadata`) están intencionadamente denegadas
 
@@ -28,17 +28,15 @@ Todos los scripts aceptan `--lang <código>` para generar output en un idioma es
 
 Scripts genéricos en la raíz del monorepo (desde `../`):
 
-| Script | Plataforma destino | Output | Ejemplo |
-|--------|-------------------|--------|---------|
-| `pack_claude_code.sh` | Claude Code CLI | `claude_code/<nombre>/` | `bash ../pack_claude_code.sh --agent data-analytics` |
+| Script | Destino | Output | Ejemplo |
+|--------|---------|--------|---------|
 | `pack_opencode.sh` | OpenCode | `opencode/<nombre>/` | `bash ../pack_opencode.sh --agent data-analytics` |
+| `pack_stratio_cowork.sh` | Stratio Cowork (`agents/v1`) | `dist/<nombre>-stratio-cowork.zip` | `bash ../pack_stratio_cowork.sh --agent data-analytics` |
 
 ## Compatibilidad
 
-Este agente funciona directamente sin empaquetar en:
-
-- **Claude Code**: Empaquetar con `pack_claude_code.sh` para usar con Claude Code.
 - **OpenCode**: Empaquetar con `pack_opencode.sh` para usar con OpenCode.
+- **Stratio Cowork**: Empaquetar con `pack_stratio_cowork.sh` y desplegar vía la skill compartida `cowork-api`.
 
 Los pack scripts solo son necesarios para distribuir el agente fuera del repositorio.
 

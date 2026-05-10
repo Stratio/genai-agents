@@ -2,50 +2,103 @@
 
 Collection of generative AI agents and skills that leverage the **Stratio Semantic Data Layer**, the semanticized data layer that **Stratio Governance** generates from its data domains, semantic layers, data quality rules and business terms, producing collections ready for analytical consumption. Thanks to **Stratio Virtualizer**, an Apache Spark-based engine, data access is independent of the underlying datastore and compatible with big data. The agents in this repository connect to Governance to query, analyze and generate reports on that governed data.
 
-The repository is primarily oriented towards **OpenCode**, the open-source tool on which Stratio bases its Agent Builder in the GenAI platform. Some agents also include packages for other platforms such as **claude.ai Projects** or **Claude Desktop** (Claude Cowork).
+The repository is oriented towards **OpenCode**, the open-source tool on which Stratio bases its Agent Builder in the GenAI platform, and **Stratio Cowork** (`agents/v1` deployable bundles).
 
 ## Agents
 
 | Agent | Description | Platforms | Folder |
 |-------|-------------|-----------|--------|
-| **data-analytics** | Full BI/BA agent with advanced analysis, clustering, multi-format reports (PDF, DOCX, web, PowerPoint), read-only data quality coverage assessment and reporting, and reasoning documentation | Claude Code, OpenCode, Stratio Cowork | `data-analytics/` |
-| **data-analytics-light** | Lightweight BI/BA agent oriented to chat-based analysis, with read-only data quality coverage assessment (chat-only summaries, no file generation). No formal report generation. Includes packaging scripts for multiple platforms | Claude Code, Claude Cowork, claude.ai, OpenCode | `data-analytics-light/` |
-| **semantic-layer** | Agent specialized in building and maintaining semantic layers in Stratio Governance: creation of data collections (technical domains), technical terms, ontologies, business views, SQL mappings, view publishing, semantic terms and business terms | Claude Code, Claude Cowork, claude.ai, OpenCode, Stratio Cowork | `semantic-layer/` |
-| **data-quality** | Data quality agent: coverage assessment, gap identification, quality rule creation with human-in-the-loop and coverage report generation | Claude Code, Claude Cowork, claude.ai, OpenCode, Stratio Cowork | `data-quality/` |
-| **governance-officer** | Combined governance agent: full semantic layer building + data quality management in a single agent with unrestricted access to all governance tools | Claude Code, Claude Cowork, claude.ai, OpenCode, Stratio Cowork | `governance-officer/` |
-| **skill-creator** | Agent for designing and generating AI agent skills (SKILL.md). Interactive requirements → design → generation → review → ZIP packaging | Claude Code, OpenCode, Stratio Cowork | `skill-creator/` |
-| **agent-creator** | Agent for designing and generating complete AI agents for Stratio Cowork. Interactive requirements → architecture design → AGENTS.md generation → skill creation → review → agents/v1 ZIP packaging | Claude Code, OpenCode, Stratio Cowork | `agent-creator/` |
+| **data-analytics** | Full BI/BA agent with advanced analysis, clustering, multi-format reports (PDF, DOCX, web, PowerPoint), read-only data quality coverage assessment and reporting, and reasoning documentation | OpenCode, Stratio Cowork | `data-analytics/` |
+| **semantic-layer** | Agent specialized in building and maintaining semantic layers in Stratio Governance: creation of data collections (technical domains), technical terms, ontologies, business views, SQL mappings, view publishing, semantic terms and business terms | OpenCode, Stratio Cowork | `semantic-layer/` |
+| **data-quality** | Data quality agent: coverage assessment, gap identification, quality rule creation with human-in-the-loop and coverage report generation | OpenCode, Stratio Cowork | `data-quality/` |
+| **governance-officer** | Combined governance agent: full semantic layer building + data quality management in a single agent with unrestricted access to all governance tools | OpenCode, Stratio Cowork | `governance-officer/` |
+| **skill-creator** | Agent for designing and generating AI agent skills (SKILL.md). Interactive requirements → design → generation → review → ZIP packaging | OpenCode, Stratio Cowork | `skill-creator/` |
+| **agent-creator** | Agent for designing and generating complete AI agents for Stratio Cowork. Interactive requirements → architecture design → AGENTS.md generation → skill creation → review → agents/v1 ZIP packaging | OpenCode, Stratio Cowork | `agent-creator/` |
+
+## Functional plugins
+
+A **functional plugin** bundles one or more agents and/or shared skills into a single deployable unit that solves a vertical of business (e.g. data governance, document productivity, data storytelling). Plugins are an additive packaging layer on top of the per-agent and per-skill artifacts: the individual ZIPs are still produced, and a plugin can include any subset of them.
+
+Plugins live in `plugins/<name>/` with two files:
+
+- `plugin.yaml` — declarative manifest (name, description, tags, contents, MCPs, platforms).
+- `README.md` — user-facing documentation (purpose, contents, install instructions).
+
+Each plugin is packaged for two targets: a **Stratio Cowork** wrapper bundle (deployable via `genai-api`) and a **Claude marketplace plugin** (`.claude-plugin/plugin.json`).
+
+### Available plugins
+
+| Plugin | Description | Contents | Platforms |
+|--------|-------------|----------|-----------|
+| **stratio-governance** | Data governance vertical: ontologies, views, mappings, terms, quality rules and coverage reports. | governance-officer + data-quality + semantic-layer (agents) | Stratio Cowork |
+| **stratio-productivity** | Productivity skills: read/author office docs (PDF/DOCX/PPTX/XLSX), craft visual output, author new skills. | pdf/docx/pptx/xlsx readers+writers, skill-creator, web-craft, canvas-craft (skills-only) | Stratio Cowork, Claude |
+| **stratio-data-storytelling** | Tell stories with Stratio governed data: query data, apply visual identity, produce visual output. | stratio-data, brand-kit, web-craft, canvas-craft (skills-only) | Stratio Cowork, Claude |
+
+### Platform rules
+
+| Plugin contents | Stratio Cowork | Claude |
+|---|---|---|
+| Has agents | yes (`agents/v1` wrapper bundle) | **no** — Claude does not support agents in plugins |
+| Skills-only | yes (skills bundle compatible with `/v1/agents/skills/bundle/import`) | yes (`.claude-plugin/plugin.json`) |
+
+The validator (`bin/validate-plugins.py`) enforces these rules: a plugin with agents that explicitly declares `claude` in `platforms:` aborts the build with a clear error.
+
+### Output artifacts
+
+`make package` produces, in addition to the per-agent and per-skill ZIPs:
+
+```
+dist/
+├── stratio-governance-stratio-cowork-{version}.zip            # wrapper of 3 agent sub-zips
+├── stratio-governance-stratio-cowork-es-{version}.zip
+├── stratio-productivity-stratio-cowork-{version}.zip          # wrapper with one skills sub-zip
+├── stratio-productivity-stratio-cowork-es-{version}.zip
+├── stratio-productivity-claude-{version}.zip                  # .claude-plugin marketplace zip
+├── stratio-productivity-claude-es-{version}.zip
+├── stratio-data-storytelling-stratio-cowork-{version}.zip
+├── stratio-data-storytelling-stratio-cowork-es-{version}.zip
+├── stratio-data-storytelling-claude-{version}.zip
+└── stratio-data-storytelling-claude-es-{version}.zip
+```
+
+### Installing a plugin
+
+For the Stratio Cowork variant, use the `upload-plugin` task of the [`cowork-api`](shared-skills/cowork-api/) shared skill. The task opens the wrapper, reads the aggregated `plugin.yaml`, and dispatches each sub-ZIP to the correct `genai-api` endpoint (`/v1/agents/bundle/import` for agents, `/v1/agents/skills/bundle/import` for skills). It returns an aggregated report of imported, conflicted and failed artifacts.
+
+For the Claude variant, follow the standard Claude Code plugin install flow (`/plugin install` from a marketplace).
+
+### Adding a new plugin
+
+See [CLAUDE.md](CLAUDE.md) section "Plugins funcionales" for the dev-facing how-to (manifest schema, validation rules, how the build picks it up).
 
 ## Packaging
 
-Scripts at the monorepo root to package any agent in the target platform format:
+Scripts at the monorepo root to package agents, skills and plugins:
 
-| Script | Target platform | Output |
-|--------|----------------|--------|
-| `pack_claude_code.sh` | Claude Code CLI | `{agent}/dist/claude_code/{name}/` |
-| `pack_opencode.sh` | OpenCode | `{agent}/dist/opencode/{name}/` |
-| `pack_stratio_cowork.sh` | Stratio Cowork (OpenCode) | `dist/{name}-stratio-cowork.zip` |
-| `pack_shared_skills.sh` | All (standalone skills) | `dist/shared-skills.zip` or `dist/{skill}.zip` |
+| Script | Target | Output |
+|--------|--------|--------|
+| `pack_opencode.sh` | OpenCode (developer testing) | `{agent}/dist/[{lang}/]opencode/{name}/` |
+| `pack_stratio_cowork.sh` | Stratio Cowork (`agents/v1` deployable bundle) | `dist/{name}-stratio-cowork.zip` |
+| `pack_shared_skills.sh` | Bulk shared-skills ZIP and individual skill ZIPs | `dist/shared-skills.zip` or `dist/{skill}.zip` |
+| `pack_plugin.sh` | Functional plugins (`stratio-cowork` wrapper or `claude` marketplace) | `dist/{plugin}-{platform}.zip` |
 
 ```bash
-# Package data-analytics for Claude Code (English, default)
-bash pack_claude_code.sh --agent data-analytics
+# Package data-analytics for OpenCode (English, default)
+bash pack_opencode.sh --agent data-analytics
 
-# Package data-analytics for Claude Code in Spanish
-bash pack_claude_code.sh --agent data-analytics --lang es
-
-# Package data-analytics for OpenCode with a custom name
-bash pack_opencode.sh --agent data-analytics --name my-agent
+# Package data-analytics for OpenCode in Spanish
+bash pack_opencode.sh --agent data-analytics --lang es
 
 # Package semantic-layer for Stratio Cowork
 bash pack_stratio_cowork.sh --agent semantic-layer
+
+# Package the stratio-governance plugin
+bash pack_plugin.sh --plugin stratio-governance --platform stratio-cowork
 ```
 
 All pack scripts accept `--lang <code>` to generate output in a specific language. Without `--lang`, English is used. With `--lang es`, the output goes to `dist/es/{format}/{name}/` for traceability. The name must be kebab-case. If omitted, the basename of the agent directory is used. The generated directories are excluded from the repository (`.gitignore`).
 
 `pack_stratio_cowork.sh` generates a composite ZIP with two sub-ZIPs designed for deployment in Stratio Cowork: one with the agent without its shared skills, and another with the shared skills separately (to distribute them independently from the agent). It also includes the agent's `mcps` file at the bundle root if it exists (see [Configure external tools](#4-configure-external-tools-mcps)).
-
-`data-analytics-light`, `semantic-layer`, `data-quality` and `governance-officer` also include packaging scripts for the different Claude formats (AI Projects and Cowork). See [`data-analytics-light/README.md`](data-analytics-light/README.md) for detailed instructions on how to configure each format on the target platform.
 
 ### Output structure (`make package`)
 
@@ -54,8 +107,6 @@ All artifacts are generated under `dist/`, both at agent level (intermediates) a
 ```
 genai-agents/
   dist/                                         # Final versioned ZIPs (EN + ES)
-    data-analytics-claude-code-{v}.zip          # English
-    data-analytics-claude-code-es-{v}.zip       # Spanish
     data-analytics-opencode-{v}.zip
     data-analytics-opencode-es-{v}.zip
     data-analytics-stratio-cowork-{v}.zip
@@ -66,28 +117,17 @@ genai-agents/
     shared-skill-explore-data-{v}.zip
     shared-skill-explore-data-es-{v}.zip
     ...                                         # Same pattern for all shared skills
+    stratio-governance-stratio-cowork-{v}.zip   # Plugins (functional verticals)
+    stratio-productivity-claude-{v}.zip
+    ...                                         # Same pattern for each plugin × platform
 
   data-analytics/
     dist/                                       # Intermediate artifacts (EN)
-      claude_code/data-analytics/
       opencode/data-analytics/
       es/                                       # Intermediate artifacts (ES)
-        claude_code/data-analytics/
         opencode/data-analytics/
 
-  data-analytics-light/
-    dist/                                       # Intermediate artifacts (EN)
-      claude_code/data-analytics-light/
-      opencode/data-analytics-light/
-      claude_cowork/data-analytics-light/
-      claude_ai_projects/data-analytics-light/
-      es/                                       # Intermediate artifacts (ES)
-        claude_code/data-analytics-light/
-        opencode/data-analytics-light/
-        claude_cowork/data-analytics-light/
-        claude_ai_projects/data-analytics-light/
-
-  ...                                           # Same pattern for semantic-layer, data-quality, governance-officer
+  ...                                           # Same pattern for the rest of the agents
 ```
 
 `make clean` removes all `dist/` directories (root + agents).
@@ -152,7 +192,7 @@ pip install -r requirements.txt
 
 Notes:
 
-- `data-analytics-light`, `semantic-layer`, `skill-creator` and `agent-creator` do not require any of these system packages — they do not declare `pdf-reader`, `pdf-writer`, `canvas-craft` or the WeasyPrint-based report skills.
+- `semantic-layer`, `skill-creator` and `agent-creator` do not require any of these system packages — they do not declare `pdf-reader`, `pdf-writer`, `canvas-craft` or the WeasyPrint-based report skills.
 - `web-craft` emits HTML/CSS/JS only; it needs no system or Python dependencies at runtime.
 - For digital-signature inspection in `pdf-reader`, install `pyhanko` on demand (`pip install pyhanko`). It is not part of the baseline `requirements.txt`.
 - Each skill's `README.md` lists its own Python and system dependencies — useful when declaring a new agent as a subset.
@@ -165,8 +205,8 @@ Notes:
 
 | Skill | Description | Agents that use it |
 |-------|-------------|-------------------|
-| `propose-knowledge` | Propose business terms and preferences to Stratio Governance after an analysis | data-analytics, data-analytics-light |
-| `explore-data` | Quick exploration of domains, tables, columns and governed terminology | data-analytics, data-analytics-light |
+| `propose-knowledge` | Propose business terms and preferences to Stratio Governance after an analysis | data-analytics |
+| `explore-data` | Quick exploration of domains, tables, columns and governed terminology | data-analytics |
 | `stratio-data` | Stratio data MCPs reference: rules, usage patterns and best practices | (standalone) |
 | `stratio-semantic-layer` | Stratio semantic layer MCPs reference: rules, usage patterns and best practices for governance tools | semantic-layer, governance-officer |
 | `create-technical-terms` | Create or regenerate technical terms (table and column descriptions) for a domain | semantic-layer, governance-officer |
@@ -177,23 +217,23 @@ Notes:
 | `manage-business-terms` | Create Business Terms in the dictionary with relationships to data assets | semantic-layer, governance-officer |
 | `create-data-collection` | Search for tables and paths in the technical data dictionary and create a new collection (technical domain) | semantic-layer, governance-officer |
 | `build-semantic-layer` | Full semantic layer pipeline: orchestrates technical terms, ontology, views, mappings and semantic terms creation | semantic-layer, governance-officer |
-| `assess-quality` | Assess quality coverage by domain, table or column: dimensions covered, gaps and priorities | data-analytics, data-analytics-light, data-quality, governance-officer |
+| `assess-quality` | Assess quality coverage by domain, table or column: dimensions covered, gaps and priorities | data-analytics, data-quality, governance-officer |
 | `create-quality-rules` | Design and create quality rules to cover gaps, with mandatory human approval | data-quality, governance-officer |
 | `create-quality-schedule` | Create automatic execution schedules for quality rule folders | data-quality, governance-officer |
-| `quality-report` | Generate a formal quality coverage report in PDF, DOCX or Markdown (in `data-analytics-light` only the Chat format is used) | data-analytics, data-analytics-light, data-quality, governance-officer |
+| `quality-report` | Generate a formal quality coverage report in PDF, DOCX or Markdown | data-analytics, data-quality, governance-officer |
 | `pdf-reader` | Inspect, extract text, tables, images, form values and attachments from PDF files with diagnose-first strategy | data-analytics, data-quality, governance-officer |
 | `pdf-writer` | Create designed PDFs, transform existing ones (merge, split, rotate, watermark, encrypt) and fill forms. Design-first workflow with custom typography | data-analytics, data-quality, governance-officer |
 | `xlsx-reader` | Extract cell values, tables, formulas, images and metadata from `.xlsx`/`.xlsm` files (or legacy `.xls`/`.xlsb` via LibreOffice). Diagnose-first strategy | data-analytics, data-quality, governance-officer |
 | `xlsx-writer` | Create designed Excel workbooks (analytical cover/KPI + detail sheets, coverage matrices, pivot tables, tabular exports, catalogs, quantitative models). Merge/split, find-replace, legacy `.xls` conversion, formula refresh via LibreOffice | data-analytics, data-quality, governance-officer |
-| `brand-kit` | Centralized catalog of visual identity themes (colors, typography, chart palettes, sizes, tone). Ships 10 curated themes and is extensible — clients add their own | data-analytics, data-analytics-light, data-quality, governance-officer |
+| `brand-kit` | Centralized catalog of visual identity themes (colors, typography, chart palettes, sizes, tone). Ships 10 curated themes and is extensible — clients add their own | data-analytics, data-quality, governance-officer |
 
 Shared guides (technical documentation that skills reference) live in `shared-skill-guides/`:
 
 | Guide | Used by |
 |-------|---------|
-| `stratio-data-tools.md` | `explore-data`, `assess-quality`, `AGENTS.md` (data-analytics, data-analytics-light, data-quality, governance-officer) |
+| `stratio-data-tools.md` | `explore-data`, `assess-quality`, `AGENTS.md` (data-analytics, data-quality, governance-officer) |
 | `stratio-semantic-layer-tools.md` | `stratio-semantic-layer`, `build-semantic-layer`, `AGENTS.md` (semantic-layer, governance-officer) |
-| `quality-exploration.md` | `assess-quality`, `create-quality-rules` (data-analytics, data-analytics-light, data-quality, governance-officer) |
+| `quality-exploration.md` | `assess-quality`, `create-quality-rules` (data-analytics, data-quality, governance-officer) |
 
 ### Using a shared skill in an agent
 
@@ -210,10 +250,10 @@ Shared guides (technical documentation that skills reference) live in `shared-sk
    stratio-data-tools.md
    ```
 
-3. Package as normal — the generic pack scripts (`pack_claude_code.sh`, `pack_opencode.sh`) copy each guide declared in `skill-guides` **inside** the skill folder in the output and rewrite the references in `SKILL.md` to make them local (self-contained skill). Guides declared in the agent's `shared-guides` are also copied to `skills-guides/` so that `AGENTS.md`/`CLAUDE.md` can reference them:
+3. Package as normal — the generic pack scripts (`pack_opencode.sh`, `pack_stratio_cowork.sh`) copy each guide declared in `skill-guides` **inside** the skill folder in the output and rewrite the references in `SKILL.md` to make them local (self-contained skill). Guides declared in the agent's `shared-guides` are also copied to `skills-guides/` so that `AGENTS.md` can reference them:
 
    ```bash
-   bash pack_claude_code.sh --agent my-agent
+   bash pack_opencode.sh --agent my-agent
    ```
 
    Resulting output (example with `explore-data` which declares `stratio-data-tools.md`):
@@ -297,20 +337,20 @@ All pack scripts accept `--lang <code>` to generate output in a specific languag
 
 ```bash
 # English (default)
-bash pack_claude_code.sh --agent data-analytics
-# → data-analytics/dist/claude_code/data-analytics/
+bash pack_opencode.sh --agent data-analytics
+# → data-analytics/dist/opencode/data-analytics/
 
 # Spanish
-bash pack_claude_code.sh --agent data-analytics --lang es
-# → data-analytics/dist/es/claude_code/data-analytics/
+bash pack_opencode.sh --agent data-analytics --lang es
+# → data-analytics/dist/es/opencode/data-analytics/
 ```
 
 `bin/package.sh` orchestrates all agents and languages, passing `--lang` to each pack script. Final versioned ZIPs go to `dist/`:
 
 | Language | Pattern | Example |
 |----------|---------|---------|
-| English (primary) | `{agent}-{format}-{version}.zip` | `data-analytics-claude-code-0.1.0.zip` |
-| Spanish | `{agent}-{format}-es-{version}.zip` | `data-analytics-claude-code-es-0.1.0.zip` |
+| English (primary) | `{agent}-{format}-{version}.zip` | `data-analytics-opencode-0.2.0.zip` |
+| Spanish | `{agent}-{format}-es-{version}.zip` | `data-analytics-opencode-es-0.2.0.zip` |
 
 ### Translation workflow
 
@@ -336,15 +376,15 @@ An agent is composed of:
 - `AGENTS.md` (or `CLAUDE.md`) — agent instructions: role, workflow, rules (**required**)
 - `skills/` — user-invocable skills (optional)
 - `opencode.json` — MCP and permission configuration for OpenCode (optional)
-- `.mcp.json` — MCP configuration for Claude Code / claude.ai (optional)
+- `mcps` — list of MCP names required by this agent on Stratio Cowork (optional, one name per line)
 
 With these files, simply running the corresponding packaging script generates the package ready to use on the target platform.
 
-The monorepo root includes a symlink `CLAUDE.md → AGENTS.md` so the project can be opened directly with **Claude Code** to develop new agents with its code assistant.
+The monorepo root includes a symlink `CLAUDE.md → AGENTS.md` so the project can be opened with **Claude Code** to develop new agents with its code assistant.
 
 ## Creating a new agent
 
-This guide explains how to add an agent to the monorepo for use in **OpenCode**, **Claude Code** or the **Stratio GenAI agent framework**. An agent is composed of three pieces: **instructions** (`AGENTS.md`), **skills** (`skills/`) and **tool configuration**. By adding `opencode.json` and/or `.mcp.json` the agent can work on both platforms at once. The `pack_opencode.sh` and `pack_claude_code.sh` scripts handle packaging it for each target.
+This guide explains how to add an agent to the monorepo for use in **OpenCode** or the **Stratio GenAI agent framework**. An agent is composed of three pieces: **instructions** (`AGENTS.md`), **skills** (`skills/`) and **tool configuration**. The `pack_opencode.sh` script handles packaging it for OpenCode; `pack_stratio_cowork.sh` produces the `agents/v1` bundle deployable to Stratio Cowork via the `cowork-api` shared skill.
 
 ### 1. Folder structure
 
@@ -352,7 +392,6 @@ This guide explains how to add an agent to the monorepo for use in **OpenCode**,
 my-agent/
 ├── AGENTS.md              # Main instructions in English — role, workflow, rules
 ├── opencode.json          # OpenCode configuration (MCPs, permissions)
-├── .mcp.json              # MCP configuration for Claude Code / claude.ai
 ├── mcps                   # (Optional) List of required MCPs for Stratio Cowork
 ├── skills/                # Agent-specific skills (user-invocable)
 │   └── my-skill/
@@ -416,7 +455,7 @@ To reuse skills already existing in the monorepo without duplicating them, see t
 
 ### 4. Configure external tools (MCPs)
 
-Each platform has its own configuration file. Both can be created so that the agent works on OpenCode and Claude Code simultaneously.
+There are two configuration files: `opencode.json` for the OpenCode runtime (testing and Stratio Cowork deployment) and `mcps` for Stratio Cowork's `agents/v1` bundle metadata.
 
 #### 4a. `opencode.json` — OpenCode
 
@@ -447,26 +486,7 @@ Environment variables are referenced with the `{env:VAR_NAME}` syntax. If the ag
 
 The `permission` block controls both bash/file commands and exposed MCP tools. For MCP tools the pattern is `{server-name}_*` (all tools from that server) or `*{tool-name}` (a specific tool on any server).
 
-#### 4b. `.mcp.json` — Claude Code / claude.ai
-
-Declares the MCP servers available for Claude Code:
-
-```json
-{
-  "mcpServers": {
-    "my-server": {
-      "type": "http",
-      "url": "${MY_SERVER_URL:-http://127.0.0.1:8080/mcp}",
-      "headers": { "Authorization": "Bearer ${MY_API_KEY:-}" },
-      "allowedTools": ["tool_name_1", "tool_name_2"]
-    }
-  }
-}
-```
-
-Environment variables use bash syntax `${VAR:-default_value}`. `allowedTools` restricts which tools from the MCP server are exposed to the agent. Bash and filesystem permissions are managed by Claude Code itself (outside this file).
-
-#### 4c. `mcps` — Stratio Cowork
+#### 4b. `mcps` — Stratio Cowork
 
 Plain text file (one line per MCP) that declares the MCP servers the agent needs. Only relevant for the **Stratio Cowork** bundle — `pack_stratio_cowork.sh` includes it at the root of the composite ZIP as a reference for the administrator configuring the installation.
 
@@ -475,7 +495,7 @@ Stratio_Data
 Stratio_Gov
 ```
 
-It has no effect on Claude Code or OpenCode packages (both scripts exclude it from their rsync). If the agent will not be distributed via Stratio Cowork, there is no need to create it.
+It has no effect on the OpenCode package (`pack_opencode.sh` excludes it from its rsync). If the agent will not be distributed via Stratio Cowork, there is no need to create it.
 
 ### 5. Package
 
@@ -483,11 +503,8 @@ It has no effect on Claude Code or OpenCode packages (both scripts exclude it fr
 # Package for OpenCode (English, default)
 bash pack_opencode.sh --agent my-agent
 
-# Package for Claude Code
-bash pack_claude_code.sh --agent my-agent
-
-# Package for Claude Code in Spanish
-bash pack_claude_code.sh --agent my-agent --lang es
+# Package for OpenCode in Spanish
+bash pack_opencode.sh --agent my-agent --lang es
 
 # Package Stratio Cowork bundle (agent + separate shared skills + mcps)
 bash pack_stratio_cowork.sh --agent my-agent
@@ -501,11 +518,9 @@ make package
 
 The output is generated in `my-agent/dist/opencode/my-agent/` (English) and `my-agent/dist/es/opencode/my-agent/` (Spanish) respectively (excluded from git by `.gitignore`).
 
-### 6. Test
+### 6. Test in OpenCode
 
 The `dist/` folder is overwritten on each packaging script run, so before opening the agent it is advisable to copy the generated package to a working path.
-
-#### 6a. Test in OpenCode
 
 ```bash
 cp -r my-agent/dist/opencode/my-agent ~/agents/my-agent
@@ -537,149 +552,7 @@ On startup, OpenCode automatically loads `AGENTS.md` as the agent instructions, 
 
 The `opencode.json` file can be manually edited at any time to add, remove or reconfigure MCP servers — just restart OpenCode for the changes to take effect.
 
-#### 6b. Test in Claude Code
 
-```bash
-cp -r my-agent/dist/claude_code/my-agent ~/agents/my-agent-cc
-export MY_SERVER_URL="https://my-server.example.com/mcp"
-export MY_API_KEY="my-secret-token"
-cd ~/agents/my-agent-cc
-claude .
-```
+### 7. Deploy to Stratio Cowork
 
-> **Note on TLS:** If the MCP servers use self-signed TLS certificates (common in development or pre-production environments), Node.js will reject the connection by default. To allow it, also export:
->
-> ```bash
-> export NODE_TLS_REJECT_UNAUTHORIZED=0
-> ```
->
-> This variable disables TLS certificate validation on all Node.js connections in the process. Use it **only in trusted environments** — never in production.
-
-On startup, Claude Code loads `CLAUDE.md` as the agent instructions and the available skills in `.claude/skills/`. MCP servers are read from `.mcp.json`. Skills are invoked with `/skill-name` in the chat.
-
-#### 6c. Test in Claude Desktop / Claude Cowork
-
-Claude Cowork runs inside the Claude Desktop Electron process. Both share the same system-level configuration file: `claude_desktop_config.json`.
-
-> **Important:** `claude_desktop_config.json` does **not** support `"type": "http"` for remote servers, nor the `${VAR:-default}` environment variable syntax used by Claude Code's `.mcp.json`. These are Claude Code CLI features only. See the differences below.
-
-##### Claude Cowork (with plugins)
-
-If you use Claude Cowork with the plugin generated by `pack_claude_cowork.sh`, the MCP servers are registered automatically when you install the plugin ZIP — no manual `claude_desktop_config.json` editing is needed.
-
-> **Always package with `--url` / `--key`** (or `--sql-url`, `--gov-url`, etc.) to hardcode credentials into the plugin. Cowork does **not** expand `${VAR:-default}` templates in the plugin's `.mcp.json` — that syntax only works in Claude Code CLI.
-
-##### Claude Desktop without Cowork (manual MCP configuration)
-
-Desktop applications are not launched from a terminal, so `export` commands do not reach them. MCP servers must be configured in:
-
-- macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
-- Windows: `%APPDATA%\Claude\claude_desktop_config.json`
-
-**Local MCP servers** (`command` + `args`):
-
-```json
-{
-  "mcpServers": {
-    "my-server": {
-      "command": "npx",
-      "args": ["-y", "@my-org/my-mcp-server"],
-      "env": {
-        "NODE_TLS_REJECT_UNAUTHORIZED": "0",
-        "MY_SERVER_URL": "https://my-server.example.com/mcp"
-      }
-    }
-  }
-}
-```
-
-**Remote HTTP MCP servers** (via `mcp-remote` proxy):
-
-Claude Desktop does not support remote HTTP servers natively. Use the [`mcp-remote`](https://www.npmjs.com/package/mcp-remote) npm package as a stdio-to-HTTP proxy:
-
-```json
-{
-  "mcpServers": {
-    "stratio_data": {
-      "command": "npx",
-      "args": [
-        "-y", "mcp-remote",
-        "https://sql.example.com/mcp",
-        "--header", "X-API-Key:${MCP_API_KEY}",
-        "--header", "Authorization:${MCP_AUTH}"
-      ],
-      "env": {
-        "MCP_API_KEY": "my-api-key",
-        "MCP_AUTH": "Bearer my-api-key",
-        "NODE_TLS_REJECT_UNAUTHORIZED": "0"
-      }
-    }
-  }
-}
-```
-
-> **Note:** Header values are placed in the `env` block and referenced in `args` without a space after the colon (e.g., `Authorization:${MCP_AUTH}` instead of `Authorization: ${MCP_AUTH}`). This works around a known bug in Claude Desktop on Windows where spaces inside args are not escaped properly. The `env` block passes environment variables to the `mcp-remote` child process, which expands `${VAR}` references from its environment. `NODE_TLS_REJECT_UNAUTHORIZED=0` disables TLS certificate validation — use only in trusted environments with self-signed certificates.
-
-##### TLS for remote MCP servers (OS-level)
-
-When using `mcp-remote` as shown above, the `NODE_TLS_REJECT_UNAUTHORIZED` variable in the `env` block is usually sufficient because `mcp-remote` is a Node.js child process that inherits it.
-
-For other scenarios where there is no child process to configure (e.g., Custom Connectors configured through the Cowork UI), the Electron process itself makes the TLS connection. In that case, set the variable at the OS level:
-
-##### macOS
-
-**Option A — Launch from terminal (quick, non-persistent):**
-
-```bash
-NODE_TLS_REJECT_UNAUTHORIZED=0 open -a "Claude"
-```
-
-The environment variable is inherited by the Electron process. This must be done every time the app is opened.
-
-**Option B — `launchctl setenv` (persistent for the GUI session):**
-
-```bash
-launchctl setenv NODE_TLS_REJECT_UNAUTHORIZED 0
-```
-
-Then restart Claude Desktop / Claude Cowork. The variable applies to **all** GUI applications in the session. To revert:
-
-```bash
-launchctl unsetenv NODE_TLS_REJECT_UNAUTHORIZED
-```
-
-##### Windows
-
-**Option A — Launch from terminal (quick, non-persistent):**
-
-CMD:
-
-```cmd
-set NODE_TLS_REJECT_UNAUTHORIZED=0 && start Claude
-```
-
-PowerShell:
-
-```powershell
-$env:NODE_TLS_REJECT_UNAUTHORIZED="0"; Start-Process Claude
-```
-
-This must be done every time the app is opened.
-
-**Option B — User environment variable (persistent):**
-
-PowerShell:
-
-```powershell
-[System.Environment]::SetEnvironmentVariable("NODE_TLS_REJECT_UNAUTHORIZED", "0", "User")
-```
-
-Or manually: **System Settings > Environment Variables > User variables > New** — name `NODE_TLS_REJECT_UNAUTHORIZED`, value `0`.
-
-Then restart Claude Desktop / Claude Cowork. To revert:
-
-```powershell
-[System.Environment]::SetEnvironmentVariable("NODE_TLS_REJECT_UNAUTHORIZED", $null, "User")
-```
-
-> Both options disable TLS certificate validation on all Node.js connections in the process. Use them **only in trusted environments** — never in production.
+To register the agent (or a plugin that bundles it) into a Stratio Cowork tenant, use the [`cowork-api`](shared-skills/cowork-api/) shared skill from inside the sandbox. It calls `/v1/agents/bundle/import` (single-agent bundles) or `/v1/agents/skills/bundle/import` (skills) and orchestrates plugin uploads via the `upload-plugin` task. See the skill's tasks for endpoint, conflict-strategy and authentication details.

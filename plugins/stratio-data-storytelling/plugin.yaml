@@ -1,0 +1,19 @@
+name: stratio-data-storytelling
+description: "Skills bundle for telling stories with Stratio governed data: query the data MCPs, apply visual identity, and produce visual output (web pages, posters, infographics). Skills-only — pluggable into any agent that consumes governed data."
+tags:
+  - data-storytelling
+  - data-presentation
+  - stratio-data
+  - branding
+  - visual-output
+contents:
+  skills:
+    - stratio-data
+    - brand-kit
+    - web-craft
+    - canvas-craft
+mcps:
+  - Stratio_Data
+platforms:
+  - stratio-cowork
+  - claude

@@ -91,7 +91,7 @@ Todo SKILL.md comienza con un frontmatter YAML entre marcadores `---`. El frontm
 
 ### 2.1.1 Límites duros y reglas de validación
 
-Anthropic, OpenCode y el plugin de GitHub Copilot Code aplican estas restricciones en runtime. Una skill que viole cualquiera de ellas no se carga — y nuestros scripts de empaquetado (`pack_claude_code.sh`, `pack_opencode.sh`) re-validan la longitud de la descripción en el momento del pack para que el fallo aparezca localmente en vez de al instalar.
+Anthropic, OpenCode y el plugin de GitHub Copilot Code aplican estas restricciones en runtime. Una skill que viole cualquiera de ellas no se carga — y `pack_opencode.sh` re-valida la longitud de la descripción en el momento del pack para que el fallo aparezca localmente en vez de al instalar.
 
 | Campo | Restricción |
 |-------|-------------|

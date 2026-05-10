@@ -19,7 +19,7 @@ Agente experto en Gobernanza y Calidad del Dato. Evalua la cobertura de calidad 
   - `gov` (gobernanza): dimensiones de calidad, creación de reglas
   - `sql` (exploración): discovery, generación SQL, profiling, ejecución
 
-La configuración de MCPs está en `.mcp.json` (Claude Code / claude.ai) y en `opencode.json` (OpenCode), ambos preconfigurados para leer URL y credenciales desde variables de entorno.
+La configuración de MCPs está en `opencode.json` (OpenCode), preconfigurado para leer URL y credenciales desde variables de entorno. El fichero `mcps` en la raíz del agente lista los nombres de MCP que se registran al desplegar el bundle `agents/v1` en Stratio Cowork.
 
 ## Variables de entorno
 
@@ -50,21 +50,10 @@ La configuración de MCPs está en `.mcp.json` (Claude Code / claude.ai) y en `o
 
 Todos los scripts aceptan `--lang <código>` para generar output en un idioma específico (ej: `--lang es` para español). Cuando se usa `--lang`, el output va a `dist/<lang>/...` en lugar de `dist/...`.
 
-### Scripts específicos (desde esta carpeta)
-
-| Script | Plataforma destino | Output | Ejemplo |
-|--------|-------------------|--------|---------|
-| `pack_claude_ai_project.sh` | claude.ai (Projects) | `dist/claude_ai_projects/<nombre>/` | `bash pack_claude_ai_project.sh --name data-quality` |
-| `pack_claude_cowork.sh` | Claude Cowork | `dist/claude_cowork/<nombre>/` | `bash pack_claude_cowork.sh --name data-quality` |
-
-El script de cowork acepta también `--gov-url <URL>`, `--gov-key <KEY>`, `--sql-url <URL>` y `--sql-key <KEY>` para configurar los dos servidores MCP. Si se omiten, quedan como variables de entorno template para configurar después.
-
-### Scripts genéricos (desde la raíz del monorepo)
-
-| Script | Plataforma destino | Output | Ejemplo |
-|--------|-------------------|--------|---------|
-| `pack_claude_code.sh` | Claude Code CLI | `dist/claude_code/<nombre>/` | `bash ../pack_claude_code.sh --agent data-quality` |
+| Script | Destino | Output | Ejemplo |
+|--------|---------|--------|---------|
 | `pack_opencode.sh` | OpenCode | `dist/opencode/<nombre>/` | `bash ../pack_opencode.sh --agent data-quality` |
+| `pack_stratio_cowork.sh` | Stratio Cowork (`agents/v1`) | `dist/<nombre>-stratio-cowork.zip` | `bash ../pack_stratio_cowork.sh --agent data-quality` |
 
 ## Quick start
 
@@ -78,8 +67,9 @@ export MCP_GOV_API_KEY="mi-api-key-governance"
 # 2. Instalar dependencias (para generación de informes PDF/DOCX) — solo dev local
 python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt
 
-# 3. Empaquetar para la plataforma deseada
+# 3. Empaquetar para OpenCode
 bash ../pack_opencode.sh --agent data-quality
-# o
-bash ../pack_claude_code.sh --agent data-quality
+
+# 4. Empaquetar para Stratio Cowork
+bash ../pack_stratio_cowork.sh --agent data-quality
 ```

@@ -29,7 +29,7 @@ Agente governance officer que combina la construcción de capas semánticas y la
   - `gov` (gobierno): herramientas de capa semántica, dimensiones de calidad, creación de reglas
   - `sql` (exploración): descubrimiento, generación SQL, profiling, ejecución
 
-La configuración MCP está en `.mcp.json` (Claude Code / claude.ai) y en `opencode.json` (OpenCode), ambos preconfigurados para leer URL y credenciales de variables de entorno.
+La configuración MCP está en `opencode.json` (OpenCode), preconfigurado para leer URL y credenciales de variables de entorno. El fichero `mcps` en la raíz del agente lista los nombres de MCP que se registran al desplegar el bundle `agents/v1` en Stratio Cowork.
 
 ## Variables de entorno
 
@@ -68,21 +68,10 @@ La configuración MCP está en `.mcp.json` (Claude Code / claude.ai) y en `openc
 
 Todos los scripts aceptan `--lang <code>` para generar la salida en un idioma específico (ej. `--lang es` para español). Cuando se usa `--lang`, la salida va a `dist/<lang>/...` en lugar de `dist/...`.
 
-### Scripts específicos (desde esta carpeta)
-
-| Script | Plataforma destino | Salida | Ejemplo |
-|--------|-------------------|--------|---------|
-| `pack_claude_ai_project.sh` | claude.ai (Projects) | `dist/claude_ai_projects/<name>/` | `bash pack_claude_ai_project.sh --name governance-officer` |
-| `pack_claude_cowork.sh` | Claude Cowork | `dist/claude_cowork/<name>/` | `bash pack_claude_cowork.sh --name governance-officer` |
-
-El script de cowork también acepta `--gov-url <URL>`, `--gov-key <KEY>`, `--sql-url <URL>` y `--sql-key <KEY>` para configurar los dos servidores MCP. Si se omiten, permanecen como plantillas de variables de entorno para configurar posteriormente.
-
-### Scripts genéricos (desde la raíz del monorepo)
-
-| Script | Plataforma destino | Salida | Ejemplo |
-|--------|-------------------|--------|---------|
-| `pack_claude_code.sh` | Claude Code CLI | `dist/claude_code/<name>/` | `bash ../pack_claude_code.sh --agent governance-officer` |
+| Script | Destino | Salida | Ejemplo |
+|--------|---------|--------|---------|
 | `pack_opencode.sh` | OpenCode | `dist/opencode/<name>/` | `bash ../pack_opencode.sh --agent governance-officer` |
+| `pack_stratio_cowork.sh` | Stratio Cowork (`agents/v1`) | `dist/<name>-stratio-cowork.zip` | `bash ../pack_stratio_cowork.sh --agent governance-officer` |
 
 ## Inicio rápido
 
@@ -96,8 +85,9 @@ export MCP_GOV_API_KEY="my-governance-api-key"
 # 2. Instalar dependencias (para generación de informes PDF/DOCX) — solo dev local
 python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt
 
-# 3. Empaquetar para la plataforma deseada
+# 3. Empaquetar para OpenCode
 bash ../pack_opencode.sh --agent governance-officer
-# o
-bash ../pack_claude_code.sh --agent governance-officer
+
+# 4. Empaquetar para Stratio Cowork
+bash ../pack_stratio_cowork.sh --agent governance-officer
 ```

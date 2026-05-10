@@ -1,6 +1,6 @@
 ---
 name: cowork-api
-description: "Upload, import, deploy, publish, register, send or push agent and skill bundles to Stratio Cowork (`genai-api`). Use when the user asks to upload/import/deploy/publish/register a packaged agent or skill ZIP to Cowork — including phrases like 'súbelo', 'deploy this', 'impórtalo', 'publica el agente', 'regístralo en Cowork'. Calls `/v1/agents/bundle/import` and `/v1/agents/skills/bundle/import`."
+description: "Upload, import, deploy, publish, register, send or push agent, skill or plugin bundles to Stratio Cowork (`genai-api`). Use when the user asks to upload/import/deploy/publish/register a packaged agent, skill or plugin ZIP to Cowork — including phrases like 'súbelo', 'deploy this', 'impórtalo', 'publica el agente', 'regístralo en Cowork', 'sube el plugin'. Calls `/v1/agents/bundle/import` and `/v1/agents/skills/bundle/import` (plugins dispatch to both)."
 ---
 
 # Skill: Stratio Cowork management API (`genai-api`)
@@ -24,6 +24,7 @@ Before any call, follow `skills-guides/external-api-calls.md`:
 |---|---|---|
 | Upload a skill bundle | The user has packaged a skill into a ZIP and wants it registered in Stratio Cowork. | `tasks/upload-skill.md` |
 | Upload an agent bundle | The user has packaged an agent (`agents/v1` container ZIP) and wants it registered in Stratio Cowork. | `tasks/upload-agent.md` |
+| Upload a plugin bundle | The user has packaged a functional plugin (wrapper ZIP that contains agent and/or skill sub-ZIPs plus an aggregated `plugin.yaml`) and wants it registered in Stratio Cowork. | `tasks/upload-plugin.md` |
 
 ## Routing rules
 
