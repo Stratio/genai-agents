@@ -340,7 +340,7 @@ Si el usuario confirma, pide una alternativa o continúa con contenido no relaci
 
 ### 7.4 Estructura estándar del informe de calidad
 
-Referencia rápida de las seis secciones canónicas. El contrato completo de layout (iconografía, KPI cards, composición por formato, reglas deterministas) vive en `shared-skills/quality-report/quality-report-layout.md`.
+Referencia rápida de las seis secciones canónicas. El contrato completo de layout (iconografía, KPI cards, composición por formato, reglas deterministas) vive en el `quality-report-layout.md` de `/quality-report`.
 
 1. Resumen ejecutivo: tablas analizadas, cobertura estimada, gaps identificados, desglose de reglas.
 2. Tabla de cobertura: tabla × dimensión (cubierta / gap / parcial).

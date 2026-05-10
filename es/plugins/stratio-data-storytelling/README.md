@@ -6,10 +6,10 @@ Plugin funcional skills-only enfocado a narrar historias con datos gobernados de
 
 | Skill | Propósito |
 |---|---|
-| [stratio-data](../../shared-skills/stratio-data/) | Reglas obligatorias y patrones de uso de los MCPs de datos de Stratio (`query_data`, `list_domains`, `search_domains`, `generate_sql`, `profile_data`, etc.). |
-| [brand-kit](../../shared-skills/brand-kit/) | Tokens de identidad visual centralizados (colores, tipografías, paletas de gráficos, tamaños, tono). Diez temas curados; los clientes pueden extender o sustituir. |
-| [web-craft](../../shared-skills/web-craft/) | Output frontend interactivo (HTML/CSS/JS, React, Vue): dashboards, reportes web narrativos, componentes. |
-| [canvas-craft](../../shared-skills/canvas-craft/) | Artefactos estáticos de una página (PDF/PNG): pósters, infografías, portadas, certificados. |
+| [stratio-data](../../skills/stratio-data/) | Reglas obligatorias y patrones de uso de los MCPs de datos de Stratio (`query_data`, `list_domains`, `search_domains`, `generate_sql`, `profile_data`, etc.). |
+| [brand-kit](../../skills/brand-kit/) | Tokens de identidad visual centralizados (colores, tipografías, paletas de gráficos, tamaños, tono). Diez temas curados; los clientes pueden extender o sustituir. |
+| [web-craft](../../skills/web-craft/) | Output frontend interactivo (HTML/CSS/JS, React, Vue): dashboards, reportes web narrativos, componentes. |
+| [canvas-craft](../../skills/canvas-craft/) | Artefactos estáticos de una página (PDF/PNG): pósters, infografías, portadas, certificados. |
 
 ## MCPs requeridos
 
@@ -35,7 +35,7 @@ El plugin produce dos artefactos:
 - `dist/stratio-data-storytelling-stratio-cowork-{version}.zip` — bundle para Stratio Cowork.
 - `dist/stratio-data-storytelling-claude-{version}.zip` — plugin de marketplace para Claude.
 
-Usa la task `upload-plugin` de la skill compartida [`cowork-api`](../../shared-skills/cowork-api/) para desplegar la variante Cowork. Para la variante Claude, sigue el flujo estándar de instalación de plugins de Claude Code.
+Usa la task `upload-plugin` de la skill compartida [`cowork-api`](../../skills/cowork-api/) para desplegar la variante Cowork. Para la variante Claude, sigue el flujo estándar de instalación de plugins de Claude Code.
 
 ## Solape con otros plugins
 

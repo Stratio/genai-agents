@@ -6,17 +6,17 @@ Skills-only functional plugin that bundles document I/O, visual crafting and ski
 
 | Skill | Purpose |
 |---|---|
-| [pdf-reader](../../shared-skills/pdf-reader/) | PDF reading and content extraction. |
-| [pdf-writer](../../shared-skills/pdf-writer/) | PDF authoring and manipulation: merge, split, watermark, encrypt, forms, multi-page typographic documents. |
-| [docx-reader](../../shared-skills/docx-reader/) | DOCX reading and content extraction. |
-| [docx-writer](../../shared-skills/docx-writer/) | DOCX authoring and manipulation: merge, split, find-replace, `.doc` → `.docx`. |
-| [pptx-reader](../../shared-skills/pptx-reader/) | PPTX reading and content extraction. |
-| [pptx-writer](../../shared-skills/pptx-writer/) | PPTX authoring: merge, split, reorder, find-replace in slides and notes, `.ppt` → `.pptx`. |
-| [xlsx-reader](../../shared-skills/xlsx-reader/) | XLSX reading and content extraction. |
-| [xlsx-writer](../../shared-skills/xlsx-writer/) | XLSX authoring: analytical workbooks, pivot matrices, tabular exports, `.xls` → `.xlsx`, formula refresh. |
-| [skill-creator](../../shared-skills/skill-creator/) | Designs and generates new agent skills (SKILL.md authoring guide, quality checklist). |
-| [web-craft](../../shared-skills/web-craft/) | Interactive frontend output (HTML/CSS/JS, React, Vue): components, pages, dashboards. |
-| [canvas-craft](../../shared-skills/canvas-craft/) | Single-page static visual artifacts (PDF/PNG): posters, covers, certificates, infographics. |
+| [pdf-reader](../../skills/pdf-reader/) | PDF reading and content extraction. |
+| [pdf-writer](../../skills/pdf-writer/) | PDF authoring and manipulation: merge, split, watermark, encrypt, forms, multi-page typographic documents. |
+| [docx-reader](../../skills/docx-reader/) | DOCX reading and content extraction. |
+| [docx-writer](../../skills/docx-writer/) | DOCX authoring and manipulation: merge, split, find-replace, `.doc` → `.docx`. |
+| [pptx-reader](../../skills/pptx-reader/) | PPTX reading and content extraction. |
+| [pptx-writer](../../skills/pptx-writer/) | PPTX authoring: merge, split, reorder, find-replace in slides and notes, `.ppt` → `.pptx`. |
+| [xlsx-reader](../../skills/xlsx-reader/) | XLSX reading and content extraction. |
+| [xlsx-writer](../../skills/xlsx-writer/) | XLSX authoring: analytical workbooks, pivot matrices, tabular exports, `.xls` → `.xlsx`, formula refresh. |
+| [skill-creator](../../skills/skill-creator/) | Designs and generates new agent skills (SKILL.md authoring guide, quality checklist). |
+| [web-craft](../../skills/web-craft/) | Interactive frontend output (HTML/CSS/JS, React, Vue): components, pages, dashboards. |
+| [canvas-craft](../../skills/canvas-craft/) | Single-page static visual artifacts (PDF/PNG): posters, covers, certificates, infographics. |
 
 ## Supported platforms
 
@@ -32,7 +32,7 @@ The plugin produces two artifacts:
 - `dist/stratio-productivity-stratio-cowork-{version}.zip` — Stratio Cowork bundle.
 - `dist/stratio-productivity-claude-{version}.zip` — Claude marketplace plugin.
 
-Use the `upload-plugin` task of the [`cowork-api`](../../shared-skills/cowork-api/) shared skill to deploy the Cowork variant to a tenant. For the Claude variant, follow the standard Claude Code plugin install flow (`/plugin install` from a marketplace).
+Use the `upload-plugin` task of the [`cowork-api`](../../skills/cowork-api/) shared skill to deploy the Cowork variant to a tenant. For the Claude variant, follow the standard Claude Code plugin install flow (`/plugin install` from a marketplace).
 
 ## MCPs
 

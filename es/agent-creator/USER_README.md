@@ -29,7 +29,7 @@ Al diseñar la arquitectura, cada capacidad se mapea a uno de estos tres tipos:
 |---|---|
 | **Skill de plataforma** | Ya existe en la plataforma Stratio Cowork — el agente la referencia por nombre en `AGENTS.md` y no lleva código para ella |
 | **Skill interna** | Específica de este agente — se crea junto al agente y viaja dentro del ZIP del agente en `.opencode/skills/` |
-| **Skill compartida** | Reutilizable entre agentes — se crea junto al agente y se empaqueta en un ZIP de shared-skills separado que acompaña al bundle |
+| **Skill compartida** | Reutilizable entre agentes — se crea junto al agente y se empaqueta en un ZIP de skills separado que acompaña al bundle |
 
 ## Estructura del paquete (agents/v1)
 
@@ -39,7 +39,7 @@ El entregable final es un ZIP contenedor con un layout predecible:
 {name}-stratio-cowork.zip               # Bundle contenedor
 ├── metadata.yaml                       # Versión de formato agents/v1 y metadatos del agente
 ├── {name}-opencode-agent.zip           # Ficheros del agente (AGENTS.md, README.md, opencode.json, .opencode/skills/)
-├── {name}-shared-skills.zip            # (Opcional) skills compartidas nuevas creadas para este agente
+├── {name}-skills.zip            # (Opcional) skills compartidas nuevas creadas para este agente
 └── mcps                                # (Opcional) servidores MCP requeridos en despliegue
 ```
 

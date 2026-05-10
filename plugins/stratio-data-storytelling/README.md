@@ -6,10 +6,10 @@ Skills-only functional plugin focused on telling stories with Stratio governed d
 
 | Skill | Purpose |
 |---|---|
-| [stratio-data](../../shared-skills/stratio-data/) | Mandatory rules and usage patterns for Stratio data MCPs (`query_data`, `list_domains`, `search_domains`, `generate_sql`, `profile_data`, etc.). |
-| [brand-kit](../../shared-skills/brand-kit/) | Centralised visual identity tokens (colors, typography, chart palettes, sizes, tone). Ten curated themes; clients can extend or replace. |
-| [web-craft](../../shared-skills/web-craft/) | Interactive frontend output (HTML/CSS/JS, React, Vue): dashboards, narrative web reports, components. |
-| [canvas-craft](../../shared-skills/canvas-craft/) | Single-page static artifacts (PDF/PNG): posters, infographics, covers, certificates. |
+| [stratio-data](../../skills/stratio-data/) | Mandatory rules and usage patterns for Stratio data MCPs (`query_data`, `list_domains`, `search_domains`, `generate_sql`, `profile_data`, etc.). |
+| [brand-kit](../../skills/brand-kit/) | Centralised visual identity tokens (colors, typography, chart palettes, sizes, tone). Ten curated themes; clients can extend or replace. |
+| [web-craft](../../skills/web-craft/) | Interactive frontend output (HTML/CSS/JS, React, Vue): dashboards, narrative web reports, components. |
+| [canvas-craft](../../skills/canvas-craft/) | Single-page static artifacts (PDF/PNG): posters, infographics, covers, certificates. |
 
 ## Required MCPs
 
@@ -35,7 +35,7 @@ The plugin produces two artifacts:
 - `dist/stratio-data-storytelling-stratio-cowork-{version}.zip` — Stratio Cowork bundle.
 - `dist/stratio-data-storytelling-claude-{version}.zip` — Claude marketplace plugin.
 
-Use the `upload-plugin` task of the [`cowork-api`](../../shared-skills/cowork-api/) shared skill to deploy the Cowork variant. For the Claude variant, follow the standard Claude Code plugin install flow.
+Use the `upload-plugin` task of the [`cowork-api`](../../skills/cowork-api/) shared skill to deploy the Cowork variant. For the Claude variant, follow the standard Claude Code plugin install flow.
 
 ## Overlap with other plugins
 

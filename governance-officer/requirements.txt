@@ -19,7 +19,7 @@ pytesseract>=0.3.10
 # ocrmypdf requires Ghostscript + Tesseract + Poppler system-side
 ocrmypdf>=17.0
 
-# === PDF writing (shared-skills pdf-writer and canvas-craft) ===
+# === PDF writing (skills pdf-writer and canvas-craft) ===
 reportlab>=4.4
 # svglib 1.6+ pulls rlPyCairo → pycairo, which requires a C toolchain to build
 # from source. The CI builder image has no gcc, so pin below 1.6 until a wheel

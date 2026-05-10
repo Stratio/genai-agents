@@ -300,7 +300,7 @@ Los filenames siguen la convención de `/analyze`: `<slug>-workbook.xlsx`. Token
 
 ## 9. Composición de libro de cobertura de calidad
 
-Cuando esta skill se invoca desde el orquestador `quality-report` para el formato XLSX, sigue el contrato multi-hoja en `shared-skills/quality-report/quality-report-layout.md §6.6`. Resumen:
+Cuando esta skill se invoca desde el orquestador `quality-report` para el formato XLSX, sigue el contrato multi-hoja en el `quality-report-layout.md §6.6` de `/quality-report`. Resumen:
 
 1. **Cover** — título, dominio, alcance, fecha de generación, banda KPI de 4 celdas (Coverage %, Rules OK %, Critical gaps, Rules created this session).
 2. **Coverage** — Table nativa de tablas × dimensiones con iconos de estado (✓ / ✗ / ◐ / —) y formato condicional tintado por estado. Freeze primera fila + primera columna.

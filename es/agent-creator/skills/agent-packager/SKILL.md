@@ -16,7 +16,7 @@ Un bundle de Stratio Cowork es un fichero ZIP que contiene:
 {nombre}-stratio-cowork.zip            # ZIP contenedor
   metadata.yaml                        # Manifiesto del bundle (agents/v1)
   {nombre}-opencode-agent.zip          # Ficheros del agente (sin shared skills)
-  {nombre}-shared-skills.zip           # Shared skills (opcional, solo si hay nuevas)
+  {nombre}-skills.zip           # Skills importadas (opcional, solo si hay nuevas)
 ```
 
 ## 2. Generar el Agent ZIP
@@ -42,8 +42,8 @@ Todo el staging durante el empaquetado ocurre bajo `output/<nombre-agente>/.pack
 ### Ficheros a NO incluir
 
 - `cowork-metadata.yaml` — la descripción va directamente en `metadata.yaml`
-- Manifiesto `shared-skills` — las referencias de shared skills van en `metadata.yaml`
-- Directorio `_shared-skills/` — estos van en el shared-skills ZIP separado
+- Manifiesto `imported-skills` — las referencias de shared skills van en `metadata.yaml`
+- Directorio `_skills/` — estos van en el ZIP de skills separado
 - Ficheros temporales, artefactos de build, `dist/`, `.git/`
 
 ### Comandos
@@ -102,10 +102,10 @@ Si algún SKILL.md referencia `skills-guides/nombre.md`, y el fichero de guía e
 
 ```bash
 AGENT_NAME="{nombre}"
-SHARED_DIR="output/$AGENT_NAME/_shared-skills"
+SHARED_DIR="output/$AGENT_NAME/_skills"
 
 if [ -d "$SHARED_DIR" ] && [ "$(ls -A "$SHARED_DIR")" ]; then
-  (cd "$SHARED_DIR" && zip -r "$OLDPWD/output/$AGENT_NAME/${AGENT_NAME}-shared-skills.zip" .)
+  (cd "$SHARED_DIR" && zip -r "$OLDPWD/output/$AGENT_NAME/${AGENT_NAME}-skills.zip" .)
 fi
 ```
 
@@ -135,7 +135,7 @@ El manifiesto describe el contenido del bundle.
 format_version: "agents/v1"
 name: "mi-agente"
 agent_zip: "mi-agente-opencode-agent.zip"
-skills_zip: "mi-agente-shared-skills.zip"
+skills_zip: "mi-agente-skills.zip"
 description: "Agente experto en analizar cobertura de calidad de datos y crear reglas de calidad."
 ```
 
@@ -162,8 +162,8 @@ agent_zip: "${AGENT_NAME}-opencode-agent.zip"
 EOF
 
 # Añadir skills_zip solo si hay shared skills
-if [ -f "output/$AGENT_NAME/${AGENT_NAME}-shared-skills.zip" ]; then
-  echo "skills_zip: \"${AGENT_NAME}-shared-skills.zip\"" >> "$METADATA"
+if [ -f "output/$AGENT_NAME/${AGENT_NAME}-skills.zip" ]; then
+  echo "skills_zip: \"${AGENT_NAME}-skills.zip\"" >> "$METADATA"
 fi
 
 echo "description: \"$DESCRIPTION\"" >> "$METADATA"
@@ -183,8 +183,8 @@ cp "output/$AGENT_NAME/metadata.yaml"                       "$BUNDLE_DIR/"
 cp "output/$AGENT_NAME/${AGENT_NAME}-opencode-agent.zip"    "$BUNDLE_DIR/"
 
 # Incluir shared skills ZIP solo si existe
-if [ -f "output/$AGENT_NAME/${AGENT_NAME}-shared-skills.zip" ]; then
-  cp "output/$AGENT_NAME/${AGENT_NAME}-shared-skills.zip" "$BUNDLE_DIR/"
+if [ -f "output/$AGENT_NAME/${AGENT_NAME}-skills.zip" ]; then
+  cp "output/$AGENT_NAME/${AGENT_NAME}-skills.zip" "$BUNDLE_DIR/"
 fi
 
 # Crear el ZIP contenedor (el destino vive fuera del directorio de staging)
@@ -238,7 +238,7 @@ Antes de reportar al usuario, asegurarse de que `output/<nombre-agente>/` está 
 - `metadata.yaml`
 - `<nombre>-opencode-agent.zip`
 - `<nombre>-stratio-cowork.zip`
-- Opcional: `<nombre>-shared-skills.zip` (solo si se crearon nuevas shared skills)
+- Opcional: `<nombre>-skills.zip` (solo si se crearon nuevas shared skills)
 
 **NO debe haber** (lista cerrada — son artefactos prohibidos):
 
@@ -264,7 +264,7 @@ Después de empaquetar exitosamente, reportar:
 3. **Contenido del bundle**: listar los ficheros dentro del ZIP contenedor
 4. **Próximos pasos**:
    - Proceder a la sección 7 (despliegue en Stratio Cowork) — es el siguiente paso del flujo.
-   - Como referencia: el artefacto identificado como unidad desplegable es `<nombre>-stratio-cowork.zip` (el ZIP contenedor). Si en algún momento se necesita una subida manual, ese es el fichero a usar — NO el agent ZIP, ni el shared-skills ZIP, ni la carpeta de trabajo.
+   - Como referencia: el artefacto identificado como unidad desplegable es `<nombre>-stratio-cowork.zip` (el ZIP contenedor). Si en algún momento se necesita una subida manual, ese es el fichero a usar — NO el agent ZIP, ni el ZIP de skills, ni la carpeta de trabajo.
    - Tras el despliegue, configurar servidores MCP desde la interfaz web (si el agente necesita herramientas externas).
    - Probar el agente con los escenarios de uso definidos durante el diseño.
 

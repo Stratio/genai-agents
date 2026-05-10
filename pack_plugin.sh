@@ -162,15 +162,15 @@ fi
 
 # ---------------------------------------------------------------------------
 # Helper — pack a single skill into a destination directory (replicates
-# pack_shared_skills.sh::_pack_one_skill: copy + resolve guides + flatten paths)
+# pack_skills.sh::_pack_one_skill: copy + resolve guides + flatten paths)
 # ---------------------------------------------------------------------------
 _pack_one_skill_into() {
   local skill_name="$1"
   local dest_dir="$2"
 
-  local src="$MONOREPO_ROOT/shared-skills/$skill_name"
+  local src="$MONOREPO_ROOT/skills/$skill_name"
   if [[ ! -d "$src" ]]; then
-    echo "ERROR: skill '$skill_name' not found in shared-skills/" >&2
+    echo "ERROR: skill '$skill_name' not found in skills/" >&2
     return 1
   fi
 
@@ -233,10 +233,10 @@ if [[ "$PLATFORM" == "stratio-cowork" ]]; then
   # 4b. Sub-zip with the explicitly-listed skills (only those NOT already arrastradas
   # by an agent of the plugin). For now — and consistently with the plan — we
   # include exactly what `skills:` declares; if an agent already pulls a skill
-  # via its own `shared-skills` manifest, listing it again here is allowed
+  # via its own `imported-skills` manifest, listing it again here is allowed
   # (idempotent) but the validator could later warn on it.
   if [[ ${#PLUGIN_SKILLS[@]} -gt 0 ]]; then
-    mkdir -p "$STAGING/shared-skills"
+    mkdir -p "$STAGING/skills"
     SKILLS_STAGING=$(mktemp -d "/tmp/pack-plugin-skills-XXXXXX")
     trap '[[ -n "$_LANG_TMPDIR" ]] && rm -rf "$_LANG_TMPDIR"; rm -rf "$STAGING" "$SKILLS_STAGING"' EXIT
     for skill in "${PLUGIN_SKILLS[@]}"; do
@@ -244,7 +244,7 @@ if [[ "$PLATFORM" == "stratio-cowork" ]]; then
     done
     bash "$SCRIPT_DIR/bin/sweep-nonruntime.sh" "$SKILLS_STAGING"
     bash "$SCRIPT_DIR/bin/zip-deterministic.sh" \
-      "$SKILLS_STAGING" "$STAGING/shared-skills/${PLUGIN_NAME}-skills.zip"
+      "$SKILLS_STAGING" "$STAGING/skills/${PLUGIN_NAME}-skills.zip"
     echo "    [4b] ${#PLUGIN_SKILLS[@]} skill(s) packaged into ${PLUGIN_NAME}-skills.zip"
   fi
 
@@ -273,11 +273,11 @@ if agents_dir.is_dir():
             "endpoint": "/v1/agents/bundle/import",
             "sha256": hashlib.sha256(sub.read_bytes()).hexdigest(),
         })
-skills_dir = staging / "shared-skills"
+skills_dir = staging / "skills"
 if skills_dir.is_dir():
     for sub in sorted(skills_dir.glob("*.zip")):
         bundles.append({
-            "path": f"shared-skills/{sub.name}",
+            "path": f"skills/{sub.name}",
             "type": "skills",
             "endpoint": "/v1/agents/skills/bundle/import",
             "sha256": hashlib.sha256(sub.read_bytes()).hexdigest(),

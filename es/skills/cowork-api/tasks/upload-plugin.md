@@ -21,7 +21,7 @@ Esta task no llama a un único endpoint de plugin — reparte los sub-bundles:
 ├── README.md                        # documentación user-facing
 ├── agents/                          # opcional; un sub-zip por agente (agents/v1)
 │   └── {agent}-stratio-cowork.zip
-└── shared-skills/                   # opcional; un sub-zip con bundle de skills
+└── skills/                   # opcional; un sub-zip con bundle de skills
     └── {plugin}-skills.zip
 ```
 

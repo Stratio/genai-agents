@@ -80,23 +80,23 @@ for lang in "${LANGUAGES[@]}"; do
 
   done < "$REPO_ROOT/release-modules"
 
-  # --- Pack shared-skills ---
-  echo "  [shared-skills] Packaging shared skills..."
-  bash "$REPO_ROOT/pack_shared_skills.sh" --name shared-skills "${LANG_ARGS[@]}"
-  if [[ -f "$REPO_ROOT/dist/shared-skills.zip" ]]; then
-    mv "$REPO_ROOT/dist/shared-skills.zip" "$DIST_DIR/shared-skills${LANG_SUFFIX}-${VERSION}.zip"
-    echo "    -> dist/shared-skills${LANG_SUFFIX}-${VERSION}.zip"
+  # --- Pack skills (bulk) ---
+  echo "  [skills] Packaging skills bundle..."
+  bash "$REPO_ROOT/pack_skills.sh" --name skills "${LANG_ARGS[@]}"
+  if [[ -f "$REPO_ROOT/dist/skills.zip" ]]; then
+    mv "$REPO_ROOT/dist/skills.zip" "$DIST_DIR/skills${LANG_SUFFIX}-${VERSION}.zip"
+    echo "    -> dist/skills${LANG_SUFFIX}-${VERSION}.zip"
   fi
 
-  # --- Pack individual shared-skills ---
-  for skill_dir in "$REPO_ROOT/shared-skills"/*/; do
+  # --- Pack individual skills ---
+  for skill_dir in "$REPO_ROOT/skills"/*/; do
     [[ -d "$skill_dir" ]] || continue
     skill_name="$(basename "$skill_dir")"
-    echo "  [shared-skills] Packaging individual skill '$skill_name'..."
-    bash "$REPO_ROOT/pack_shared_skills.sh" --skill "$skill_name" "${LANG_ARGS[@]}"
+    echo "  [skills] Packaging individual skill '$skill_name'..."
+    bash "$REPO_ROOT/pack_skills.sh" --skill "$skill_name" "${LANG_ARGS[@]}"
     if [[ -f "$REPO_ROOT/dist/${skill_name}.zip" ]]; then
-      mv "$REPO_ROOT/dist/${skill_name}.zip" "$DIST_DIR/shared-skill-${skill_name}${LANG_SUFFIX}-${VERSION}.zip"
-      echo "    -> dist/shared-skill-${skill_name}${LANG_SUFFIX}-${VERSION}.zip"
+      mv "$REPO_ROOT/dist/${skill_name}.zip" "$DIST_DIR/skill-${skill_name}${LANG_SUFFIX}-${VERSION}.zip"
+      echo "    -> dist/skill-${skill_name}${LANG_SUFFIX}-${VERSION}.zip"
     fi
   done
 

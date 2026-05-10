@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# pack_shared_skills.sh — Packages the monorepo's shared skills into a self-contained ZIP
-# Usage: bash pack_shared_skills.sh [--name <name>] [--skill <skill-name>] [--lang <code>]
+# pack_skills.sh — Packages the monorepo's shared skills into a self-contained ZIP
+# Usage: bash pack_skills.sh [--name <name>] [--skill <skill-name>] [--lang <code>]
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -20,7 +20,7 @@ while [[ $# -gt 0 ]]; do
     --name) PACK_NAME="$2"; shift 2 ;;
     --skill) SKILL_FILTER="$2"; shift 2 ;;
     --lang) LANG_CODE="$2"; shift 2 ;;
-    *) echo "ERROR: unknown argument: $1" >&2; echo "Usage: bash pack_shared_skills.sh [--name <name>] [--skill <skill-name>] [--lang <code>]" >&2; exit 1 ;;
+    *) echo "ERROR: unknown argument: $1" >&2; echo "Usage: bash pack_skills.sh [--name <name>] [--skill <skill-name>] [--lang <code>]" >&2; exit 1 ;;
   esac
 done
 
@@ -36,23 +36,23 @@ trap '[[ -n "$_LANG_TMPDIR" ]] && rm -rf "$_LANG_TMPDIR"' EXIT
 if [[ -n "$SKILL_FILTER" ]]; then
   PACK_NAME="${PACK_NAME:-$SKILL_FILTER}"
 else
-  PACK_NAME="${PACK_NAME:-shared-skills}"
+  PACK_NAME="${PACK_NAME:-skills}"
 fi
 
-if [[ ! -d "$MONOREPO_ROOT/shared-skills" ]]; then
-  echo "ERROR: shared-skills/ directory not found in $MONOREPO_ROOT" >&2
+if [[ ! -d "$MONOREPO_ROOT/skills" ]]; then
+  echo "ERROR: skills/ directory not found in $MONOREPO_ROOT" >&2
   exit 1
 fi
 
-if [[ -n "$SKILL_FILTER" && ! -d "$MONOREPO_ROOT/shared-skills/$SKILL_FILTER" ]]; then
-  echo "ERROR: skill '$SKILL_FILTER' not found in shared-skills/" >&2
+if [[ -n "$SKILL_FILTER" && ! -d "$MONOREPO_ROOT/skills/$SKILL_FILTER" ]]; then
+  echo "ERROR: skill '$SKILL_FILTER' not found in skills/" >&2
   exit 1
 fi
 
 if [[ -n "$SKILL_FILTER" ]]; then
   echo "==> Packaging individual skill '$SKILL_FILTER' as '$PACK_NAME'"
 else
-  echo "==> Packaging shared skills as '$PACK_NAME'"
+  echo "==> Packaging skills as '$PACK_NAME'"
 fi
 
 # ---------------------------------------------------------------------------
@@ -100,10 +100,10 @@ _pack_one_skill() {
 
 if [[ -n "$SKILL_FILTER" ]]; then
   # Individual mode: files directly at the staging root
-  _pack_one_skill "$MONOREPO_ROOT/shared-skills/$SKILL_FILTER" "$STAGING"
+  _pack_one_skill "$MONOREPO_ROOT/skills/$SKILL_FILTER" "$STAGING"
 else
   # Bulk mode: each skill in its own subfolder
-  for skill_dir in "$MONOREPO_ROOT/shared-skills"/*/; do
+  for skill_dir in "$MONOREPO_ROOT/skills"/*/; do
     [[ -d "$skill_dir" ]] || continue
     skill_name="$(basename "$skill_dir")"
     _pack_one_skill "$skill_dir" "$STAGING/$skill_name"

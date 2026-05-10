@@ -172,14 +172,14 @@ fi
 # ---------------------------------------------------------------------------
 SHARED_GUIDES_NEEDED=()
 
-if [[ -f "$AGENT_ABS/shared-skills" ]]; then
+if [[ -f "$AGENT_ABS/imported-skills" ]]; then
   N_SHARED=0
   while IFS= read -r skill_name || [[ -n "$skill_name" ]]; do
     [[ -z "$skill_name" || "$skill_name" == \#* ]] && continue
-    skill_src="$MONOREPO_ROOT/shared-skills/$skill_name"
+    skill_src="$MONOREPO_ROOT/skills/$skill_name"
     skill_dst="$OUTPUT_DIR/.opencode/skills/$skill_name"
     if [[ ! -d "$skill_src" ]]; then
-      echo "    WARN: shared skill '$skill_name' not found in $skill_src — skipped" >&2
+      echo "    WARN: imported skill '$skill_name' not found in $skill_src — skipped" >&2
       continue
     fi
     if [[ -d "$skill_dst" ]]; then
@@ -211,10 +211,10 @@ if [[ -f "$AGENT_ABS/shared-skills" ]]; then
         SHARED_GUIDES_NEEDED+=("$guide")
       done < "$skill_src/skill-guides"
     fi
-  done < "$AGENT_ABS/shared-skills"
-  echo "    [5.1] $N_SHARED shared skill(s) included"
+  done < "$AGENT_ABS/imported-skills"
+  echo "    [5.1] $N_SHARED imported skill(s) included"
 else
-  echo "    [5.1] No shared-skills declared (continuing without error)"
+  echo "    [5.1] No imported-skills declared (continuing without error)"
 fi
 
 if [[ -f "$AGENT_ABS/shared-guides" ]]; then
@@ -264,7 +264,7 @@ rsync -a \
   --exclude=opencode.json \
   --exclude=cowork-metadata.yaml \
   --exclude=skills/ \
-  --exclude=shared-skills \
+  --exclude=imported-skills \
   --exclude=shared-guides \
   --exclude='pack_*.sh' \
   --exclude=output/ \
@@ -309,17 +309,11 @@ echo "    [7b] Placeholder TOOL_QUESTIONS -> question"
 # puts skills under .opencode/skills/ but the authored content references them
 # as skills/<name>/ (the in-repo path). This rewrite makes bash invocations,
 # sys.path.insert calls, docstrings, and all absolute references resolve in
-# the packaged layout. The regex matches `skills/<kebab-name>/` only when not
-# preceded by an alphanumeric / underscore / dot / slash / hyphen — the hyphen
-# exclusion prevents `shared-skills/<name>/` from being corrupted into
-# `shared-.opencode/skills/<name>/`. Relative md references like
-# `[file.md](file.md)` and python imports `from foo import X` are also safe.
-# `shared-skills/<name>/` → `.opencode/skills/<name>/` is handled by a dedicated
-# pass first so that shared-skills content ships with runnable paths.
-find "$OUTPUT_DIR" \
-  -not -path '*/node_modules/*' -not -path '*/.venv/*' \
-  -type f \( -name '*.md' -o -name '*.json' -o -name '*.sh' -o -name '*.py' -o -name '*.txt' \) \
-  -exec sed -i -E 's#(^|[^a-zA-Z0-9_./])shared-skills/([a-z][a-z0-9-]*)/#\1.opencode/skills/\2/#g' {} \;
+# the packaged layout. The regex matches `skills/<kebab-name>/` when not
+# preceded by an alphanumeric / underscore / dot / slash / hyphen — the
+# hyphen exclusion is defensive (no `<x>-skills/<name>/` patterns ship in
+# the source after the shared-skills/ → skills/ refactor, but the anchor
+# keeps the substitution robust against future composite names).
 find "$OUTPUT_DIR" \
   -not -path '*/node_modules/*' -not -path '*/.venv/*' \
   -type f \( -name '*.md' -o -name '*.json' -o -name '*.sh' -o -name '*.py' -o -name '*.txt' \) \

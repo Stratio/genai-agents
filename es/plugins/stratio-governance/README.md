@@ -19,7 +19,7 @@ Plugin funcional que agrupa los agentes de gobierno del dato del monorepo en una
 
 ## Instalación
 
-El plugin produce `dist/stratio-governance-stratio-cowork-{version}.zip`. Para desplegarlo en un tenant de Stratio Cowork, usa la task `upload-plugin` de la skill compartida [`cowork-api`](../../shared-skills/cowork-api/) — abre el bundle y reparte cada sub-ZIP al endpoint correspondiente de `genai-api`.
+El plugin produce `dist/stratio-governance-stratio-cowork-{version}.zip`. Para desplegarlo en un tenant de Stratio Cowork, usa la task `upload-plugin` de la skill compartida [`cowork-api`](../../skills/cowork-api/) — abre el bundle y reparte cada sub-ZIP al endpoint correspondiente de `genai-api`.
 
 ## Estructura del bundle generado
 

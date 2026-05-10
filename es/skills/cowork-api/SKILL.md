@@ -39,6 +39,6 @@ Para extender esta skill con una nueva operación contra `genai-api`:
 
 1. Crea `tasks/<capacidad>.md` con: cuándo usar, endpoint (método + path + content type), parámetros requeridos y opcionales, comando listo para ejecutar, respuesta esperada, casos de error específicos de ese endpoint.
 2. Añade una entrada en el **Índice de capacidades** de arriba.
-3. Replica ambos ficheros bajo `shared-skills/cowork-api/` (en su versión en inglés, raíz del repo).
+3. Replica ambos ficheros bajo `skills/cowork-api/` (en su versión en inglés, raíz del repo).
 
 El sub-fichero es la fuente de verdad de su capacidad. El índice de arriba solo enruta.

@@ -51,6 +51,6 @@ Todos los scripts son no-interactivos (CI/CD-friendly). Si no se pasa `--name`, 
 | Business Terms | `/manage-business-terms` | Crear Business Terms con relaciones a activos de datos |
 | Colección de datos | `/create-data-collection` | Buscar tablas en el diccionario y crear una nueva colección de datos |
 
-Todas las skills viven en `shared-skills/` en la raíz del monorepo y se comparten con el agente governance-officer.
+Todas las skills viven en `skills/` en la raíz del monorepo y se comparten con el agente governance-officer.
 
 **Nota**: Este agente no usa memoria persistente en ficheros ni genera ficheros en disco — el output principal es interacción con tools MCP + resúmenes en chat.

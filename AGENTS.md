@@ -6,7 +6,7 @@ Monorepo with generative AI agents for business data analysis.
 
 ```
 genai-agents/
-  shared-skills/           # Shared skills across agents (self-contained or nearly so)
+  skills/           # Shared skills across agents (self-contained or nearly so)
     propose-knowledge/
     explore-data/
     stratio-data/
@@ -41,7 +41,7 @@ genai-agents/
     stratio-semantic-layer-tools.md
     quality-exploration.md
   es/                      # Spanish translations (overlay directory, mirrors main tree)
-    shared-skills/
+    skills/
     shared-skill-guides/
     data-analytics/
     semantic-layer/
@@ -50,21 +50,21 @@ genai-agents/
     skill-creator/
     agent-creator/
   data-analytics/          # Full agent (analysis + multi-format reports)
-    shared-skills          # List of shared skills included by this agent
+    imported-skills        # List of skills imported from monorepo skills/
     shared-guides          # List of shared-skill-guides that AGENTS.md references directly
   semantic-layer/          # Semantic layer construction agent
-    shared-skills
+    imported-skills
     shared-guides
   data-quality/            # Data quality agent (assessment, rules, reports)
-    shared-skills
+    imported-skills
     shared-guides
   governance-officer/      # Governance officer: semantic layer + data quality combined
-    shared-skills
+    imported-skills
     shared-guides
   skill-creator/           # Skill creation agent
-    shared-skills
+    imported-skills
   agent-creator/           # Agent creation agent
-    shared-skills
+    imported-skills
   plugins/                 # Functional plugins (verticals): see "Plugins funcionales"
     stratio-governance/    # plugin.yaml + README.md
     stratio-productivity/
@@ -74,12 +74,12 @@ genai-agents/
 ## Development instructions
 
 - Each agent has its own `AGENTS.md` with specific instructions. Always work from the corresponding agent folder
-- Agent-specific skills live in `skills/`; shared skills live in `shared-skills/` (monorepo root)
+- Agent-specific skills live in `<agent>/skills/`; shared skills live in the root-level `skills/` directory
 - Shared guides live in `shared-skill-guides/` (monorepo root); local guides in the agent's `skills-guides/`
-- Each agent declares which shared skills it needs in `shared-skills` (one line per skill) and which direct guides in `shared-guides`
+- Each agent declares which shared skills it imports in `imported-skills` (one line per skill) and which direct guides in `shared-guides`
 - Each shared skill can declare which guides from `shared-skill-guides/` it needs in a `skill-guides` file inside its folder
 - If an agent has a skill in `skills/` with the same name as a shared skill, the local version takes priority
-- Generic packaging script at the monorepo root: `pack_opencode.sh` (any agent), plus `pack_stratio_cowork.sh` (agents/v1 bundles), `pack_shared_skills.sh` (skill ZIPs) and `pack_plugin.sh` (functional plugins)
+- Generic packaging script at the monorepo root: `pack_opencode.sh` (any agent), plus `pack_stratio_cowork.sh` (agents/v1 bundles), `pack_skills.sh` (skill ZIPs) and `pack_plugin.sh` (functional plugins)
 - The root `.gitignore` covers all agents
 
 ## Agent summary
@@ -110,7 +110,7 @@ Generic scripts that work with any agent in the monorepo:
 |--------|--------|--------|
 | `pack_opencode.sh` | OpenCode (developer testing in `~/genai-agents-tests/opencode/`) | `{agent}/dist/[{lang}/]opencode/{name}/` |
 | `pack_stratio_cowork.sh` | Stratio Cowork (`agents/v1` deployable bundle) | `dist/{name}-stratio-cowork.zip` |
-| `pack_shared_skills.sh` | All — bulk shared-skills ZIP and individual skill ZIPs | `dist/shared-skills.zip` or `dist/{skill}.zip` |
+| `pack_skills.sh` | All — bulk skills ZIP and individual skill ZIPs | `dist/skills.zip` or `dist/{skill}.zip` |
 | `pack_plugin.sh` | Functional plugins (`stratio-cowork` wrapper or `claude` marketplace) | `dist/{plugin}-{platform}.zip` |
 
 Usage: `bash pack_opencode.sh --agent <agent-path> [--name <kebab-case-name>] [--lang <code>]`
@@ -135,7 +135,7 @@ To add a new test skill for another agent, copy one of the existing folders unde
 
 ### Reference rules
 
-Shared-skills **should** stay self-contained when practical — most SKILL.md files in `shared-skills/` do not reference another shared-skill by name, so they can be packaged standalone and consumed in isolation by third-party agents. This is the preferred default.
+Shared-skills **should** stay self-contained when practical — most SKILL.md files in `skills/` do not reference another shared-skill by name, so they can be packaged standalone and consumed in isolation by third-party agents. This is the preferred default.
 
 Cross-referencing other shared-skills by name from inside a shared SKILL.md is **permitted** when the skill's workflow genuinely depends on delegating to others and inlining their logic would duplicate thousands of lines. Examples already in the repo:
 
@@ -145,7 +145,7 @@ Cross-referencing other shared-skills by name from inside a shared SKILL.md is *
 
 **Trade-off**: a cross-referencing shared-skill is not perfectly self-contained anymore. It is no longer safe to package standalone — at runtime it needs the skills it names. Two consequences:
 
-1. Any agent that declares a cross-referencing shared-skill in its `shared-skills` manifest must also declare the skills it depends on. Without that, the references inside the SKILL.md point to skills the agent cannot load.
+1. Any agent that declares a cross-referencing shared-skill in its `imported-skills` manifest must also declare the skills it depends on. Without that, the references inside the SKILL.md point to skills the agent cannot load.
 2. The skill's own `README.md` documents the dependency explicitly, so the next developer (or agent author) knows what to bundle.
 
 A chat-oriented agent may intentionally omit some of the dependent skills — in that case the cross-referencing skill should detect the absence at the beginning of its workflow and restrict itself to the features that do not require the missing skills (e.g. offering only the Chat format). This "graceful degradation" is a valid configuration and should be stated in both the skill's SKILL.md (pre-check) and the host agent's AGENTS.md.
@@ -160,20 +160,20 @@ Three shared skills cover the visual output of the monorepo. They share the guid
 - `canvas-craft` — single-page static artifacts (PDF/PNG). Posters, covers, certificates, marketing one-pagers, infographics. Ships a small set of OFL display fonts.
 - `pdf-writer` — multi-page typographic documents or prose-dominated single pages. Analytical reports, invoices, contracts, zines.
 
-Agents that produce visual output declare the family members they need in `<agent>/shared-skills` and add `visual-craftsmanship.md` to `<agent>/shared-guides`. `data-analytics`, `governance-officer` and `data-quality` all declare the full family (pdf-writer, docx-writer, pptx-writer, web-craft, canvas-craft) so they can offer every output format through both the analytical pipeline and `quality-report`.
+Agents that produce visual output declare the family members they need in `<agent>/imported-skills` and add `visual-craftsmanship.md` to `<agent>/shared-guides`. `data-analytics`, `governance-officer` and `data-quality` all declare the full family (pdf-writer, docx-writer, pptx-writer, web-craft, canvas-craft) so they can offer every output format through both the analytical pipeline and `quality-report`.
 
 ### Brand-kit / centralized theming
 
-`brand-kit` is the shared skill that centralizes visual identity tokens (colors, typography, chart palettes, sizes, tone). It ships ten curated themes and is extensible — clients add their own themes directly inside the skill or provide an alternative theming skill. Agents that generate visual deliverables declare `brand-kit` in `<agent>/shared-skills`.
+`brand-kit` is the shared skill that centralizes visual identity tokens (colors, typography, chart palettes, sizes, tone). It ships ten curated themes and is extensible — clients add their own themes directly inside the skill or provide an alternative theming skill. Agents that generate visual deliverables declare `brand-kit` in `<agent>/imported-skills`.
 
 Output skills (`docx-writer`, `pptx-writer`, `pdf-writer`, `xlsx-writer`, `web-craft`, `canvas-craft`) reference the concept "centralized theming skill" **generically**, not by name — they never mention `brand-kit` literally. This keeps self-containment intact: a client can substitute `brand-kit` with their own skill without editing any output skill, and a standalone pack of (for example) `docx-writer` or `xlsx-writer` still works by improvising tokens from `visual-craftsmanship.md`.
 
 ### Creating a shared skill
 
-1. Create `shared-skills/<name>/SKILL.md` with the skill content (in English)
-2. Create the Spanish translation at `es/shared-skills/<name>/SKILL.md`
-3. If the skill needs external guides, create the files in `shared-skill-guides/` (with their counterparts in `es/shared-skill-guides/`) and list them in `shared-skills/<name>/skill-guides` (plain text, one line per file)
-4. Declare the skill in the agents that use it by adding its name to the `<agent>/shared-skills` file
+1. Create `skills/<name>/SKILL.md` with the skill content (in English)
+2. Create the Spanish translation at `es/skills/<name>/SKILL.md`
+3. If the skill needs external guides, create the files in `shared-skill-guides/` (with their counterparts in `es/shared-skill-guides/`) and list them in `skills/<name>/skill-guides` (plain text, one line per file)
+4. Declare the skill in the agents that use it by adding its name to the `<agent>/imported-skills` file
 5. If the agent's AGENTS.md references the guide directly, also add it to `<agent>/shared-guides`
 
 **SKILL.md content rules:**
@@ -193,11 +193,11 @@ Output skills (`docx-writer`, `pptx-writer`, `pdf-writer`, `xlsx-writer`, `web-c
 - File must be named exactly `SKILL.md` (case-sensitive); frontmatter must be valid YAML between `---` markers
 - Soft recommendation: SKILL.md body under ~500 lines (Anthropic best practice — beyond that, extract to supporting files)
 
-The `pack_opencode.sh` script re-validates `description` length in its integrity-check phase and aborts with a clear error if any `SKILL.md` exceeds 1024 chars. Use the `skill-creator` shared-skill (`shared-skills/skill-creator/SKILL.md`) as the authoring guide — it covers anatomy, progressive disclosure, writing patterns, and the full quality checklist.
+The `pack_opencode.sh` script re-validates `description` length in its integrity-check phase and aborts with a clear error if any `SKILL.md` exceeds 1024 chars. Use the `skill-creator` shared-skill (`skills/skill-creator/SKILL.md`) as the authoring guide — it covers anatomy, progressive disclosure, writing patterns, and the full quality checklist.
 
 ### Using a shared skill in an agent
 
-Add the skill name to the `<agent>/shared-skills` file (one line per skill). If AGENTS.md directly references any guide from `shared-skill-guides/`, add it to `<agent>/shared-guides`. All pack scripts read these manifests automatically.
+Add the skill name to the `<agent>/imported-skills` file (one line per skill). If AGENTS.md directly references any guide from `shared-skill-guides/`, add it to `<agent>/shared-guides`. All pack scripts read these manifests automatically.
 
 If the agent already has a skill in `skills/` with the same name, the local version takes priority and the shared one is skipped.
 
@@ -229,7 +229,7 @@ tags:                         # optional list of strings
 contents:
   agents:                     # optional — names of agent directories at the monorepo root
     - <agent-name>
-  skills:                     # optional — names of shared skills (under shared-skills/<name>/)
+  skills:                     # optional — names of shared skills (under skills/<name>/)
     - <skill-name>
 mcps:                         # optional — ONLY in skills-only plugins (no agents declared)
   - <MCP_NAME>                # surfaced in the README; phase 2 will use it server-side
@@ -238,7 +238,7 @@ platforms:                    # optional — defaults derived from contents
   - claude
 ```
 
-The field is named `skills:` (not `shared_skills:`) to anticipate the upcoming rename of `shared-skills/` → `skills/`. The builder maps `skills:` to the actual directory regardless of its current name.
+The field is named `skills:` (not `shared_skills:`) to anticipate the upcoming rename of `skills/` → `skills/`. The builder maps `skills:` to the actual directory regardless of its current name.
 
 ### Validation rules (`bin/validate-plugins.py`)
 
@@ -246,7 +246,7 @@ The field is named `skills:` (not `shared_skills:`) to anticipate the upcoming r
 - `description` is required and ≤1024 chars.
 - At least one of `agents:` / `skills:` must be non-empty.
 - Every `agents:` entry must be a top-level directory with `AGENTS.md`.
-- Every `skills:` entry must exist as `shared-skills/<name>/SKILL.md`.
+- Every `skills:` entry must exist as `skills/<name>/SKILL.md`.
 - `mcps:` is only allowed in skills-only plugins (declaring it together with `agents:` is a fatal error).
 - `claude` in `platforms:` together with non-empty `agents:` is a fatal error — Claude does not support agents in plugins. The validator emits a clear message.
 - `mcps:` entries that don't appear in any `<agent>/mcps` file in the monorepo emit a warning (likely typo).
@@ -274,14 +274,14 @@ If a plugin's effective platforms exclude the requested target, `pack_plugin.sh`
 
 `pack_plugin.sh --plugin <name> --platform {stratio-cowork|claude} [--version <semver>] [--lang <code>]` produces, in `<repo_root>/dist/`:
 
-- `<plugin>-stratio-cowork.zip` — wrapper containing `plugin.yaml` (with `bundles[]` catalogue and SHA-256s), `README.md`, `agents/<agent>-stratio-cowork.zip` (one per agent, regenerated by reusing `pack_stratio_cowork.sh`), and optionally `shared-skills/<plugin>-skills.zip` (one bundle with the explicitly-listed skills).
-- `<plugin>-claude.zip` — `.claude-plugin/plugin.json` derived from `plugin.yaml`, `README.md`, and `skills/<skill>/` for every skill in `skills:` (with their guides resolved like `pack_shared_skills.sh` does).
+- `<plugin>-stratio-cowork.zip` — wrapper containing `plugin.yaml` (with `bundles[]` catalogue and SHA-256s), `README.md`, `agents/<agent>-stratio-cowork.zip` (one per agent, regenerated by reusing `pack_stratio_cowork.sh`), and optionally `skills/<plugin>-skills.zip` (one bundle with the explicitly-listed skills).
+- `<plugin>-claude.zip` — `.claude-plugin/plugin.json` derived from `plugin.yaml`, `README.md`, and `skills/<skill>/` for every skill in `skills:` (with their guides resolved like `pack_skills.sh` does).
 
 `bin/package.sh` runs `pack_plugin.sh` after the per-agent pass for each language, then renames the unsuffixed output to `dist/<plugin>-<platform>[-<lang>]-<version>.zip`.
 
 ### How a plugin is deployed (Stratio Cowork)
 
-The deployment is orchestrated by the `upload-plugin` task of the [`cowork-api`](shared-skills/cowork-api/) shared skill. It opens the wrapper, reads `plugin.yaml`, validates SHA-256 per sub-bundle, and dispatches each one to the matching `genai-api` endpoint. The aggregated report covers all sub-bundles. Atomicity is best-effort in phase 1 (no server-side rollback); the future `plugins/v1` API will improve this.
+The deployment is orchestrated by the `upload-plugin` task of the [`cowork-api`](skills/cowork-api/) shared skill. It opens the wrapper, reads `plugin.yaml`, validates SHA-256 per sub-bundle, and dispatches each one to the matching `genai-api` endpoint. The aggregated report covers all sub-bundles. Atomicity is best-effort in phase 1 (no server-side rollback); the future `plugins/v1` API will improve this.
 
 ### Adding a new plugin
 
@@ -299,8 +299,8 @@ The monorepo supports multiple languages. **English is the primary language** �
 
 ```
 genai-agents/
-  shared-skills/explore-data/SKILL.md          # English (primary)
-  es/shared-skills/explore-data/SKILL.md        # Spanish (overlay)
+  skills/explore-data/SKILL.md          # English (primary)
+  es/skills/explore-data/SKILL.md        # Spanish (overlay)
   data-analytics/AGENTS.md                      # English
   es/data-analytics/AGENTS.md                   # Spanish
 ```
@@ -309,7 +309,7 @@ Supported languages are listed in the `languages` file at the monorepo root.
 
 **What gets translated:** `AGENTS.md`, `SKILL.md`, sub-guides (`*.md` inside `skills/`), `skills-guides/*.md`, `shared-skill-guides/*.md`, `USER_README.md`, `README.md` (including `plugins/<name>/README.md`), `cowork-metadata.yaml`, `templates/memory/*.md`.
 
-**What stays language-neutral (not translated):** Python code, HTML templates, CSS, shell scripts, JSON configs (`.mcp.json`, `opencode.json`), manifests (`shared-skills`, `shared-guides`, `skill-guides`, `plugin.yaml`), `Makefile`, `Jenkinsfile`, `VERSION`.
+**What stays language-neutral (not translated):** Python code, HTML templates, CSS, shell scripts, JSON configs (`.mcp.json`, `opencode.json`), manifests (`imported-skills`, `shared-guides`, `skill-guides`, `plugin.yaml`), `Makefile`, `Jenkinsfile`, `VERSION`.
 
 **Skill and folder names are technical identifiers** — they stay in English regardless of language (`explore-data`, not `explorar-datos`).
 
@@ -358,7 +358,7 @@ The complete creation guide is in `README.md` (section "Creating a new agent"). 
    - `AGENTS.md` — role, workflow, agent rules
    - `opencode.json` — MCPs and permissions for OpenCode (if it uses OpenCode)
    - `skills/` — optional; if the agent has its own skills, canonical format `skills/<name>/SKILL.md`
-   - `shared-skills` — optional; list of shared skills from the monorepo to include (one line per skill)
+   - `imported-skills` — optional; list of shared skills from the monorepo to include (one line per skill)
    - `shared-guides` — optional; list of shared-skill-guides that AGENTS.md references directly
 2. Add `my-agent` to the `release-modules` file (one line per agent) so that `make package` includes it
 3. Update the agents table in `README.md`

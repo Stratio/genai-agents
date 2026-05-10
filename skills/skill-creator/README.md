@@ -15,7 +15,7 @@ Complete reference for designing and writing high-quality agent skills (SKILL.md
 ## When to use it
 
 - The user wants to create a new skill, refactor an existing one, or review a skill written elsewhere.
-- Before adding a skill to `shared-skills/` or an agent's `skills/` folder — the checklist catches most portability bugs (direct `AGENTS.md` references, platform-specific paths, vague descriptions).
+- Before adding a skill to `skills/` or an agent's `skills/` folder — the checklist catches most portability bugs (direct `AGENTS.md` references, platform-specific paths, vague descriptions).
 - When improving a skill that is failing to activate (usually a description problem) or loading too much context (usually a body-length problem).
 
 ## Dependencies

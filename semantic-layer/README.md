@@ -25,7 +25,7 @@ This agent runs read-only data queries (`query_data`, `generate_sql`, `execute_s
 
 ### System and Python dependencies
 
-This agent does not ship a `requirements.txt` of its own because its primary output is MCP interaction, not file generation. However, it declares the shared skills `docx-reader` and `pptx-reader` (in `shared-skills`) so that planning can ingest DOCX specifications and PPTX decks. Those skills require:
+This agent does not ship a `requirements.txt` of its own because its primary output is MCP interaction, not file generation. However, it declares the shared skills `docx-reader` and `pptx-reader` (in `imported-skills`) so that planning can ingest DOCX specifications and PPTX decks. Those skills require:
 
 - Python: `python-docx`, `python-pptx`, `lxml`
 - System: `pandoc` (DOCX extraction, including tracked changes), `libreoffice-*-nogui` (legacy `.doc`/`.ppt` conversion and preview rasterization), `poppler-utils` (rasterization)
@@ -60,6 +60,6 @@ All scripts are non-interactive (CI/CD-friendly). If `--name` is not provided, t
 | Business Terms | `/manage-business-terms` | Create Business Terms with relationships to data assets |
 | Data collection | `/create-data-collection` | Search tables in the dictionary and create a new data collection |
 
-All skills live in `shared-skills/` at the monorepo root and are shared with the governance-officer agent.
+All skills live in `skills/` at the monorepo root and are shared with the governance-officer agent.
 
 **Note**: This agent does not use persistent memory in files nor generates files on disk — the main output is interaction with MCP tools + summaries in chat.

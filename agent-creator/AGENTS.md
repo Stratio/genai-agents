@@ -90,7 +90,7 @@ Based on the confirmed requirements, design:
 3. **Skill map**: for each skill the agent needs, classify it as:
    - **Existing Stratio Cowork platform skill**: referenced by name in AGENTS.md only when the user explicitly named it in Phase 1 question 6. Not included in any ZIP — the Stratio Cowork platform (NOT your host runtime) provides it at runtime. **Skills loaded in your host runtime (OpenCode) are NEVER candidates here.**
    - **New internal skill**: specific to this agent. Will be created in Phase 4 and packaged inside the agent ZIP at `.opencode/skills/`
-   - **New shared skill**: the user wants it reusable by other agents. Will be created in Phase 4 and packaged in a separate shared-skills ZIP
+   - **New shared skill**: the user wants it reusable by other agents. Will be created in Phase 4 and packaged in a separate skills ZIP
 
    **Default = empty skill map.** Many agents need no skills at all (their workflow is a few inline phases). Only populate the skill map with what the user explicitly requested or what the workflow genuinely requires (and the user agreed to).
 4. **Communication style and interaction rules**: language, autonomy level, conventions
@@ -165,7 +165,7 @@ For each skill identified in the design:
 
 **C. New shared skills:**
 - Delegate to the `/skill-creator` skill for the full creation workflow.
-- Move the result to `output/{agent-name}/_shared-skills/{skill-name}/`
+- Move the result to `output/{agent-name}/_skills/{skill-name}/`
 - These will be packaged in a separate ZIP in Phase 7.
 
 **Re-entry**: If during skill creation the user realizes the architecture needs changes (e.g., "let's split this skill in two", "we need another phase"), go back to Phase 2 to adjust the design, update AGENTS.md in Phase 3, then continue with remaining skills.
@@ -223,7 +223,7 @@ Load the `/agent-packager` skill for detailed packaging instructions.
 
 Generate the Stratio Cowork `agents/v1` bundle and deploy it:
 1. Create `{name}-opencode-agent.zip` with the agent files (AGENTS.md, README.md, opencode.json, .opencode/skills/, and any additional agent files)
-2. If there are new shared skills, create `{name}-shared-skills.zip` with `{skill-name}/SKILL.md` for each
+2. If there are new shared skills, create `{name}-skills.zip` with `{skill-name}/SKILL.md` for each
 3. Generate `metadata.yaml` with `format_version: "agents/v1"`, `name`, `agent_zip`, `skills_zip` (if applicable), and `description`
 4. Create the container ZIP: `output/{agent-name}/{name}-stratio-cowork.zip`
 5. Verify integrity and report packaging result to the user: file path, size, bundle contents
@@ -246,7 +246,7 @@ Quick reference for the `agents/v1` bundle format — full detail in the `/agent
 {name}-stratio-cowork.zip              # Container ZIP
   metadata.yaml                        # agents/v1 manifest
   {name}-opencode-agent.zip            # Agent without shared skills
-  {name}-shared-skills.zip             # Shared skills (optional)
+  {name}-skills.zip                    # Imported skills (optional)
 ```
 
 ## 5. User Interaction

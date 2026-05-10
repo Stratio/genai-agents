@@ -3,7 +3,8 @@
 # their counterpart in each language directory declared in 'languages'.
 #
 # Translatable files: AGENTS.md, SKILL.md, USER_README.md, README.md (agents),
-#   cowork-metadata.yaml, *.md in skills/*/ and skills-guides/, shared-skill-guides/,
+#   cowork-metadata.yaml, *.md in skills/*/ and skills-guides/, shared-skill-guides/
+#   (the root skills/ and shared-skill-guides/ dirs are scanned below),
 #   templates/memory/
 #
 # Usage: bin/check-translations.sh [--lang <code>]
@@ -91,9 +92,9 @@ if [[ -f "$MODULES_FILE" ]]; then
   done < "$MODULES_FILE"
 fi
 
-# Shared skills
-if [[ -d "$REPO_ROOT/shared-skills" ]]; then
-  for skill_dir in "$REPO_ROOT/shared-skills"/*/; do
+# Shared skills (root-level skills/ directory)
+if [[ -d "$REPO_ROOT/skills" ]]; then
+  for skill_dir in "$REPO_ROOT/skills"/*/; do
     [[ ! -d "$skill_dir" ]] && continue
     while IFS= read -r md_file; do
       TRANSLATABLE+=("$md_file")

@@ -479,7 +479,7 @@ If the user confirms, asks for an alternative, or continues with unrelated conte
 
 ### 9.4 Standard coverage output structure
 
-This is the quick-reference for the canonical six sections of the quality report. The full layout contract (iconography, KPI cards, per-format composition, deterministic rules) lives in `shared-skills/quality-report/quality-report-layout.md`.
+This is the quick-reference for the canonical six sections of the quality report. The full layout contract (iconography, KPI cards, per-format composition, deterministic rules) lives in `/quality-report`'s `quality-report-layout.md`.
 
 1. Executive summary: tables analyzed, estimated coverage, identified gaps, rules breakdown.
 2. Coverage table: table × dimension (covered / gap / partial).

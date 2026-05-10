@@ -388,7 +388,7 @@ Then offer to export the gap inventory (chat summary or Markdown) so the user ca
 
 Quality reports follow the same format→skill contract as analytical deliverables (§8). The `/quality-report` skill composes the canonical six-section structure (Executive summary → Coverage → Rules → Gaps → Recommendations) and delegates the file generation to the matching writer skill. Format options are the same seven as for analytical deliverables (Chat, PDF, DOCX, PPTX, Dashboard web, Web article/Narrative report, Poster/Infographic); the agent offers the ones whose writer skill it declares.
 
-See `shared-skills/quality-report/quality-report-layout.md` for the report-specific layout (canonical sections, KPI cards, iconography, per-format composition, deterministic rules for audit). The writer skills consume this guide alongside `analytical-dashboard.md` (for Dashboard web).
+See `/quality-report`'s `quality-report-layout.md` for the report-specific layout (canonical sections, KPI cards, iconography, per-format composition, deterministic rules for audit). The writer skills consume this guide alongside `analytical-dashboard.md` (for Dashboard web).
 
 ---
 

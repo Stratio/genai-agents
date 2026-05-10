@@ -28,7 +28,7 @@ El ZIP contenedor debe seguir el formato documentado en la skill `agent-packager
 {name}-stratio-cowork.zip
 ├── metadata.yaml                         # requerido, format_version: "agents/v1"
 ├── {name}-opencode-agent.zip             # requerido, ficheros del agente
-└── {name}-shared-skills.zip              # opcional, solo si hay shared skills
+└── {name}-skills.zip              # opcional, solo si hay shared skills
 ```
 
 `metadata.yaml` declara `format_version: "agents/v1"`, `name`, `agent_zip`, `skills_zip` opcional y `description`. El servidor lee `name` de ahí.

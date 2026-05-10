@@ -401,8 +401,8 @@ Brand tokens applied via the branding cascade of the host agent.
 ## 9. Quality-coverage workbook composition
 
 When this skill is invoked from the `quality-report` orchestrator for
-the XLSX format, follow the multi-sheet contract in
-`shared-skills/quality-report/quality-report-layout.md §6.6`. Summary:
+the XLSX format, follow the multi-sheet contract in `/quality-report`'s
+`quality-report-layout.md §6.6`. Summary:
 
 1. **Cover** — title, domain, scope, generation date, 4-cell KPI band
    (Coverage %, Rules OK %, Critical gaps, Rules created this session).

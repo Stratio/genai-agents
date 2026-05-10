@@ -62,7 +62,7 @@ Los pack scripts solo son necesarios para distribuir el agente fuera del reposit
 | Artefacto web | `/web-craft` | **shared** | HTML interactivo standalone: dashboards, componentes UI, landing pages |
 | Tokens de marca | `/brand-kit` | **shared** | Catálogo centralizado de temas de identidad visual (colores, tipografía, paletas de gráficos). Se invoca antes de cualquier entregable visual. Ver AGENTS.md §8.3 para la cascada de decisión |
 
-Las skills marcadas como **shared** viven en `shared-skills/` en la raíz del monorepo y se comparten con otros agentes. Las locales viven en `skills/` de este agente.
+Las skills marcadas como **shared** viven en `skills/` en la raíz del monorepo y se comparten con otros agentes. Las locales viven en `skills/` de este agente.
 
 ## Herramientas de generación
 

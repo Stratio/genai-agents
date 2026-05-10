@@ -39,6 +39,6 @@ To extend this skill with a new operation against `genai-api`:
 
 1. Create `tasks/<capability>.md` with: when to use, endpoint (method + path + content type), required and optional parameters, ready-to-run command, expected response, error cases specific to this endpoint.
 2. Add an entry to the **Capability index** above.
-3. Mirror both files under `es/shared-skills/cowork-api/`.
+3. Mirror both files under `es/skills/cowork-api/`.
 
 The sub-file is the source of truth for its capability. The index above is just routing.

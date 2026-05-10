@@ -388,7 +388,7 @@ Después, ofrecer exportar el inventario de gaps (resumen en chat o Markdown) pa
 
 Los informes de calidad siguen el mismo contrato formato→skill que los entregables analíticos (§8). La skill `/quality-report` compone la estructura canónica de seis secciones (Resumen ejecutivo → Cobertura → Reglas → Gaps → Recomendaciones) y delega la generación del fichero a la writer skill correspondiente. Las opciones de formato son las mismas siete que para entregables analíticos (Chat, PDF, DOCX, PPTX, Dashboard web, Informe web/Artículo web, Póster/Infografía); el agente ofrece las que tenga declaradas.
 
-Ver `shared-skills/quality-report/quality-report-layout.md` para el layout específico del informe (secciones canónicas, KPI cards, iconografía, composición por formato, reglas deterministas para auditoría). Las writer skills consumen esta guía junto a `analytical-dashboard.md` (para Dashboard web).
+Ver el `quality-report-layout.md` de `/quality-report` para el layout específico del informe (secciones canónicas, KPI cards, iconografía, composición por formato, reglas deterministas para auditoría). Las writer skills consumen esta guía junto a `analytical-dashboard.md` (para Dashboard web).
 
 ---
 

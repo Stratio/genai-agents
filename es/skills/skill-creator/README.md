@@ -15,7 +15,7 @@ Referencia completa para diseñar y escribir skills de agente de alta calidad (f
 ## Cuándo usarla
 
 - El usuario quiere crear una skill nueva, refactorizar una existente o revisar una skill escrita en otro sitio.
-- Antes de añadir una skill a `shared-skills/` o a la carpeta `skills/` de un agente — el checklist detecta la mayoría de bugs de portabilidad (referencias directas a `AGENTS.md`, rutas específicas de plataforma, descripciones vagas).
+- Antes de añadir una skill a `skills/` o a la carpeta `skills/` de un agente — el checklist detecta la mayoría de bugs de portabilidad (referencias directas a `AGENTS.md`, rutas específicas de plataforma, descripciones vagas).
 - Al mejorar una skill que no se activa (suele ser problema de descripción) o que carga demasiado contexto (suele ser problema de longitud del body).
 
 ## Dependencias

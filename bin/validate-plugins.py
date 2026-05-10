@@ -25,7 +25,7 @@ except ImportError:
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 PLUGINS_DIR = REPO_ROOT / "plugins"
-SHARED_SKILLS_DIR = REPO_ROOT / "shared-skills"
+SKILLS_DIR = REPO_ROOT / "skills"
 
 KEBAB_RE = re.compile(r"^[a-z][a-z0-9]*(-[a-z0-9]+)*$")
 SEMVER_RE = re.compile(r"^\d+\.\d+\.\d+(-[A-Za-z0-9.-]+)?$")
@@ -57,7 +57,7 @@ def _agent_exists(name: str) -> bool:
 
 
 def _skill_exists(name: str) -> bool:
-    return (SHARED_SKILLS_DIR / name / "SKILL.md").is_file()
+    return (SKILLS_DIR / name / "SKILL.md").is_file()
 
 
 def _collect_known_mcps() -> set[str]:
@@ -158,7 +158,7 @@ def _validate_plugin(plugin_dir: Path, known_mcps: set[str]) -> list[Issue]:
             err(f"agent '{agent}' not found in monorepo (expected directory with AGENTS.md)")
     for skill in skills:
         if not _skill_exists(skill):
-            err(f"skill '{skill}' not found at shared-skills/{skill}/SKILL.md")
+            err(f"skill '{skill}' not found at skills/{skill}/SKILL.md")
 
     # mcps (optional, only in skills-only plugins)
     mcps = data.get("mcps")

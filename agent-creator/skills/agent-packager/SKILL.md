@@ -16,7 +16,7 @@ A Stratio Cowork bundle is a ZIP file containing:
 {name}-stratio-cowork.zip              # Container ZIP
   metadata.yaml                        # Bundle manifest (agents/v1)
   {name}-opencode-agent.zip            # Agent files (without shared skills)
-  {name}-shared-skills.zip             # Shared skills (optional, only if new shared skills exist)
+  {name}-skills.zip             # Shared skills (optional, only if new shared skills exist)
 ```
 
 ## 2. Generate the Agent ZIP
@@ -42,8 +42,8 @@ All staging during packaging happens under `output/<agent-name>/.pack-staging/` 
 ### Files to NOT include
 
 - `cowork-metadata.yaml` — description goes directly in `metadata.yaml`
-- `shared-skills` manifest — shared skill references go in `metadata.yaml`
-- `_shared-skills/` directory — these go in the separate shared-skills ZIP
+- `imported-skills` manifest — shared skill references go in `metadata.yaml`
+- `_skills/` directory — these go in the separate skills ZIP
 - Temporary files, build artifacts, `dist/`, `.git/`
 
 ### Commands
@@ -102,10 +102,10 @@ If any SKILL.md references `skills-guides/filename.md`, and the guide file is em
 
 ```bash
 AGENT_NAME="{name}"
-SHARED_DIR="output/$AGENT_NAME/_shared-skills"
+SHARED_DIR="output/$AGENT_NAME/_skills"
 
 if [ -d "$SHARED_DIR" ] && [ "$(ls -A "$SHARED_DIR")" ]; then
-  (cd "$SHARED_DIR" && zip -r "$OLDPWD/output/$AGENT_NAME/${AGENT_NAME}-shared-skills.zip" .)
+  (cd "$SHARED_DIR" && zip -r "$OLDPWD/output/$AGENT_NAME/${AGENT_NAME}-skills.zip" .)
 fi
 ```
 
@@ -135,7 +135,7 @@ The manifest describes the bundle contents.
 format_version: "agents/v1"
 name: "my-agent"
 agent_zip: "my-agent-opencode-agent.zip"
-skills_zip: "my-agent-shared-skills.zip"
+skills_zip: "my-agent-skills.zip"
 description: "Expert agent for analyzing data quality coverage and creating quality rules."
 ```
 
@@ -162,8 +162,8 @@ agent_zip: "${AGENT_NAME}-opencode-agent.zip"
 EOF
 
 # Add skills_zip only if shared skills exist
-if [ -f "output/$AGENT_NAME/${AGENT_NAME}-shared-skills.zip" ]; then
-  echo "skills_zip: \"${AGENT_NAME}-shared-skills.zip\"" >> "$METADATA"
+if [ -f "output/$AGENT_NAME/${AGENT_NAME}-skills.zip" ]; then
+  echo "skills_zip: \"${AGENT_NAME}-skills.zip\"" >> "$METADATA"
 fi
 
 echo "description: \"$DESCRIPTION\"" >> "$METADATA"
@@ -183,8 +183,8 @@ cp "output/$AGENT_NAME/metadata.yaml"                       "$BUNDLE_DIR/"
 cp "output/$AGENT_NAME/${AGENT_NAME}-opencode-agent.zip"    "$BUNDLE_DIR/"
 
 # Include shared skills ZIP only if it exists
-if [ -f "output/$AGENT_NAME/${AGENT_NAME}-shared-skills.zip" ]; then
-  cp "output/$AGENT_NAME/${AGENT_NAME}-shared-skills.zip" "$BUNDLE_DIR/"
+if [ -f "output/$AGENT_NAME/${AGENT_NAME}-skills.zip" ]; then
+  cp "output/$AGENT_NAME/${AGENT_NAME}-skills.zip" "$BUNDLE_DIR/"
 fi
 
 # Create the container ZIP (destination lives outside the staging dir)
@@ -238,7 +238,7 @@ Before reporting to the user, ensure `output/<agent-name>/` is in a clean state.
 - `metadata.yaml`
 - `<name>-opencode-agent.zip`
 - `<name>-stratio-cowork.zip`
-- Optional: `<name>-shared-skills.zip` (only if new shared skills were created)
+- Optional: `<name>-skills.zip` (only if new shared skills were created)
 
 **Must NOT be present** (this is a closed list — these are forbidden artefacts):
 
@@ -264,7 +264,7 @@ After successful packaging, report:
 3. **Bundle contents**: list the files inside the container ZIP
 4. **Next steps**:
    - Proceed to section 7 (deployment to Stratio Cowork) — that is the next step of the workflow.
-   - For reference: the artifact identified as the deployable unit is `<name>-stratio-cowork.zip` (the container ZIP). If a manual upload is ever needed, that is the file to use — do NOT use the agent ZIP, the shared-skills ZIP, or the workdir folder.
+   - For reference: the artifact identified as the deployable unit is `<name>-stratio-cowork.zip` (the container ZIP). If a manual upload is ever needed, that is the file to use — do NOT use the agent ZIP, the skills ZIP, or the workdir folder.
    - After deployment, configure MCP servers from the web interface (if the agent needs external tools).
    - Test the agent with the usage scenarios defined during design.
 
