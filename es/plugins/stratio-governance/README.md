@@ -6,9 +6,9 @@ Plugin funcional que agrupa los agentes de gobierno del dato del monorepo en una
 
 | Agente | Rol |
 |---|---|
-| [governance-officer](../../governance-officer/) | Gobierno integral: construye y mantiene capas semánticas Y gestiona calidad del dato, además de reporting en PDF/DOCX/PPTX/XLSX/web/poster/markdown. |
-| [data-quality](../../data-quality/) | Evaluación de calidad, creación de reglas con aprobación humana obligatoria, scheduling y reportes de cobertura en múltiples formatos. |
-| [semantic-layer](../../semantic-layer/) | Construcción de la capa semántica: colecciones de datos, términos técnicos, ontologías, vistas de negocio, mappings SQL y publicación de términos. |
+| [governance-officer](../../agents/governance-officer/) | Gobierno integral: construye y mantiene capas semánticas Y gestiona calidad del dato, además de reporting en PDF/DOCX/PPTX/XLSX/web/poster/markdown. |
+| [data-quality](../../agents/data-quality/) | Evaluación de calidad, creación de reglas con aprobación humana obligatoria, scheduling y reportes de cobertura en múltiples formatos. |
+| [semantic-layer](../../agents/semantic-layer/) | Construcción de la capa semántica: colecciones de datos, términos técnicos, ontologías, vistas de negocio, mappings SQL y publicación de términos. |
 
 ## Plataformas soportadas
 
