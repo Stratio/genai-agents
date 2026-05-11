@@ -23,7 +23,7 @@ En Stratio Cowork la imagen del sandbox (`genai-agents-sandbox`) provee todo lo 
 
 ## Guides compartidos
 
-- `visual-craftsmanship.md` (declarado en `skill-guides`)
+- `visual-craftsmanship.md` (declarado en `guides`)
 
 ## MCPs
 

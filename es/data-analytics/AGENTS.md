@@ -353,7 +353,7 @@ Para implementación detallada de cada técnica, ver skill `/analyze` [advanced-
 
 ## 4. Uso de MCPs (Datos)
 
-Todas las reglas de uso de MCPs Stratio (herramientas disponibles, reglas estrictas, MCP-first, domain_name inmutable, output_format, profiling, ejecución en paralelo, cascada de aclaración, validación post-query, timeouts y buenas prácticas) están en `skills-guides/stratio-data-tools.md`. Seguir TODAS las reglas definidas allí.
+Todas las reglas de uso de MCPs Stratio (herramientas disponibles, reglas estrictas, MCP-first, domain_name inmutable, output_format, profiling, ejecución en paralelo, cascada de aclaración, validación post-query, timeouts y buenas prácticas) están en `guides/stratio-data-tools.md`. Seguir TODAS las reglas definidas allí.
 
 Checklist de suficiencia de datos y Data Profiling Score: ver skill `/analyze` sec 3.
 
@@ -374,7 +374,7 @@ Este agente puede evaluar la cobertura de calidad de datos de gobernanza y gener
 
 1. **Evaluación**: Cargar skill `/assess-quality` → descubrimiento de dominio → `get_quality_rule_dimensions` obligatorio → metadata/profiling en paralelo → análisis de cobertura → identificación de gaps → presentar resultados
 2. **Informe (opcional)**: Si el usuario pide un informe formal → cargar skill `/quality-report` → selección de formato (Chat / PDF / DOCX / PPTX / Dashboard web / Informe web/Artículo web / Póster/Infografía) → cargar writer skill según contrato §8
-3. Seguir `skills-guides/quality-exploration.md` para el manejo de dimensiones, consideraciones de dominios técnicos y detalles de EDA para calidad
+3. Seguir `guides/quality-exploration.md` para el manejo de dimensiones, consideraciones de dominios técnicos y detalles de EDA para calidad
 
 ### Limitaciones de alcance (crítico)
 

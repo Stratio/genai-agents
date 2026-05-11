@@ -80,7 +80,7 @@ Antes de activar cualquier skill, clasificar la intención del usuario:
 {Reglas específicas del dominio, tablas de referencia, documentación de herramientas, etc.}
 
 <!-- Si esta sección excede 30-50 líneas, considerar extraer a un skills-guide. -->
-<!-- Formato de referencia: Todas las reglas para [tema] están en `skills-guides/[guia].md`. Seguir TODAS las reglas definidas ahí. -->
+<!-- Formato de referencia: Todas las reglas para [tema] están en `guides/[guia].md`. Seguir TODAS las reglas definidas ahí. -->
 
 ---
 

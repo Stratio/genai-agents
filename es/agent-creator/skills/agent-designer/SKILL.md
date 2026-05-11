@@ -110,7 +110,7 @@ La skill contiene el detalle operativo necesario.
 Si el agente usa ficheros de guía externos dentro de skills, referenciarlos con:
 
 ```
-Todas las reglas para [tema] están en `skills-guides/[nombre-guia].md`. Seguir TODAS las reglas definidas ahí.
+Todas las reglas para [tema] están en `guides/[nombre-guia].md`. Seguir TODAS las reglas definidas ahí.
 ```
 
 ### Calidad de las instrucciones

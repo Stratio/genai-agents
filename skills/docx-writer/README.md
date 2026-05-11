@@ -38,7 +38,7 @@ None — the skill operates purely on local files.
 
 ## Shared guides
 
-- `visual-craftsmanship.md` (via `skill-guides`)
+- `visual-craftsmanship.md` (via `guides`)
 
 ## Bundled assets
 

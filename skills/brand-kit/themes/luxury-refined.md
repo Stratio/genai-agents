@@ -6,7 +6,7 @@ unhurried — built for board decks, executive summaries and
 premium-client deliverables where the form itself communicates quality.
 
 > **Draft v1** — this theme was designed for this kit from the
-> `luxury-refined` tone defined in `skills-guides/visual-craftsmanship.md`.
+> `luxury-refined` tone defined in `guides/visual-craftsmanship.md`.
 > No direct precedent exists in the monorepo. Iterate based on feedback
 > from first uses.
 

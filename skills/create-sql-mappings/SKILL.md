@@ -18,7 +18,7 @@ Creates or updates SQL mappings for existing business views in Stratio Governanc
 | `create_sql_mappings(domain, view_names?, user_instructions?)` | gov | Create or update SQL mappings for existing views |
 | `publish_business_views(domain, view_names?)` | gov | Publish views (Draft → Pending Publish). Without `view_names`, publishes all |
 
-**Key rules**: `domain_name` immutable. Build `user_instructions` through the Glossary Instruction Enrichment Workflow (`skills-guides/stratio-semantic-layer-tools.md` §11) before invoking. `create_sql_mappings` overwrites existing mappings (not destructive at the view level, only replaces the SQL mapping).
+**Key rules**: `domain_name` immutable. Build `user_instructions` through the Glossary Instruction Enrichment Workflow (`guides/stratio-semantic-layer-tools.md` §11) before invoking. `create_sql_mappings` overwrites existing mappings (not destructive at the view level, only replaces the SQL mapping).
 
 ## Workflow
 
@@ -49,7 +49,7 @@ Ask the user with options:
 
 ### 4. Glossary instruction enrichment
 
-Before invoking the MCP tool, apply the Glossary Instruction Enrichment Workflow described in `skills-guides/stratio-semantic-layer-tools.md` §11, scoped to **SQL mappings** (i.e., when calling `get_glossary_instructions`, request only the mapping phase). This is where the user can pull GenAI mapping instructions from the data dictionary, supply an external file (technical documentation, ER diagrams, integration specs, reference SQL scripts) as their source, layer free-text mapping rules on top, or skip enrichment entirely.
+Before invoking the MCP tool, apply the Glossary Instruction Enrichment Workflow described in `guides/stratio-semantic-layer-tools.md` §11, scoped to **SQL mappings** (i.e., when calling `get_glossary_instructions`, request only the mapping phase). This is where the user can pull GenAI mapping instructions from the data dictionary, supply an external file (technical documentation, ER diagrams, integration specs, reference SQL scripts) as their source, layer free-text mapping rules on top, or skip enrichment entirely.
 
 If the orchestrator already pre-loaded enriched instructions for this phase during the `build-semantic-layer` flow, reuse them — optionally ask whether the user wants to add anything specific to this phase on top of what was pre-loaded.
 
@@ -75,7 +75,7 @@ After creating or updating the mappings and before offering publication, offer t
 - The response of `create_sql_mappings` from §5 already includes `processed_views`: a list of `BusinessViewSummary` entries for the views just processed, each with the freshly generated SQL in `sql_mapping`. Use that SQL verbatim, wrapping it as `SELECT * FROM (<sql_mapping>) AS m LIMIT 5` so the original projection is preserved. **No need** to call `list_technical_domain_concepts` again here.
 - Restrict validation to the views in `processed_views` (those actually processed in §5). **Cap by default at 5 views**; if §5 processed more, ask the user which subset to validate.
 - For each selected view: run `execute_sql` with the wrapped query. Launch all selected views **in parallel** in the same response.
-- Render results as Markdown tables following `skills-guides/stratio-data-tools.md` §4 (default cap of 10 rows in chat).
+- Render results as Markdown tables following `guides/stratio-data-tools.md` §4 (default cap of 10 rows in chat).
 - **No improvisation**: if `sql_mapping` comes back empty for a view inside `processed_views` (gov backend not yet exposing the field, or the just-created mapping failed to persist), do NOT improvise a SELECT over source tables. Tell the user: "I cannot validate this mapping's SQL from here because the backend is not exposing it. You can validate it from the Governance UI under the view." Skip that view and continue with the others.
 - If `execute_sql` is not available in this agent, do not fall back to a natural-language `query_data` over source tables (it would not validate the mapping). Inform the user and point to the Governance UI.
 - This step is non-blocking: regardless of the validation outcome, continue to §7 Publication.

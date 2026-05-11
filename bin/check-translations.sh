@@ -3,8 +3,8 @@
 # their counterpart in each language directory declared in 'languages'.
 #
 # Translatable files: AGENTS.md, SKILL.md, USER_README.md, README.md (agents),
-#   cowork-metadata.yaml, *.md in skills/*/ and skills-guides/, shared-skill-guides/
-#   (the root skills/ and shared-skill-guides/ dirs are scanned below),
+#   cowork-metadata.yaml, *.md in <agent>/skills/*/ and <agent>/guides/,
+#   the root-level skills/ and guides/ directories (scanned below),
 #   templates/memory/
 #
 # Usage: bin/check-translations.sh [--lang <code>]
@@ -75,11 +75,11 @@ if [[ -f "$MODULES_FILE" ]]; then
       done < <(find "$MODULE_DIR/skills" -type f -name '*.md' 2>/dev/null)
     fi
 
-    # Local skills-guides
-    if [[ -d "$MODULE_DIR/skills-guides" ]]; then
+    # Local guides (per-agent guides/ directory, if present)
+    if [[ -d "$MODULE_DIR/guides" ]]; then
       while IFS= read -r md_file; do
         TRANSLATABLE+=("$md_file")
-      done < <(find "$MODULE_DIR/skills-guides" -type f -name '*.md' 2>/dev/null)
+      done < <(find "$MODULE_DIR/guides" -type f -name '*.md' 2>/dev/null)
     fi
 
     # Memory templates (used to seed output/MEMORY.md and ANALYSIS_MEMORY.md
@@ -102,11 +102,11 @@ if [[ -d "$REPO_ROOT/skills" ]]; then
   done
 fi
 
-# Shared skill guides
-if [[ -d "$REPO_ROOT/shared-skill-guides" ]]; then
+# Shared guides (root-level guides/ directory)
+if [[ -d "$REPO_ROOT/guides" ]]; then
   while IFS= read -r md_file; do
     TRANSLATABLE+=("$md_file")
-  done < <(find "$REPO_ROOT/shared-skill-guides" -type f -name '*.md' 2>/dev/null)
+  done < <(find "$REPO_ROOT/guides" -type f -name '*.md' 2>/dev/null)
 fi
 
 # ---------------------------------------------------------------------------

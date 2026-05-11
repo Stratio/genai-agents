@@ -227,7 +227,7 @@ Notes:
 | `xlsx-writer` | Create designed Excel workbooks (analytical cover/KPI + detail sheets, coverage matrices, pivot tables, tabular exports, catalogs, quantitative models). Merge/split, find-replace, legacy `.xls` conversion, formula refresh via LibreOffice | data-analytics, data-quality, governance-officer |
 | `brand-kit` | Centralized catalog of visual identity themes (colors, typography, chart palettes, sizes, tone). Ships 10 curated themes and is extensible — clients add their own | data-analytics, data-quality, governance-officer |
 
-Shared guides (technical documentation that skills reference) live in `shared-skill-guides/`:
+Shared guides (technical documentation that skills reference) live in `guides/`:
 
 | Guide | Used by |
 |-------|---------|
@@ -244,13 +244,13 @@ Shared guides (technical documentation that skills reference) live in `shared-sk
    explore-data
    ```
 
-2. If the agent's `AGENTS.md` directly references any guide from `shared-skill-guides/`, also declare it in `shared-guides`:
+2. If the agent's `AGENTS.md` directly references any guide from `guides/`, also declare it in `guides`:
 
    ```
    stratio-data-tools.md
    ```
 
-3. Package as normal — the generic pack scripts (`pack_opencode.sh`, `pack_stratio_cowork.sh`) copy each guide declared in `skill-guides` **inside** the skill folder in the output and rewrite the references in `SKILL.md` to make them local (self-contained skill). Guides declared in the agent's `shared-guides` are also copied to `skills-guides/` so that `AGENTS.md` can reference them:
+3. Package as normal — the generic pack scripts (`pack_opencode.sh`, `pack_stratio_cowork.sh`) copy each guide declared in `guides` **inside** the skill folder in the output and rewrite the references in `SKILL.md` to make them local (self-contained skill). Guides declared in the agent's `guides` are also copied to `guides/` so that `AGENTS.md` can reference them:
 
    ```bash
    bash pack_opencode.sh --agent my-agent
@@ -263,7 +263,7 @@ Shared guides (technical documentation that skills reference) live in `shared-sk
        explore-data/
          SKILL.md                  # references "stratio-data-tools.md" (local)
          stratio-data-tools.md     # guide inside the skill
-     skills-guides/
+     guides/
        stratio-data-tools.md       # for AGENTS.md (possible duplicate, ok)
    ```
 
@@ -277,16 +277,16 @@ If the agent has a skill in `skills/` with the same name, the local version take
    skills/
    └── my-skill/
        ├── SKILL.md       # Skill definition in English (self-contained or nearly so)
-       └── skill-guides   # (Optional) List of shared-skill-guides it needs
+       └── guides         # (Optional) List of root-level guides it needs
    es/skills/
    └── my-skill/
        └── SKILL.md       # Spanish translation
    ```
 
-2. If the skill needs external guides, add the files in `shared-skill-guides/` (with their counterparts in `es/shared-skill-guides/`) and list them in `skill-guides`:
+2. If the skill needs external guides, add the files in `guides/` (with their counterparts in `es/guides/`) and list them in `guides`:
 
    ```
-   # skills/my-skill/skill-guides
+   # skills/my-skill/guides
    my-guide.md
    ```
 
@@ -294,7 +294,7 @@ If the agent has a skill in `skills/` with the same name, the local version take
 
 A shared skill should be as self-contained as possible: no dependencies on Python tools, styles or templates specific to an agent. If a skill depends heavily on artifacts from a specific agent, keep it as a local skill in that agent.
 
-**SKILL.md content:** Do not reference `AGENTS.md` or `CLAUDE.md` directly — the pack scripts substitute these names depending on the platform, but a direct reference may not work correctly on some targets. Use generic phrasing such as "following the user question convention" or "according to the agent's instructions". Guide references must use the path `skills-guides/<file>` in the source — the generic pack scripts copy the guide inside the skill and rewrite the reference to make it local (self-contained).
+**SKILL.md content:** Do not reference `AGENTS.md` or `CLAUDE.md` directly — the pack scripts substitute these names depending on the platform, but a direct reference may not work correctly on some targets. Use generic phrasing such as "following the user question convention" or "according to the agent's instructions". Guide references must use the path `guides/<file>` in the source — the generic pack scripts copy the guide inside the skill and rewrite the reference to make it local (self-contained).
 
 ## Internationalization (i18n)
 
@@ -319,14 +319,14 @@ All content files that the agent presents to the user or uses as instructions:
 | Agent instructions | `data-analytics/AGENTS.md` | `es/data-analytics/AGENTS.md` | Yes |
 | Skills | `skills/analyze/SKILL.md` | `es/.../skills/analyze/SKILL.md` | Yes |
 | Skill sub-guides | `analytical-patterns.md` | `es/.../analytical-patterns.md` | Yes |
-| Shared skill guides | `shared-skill-guides/*.md` | `es/shared-skill-guides/*.md` | Yes |
+| Shared skill guides | `guides/*.md` | `es/guides/*.md` | Yes |
 | User READMEs | `USER_README.md` | `es/.../USER_README.md` | Yes |
 | Developer READMEs | `README.md` (agents) | `es/.../README.md` | Yes |
 | Cowork metadata | `cowork-metadata.yaml` | `es/.../cowork-metadata.yaml` | Yes |
 | Memory templates | `templates/memory/*.md` | `es/.../templates/memory/*.md` | Yes |
 | Python code, HTML, CSS | `tools/*.py`, `templates/` | — | No |
 | Config files | `.mcp.json`, `opencode.json` | — | No |
-| Manifests | `imported-skills`, `skill-guides` | — | No |
+| Manifests | `imported-skills`, `guides` | — | No |
 | Shell scripts | `pack_*.sh`, `bin/*.sh` | — | No |
 
 Skill and folder names are **technical identifiers** and stay in English regardless of language.
@@ -396,16 +396,15 @@ my-agent/
 ├── skills/                # Agent-specific skills (user-invocable)
 │   └── my-skill/
 │       └── SKILL.md       # Skill definition (YAML frontmatter + body)
-├── skills-guides/         # (Optional) Local technical guides shared between skills
 ├── imported-skills        # (Optional) List of shared skills imported from the monorepo
-├── shared-guides          # (Optional) List of shared-skill-guides that AGENTS.md uses directly
+├── guides                 # (Optional) List of root-level guides that AGENTS.md uses directly
 └── templates/             # (Optional) Static templates used by the agent
     └── memory/            # (Optional) Persistent memory seed files (MEMORY.md, etc.)
 ```
 
-The `skills-guides/` and `templates/memory/` directories are optional: use `skills-guides/` when multiple skills in the agent share extensive technical documentation; use `templates/memory/` only if the agent needs to persist memory between sessions (the writing skill copies the seed into `output/` on first write).
+The `templates/memory/` directory is optional: use it only if the agent needs to persist memory between sessions (the writing skill copies the seed into `output/` on first write).
 
-The `imported-skills` and `shared-guides` files (plain text, one entry per line) allow including skills and guides from the monorepo without duplicating them. See [Shared skills](#shared-skills) for details.
+The `imported-skills` and `guides` files (plain text, one entry per line) allow including skills and guides from the monorepo without duplicating them. See [Shared skills](#shared-skills) for details.
 
 ### 2. AGENTS.md — Agent instructions
 
@@ -449,7 +448,7 @@ Detailed operational instructions...
 ...
 ```
 
-The YAML frontmatter is required: `name` is the identifier, `description` is used by the agent to decide when to activate it, `argument-hint` appears as a placeholder in the UI. The body sections are step-by-step instructions that the agent follows when executing the skill. If multiple skills share documentation, extract it to `skills-guides/` and reference it from the skill body.
+The YAML frontmatter is required: `name` is the identifier, `description` is used by the agent to decide when to activate it, `argument-hint` appears as a placeholder in the UI. The body sections are step-by-step instructions that the agent follows when executing the skill. If multiple skills share documentation, extract it to `guides/` and reference it from the skill body.
 
 To reuse skills already existing in the monorepo without duplicating them, see the [Shared skills](#shared-skills) section — the shared skills system avoids maintaining copies of identical skills in each agent.
 

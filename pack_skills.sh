@@ -75,11 +75,11 @@ _pack_one_skill() {
   mkdir -p "$dest_dir"
   cp -r "$skill_dir"/. "$dest_dir/"
 
-  # Read skill-guides manifest and copy guides to the skill root
-  if [[ -f "$skill_dir/skill-guides" ]]; then
+  # Read `guides` manifest and copy guides to the skill root
+  if [[ -f "$skill_dir/guides" ]]; then
     while IFS= read -r guide || [[ -n "$guide" ]]; do
       [[ -z "$guide" || "$guide" == \#* ]] && continue
-      guide_src="$MONOREPO_ROOT/shared-skill-guides/$guide"
+      guide_src="$MONOREPO_ROOT/guides/$guide"
       if [[ -d "$guide_src" ]]; then
         cp -r "$guide_src" "$dest_dir/$guide"
         N_GUIDES=$((N_GUIDES + 1))
@@ -89,11 +89,11 @@ _pack_one_skill() {
       else
         echo "    WARN: guide '$guide' not found in $guide_src — skipped" >&2
       fi
-    done < "$skill_dir/skill-guides"
+    done < "$skill_dir/guides"
   fi
 
-  # Remove skill-guides from output
-  rm -f "$dest_dir/skill-guides"
+  # Remove `guides` manifest from output
+  rm -f "$dest_dir/guides"
 
   N_SKILLS=$((N_SKILLS + 1))
 }
@@ -117,10 +117,7 @@ echo "    $N_SKILLS skill(s), $N_GUIDES guide(s) copied"
 # ---------------------------------------------------------------------------
 find "$STAGING" \
   -type f \( -name '*.md' -o -name '*.txt' \) \
-  -exec sed -i 's|skills-guides/||g' {} \;
-find "$STAGING" \
-  -type f \( -name '*.md' -o -name '*.txt' \) \
-  -exec sed -i 's|shared-skill-guides/||g' {} \;
+  -exec sed -i 's|guides/||g' {} \;
 echo "    Path substitutions applied"
 
 # ---------------------------------------------------------------------------
@@ -145,18 +142,11 @@ echo "    ZIP generated: dist/${PACK_NAME}.zip ($ZIP_SIZE)"
 echo "    Verifying integrity..."
 ERRORS=0
 
-# No residual references to skills-guides/ or shared-skill-guides/
-REFS=$(grep -rl 'skills-guides/' "$STAGING" --include='*.md' --include='*.txt' 2>/dev/null | wc -l) || true
+# No residual references to guides/ in the output (they must be flattened)
+REFS=$(grep -rl 'guides/' "$STAGING" --include='*.md' --include='*.txt' 2>/dev/null | wc -l) || true
 if [[ "$REFS" -gt 0 ]]; then
-  echo "    ERROR: $REFS file(s) still contain 'skills-guides/':" >&2
-  grep -rl 'skills-guides/' "$STAGING" --include='*.md' --include='*.txt' 2>/dev/null >&2 || true
-  ERRORS=$((ERRORS + 1))
-fi
-
-REFS2=$(grep -rl 'shared-skill-guides/' "$STAGING" --include='*.md' --include='*.txt' 2>/dev/null | wc -l) || true
-if [[ "$REFS2" -gt 0 ]]; then
-  echo "    ERROR: $REFS2 file(s) still contain 'shared-skill-guides/':" >&2
-  grep -rl 'shared-skill-guides/' "$STAGING" --include='*.md' --include='*.txt' 2>/dev/null >&2 || true
+  echo "    ERROR: $REFS file(s) still contain 'guides/':" >&2
+  grep -rl 'guides/' "$STAGING" --include='*.md' --include='*.txt' 2>/dev/null >&2 || true
   ERRORS=$((ERRORS + 1))
 fi
 
@@ -176,10 +166,10 @@ else
   done
 fi
 
-# No skill-guides file should remain
-LEFTOVER=$(find "$STAGING" -name 'skill-guides' -type f 2>/dev/null | wc -l) || true
+# No `guides` manifest file should remain in skill subfolders
+LEFTOVER=$(find "$STAGING" -name 'guides' -type f 2>/dev/null | wc -l) || true
 if [[ "$LEFTOVER" -gt 0 ]]; then
-  echo "    ERROR: residual skill-guides file(s) in the output" >&2
+  echo "    ERROR: residual guides manifest file(s) in the output" >&2
   ERRORS=$((ERRORS + 1))
 fi
 

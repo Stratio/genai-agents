@@ -331,7 +331,7 @@ La versión incorrecta solo funciona en Claude Code. En OpenCode, la herramienta
 ## 1. Scope Determination
 
 If the domain is unclear, follow the standard discovery workflow described in
-`skills-guides/stratio-data-tools.md` section 5.1-5.2.
+`guides/stratio-data-tools.md` section 5.1-5.2.
 ```
 
 La skill referencia un guide compartido por su ruta estándar. Los scripts de empaquetado lo copian junto a la skill automáticamente.

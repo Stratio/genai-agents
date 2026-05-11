@@ -22,7 +22,7 @@ contract — `primary`, `ink`, `muted`, `rule`, `bg`, `bg_alt`, `accent`,
   skill if one is included.
 - For ad-hoc improvisation against the tonal palette roles
   (editorial-serious, technical-minimal, warm-magazine, and so on),
-  see `skills-guides/visual-craftsmanship.md`.
+  see `guides/visual-craftsmanship.md`.
 
 Whichever source you use, resolve the token set upstream and then
 merge it into `DESIGN` at the top of the scaffold:

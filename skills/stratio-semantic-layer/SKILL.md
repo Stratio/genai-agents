@@ -10,4 +10,4 @@ Load this skill when you are going to work with Stratio semantic governance MCP 
 
 **When to invoke**: Before the first interaction with any semantic governance tool in a conversation, or when you need to refresh usage rules (immutable domain_name, user_instructions, destructive confirmation, ADD+DELETE ontologies, state detection).
 
-Read `skills-guides/stratio-semantic-layer-tools.md` for the complete reference.
+Read `guides/stratio-semantic-layer-tools.md` for the complete reference.

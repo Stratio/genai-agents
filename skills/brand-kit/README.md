@@ -38,7 +38,7 @@ fallbacks), tone family, recommended use cases, and anti-patterns.
 
 ### Tone families vs. themes
 
-Each theme declares a **tone family** from the eight canonical tones defined in `skills-guides/visual-craftsmanship.md`. Several themes can share the same tone family and still serve distinct use cases — the tone defines the aesthetic direction, the theme supplies the concrete tokens.
+Each theme declares a **tone family** from the eight canonical tones defined in `guides/visual-craftsmanship.md`. Several themes can share the same tone family and still serve distinct use cases — the tone defines the aesthetic direction, the theme supplies the concrete tokens.
 
 | Tone family | Themes that map here |
 |---|---|
@@ -109,7 +109,7 @@ exactly as they are** — the output skills look them up by name:
   screen values would degrade on paper)
 
 The `## Tone family` section should point to one of the eight tones
-defined in `skills-guides/visual-craftsmanship.md`
+defined in `guides/visual-craftsmanship.md`
 (`editorial-serious`, `technical-minimal`, `warm-magazine`,
 `brutalist-raw`, `luxury-refined`, `industrial-utilitarian`,
 `playful-toy`, `forensic-audit`), or declare a new tone with a short

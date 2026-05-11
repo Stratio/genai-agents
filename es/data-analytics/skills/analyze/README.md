@@ -46,4 +46,4 @@ Ninguna específica de `/analyze`. Las skills writer declaran sus propias depend
 - `advanced-analytics.md` — rigor estadístico, análisis prospectivo, detección de anomalías, root cause
 - `clustering-guide.md` — segmentación, clustering, feature importance
 - `chart_layout.py` — utilidad Python para layout anti-solapamiento en gráficos matplotlib/Plotly
-- `skills-guides/stratio-data-tools.md` — extracción de datos MCP-first (heredado del agente)
+- `guides/stratio-data-tools.md` — extracción de datos MCP-first (heredado del agente)

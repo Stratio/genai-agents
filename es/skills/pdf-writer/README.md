@@ -68,7 +68,7 @@ Ninguno — la skill opera exclusivamente sobre ficheros locales.
 
 ## Guías compartidas
 
-- `visual-craftsmanship.md` (declarado en `skill-guides`)
+- `visual-craftsmanship.md` (declarado en `guides`)
 
 ## Activos empaquetados
 

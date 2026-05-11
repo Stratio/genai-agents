@@ -167,7 +167,7 @@ Para cada archivo generado:
    - Contenido del paquete (lista de archivos)
    - El artefacto desplegable es `output/<skill-name>.zip` (se mantiene aqui como referencia para cualquier subida manual). El despliegue en si ocurre en el paso 4.
 
-4. **Desplegar el bundle a Stratio Cowork** — DEBES cargar la skill `/cowork-api` y ejecutar `tasks/upload-skill.md` de principio a fin. Ese sub-fichero se encarga de: el pre-check (vía `skills-guides/external-api-calls.md` §2), la pregunta al usuario sobre `on_conflict`, la invocacion de curl contra `/v1/agents/skills/bundle/import`, y como mostrar el codigo HTTP y la respuesta JSON.
+4. **Desplegar el bundle a Stratio Cowork** — DEBES cargar la skill `/cowork-api` y ejecutar `tasks/upload-skill.md` de principio a fin. Ese sub-fichero se encarga de: el pre-check (vía `guides/external-api-calls.md` §2), la pregunta al usuario sobre `on_conflict`, la invocacion de curl contra `/v1/agents/skills/bundle/import`, y como mostrar el codigo HTTP y la respuesta JSON.
 
    La ruta del ZIP a pasar es `output/<skill-name>.zip` (el artefacto producido en el paso 1 de esta fase).
 

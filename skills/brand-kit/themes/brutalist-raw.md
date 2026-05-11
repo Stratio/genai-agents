@@ -7,7 +7,7 @@ for raw exploratory reports, developer-facing documents, data dumps and
 any deliverable where politeness would feel dishonest.
 
 > **Draft v1** — this theme was designed for this kit from the
-> `brutalist-raw` tone defined in `skills-guides/visual-craftsmanship.md`.
+> `brutalist-raw` tone defined in `guides/visual-craftsmanship.md`.
 > No direct precedent exists in the monorepo. Iterate based on feedback
 > from first uses.
 

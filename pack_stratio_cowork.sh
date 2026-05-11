@@ -149,14 +149,14 @@ for skill_name in "${IMPORTED_SKILLS[@]}"; do
   fi
 done
 
-# If skills-guides/ became empty after removing imported skills, clean it up
-SKILLS_GUIDES_DIR="$STAGING_NO_SHARED/skills-guides"
-if [[ -d "$SKILLS_GUIDES_DIR" ]]; then
-  # Check if local skills use any guide from skills-guides/
+# If guides/ became empty after removing imported skills, clean it up
+GUIDES_DIR="$STAGING_NO_SHARED/guides"
+if [[ -d "$GUIDES_DIR" ]]; then
+  # Check if local skills use any guide from guides/
   # Imported-skill guides are embedded within each skill folder,
-  # not in skills-guides/ — but agent's shared-guides are copied there.
-  # Therefore we leave skills-guides/ alone: it may contain agent-specific guides.
-  echo "    [3] skills-guides/ preserved (may contain agent-specific guides)"
+  # not in guides/ — but agent's shared-guides are copied there.
+  # Therefore we leave guides/ alone: it may contain agent-specific guides.
+  echo "    [3] guides/ preserved (may contain agent-specific guides)"
 fi
 
 echo "    [3] $N_REMOVED skill(s) removed from clone"
@@ -200,11 +200,11 @@ for skill_name in "${IMPORTED_SKILLS[@]}"; do
   mkdir -p "$skill_dst"
   cp -r "$skill_src/." "$skill_dst/"
 
-  # Embed guides declared in skill-guides
-  if [[ -f "$skill_src/skill-guides" ]]; then
+  # Embed guides declared in the skill's `guides` manifest
+  if [[ -f "$skill_src/guides" ]]; then
     while IFS= read -r guide || [[ -n "$guide" ]]; do
       [[ -z "$guide" || "$guide" == \#* ]] && continue
-      guide_src="$MONOREPO_ROOT/shared-skill-guides/$guide"
+      guide_src="$MONOREPO_ROOT/guides/$guide"
       if [[ -d "$guide_src" ]]; then
         cp -r "$guide_src" "$skill_dst/$guide"
         N_GUIDES_PACKED=$((N_GUIDES_PACKED + 1))
@@ -214,11 +214,11 @@ for skill_name in "${IMPORTED_SKILLS[@]}"; do
       else
         echo "    WARN: guide '$guide' not found — skipped"
       fi
-    done < "$skill_src/skill-guides"
+    done < "$skill_src/guides"
   fi
 
-  # Remove the skill-guides manifest from output
-  rm -f "$skill_dst/skill-guides"
+  # Remove the `guides` manifest from output
+  rm -f "$skill_dst/guides"
 
   N_SKILLS_PACKED=$((N_SKILLS_PACKED + 1))
 done
@@ -226,10 +226,7 @@ done
 # Path substitutions
 find "$SKILLS_STAGING" \
   -type f \( -name '*.md' -o -name '*.txt' \) \
-  -exec sed -i 's|skills-guides/||g' {} \;
-find "$SKILLS_STAGING" \
-  -type f \( -name '*.md' -o -name '*.txt' \) \
-  -exec sed -i 's|shared-skill-guides/||g' {} \;
+  -exec sed -i 's|guides/||g' {} \;
 
 if [[ $N_SKILLS_PACKED -gt 0 ]]; then
   bash "$SCRIPT_DIR/bin/sweep-nonruntime.sh" "$SKILLS_STAGING"
@@ -364,16 +361,16 @@ for skill_name in "${IMPORTED_SKILLS[@]}"; do
   fi
 done
 
-# No residual references to skill-guides in the skills ZIP
+# No residual references to guides/ in the skills ZIP
 if [[ ${#IMPORTED_SKILLS[@]} -gt 0 ]]; then
   _skills_md_content=""
   if ! _skills_md_content=$(unzip -p "$BUNDLE_STAGING/$ZIP_SHARED" "*/SKILL.md" 2>/dev/null); then
     echo "    ERROR: cannot extract SKILL.md files from skills sub-ZIP '$ZIP_SHARED'" >&2
     ERRORS=$((ERRORS + 1))
   fi
-  SKILLS_REFS=$(echo "$_skills_md_content" | grep -c 'skills-guides/' || true)
+  SKILLS_REFS=$(echo "$_skills_md_content" | grep -c 'guides/' || true)
   if [[ "$SKILLS_REFS" -gt 0 ]]; then
-    echo "    ERROR: residual references to skills-guides/ in $ZIP_SHARED" >&2
+    echo "    ERROR: residual references to guides/ in $ZIP_SHARED" >&2
     ERRORS=$((ERRORS + 1))
   fi
 fi

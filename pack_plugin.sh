@@ -177,10 +177,10 @@ _pack_one_skill_into() {
   mkdir -p "$dest_dir"
   cp -r "$src/." "$dest_dir/"
 
-  if [[ -f "$src/skill-guides" ]]; then
+  if [[ -f "$src/guides" ]]; then
     while IFS= read -r guide || [[ -n "$guide" ]]; do
       [[ -z "$guide" || "$guide" == \#* ]] && continue
-      local guide_src="$MONOREPO_ROOT/shared-skill-guides/$guide"
+      local guide_src="$MONOREPO_ROOT/guides/$guide"
       if [[ -d "$guide_src" ]]; then
         cp -r "$guide_src" "$dest_dir/$guide"
       elif [[ -f "$guide_src" ]]; then
@@ -188,14 +188,12 @@ _pack_one_skill_into() {
       else
         echo "    WARN: guide '$guide' not found for skill '$skill_name' — skipped" >&2
       fi
-    done < "$src/skill-guides"
+    done < "$src/guides"
   fi
 
-  rm -f "$dest_dir/skill-guides"
+  rm -f "$dest_dir/guides"
   find "$dest_dir" -type f \( -name '*.md' -o -name '*.txt' \) \
-    -exec sed -i 's|skills-guides/||g' {} \;
-  find "$dest_dir" -type f \( -name '*.md' -o -name '*.txt' \) \
-    -exec sed -i 's|shared-skill-guides/||g' {} \;
+    -exec sed -i 's|guides/||g' {} \;
 }
 
 # ---------------------------------------------------------------------------

@@ -25,7 +25,7 @@ Crea, amplia o borra clases de una ontología en Stratio Governance mediante pla
 | `update_ontology(domain, name, update_plan)` | gov | Añadir clases nuevas a ontología existente |
 | `delete_ontology_classes(ontology_name, class_names)` | gov | DESTRUCTIVO: borrar clases específicas (protegido por Published) |
 
-**Reglas clave**: `domain_name` inmutable. Ontologías son ADD+DELETE: `update` añade clases, `delete_ontology_classes` borra clases (protegido: clases con vistas Published dependientes se saltan). No se pueden modificar clases existentes. Nomenclatura: sin espacios (→ guiones bajos), sin caracteres especiales. Construir el contexto de planificación mediante el Workflow de Enriquecimiento con Instrucciones del Glosario (`skills-guides/stratio-semantic-layer-tools.md` §11) antes de proponer el plan de ontología.
+**Reglas clave**: `domain_name` inmutable. Ontologías son ADD+DELETE: `update` añade clases, `delete_ontology_classes` borra clases (protegido: clases con vistas Published dependientes se saltan). No se pueden modificar clases existentes. Nomenclatura: sin espacios (→ guiones bajos), sin caracteres especiales. Construir el contexto de planificación mediante el Workflow de Enriquecimiento con Instrucciones del Glosario (`guides/stratio-semantic-layer-tools.md` §11) antes de proponer el plan de ontología.
 
 ## Workflow
 
@@ -56,7 +56,7 @@ Este es el nucleo de la skill. Preguntar al usuario agrupando para minimizar int
 
 **Enriquecimiento con instrucciones del glosario**:
 
-Antes de proponer el plan, aplicar el Workflow de Enriquecimiento con Instrucciones del Glosario descrito en `skills-guides/stratio-semantic-layer-tools.md` §11, acotado a **ontology** (al llamar a `get_glossary_instructions`, pedir solo la fase de ontology). Aquí es donde el usuario puede traerse las instrucciones GenAI de ontología desde el diccionario de datos, aportar un fichero externo (.owl/.ttl, documento de negocio, CSV) como su fuente, superponer comentarios libres, o saltar el enriquecimiento por completo.
+Antes de proponer el plan, aplicar el Workflow de Enriquecimiento con Instrucciones del Glosario descrito en `guides/stratio-semantic-layer-tools.md` §11, acotado a **ontology** (al llamar a `get_glossary_instructions`, pedir solo la fase de ontology). Aquí es donde el usuario puede traerse las instrucciones GenAI de ontología desde el diccionario de datos, aportar un fichero externo (.owl/.ttl, documento de negocio, CSV) como su fuente, superponer comentarios libres, o saltar el enriquecimiento por completo.
 
 Si el orquestador ya pre-cargó instrucciones enriquecidas para esta fase durante el flujo de `build-semantic-layer`, reutilizarlas — opcionalmente preguntar si el usuario quiere añadir algo específico para esta fase.
 

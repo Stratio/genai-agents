@@ -104,7 +104,7 @@ they come from the theme chosen for the deliverable.
   run its workflow BEFORE authoring; it returns a token set that maps
   onto the `DESIGN` dict below.
 - Otherwise, improvise tokens coherent with the deliverable following
-  the tonal palette roles in `skills-guides/visual-craftsmanship.md`.
+  the tonal palette roles in `guides/visual-craftsmanship.md`.
 
 The `DESIGN` dict in the scaffold uses placeholders (`<hex>`,
 `<font-family>`, `<pt>`) — fill them from the theme, don't hard-code.
@@ -339,7 +339,7 @@ Where those concrete values come from depends on what the agent has:
   supplies a complete, coherent token set (primary, ink, muted, rule,
   bg_alt, accent, state colors, typography, sizes). Use it verbatim.
 - Otherwise, improvise from the tonal palette roles in
-  `skills-guides/visual-craftsmanship.md`. For XLSX-specific defaults
+  `guides/visual-craftsmanship.md`. For XLSX-specific defaults
   (sober-audit, technical-minimal) see `REFERENCE.md` §Palette reference.
 
 ## 7. Workbook building blocks

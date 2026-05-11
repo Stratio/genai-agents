@@ -9,7 +9,7 @@ Router skill. Each capability lives in its own file under `tasks/`. **This file 
 
 ## Prerequisites — read first
 
-Before any call, follow `skills-guides/external-api-calls.md`:
+Before any call, follow `guides/external-api-calls.md`:
 
 - §1 lists the environment variables and certificate paths the sandbox provides.
 - §2 has the standard pre-check (`preflight_external_api`). Run it; if it fails, stop and report to the user which prerequisites are missing (env vars or certificate paths) — the operation cannot proceed without a healthy environment. Surface the missing pieces explicitly; do not refuse with a generic message.
@@ -29,9 +29,9 @@ Before any call, follow `skills-guides/external-api-calls.md`:
 ## Routing rules
 
 1. Identify the capability from the user's intent. If none of the entries above matches, this skill cannot help — say so.
-2. Run the pre-check from `skills-guides/external-api-calls.md` §2. If it fails, stop and report.
+2. Run the pre-check from `guides/external-api-calls.md` §2. If it fails, stop and report.
 3. Load the matching sub-file and follow it end-to-end. Do not blend instructions across sub-files.
-4. After the call, surface the HTTP code and response body to the user as described in `skills-guides/external-api-calls.md` §5.
+4. After the call, surface the HTTP code and response body to the user as described in `guides/external-api-calls.md` §5.
 
 ## Adding a new capability
 

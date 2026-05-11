@@ -40,7 +40,7 @@ recomendados de uso y los antipatrones.
 
 ### Tone families vs. temas
 
-Cada tema declara una **tone family** de las ocho tonos canónicos definidos en `skills-guides/visual-craftsmanship.md`. Varios temas pueden compartir la misma tone family y aun así servir casos de uso distintos — el tono define la dirección estética, el tema aporta los tokens concretos.
+Cada tema declara una **tone family** de las ocho tonos canónicos definidos en `guides/visual-craftsmanship.md`. Varios temas pueden compartir la misma tone family y aun así servir casos de uso distintos — el tono define la dirección estética, el tema aporta los tokens concretos.
 
 | Tone family | Temas que mapean aquí |
 |---|---|
@@ -113,7 +113,7 @@ buscan por nombre:
   usar en impresión y los valores de pantalla se degradarían en papel)
 
 La sección `## Tone family` debe apuntar a uno de los ocho tonos
-definidos en `skills-guides/visual-craftsmanship.md` (`editorial-serious`,
+definidos en `guides/visual-craftsmanship.md` (`editorial-serious`,
 `technical-minimal`, `warm-magazine`, `brutalist-raw`,
 `luxury-refined`, `industrial-utilitarian`, `playful-toy`,
 `forensic-audit`), o declarar un tono nuevo con una descripción corta.

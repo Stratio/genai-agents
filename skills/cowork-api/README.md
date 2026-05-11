@@ -21,7 +21,7 @@ This skill is **not** about runtime data access (those are the `stratio_data` / 
 
 ## Shared guides
 
-- `external-api-calls.md` — declared in `skill-guides`. Covers env vars (`GENAI_API_URL`, `USER_CERT_PATH`, `USER_KEY_PATH`, `CA_CERT_PATH`), the standard pre-check, and the curl/Python templates this skill builds on. Every sub-file under `tasks/` references it for the cross-cutting bits (mTLS, error handling).
+- `external-api-calls.md` — declared in `guides`. Covers env vars (`GENAI_API_URL`, `USER_CERT_PATH`, `USER_KEY_PATH`, `CA_CERT_PATH`), the standard pre-check, and the curl/Python templates this skill builds on. Every sub-file under `tasks/` references it for the cross-cutting bits (mTLS, error handling).
 
 ## MCPs
 

@@ -25,7 +25,7 @@ Creates, extends or deletes classes of an ontology in Stratio Governance through
 | `update_ontology(domain, name, update_plan)` | gov | Add new classes to existing ontology |
 | `delete_ontology_classes(ontology_name, class_names)` | gov | DESTRUCTIVE: delete specific classes (protected by Published) |
 
-**Key rules**: `domain_name` immutable. Ontologies are ADD+DELETE: `update` adds classes, `delete_ontology_classes` deletes classes (protected: classes with dependent Published views are skipped). Existing classes cannot be modified. Naming: no spaces (→ underscores), no special characters. Build the planning context through the Glossary Instruction Enrichment Workflow (`skills-guides/stratio-semantic-layer-tools.md` §11) before proposing the ontology plan.
+**Key rules**: `domain_name` immutable. Ontologies are ADD+DELETE: `update` adds classes, `delete_ontology_classes` deletes classes (protected: classes with dependent Published views are skipped). Existing classes cannot be modified. Naming: no spaces (→ underscores), no special characters. Build the planning context through the Glossary Instruction Enrichment Workflow (`guides/stratio-semantic-layer-tools.md` §11) before proposing the ontology plan.
 
 ## Workflow
 
@@ -56,7 +56,7 @@ This is the core of the skill. Ask the user, grouping to minimize interactions:
 
 **Glossary instruction enrichment**:
 
-Before proposing the plan, apply the Glossary Instruction Enrichment Workflow described in `skills-guides/stratio-semantic-layer-tools.md` §11, scoped to **ontology** (i.e., when calling `get_glossary_instructions`, request only the ontology phase). This is where the user can pull GenAI ontology instructions from the data dictionary, supply an external file (.owl/.ttl, business document, CSV) as their source, layer free-text comments on top, or skip enrichment entirely.
+Before proposing the plan, apply the Glossary Instruction Enrichment Workflow described in `guides/stratio-semantic-layer-tools.md` §11, scoped to **ontology** (i.e., when calling `get_glossary_instructions`, request only the ontology phase). This is where the user can pull GenAI ontology instructions from the data dictionary, supply an external file (.owl/.ttl, business document, CSV) as their source, layer free-text comments on top, or skip enrichment entirely.
 
 If the orchestrator already pre-loaded enriched instructions for this phase during the `build-semantic-layer` flow, reuse them — optionally ask whether the user wants to add anything specific to this phase.
 

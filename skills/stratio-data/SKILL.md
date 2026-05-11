@@ -10,4 +10,4 @@ Load this skill when you are going to work with Stratio governed data: query dom
 
 **When to invoke**: Before the first interaction with any data MCP tool in a conversation, or when you need to refresh usage rules (immutable domain_name, MCP-first, post-query validation, clarification cascade).
 
-Read `skills-guides/stratio-data-tools.md` for the complete reference.
+Read `guides/stratio-data-tools.md` for the complete reference.

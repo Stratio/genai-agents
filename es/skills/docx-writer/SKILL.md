@@ -104,7 +104,7 @@ skill — vienen del tema elegido para el entregable.
   ejecuta su flujo ANTES de autorar; devuelve un set de tokens que se
   mapea sobre el dict `DESIGN` de abajo.
 - Si no, improvisa tokens coherentes con el entregable siguiendo los
-  roles de paleta tonal en `skills-guides/visual-craftsmanship.md`.
+  roles de paleta tonal en `guides/visual-craftsmanship.md`.
 
 El dict `DESIGN` del scaffold usa placeholders (`<hex>`,
 `<font-family>`, `<pt>`) — rellénalos desde el tema, no hardcodees.
@@ -309,7 +309,7 @@ agente:
   ink, muted, rule, bg_alt, accent, colores de estado, tipografía,
   tamaños). Úsalo tal cual.
 - Si no, improvisa desde los roles de paleta tonal en
-  `skills-guides/visual-craftsmanship.md`. Para unas semillas
+  `guides/visual-craftsmanship.md`. Para unas semillas
   editoriales que puedas adaptar, ver `REFERENCE.md` §Guía de paleta.
 
 ## 7. Bloques de documento que compondrás

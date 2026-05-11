@@ -353,7 +353,7 @@ For detailed implementation of each technique, see skill `/analyze` [advanced-an
 
 ## 4. MCP Usage (Data)
 
-All rules for using Stratio MCPs (available tools, strict rules, MCP-first, immutable domain_name, output_format, profiling, parallel execution, clarification cascade, post-query validation, timeouts, and best practices) are in `skills-guides/stratio-data-tools.md`. Follow ALL rules defined there.
+All rules for using Stratio MCPs (available tools, strict rules, MCP-first, immutable domain_name, output_format, profiling, parallel execution, clarification cascade, post-query validation, timeouts, and best practices) are in `guides/stratio-data-tools.md`. Follow ALL rules defined there.
 
 Data sufficiency checklist and Data Profiling Score: see skill `/analyze` sec 3.
 
@@ -374,7 +374,7 @@ This agent can assess data quality governance coverage and generate quality repo
 
 1. **Assessment**: Load skill `/assess-quality` → domain discovery → mandatory `get_quality_rule_dimensions` → parallel metadata/profiling → coverage analysis → gap identification → present results
 2. **Report (optional)**: If the user asks for a formal report → load skill `/quality-report` → format selection (Chat / PDF / DOCX / PPTX / Dashboard web / Web article/Narrative report / Poster/Infographic) → load writer skill per §8 contract
-3. Follow `skills-guides/quality-exploration.md` for dimension handling, technical-domain considerations, and EDA-for-quality details
+3. Follow `guides/quality-exploration.md` for dimension handling, technical-domain considerations, and EDA-for-quality details
 
 ### Scope limitations (critical)
 

@@ -195,10 +195,10 @@ Preguntar al usuario con opciones: "¿Qué nivel de profundidad?"
 
 ```markdown
 Todas las reglas para [tema] (herramientas disponibles, reglas estrictas, [listar temas clave])
-están en `skills-guides/[nombre-guia].md`. Seguir TODAS las reglas definidas ahí.
+están en `guides/[nombre-guia].md`. Seguir TODAS las reglas definidas ahí.
 ```
 
-**Importante**: El formato de ruta `skills-guides/nombre.md` se usa en el AGENTS.md fuente. Los scripts de empaquetado pueden reescribir esta ruta a una local al incrustar guides dentro de skills.
+**Importante**: El formato de ruta `guides/nombre.md` se usa en el AGENTS.md fuente. Los scripts de empaquetado pueden reescribir esta ruta a una local al incrustar guides dentro de skills.
 
 ---
 

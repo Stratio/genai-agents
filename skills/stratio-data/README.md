@@ -50,4 +50,4 @@ None.
 
 - **Load early.** The skill is designed to run before any other data tool call in a conversation; loading it mid-conversation still works but rules may already have been broken.
 - **Pairs with `stratio-semantic-layer`** — together they cover the two MCP families (data + governance). Agents that touch both typically load both.
-- **The guide is kept in `shared-skill-guides/`** so multiple skills reference the same source of truth without duplication.
+- **The guide is kept in `guides/`** so multiple skills reference the same source of truth without duplication.

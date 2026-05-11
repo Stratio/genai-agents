@@ -10,11 +10,11 @@ Guía para construir artefactos web interactivos con intención estética real. 
 
 El usuario aporta el brief: qué construir, quién lo usa, qué restricciones técnicas aplican. El alcance puede ser un componente único o una landing completa.
 
-**Alcance**: esta skill gestiona artefactos que viven en un navegador y responden a interacción. Para artefactos estáticos de una sola página (pósters, portadas, certificados, one-pagers de marketing, infografías) el artefacto no es interactivo y pertenece a otra herramienta. Para documentos tipográficos multi-página (informes, facturas, contratos, zines) la salida es un documento, no una interfaz web, y también pertenece a otra herramienta. Cuando haya duda, consulta `skills-guides/visual-craftsmanship.md` para el criterio de selección.
+**Alcance**: esta skill gestiona artefactos que viven en un navegador y responden a interacción. Para artefactos estáticos de una sola página (pósters, portadas, certificados, one-pagers de marketing, infografías) el artefacto no es interactivo y pertenece a otra herramienta. Para documentos tipográficos multi-página (informes, facturas, contratos, zines) la salida es un documento, no una interfaz web, y también pertenece a otra herramienta. Cuando haya duda, consulta `guides/visual-craftsmanship.md` para el criterio de selección.
 
 ## 1. Lee la base
 
-Lee y sigue `skills-guides/visual-craftsmanship.md`. Define los principios compartidos, anti-patrones, roles de paleta, filosofía de emparejamiento tipográfico y checklist de artesanía usados en todas las skills visuales del monorepo. Esta skill añade encima las decisiones específicas de web.
+Lee y sigue `guides/visual-craftsmanship.md`. Define los principios compartidos, anti-patrones, roles de paleta, filosofía de emparejamiento tipográfico y checklist de artesanía usados en todas las skills visuales del monorepo. Esta skill añade encima las decisiones específicas de web.
 
 ## 2. Decide antes de codificar
 
@@ -45,7 +45,7 @@ Escoge exactamente uno:
 
 El tono no comprometido es la causa más frecuente de salida genérica. Si dos tonos parecen igual de correctos para el brief, fuerza la elección — la mitad-y-mitad pierde ambos.
 
-Los primeros seis tonos siguen la taxonomía compartida de `skills-guides/visual-craftsmanship.md`; los cuatro restantes son adiciones específicas de web que rara vez se aplican a artefactos estáticos.
+Los primeros seis tonos siguen la taxonomía compartida de `guides/visual-craftsmanship.md`; los cuatro restantes son adiciones específicas de web que rara vez se aplican a artefactos estáticos.
 
 ### 2.3 Elige un emparejamiento tipográfico
 Una fuente display + una fuente body, con contraste deliberado. Emparejamientos que funcionan bien en el navegador:
@@ -71,7 +71,7 @@ Un acento dominante, un neutro profundo para texto (raramente negro puro), un ne
 Los valores concretos vienen del tema, no de esta skill.
 
 - **Si el agente tiene disponible una skill de theming centralizada** (una skill tipo brand-kit que aporta un catálogo de temas más un flujo para que el usuario elija o defina uno), ejecuta ese flujo ANTES de codear. El tema elegido provee el set de tokens que se mapea al `:root` de abajo.
-- **Si no hay tal skill disponible**, improvisa tokens coherentes con el contexto del entregable siguiendo los roles de paleta tonal en `skills-guides/visual-craftsmanship.md`.
+- **Si no hay tal skill disponible**, improvisa tokens coherentes con el contexto del entregable siguiendo los roles de paleta tonal en `guides/visual-craftsmanship.md`.
 
 El bloque `:root` de abajo usa placeholders para dejar claro de dónde vienen los valores:
 

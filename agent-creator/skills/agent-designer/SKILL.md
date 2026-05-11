@@ -110,7 +110,7 @@ The skill contains the necessary operational detail.
 If the agent uses external guide files inside skills, reference them with:
 
 ```
-All rules for [topic] are in `skills-guides/[guide-name].md`. Follow ALL rules defined there.
+All rules for [topic] are in `guides/[guide-name].md`. Follow ALL rules defined there.
 ```
 
 ### Instruction quality

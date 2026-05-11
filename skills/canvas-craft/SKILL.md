@@ -8,11 +8,11 @@ argument-hint: "[poster|cover|certificate|infographic|one-pager] [brief]"
 
 Guide for producing single-page visual artifacts rendered as PDF or PNG. The artifact is static, visually led, and treats typography as part of the composition rather than a vehicle for long prose.
 
-**Scope**: this skill handles single-page pieces where roughly seventy per cent or more of the surface is visual composition — colour, form, typography-as-shape. For multi-page typographic documents (analytical reports, contracts, invoices, zines) the output is a document and belongs to a different tool. For interactive browser artifacts (components, pages, dashboards) the artifact is alive in a browser and also belongs to a different tool. When uncertain, consult `skills-guides/visual-craftsmanship.md` for the selection criterion.
+**Scope**: this skill handles single-page pieces where roughly seventy per cent or more of the surface is visual composition — colour, form, typography-as-shape. For multi-page typographic documents (analytical reports, contracts, invoices, zines) the output is a document and belongs to a different tool. For interactive browser artifacts (components, pages, dashboards) the artifact is alive in a browser and also belongs to a different tool. When uncertain, consult `guides/visual-craftsmanship.md` for the selection criterion.
 
 ## 1. Read the foundation
 
-Read and follow `skills-guides/visual-craftsmanship.md`. It defines the shared principles, anti-patterns, palette roles, type pairing philosophy and craftsmanship checklist used across every visual skill in this monorepo. This skill adds the canvas-specific workflow on top.
+Read and follow `guides/visual-craftsmanship.md`. It defines the shared principles, anti-patterns, palette roles, type pairing philosophy and craftsmanship checklist used across every visual skill in this monorepo. This skill adds the canvas-specific workflow on top.
 
 ## 2. Two-step workflow
 
@@ -83,7 +83,7 @@ Never rely on reportlab's built-in Helvetica for final artifacts. Those faces pr
 Concrete palette values come from the theme, not from this skill.
 
 - **If the agent has a centralized theming skill available** (a brand-kit-style skill that ships a catalog of themes plus a workflow for the user to pick or define one), run that workflow BEFORE coding. Map the theme's `primary` / `ink` / `accent` / `bg` tokens to the at-most-four colours this surface tolerates.
-- **If no such skill is present**, improvise following the tonal palette roles in `skills-guides/visual-craftsmanship.md`.
+- **If no such skill is present**, improvise following the tonal palette roles in `guides/visual-craftsmanship.md`.
 
 Artifacts rendered for print benefit from:
 - Deep neutrals that are not `#000` (warm espresso, cold indigo, blue-black).
@@ -94,7 +94,7 @@ Define RGB in `0–1` floats for reportlab (`colors.Color(<r>, <g>, <b>)`). Keep
 
 ## 4. Combined pipeline: cover + body
 
-When the brief is a report with a designed cover, this skill produces the cover page only. The multi-page body is assembled by the typographic document tool (see `skills-guides/visual-craftsmanship.md` for the selection criterion). Final merge with `pypdf`:
+When the brief is a report with a designed cover, this skill produces the cover page only. The multi-page body is assembled by the typographic document tool (see `guides/visual-craftsmanship.md` for the selection criterion). Final merge with `pypdf`:
 
 ```python
 from pypdf import PdfWriter

@@ -35,7 +35,7 @@ El ZIP contenedor debe seguir el formato documentado en la skill `agent-packager
 
 ## Procedimiento
 
-1. **Pre-check** — sigue `skills-guides/external-api-calls.md` §2 (`preflight_external_api`). El pre-check es un health check del entorno (variables de entorno, rutas de certificados). Si falla, detente y reporta al usuario qué prerequisites faltan — no silencies el fallo y no rechaces con un genérico "no puedo". El bundle ya está empaquetado correctamente; solo el paso de despliegue no se completó, y el usuario puede decidir cómo proceder.
+1. **Pre-check** — sigue `guides/external-api-calls.md` §2 (`preflight_external_api`). El pre-check es un health check del entorno (variables de entorno, rutas de certificados). Si falla, detente y reporta al usuario qué prerequisites faltan — no silencies el fallo y no rechaces con un genérico "no puedo". El bundle ya está empaquetado correctamente; solo el paso de despliegue no se completó, y el usuario puede decidir cómo proceder.
 
 2. **Pregunta al usuario** qué estrategia de conflicto aplicar (usa la convención de preguntas que provea el entorno; en su defecto, presenta opciones numeradas):
 
@@ -92,7 +92,7 @@ El ZIP contenedor debe seguir el formato documentado en la skill `agent-packager
 ## Cómo reportar al usuario
 
 - En 2xx: resume `agent.imported`, cualquier `skills.imported` y `conflicts`/`errors` si no están vacíos. Si la respuesta incluye `unresolved_mcps`, menciónalos para que el usuario los configure desde la interfaz web.
-- En no-2xx: muestra el código HTTP y el cuerpo tal cual. Consulta `skills-guides/external-api-calls.md` §5 para interpretar códigos comunes (`401/403` = mTLS o RBAC; `400/422` = validación; `400` con detalles de metadata = `metadata.yaml` malformado).
+- En no-2xx: muestra el código HTTP y el cuerpo tal cual. Consulta `guides/external-api-calls.md` §5 para interpretar códigos comunes (`401/403` = mTLS o RBAC; `400/422` = validación; `400` con detalles de metadata = `metadata.yaml` malformado).
 
 ## Script reutilizable
 

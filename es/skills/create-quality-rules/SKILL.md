@@ -43,7 +43,7 @@ Identificar:
 - Que dimensiones faltan en cada tabla (considerando tanto las estándar como las específicas del dominio)
 - Cuales son los gaps prioritarios basándose en el EDA previo de `profile_data`
 
-**Sobre dimensiones**: las definiciones del dominio (obtenidas en la evaluación de cobertura vía `get_quality_rule_dimensions`) prevalecen siempre sobre las estándar. Ver sección 2 de `skills-guides/quality-exploration.md`.
+**Sobre dimensiones**: las definiciones del dominio (obtenidas en la evaluación de cobertura vía `get_quality_rule_dimensions`) prevalecen siempre sobre las estándar. Ver sección 2 de `guides/quality-exploration.md`.
 
 Si el usuario ha especificado un subset ("solo la tabla account"), respetar esa restricción.
 

@@ -22,7 +22,7 @@ tokens — `primary`, `ink`, `muted`, `rule`, `bg`, `bg_alt`, `accent`,
   centralizada del agente si está incluida.
 - Para improvisación ad-hoc contra los roles de paleta tonal
   (editorial-serious, technical-minimal, warm-magazine, etc.),
-  consulta `skills-guides/visual-craftsmanship.md`.
+  consulta `guides/visual-craftsmanship.md`.
 
 Cualquiera que sea la fuente, resuelve el set de tokens aguas arriba
 y hazlo merge en `DESIGN` al principio del scaffold:

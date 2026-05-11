@@ -222,7 +222,7 @@ For the complete field reference, see `frontmatter-reference.md`.
 For writing patterns and anti-patterns, see `writing-patterns.md`.
 ```
 
-If a guide is shared across multiple skills, place it in `shared-skill-guides/` and declare it in a `skill-guides` manifest file inside the skill directory (one filename per line).
+If a guide is shared across multiple skills, place it in `guides/` and declare it in a `guides` manifest file inside the skill directory (one filename per line).
 
 ### 4.4 Dynamic context injection
 
@@ -267,7 +267,7 @@ Run this checklist before finalizing any skill:
 2. ✅ Body is under 500 lines; supporting files used for overflow
 3. ✅ No direct references to `AGENTS.md` or `CLAUDE.md` — uses generic phrases
 4. ✅ No dependencies on agent-specific tools, styles, or templates
-5. ✅ Guide references use relative paths (`skills-guides/<file>` or direct filename)
+5. ✅ Guide references use relative paths (`guides/<file>` or direct filename)
 6. ✅ Numbered sections for sequential workflows
 7. ✅ Tables for decision routing
 8. ✅ Each major step explains WHY, not just WHAT

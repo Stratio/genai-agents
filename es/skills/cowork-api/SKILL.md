@@ -9,7 +9,7 @@ Skill router. Cada capacidad vive en su propio fichero bajo `tasks/`. **Este fic
 
 ## Prerrequisitos — leer primero
 
-Antes de cualquier llamada, sigue `skills-guides/external-api-calls.md`:
+Antes de cualquier llamada, sigue `guides/external-api-calls.md`:
 
 - §1 lista las variables de entorno y rutas de certificados que provee el sandbox.
 - §2 contiene el pre-check estándar (`preflight_external_api`). Ejecútalo; si falla, detente y reporta al usuario qué prerequisites faltan (variables de entorno o rutas de certificados) — la operación no puede continuar sin un entorno saludable. Traslada las piezas faltantes de forma explícita; no rechaces con un mensaje genérico.
@@ -29,9 +29,9 @@ Antes de cualquier llamada, sigue `skills-guides/external-api-calls.md`:
 ## Reglas de routing
 
 1. Identifica la capacidad a partir de la intención del usuario. Si ninguna entrada de arriba encaja, esta skill no puede ayudar — díselo.
-2. Ejecuta el pre-check de `skills-guides/external-api-calls.md` §2. Si falla, detente y reporta.
+2. Ejecuta el pre-check de `guides/external-api-calls.md` §2. Si falla, detente y reporta.
 3. Carga el sub-fichero que corresponda y síguelo de principio a fin. No mezcles instrucciones de varios sub-ficheros.
-4. Tras la llamada, muestra al usuario el código HTTP y el cuerpo de la respuesta como se describe en `skills-guides/external-api-calls.md` §5.
+4. Tras la llamada, muestra al usuario el código HTTP y el cuerpo de la respuesta como se describe en `guides/external-api-calls.md` §5.
 
 ## Añadir una nueva capacidad
 

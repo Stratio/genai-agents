@@ -65,7 +65,7 @@ Font sizes and typography are the same as in the core block.
 
 ## Tone family
 
-`editorial-serious` (see `skills-guides/visual-craftsmanship.md`).
+`editorial-serious` (see `guides/visual-craftsmanship.md`).
 
 ## Best used for
 

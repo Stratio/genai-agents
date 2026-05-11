@@ -10,7 +10,7 @@ Orquesta las 5 fases del pipeline de construcción de la capa semántica de un d
 
 **Importante**: Esta skill llama a las tools MCP directamente (inline). NO delega a otras skills — las skills no pueden invocar otras skills programáticamente. Las shared skills de cada fase existen para uso independiente por el usuario; el pipeline las replica de forma integrada.
 
-Para referencia completa de tools y reglas, ver `skills-guides/stratio-semantic-layer-tools.md`.
+Para referencia completa de tools y reglas, ver `guides/stratio-semantic-layer-tools.md`.
 
 ## Workflow
 
@@ -50,7 +50,7 @@ Presentar **dashboard de estado**:
 
 ### 3. Enriquecimiento con instrucciones del glosario (pre-carga para todo el pipeline)
 
-Aplicar el Workflow de Enriquecimiento con Instrucciones del Glosario descrito en `skills-guides/stratio-semantic-layer-tools.md` §11 **una sola vez**, cubriendo las cuatro fases del pipeline que aceptan `user_instructions`: technical terms, ontology, SQL mappings y semantic terms.
+Aplicar el Workflow de Enriquecimiento con Instrucciones del Glosario descrito en `guides/stratio-semantic-layer-tools.md` §11 **una sola vez**, cubriendo las cuatro fases del pipeline que aceptan `user_instructions`: technical terms, ontology, SQL mappings y semantic terms.
 
 Al hacer la pregunta de cuatro opciones (§11.2), plantearla como "para las fases de este pipeline" y tratar la respuesta como política para todas; ofrecer override por fase solo si el usuario lo pide explícitamente. Combinar las instrucciones del glosario con cualquier fichero de referencia que el usuario quiera aportar (opción 3) y cualquier regla o definición de negocio en texto libre que quiera superponer.
 
@@ -98,7 +98,7 @@ Ejecutar cada fase en orden estricto, llamando a las tools directamente:
 - Usar la lista `processed_views` devuelta por la llamada a `create_sql_mappings` de la Fase 4 (cada entrada lleva la SQL recién generada en `sql_mapping`). Usar esa SQL tal cual, envolviéndola como `SELECT * FROM (<sql_mapping>) AS m LIMIT 5` para preservar la proyección original. No hace falta volver a llamar a `list_technical_domain_concepts` aquí.
 - Si el usuario acepta, listar las vistas candidatas y **cap por defecto en 5 vistas**. Si `processed_views` tiene más, preguntar al usuario qué subconjunto validar.
 - Para cada vista seleccionada: ejecutar `execute_sql` con la query envuelta. Lanzar todas las vistas seleccionadas **en paralelo** en la misma respuesta.
-- Renderizar resultados como tablas Markdown siguiendo `skills-guides/stratio-data-tools.md` §4 (cap por defecto de 10 filas en chat).
+- Renderizar resultados como tablas Markdown siguiendo `guides/stratio-data-tools.md` §4 (cap por defecto de 10 filas en chat).
 - **Sin improvisación**: si `sql_mapping` viene vacío para alguna vista dentro de `processed_views` (backend de gov no expone aún el campo, o el mapping no se persistió correctamente), NO improvisar un SELECT sobre las tablas fuente. Decirle al usuario: "No puedo validar la SQL de este mapping desde aquí porque el backend no la está exponiendo. Puedes validarla desde la UI de Governance, en la vista." Saltar esa vista y continuar con las demás.
 - Si `execute_sql` no está disponible en este agente, no caer al fallback de `query_data` con lenguaje natural sobre las tablas fuente (no validaría el mapping). Informar al usuario y derivar a la UI de Governance.
 
@@ -154,6 +154,6 @@ Si las vistas se publicaron durante el pipeline (o ya estaban publicadas), ofrec
   - **Patrón**: si la primera llamada a `query_data` / `execute_sql` falla porque el dominio o el término no es visible aún, informar al usuario, esperar la ventana correspondiente (60s post-publish, 90s post-Fase-5) y reintentar una vez. Si sigue fallando, proponer continuar más tarde. Decirle explícitamente al usuario qué ventana de propagación se está respetando para que entienda la espera.
 - Si el usuario acepta, pedirle 1–3 preguntas O proponérselas. **Patrón para preguntas propuestas** (determinístico, no libre): elegir la clase de la ontología con el mayor número de atributos mappeados y proponer: (a) `count(*)` de la vista correspondiente, (b) top-5 agrupando por un atributo categórico si existe, (c) min/max/avg sobre un atributo numérico si existe. Listar las propuestas como opciones numeradas antes de ejecutar.
 - Resolver cada pregunta con `query_data` (preferido — usa la capa semántica gobernada con NL). Si el usuario quiere ver / ajustar la SQL generada antes de ejecutar, usar primero `generate_sql` y ofrecer `execute_sql` después.
-- Renderizar resultados siguiendo `skills-guides/stratio-data-tools.md` §4 (cap por defecto 10 filas).
+- Renderizar resultados siguiendo `guides/stratio-data-tools.md` §4 (cap por defecto 10 filas).
 - Si la validación arroja resultados inesperados (vacíos, tipos no coincidentes, términos semánticos no encontrados), reportarlo y sugerir siguientes pasos: `/create-semantic-terms` para refinar, o `/create-sql-mappings` para arreglar la SQL.
 - Si el agente no tiene tools de datos (`query_data`, `execute_sql`, `generate_sql`), derivar al usuario a la UI de Governance / al agente de data-analytics y saltar este paso.

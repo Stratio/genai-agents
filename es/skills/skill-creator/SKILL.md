@@ -222,7 +222,7 @@ For the complete field reference, see `frontmatter-reference.md`.
 For writing patterns and anti-patterns, see `writing-patterns.md`.
 ```
 
-Si una guía es compartida entre varias skills, colócala en `shared-skill-guides/` y declárala en un archivo de manifiesto `skill-guides` dentro del directorio de la skill (un nombre de archivo por línea).
+Si una guía es compartida entre varias skills, colócala en `guides/` y declárala en un archivo de manifiesto `guides` dentro del directorio de la skill (un nombre de archivo por línea).
 
 ### 4.4 Inyección dinámica de contexto
 
@@ -267,7 +267,7 @@ Ejecuta esta lista de verificación antes de finalizar cualquier skill:
 2. El cuerpo tiene menos de 500 líneas; se usan archivos complementarios para el excedente
 3. No hay referencias directas a `AGENTS.md` ni a `CLAUDE.md` — se usan frases genéricas
 4. No hay dependencias de herramientas, estilos o plantillas específicas de un agente
-5. Las referencias a guías usan rutas relativas (`skills-guides/<file>` o nombre de archivo directo)
+5. Las referencias a guías usan rutas relativas (`guides/<file>` o nombre de archivo directo)
 6. Secciones numeradas para flujos de trabajo secuenciales
 7. Tablas para enrutar decisiones
 8. Cada paso importante explica el POR QUÉ, no solo el QUÉ

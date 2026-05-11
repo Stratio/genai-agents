@@ -10,11 +10,11 @@ Guide for building interactive web artifacts with real aesthetic intent. The del
 
 The user provides the brief: what to build, who uses it, what technical constraints apply. The scope may be a single component or a full landing page.
 
-**Scope**: this skill handles artifacts that live in a browser and respond to interaction. For single-page static artifacts (posters, covers, certificates, marketing one-pagers, infographics) the artifact is not interactive and belongs to a different tool. For multi-page typographic documents (reports, invoices, contracts, zines) the output is a document, not a web interface, and also belongs to a different tool. When uncertain, consult `skills-guides/visual-craftsmanship.md` for the selection criterion.
+**Scope**: this skill handles artifacts that live in a browser and respond to interaction. For single-page static artifacts (posters, covers, certificates, marketing one-pagers, infographics) the artifact is not interactive and belongs to a different tool. For multi-page typographic documents (reports, invoices, contracts, zines) the output is a document, not a web interface, and also belongs to a different tool. When uncertain, consult `guides/visual-craftsmanship.md` for the selection criterion.
 
 ## 1. Read the foundation
 
-Read and follow `skills-guides/visual-craftsmanship.md`. It defines the shared principles, anti-patterns, palette roles, type pairing philosophy and craftsmanship checklist used across every visual skill in this monorepo. This skill adds the web-specific decisions on top.
+Read and follow `guides/visual-craftsmanship.md`. It defines the shared principles, anti-patterns, palette roles, type pairing philosophy and craftsmanship checklist used across every visual skill in this monorepo. This skill adds the web-specific decisions on top.
 
 ## 2. Decide before coding
 
@@ -45,7 +45,7 @@ Choose exactly one:
 
 Uncommitted tone is the single most common cause of generic output. If two tones feel equally right for the brief, force a choice — half-and-half loses both.
 
-The first six tones follow the shared taxonomy in `skills-guides/visual-craftsmanship.md`; the remaining four are web-specific additions that rarely apply to static artifacts.
+The first six tones follow the shared taxonomy in `guides/visual-craftsmanship.md`; the remaining four are web-specific additions that rarely apply to static artifacts.
 
 ### 2.3 Choose a type pairing
 One display face + one body face, with deliberate contrast. Some pairings that work well in the browser:
@@ -71,7 +71,7 @@ One dominant accent, one deep neutral for text (rarely pure black), one pale neu
 Concrete values come from the theme, not from this skill.
 
 - **If the agent has a centralized theming skill available** (a brand-kit-style skill that ships a catalog of themes plus a workflow for the user to pick or define one), run that workflow BEFORE coding. The chosen theme supplies the token set that maps onto the `:root` below.
-- **If no such skill is present**, improvise tokens coherent with the deliverable context, following the tonal palette roles in `skills-guides/visual-craftsmanship.md`.
+- **If no such skill is present**, improvise tokens coherent with the deliverable context, following the tonal palette roles in `guides/visual-craftsmanship.md`.
 
 The `:root` block below uses placeholders to make it clear where the values come from:
 

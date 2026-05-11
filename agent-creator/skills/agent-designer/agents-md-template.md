@@ -80,7 +80,7 @@ Before activating any skill, classify the user's intent:
 {Domain-specific rules, reference tables, tool documentation, etc.}
 
 <!-- If this section exceeds 30-50 lines, consider extracting to a skills-guide. -->
-<!-- Reference format: All rules for [topic] are in `skills-guides/[guide].md`. Follow ALL rules defined there. -->
+<!-- Reference format: All rules for [topic] are in `guides/[guide].md`. Follow ALL rules defined there. -->
 
 ---
 

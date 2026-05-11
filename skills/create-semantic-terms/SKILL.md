@@ -17,7 +17,7 @@ Generates or regenerates business semantic terms in the Stratio Governance gloss
 | `list_technical_domain_concepts(domain)` | gov | List views with governance state, semantic terms and mappings |
 | `create_semantic_terms(domain, view_names?, user_instructions?, regenerate?)` | gov | Create semantic terms. With `regenerate=true`: DESTRUCTIVE, deletes and recreates |
 
-**Key rules**: `domain_name` immutable. Mandatory confirmation for `regenerate=true`. Build `user_instructions` through the Glossary Instruction Enrichment Workflow (`skills-guides/stratio-semantic-layer-tools.md` §11) before invoking. Pre-requisite: views must have SQL mapping before generating semantic terms.
+**Key rules**: `domain_name` immutable. Mandatory confirmation for `regenerate=true`. Build `user_instructions` through the Glossary Instruction Enrichment Workflow (`guides/stratio-semantic-layer-tools.md` §11) before invoking. Pre-requisite: views must have SQL mapping before generating semantic terms.
 
 ## Workflow
 
@@ -56,7 +56,7 @@ Ask the user with options (only views with mapping):
 
 ### 5. Glossary instruction enrichment
 
-Before invoking the MCP tool, apply the Glossary Instruction Enrichment Workflow described in `skills-guides/stratio-semantic-layer-tools.md` §11, scoped to **semantic terms** (i.e., when calling `get_glossary_instructions`, request only the semantic terms phase). This is where the user can pull GenAI semantic term instructions from the data dictionary, supply an external file (business glossary, functional documentation, terminological style guide) as their source, layer free-text definitions on top, or skip enrichment entirely.
+Before invoking the MCP tool, apply the Glossary Instruction Enrichment Workflow described in `guides/stratio-semantic-layer-tools.md` §11, scoped to **semantic terms** (i.e., when calling `get_glossary_instructions`, request only the semantic terms phase). This is where the user can pull GenAI semantic term instructions from the data dictionary, supply an external file (business glossary, functional documentation, terminological style guide) as their source, layer free-text definitions on top, or skip enrichment entirely.
 
 If the orchestrator already pre-loaded enriched instructions for this phase during the `build-semantic-layer` flow, reuse them — optionally ask whether the user wants to add anything specific to this phase on top of what was pre-loaded.
 

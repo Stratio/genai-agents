@@ -46,4 +46,4 @@ None specific to `/analyze` itself. The writer skills declare their own system d
 - `advanced-analytics.md` — statistical rigor, prospective analysis, anomaly detection, root cause
 - `clustering-guide.md` — segmentation, clustering, feature importance
 - `chart_layout.py` — Python utility for anti-overlap layout on matplotlib/Plotly charts
-- `skills-guides/stratio-data-tools.md` — MCP-first data retrieval (inherited from the agent)
+- `guides/stratio-data-tools.md` — MCP-first data retrieval (inherited from the agent)

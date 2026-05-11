@@ -211,11 +211,11 @@ Ejemplos: `dq-account-completeness-id`, `dq-card-uniqueness-card-id`, `dq-transa
 
 ## 6. Uso de MCPs
 
-Todas las reglas base de MCPs Stratio (herramientas disponibles, reglas estrictas, MCP-first, domain_name inmutable, profiling, ejecución en paralelo, cascada de aclaración, validación post-query, timeouts y buenas prácticas) están en `skills-guides/stratio-data-tools.md`. Seguir TODAS las reglas definidas allí.
+Todas las reglas base de MCPs Stratio (herramientas disponibles, reglas estrictas, MCP-first, domain_name inmutable, profiling, ejecución en paralelo, cascada de aclaración, validación post-query, timeouts y buenas prácticas) están en `guides/stratio-data-tools.md`. Seguir TODAS las reglas definidas allí.
 
 ### Herramientas adicionales de calidad
 
-Además de las herramientas listadas en `skills-guides/stratio-data-tools.md`, este agente dispone de:
+Además de las herramientas listadas en `guides/stratio-data-tools.md`, este agente dispone de:
 
 | Herramienta | Servidor | Cuando usarla |
 |-------------|----------|---------------|

@@ -167,7 +167,7 @@ For each file generated:
    - Package contents (list of files)
    - The deployable artifact is `output/<skill-name>.zip` (kept here as reference for any manual upload). The deployment itself happens in step 4.
 
-4. **Deploy the bundle to Stratio Cowork** — MUST load the `/cowork-api` skill and run `tasks/upload-skill.md` end-to-end. That sub-file owns: the pre-check (via `skills-guides/external-api-calls.md` §2), the question to the user about `on_conflict`, the curl invocation against `/v1/agents/skills/bundle/import`, and how to surface the HTTP code and JSON response.
+4. **Deploy the bundle to Stratio Cowork** — MUST load the `/cowork-api` skill and run `tasks/upload-skill.md` end-to-end. That sub-file owns: the pre-check (via `guides/external-api-calls.md` §2), the question to the user about `on_conflict`, the curl invocation against `/v1/agents/skills/bundle/import`, and how to surface the HTTP code and JSON response.
 
    The ZIP path to pass is `output/<skill-name>.zip` (the artifact produced in step 1 of this phase).
 

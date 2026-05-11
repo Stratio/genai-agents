@@ -59,7 +59,7 @@ to a different tool:
   roughly seventy per cent or more of the surface is visual composition
   rather than prose or data. Typography becomes a visual element. A
   different skill handles that medium; see
-  `skills-guides/visual-craftsmanship.md` for the selection criterion.
+  `guides/visual-craftsmanship.md` for the selection criterion.
 - **Interactive web interfaces** — components, pages, dashboards that live
   in a browser. PDF is static; those briefs call for HTML/CSS.
 
@@ -113,7 +113,7 @@ they come from the theme chosen for the PDF.
   run its workflow BEFORE authoring; it returns a token set that maps
   onto the `HexColor` tokens below.
 - Otherwise, improvise tokens coherent with the deliverable following
-  the tonal palette roles in `skills-guides/visual-craftsmanship.md`.
+  the tonal palette roles in `guides/visual-craftsmanship.md`.
 
 ### Print-specific sensibilities
 

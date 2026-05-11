@@ -7,7 +7,7 @@ post-mortems de SRE y cualquier contenido donde el lenguaje visual
 deba resonar con el lenguaje físico de salas de control y señalética.
 
 > **Draft v1** — este tema se diseñó para este kit desde el tono
-> `industrial-utilitarian` definido en `skills-guides/visual-craftsmanship.md`.
+> `industrial-utilitarian` definido en `guides/visual-craftsmanship.md`.
 > Inspiración laxa tomada de la paleta base `corporate-formal` en el
 > monorepo, pero el tono se desplaza deliberadamente hacia lo
 > funcional / de señalización. Itérese según feedback de los primeros

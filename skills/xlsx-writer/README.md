@@ -39,7 +39,7 @@ None — the skill operates purely on local files.
 
 ## Shared guides
 
-- `visual-craftsmanship.md` (via `skill-guides`) — tonal palette roles and typography pairings used as fallback when no centralized theming skill resolved a theme.
+- `visual-craftsmanship.md` (via `guides`) — tonal palette roles and typography pairings used as fallback when no centralized theming skill resolved a theme.
 
 ## Bundled assets
 

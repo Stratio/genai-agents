@@ -52,7 +52,7 @@ None — the skill operates purely on local files.
 
 ## Shared guides
 
-- `visual-craftsmanship.md` (via `skill-guides`) — shared design principles across the visual-craftsmanship family (`web-craft`, `canvas-craft`, `pdf-writer`, `docx-writer`, `pptx-writer`).
+- `visual-craftsmanship.md` (via `guides`) — shared design principles across the visual-craftsmanship family (`web-craft`, `canvas-craft`, `pdf-writer`, `docx-writer`, `pptx-writer`).
 
 ## Bundled assets
 

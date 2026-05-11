@@ -6,7 +6,7 @@ sin prisa — construido para decks de consejo, resúmenes ejecutivos y
 entregables a clientes premium donde la forma misma comunica calidad.
 
 > **Draft v1** — este tema se diseñó para este kit desde el tono
-> `luxury-refined` definido en `skills-guides/visual-craftsmanship.md`. No hay
+> `luxury-refined` definido en `guides/visual-craftsmanship.md`. No hay
 > precedente directo en el monorepo. Itérese según feedback de los
 > primeros usos.
 

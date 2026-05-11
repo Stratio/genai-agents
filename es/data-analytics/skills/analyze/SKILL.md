@@ -29,14 +29,14 @@ Si la petición requiere análisis (cruce de datos, hipótesis, visualizaciones,
 
 Si el dominio ya es conocido de la conversación (identificado y explorado en turnos previos), saltar esta sección y continuar con la sección 3. Usar el contexto de dominio y tablas ya establecido.
 
-Leer y seguir `skills-guides/stratio-data-tools.md` sec 5 para los pasos de descubrimiento del dominio (buscar o listar dominios, seleccionar, explorar tablas, columnas y terminología).
+Leer y seguir `guides/stratio-data-tools.md` sec 5 para los pasos de descubrimiento del dominio (buscar o listar dominios, seleccionar, explorar tablas, columnas y terminología).
 
 ## 3. EDA y Perfilado de Datos
 
 Antes de preguntar al usuario sobre formatos y planificar métricas, entender la realidad de los datos en dos dimensiones complementarias: el **perfil estadístico** (EDA) y la **cobertura de calidad de gobernanza** ya definida para esas tablas. Ambas se lanzan en paralelo.
 
 1. **Lanzamiento en paralelo** — Para las tablas clave identificadas en el paso 2, lanzar a la vez:
-   - `profile_data` por tabla (perfilado estadístico — seguir la mecánica y umbrales adaptativos de `skills-guides/stratio-data-tools.md` sec 6)
+   - `profile_data` por tabla (perfilado estadístico — seguir la mecánica y umbrales adaptativos de `guides/stratio-data-tools.md` sec 6)
    - `get_tables_quality_details(domain_name, [tablas])` (reglas de gobernanza existentes y su estado OK/KO/WARNING)
 
 2. **Evaluar perfil estadístico (de `profile_data`)**:
@@ -183,7 +183,7 @@ Documentar el benchmark en el campo "Benchmark" del KPI. Los datos sin benchmark
 ### 5.5 Preguntas de datos
 Lista de preguntas en lenguaje natural para `query_data`. NUNCA escribir SQL.
 
-Para buenas prácticas de formulación y estrategia de queries (orden de planificación, ejecución en paralelo), ver `skills-guides/stratio-data-tools.md` sec 11.
+Para buenas prácticas de formulación y estrategia de queries (orden de planificación, ejecución en paralelo), ver `guides/stratio-data-tools.md` sec 11.
 
 ### 5.6 Visualizaciones
 
@@ -262,11 +262,11 @@ El stack Python lo provee el entorno (imagen del sandbox Cowork o venv local); `
 
 ### 6.2 Obtención de datos
 - Usar `query_data(data_question=..., domain_name=..., output_format="dict")` para cada pregunta de datos. **Lanzar en paralelo** todas las queries independientes definidas en el plan (paso 5.5). Solo serializar si una query necesita el resultado de otra para formularse
-- Seguir todas las reglas de `skills-guides/stratio-data-tools.md` (MCP-first, output_format, no SQL manual, ejecución en paralelo)
+- Seguir todas las reglas de `guides/stratio-data-tools.md` (MCP-first, output_format, no SQL manual, ejecución en paralelo)
 - Guardar datos intermedios en `output/[ANALISIS_DIR]/data/` como CSV si son necesarios para scripts posteriores
 
 ### 6.3 Validación post-query (obligatorio)
-Aplicar las 7 validaciones de `skills-guides/stratio-data-tools.md` sec 8 a cada resultado recibido. Cuando se lanzan queries en paralelo, validar cada resultado conforme llega. Si alguna falla: reformular la pregunta al MCP, informar al usuario, ajustar el plan.
+Aplicar las 7 validaciones de `guides/stratio-data-tools.md` sec 8 a cada resultado recibido. Cuando se lanzan queries en paralelo, validar cada resultado conforme llega. Si alguna falla: reformular la pregunta al MCP, informar al usuario, ajustar el plan.
 
 ### 6.4 Desarrollo de scripts
 - Escribir scripts en `output/[ANALISIS_DIR]/scripts/` con nombres descriptivos que incluyan contexto del análisis

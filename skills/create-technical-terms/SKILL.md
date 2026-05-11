@@ -17,7 +17,7 @@ Creates technical descriptions for tables and columns of a domain in Stratio Gov
 | `list_domain_tables(domain)` | sql | List tables with their descriptions (indicates if they already have technical terms) |
 | `create_technical_terms(domain, table_names?, user_instructions?, regenerate?)` | gov | Create technical terms. Skips existing. With `regenerate=true`: DESTRUCTIVE, deletes and recreates |
 
-**Key rules**: `domain_name` immutable (exact value from `list_domains` or `search_domains`). Mandatory confirmation for `regenerate=true`. Build `user_instructions` through the Glossary Instruction Enrichment Workflow (`skills-guides/stratio-semantic-layer-tools.md` §11) before invoking.
+**Key rules**: `domain_name` immutable (exact value from `list_domains` or `search_domains`). Mandatory confirmation for `regenerate=true`. Build `user_instructions` through the Glossary Instruction Enrichment Workflow (`guides/stratio-semantic-layer-tools.md` §11) before invoking.
 
 ## Workflow
 
@@ -51,7 +51,7 @@ Ask the user with options:
 
 ### 4. Glossary instruction enrichment
 
-Before invoking the MCP tool, apply the Glossary Instruction Enrichment Workflow described in `skills-guides/stratio-semantic-layer-tools.md` §11, scoped to **technical terms** (i.e., when calling `get_glossary_instructions`, request only the technical terms phase).
+Before invoking the MCP tool, apply the Glossary Instruction Enrichment Workflow described in `guides/stratio-semantic-layer-tools.md` §11, scoped to **technical terms** (i.e., when calling `get_glossary_instructions`, request only the technical terms phase).
 
 If the orchestrator already pre-loaded enriched instructions for this phase during the `build-semantic-layer` flow, reuse them instead of asking again — optionally ask the user whether they want to add anything specific to this phase on top of what was pre-loaded.
 

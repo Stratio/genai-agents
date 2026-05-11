@@ -8,7 +8,7 @@ control rooms and signage.
 
 > **Draft v1** — this theme was designed for this kit from the
 > `industrial-utilitarian` tone defined in
-> `skills-guides/visual-craftsmanship.md`. Loose inspiration drawn
+> `guides/visual-craftsmanship.md`. Loose inspiration drawn
 > from the `corporate-formal` base palette in the monorepo, but the
 > tone is shifted deliberately toward functional / signaling. Iterate
 > based on feedback from first uses.

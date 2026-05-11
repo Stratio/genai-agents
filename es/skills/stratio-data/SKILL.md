@@ -15,4 +15,4 @@ obligatorias, patrones de uso y buenas prácticas para todas las herramientas MC
 en una conversación, o cuando necesites refrescar las reglas de uso (domain_name inmutable,
 MCP-first, validación post-query, cascada de aclaración).
 
-Leer `skills-guides/stratio-data-tools.md` para la referencia completa.
+Leer `guides/stratio-data-tools.md` para la referencia completa.

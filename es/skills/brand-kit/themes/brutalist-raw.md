@@ -8,7 +8,7 @@ documentos orientados a desarrollo, volcados de datos y cualquier
 entregable donde la pulcritud resultaría deshonesta.
 
 > **Draft v1** — este tema se diseñó para este kit desde el tono
-> `brutalist-raw` definido en `skills-guides/visual-craftsmanship.md`. No hay
+> `brutalist-raw` definido en `guides/visual-craftsmanship.md`. No hay
 > precedente directo en el monorepo. Itérese según feedback de los
 > primeros usos.
 

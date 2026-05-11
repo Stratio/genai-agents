@@ -35,14 +35,14 @@ genai-agents/
     canvas-craft/
     brand-kit/
     skill-creator/
-  shared-skill-guides/     # Shared guides (not skills; copied to skills-guides/ in the output)
+  guides/     # Shared guides (not skills; copied to guides/ in the output)
     stratio-data-tools.md
     visual-craftsmanship.md
     stratio-semantic-layer-tools.md
     quality-exploration.md
   es/                      # Spanish translations (overlay directory, mirrors main tree)
     skills/
-    shared-skill-guides/
+    guides/
     data-analytics/
     semantic-layer/
     data-quality/
@@ -51,16 +51,16 @@ genai-agents/
     agent-creator/
   data-analytics/          # Full agent (analysis + multi-format reports)
     imported-skills        # List of skills imported from monorepo skills/
-    shared-guides          # List of shared-skill-guides that AGENTS.md references directly
+    guides                 # List of root-level guides this agent uses directly
   semantic-layer/          # Semantic layer construction agent
     imported-skills
-    shared-guides
+    guides                 # List of root-level guides this agent uses directly
   data-quality/            # Data quality agent (assessment, rules, reports)
     imported-skills
-    shared-guides
+    guides                 # List of root-level guides this agent uses directly
   governance-officer/      # Governance officer: semantic layer + data quality combined
     imported-skills
-    shared-guides
+    guides                 # List of root-level guides this agent uses directly
   skill-creator/           # Skill creation agent
     imported-skills
   agent-creator/           # Agent creation agent
@@ -75,9 +75,9 @@ genai-agents/
 
 - Each agent has its own `AGENTS.md` with specific instructions. Always work from the corresponding agent folder
 - Agent-specific skills live in `<agent>/skills/`; shared skills live in the root-level `skills/` directory
-- Shared guides live in `shared-skill-guides/` (monorepo root); local guides in the agent's `skills-guides/`
-- Each agent declares which shared skills it imports in `imported-skills` (one line per skill) and which direct guides in `shared-guides`
-- Each shared skill can declare which guides from `shared-skill-guides/` it needs in a `skill-guides` file inside its folder
+- Shared guides live in `guides/` (monorepo root); local guides in the agent's `guides/`
+- Each agent declares which shared skills it imports in `imported-skills` (one line per skill) and which direct guides in `guides`
+- Each shared skill can declare which guides from `guides/` it needs in a `guides` file inside its folder
 - If an agent has a skill in `skills/` with the same name as a shared skill, the local version takes priority
 - Generic packaging script at the monorepo root: `pack_opencode.sh` (any agent), plus `pack_stratio_cowork.sh` (agents/v1 bundles), `pack_skills.sh` (skill ZIPs) and `pack_plugin.sh` (functional plugins)
 - The root `.gitignore` covers all agents
@@ -154,13 +154,13 @@ Skills inside `<agent>/skills/` and any `AGENTS.md` may reference directly any s
 
 ### Visual-craftsmanship family
 
-Three shared skills cover the visual output of the monorepo. They share the guide `shared-skill-guides/visual-craftsmanship.md` but do not reference each other in runtime. The disambiguation table in that guide is the only place where the three names live together.
+Three shared skills cover the visual output of the monorepo. They share the guide `guides/visual-craftsmanship.md` but do not reference each other in runtime. The disambiguation table in that guide is the only place where the three names live together.
 
 - `web-craft` — interactive frontend (HTML/CSS/JS, React, Vue). Components, pages, dashboards.
 - `canvas-craft` — single-page static artifacts (PDF/PNG). Posters, covers, certificates, marketing one-pagers, infographics. Ships a small set of OFL display fonts.
 - `pdf-writer` — multi-page typographic documents or prose-dominated single pages. Analytical reports, invoices, contracts, zines.
 
-Agents that produce visual output declare the family members they need in `<agent>/imported-skills` and add `visual-craftsmanship.md` to `<agent>/shared-guides`. `data-analytics`, `governance-officer` and `data-quality` all declare the full family (pdf-writer, docx-writer, pptx-writer, web-craft, canvas-craft) so they can offer every output format through both the analytical pipeline and `quality-report`.
+Agents that produce visual output declare the family members they need in `<agent>/imported-skills` and add `visual-craftsmanship.md` to `<agent>/guides`. `data-analytics`, `governance-officer` and `data-quality` all declare the full family (pdf-writer, docx-writer, pptx-writer, web-craft, canvas-craft) so they can offer every output format through both the analytical pipeline and `quality-report`.
 
 ### Brand-kit / centralized theming
 
@@ -172,19 +172,19 @@ Output skills (`docx-writer`, `pptx-writer`, `pdf-writer`, `xlsx-writer`, `web-c
 
 1. Create `skills/<name>/SKILL.md` with the skill content (in English)
 2. Create the Spanish translation at `es/skills/<name>/SKILL.md`
-3. If the skill needs external guides, create the files in `shared-skill-guides/` (with their counterparts in `es/shared-skill-guides/`) and list them in `skills/<name>/skill-guides` (plain text, one line per file)
+3. If the skill needs external guides, create the files in `guides/` (with their counterparts in `es/guides/`) and list them in `skills/<name>/guides` (plain text, one line per file)
 4. Declare the skill in the agents that use it by adding its name to the `<agent>/imported-skills` file
-5. If the agent's AGENTS.md references the guide directly, also add it to `<agent>/shared-guides`
+5. If the agent's AGENTS.md references the guide directly, also add it to `<agent>/guides`
 
 **SKILL.md content rules:**
 - Do not reference `AGENTS.md` or `CLAUDE.md` directly — use generic phrasing such as "according to the agent's instructions" or "following the user question convention". The pack scripts substitute these names depending on the target platform, but a direct reference may not work correctly on some platforms
 - Do not depend on Python tools, styles, templates or paths specific to a particular agent — if the skill needs those, it should be local
 - References to `output/MEMORY.md` are acceptable if conditioned on the file's existence (`if it exists`) — agents without memory simply ignore it
-- Guide references in any `.md` file inside a skill (SKILL.md or any nested file) must always use the path `skills-guides/<file>` — independently of how deep the referencing file lives. The pack scripts:
-  - Copy each declared guide **flat into the skill root** (sibling of SKILL.md, not into a nested `skills-guides/` folder).
-  - Run a recursive `sed 's|skills-guides/||g'` over every `.md` in the skill, so all references become flat filenames after packing.
+- Guide references in any `.md` file inside a skill (SKILL.md or any nested file) must always use the path `guides/<file>` — independently of how deep the referencing file lives. The pack scripts:
+  - Copy each declared guide **flat into the skill root** (sibling of SKILL.md, not into a nested `guides/` folder).
+  - Run a recursive `sed 's|guides/||g'` over every `.md` in the skill, so all references become flat filenames after packing.
   - Resolution at runtime is by context, not by filesystem path — the LLM has the skill loaded and finds `<file>.md` regardless of where the referencing file sits within the skill.
-- Guides declared at the agent level (in `<agent>/shared-guides`) are copied to `<agent>/skills-guides/` so that `AGENTS.md` can reference them with the same `skills-guides/<file>` path. `AGENTS.md` is **not** rewritten by the pack — the path stays literal because the folder physically exists at agent level.
+- Guides declared at the agent level (in `<agent>/guides`) are copied to `<agent>/guides/` so that `AGENTS.md` can reference them with the same `guides/<file>` path. `AGENTS.md` is **not** rewritten by the pack — the path stays literal because the folder physically exists at agent level.
 
 **SKILL.md frontmatter limits (enforced by Anthropic / OpenCode / GitHub Copilot Code at runtime):**
 
@@ -197,7 +197,7 @@ The `pack_opencode.sh` script re-validates `description` length in its integrity
 
 ### Using a shared skill in an agent
 
-Add the skill name to the `<agent>/imported-skills` file (one line per skill). If AGENTS.md directly references any guide from `shared-skill-guides/`, add it to `<agent>/shared-guides`. All pack scripts read these manifests automatically.
+Add the skill name to the `<agent>/imported-skills` file (one line per skill). If AGENTS.md directly references any guide from `guides/`, add it to `<agent>/guides`. All pack scripts read these manifests automatically.
 
 If the agent already has a skill in `skills/` with the same name, the local version takes priority and the shared one is skipped.
 
@@ -307,9 +307,9 @@ genai-agents/
 
 Supported languages are listed in the `languages` file at the monorepo root.
 
-**What gets translated:** `AGENTS.md`, `SKILL.md`, sub-guides (`*.md` inside `skills/`), `skills-guides/*.md`, `shared-skill-guides/*.md`, `USER_README.md`, `README.md` (including `plugins/<name>/README.md`), `cowork-metadata.yaml`, `templates/memory/*.md`.
+**What gets translated:** `AGENTS.md`, `SKILL.md`, sub-guides (`*.md` inside `skills/`), `guides/*.md`, `guides/*.md`, `USER_README.md`, `README.md` (including `plugins/<name>/README.md`), `cowork-metadata.yaml`, `templates/memory/*.md`.
 
-**What stays language-neutral (not translated):** Python code, HTML templates, CSS, shell scripts, JSON configs (`.mcp.json`, `opencode.json`), manifests (`imported-skills`, `shared-guides`, `skill-guides`, `plugin.yaml`), `Makefile`, `Jenkinsfile`, `VERSION`.
+**What stays language-neutral (not translated):** Python code, HTML templates, CSS, shell scripts, JSON configs (`.mcp.json`, `opencode.json`), manifests (`imported-skills`, `guides`, `guides`, `plugin.yaml`), `Makefile`, `Jenkinsfile`, `VERSION`.
 
 **Skill and folder names are technical identifiers** — they stay in English regardless of language (`explore-data`, not `explorar-datos`).
 
@@ -359,7 +359,7 @@ The complete creation guide is in `README.md` (section "Creating a new agent"). 
    - `opencode.json` — MCPs and permissions for OpenCode (if it uses OpenCode)
    - `skills/` — optional; if the agent has its own skills, canonical format `skills/<name>/SKILL.md`
    - `imported-skills` — optional; list of shared skills from the monorepo to include (one line per skill)
-   - `shared-guides` — optional; list of shared-skill-guides that AGENTS.md references directly
+   - `guides` — optional; list of guides that AGENTS.md references directly
 2. Add `my-agent` to the `release-modules` file (one line per agent) so that `make package` includes it
 3. Update the agents table in `README.md`
 4. Create counterparts in `es/<agent>/` for all translatable files (see [Internationalization](#internationalization-i18n))

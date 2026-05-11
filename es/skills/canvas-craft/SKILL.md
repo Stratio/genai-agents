@@ -8,11 +8,11 @@ argument-hint: "[poster|portada|certificado|infografia|one-pager] [brief]"
 
 Guía para producir artefactos visuales de una sola página renderizados como PDF o PNG. El artefacto es estático, visualmente protagonista, y trata la tipografía como parte de la composición en lugar de como vehículo para prosa larga.
 
-**Alcance**: esta skill gestiona piezas de una sola página en las que aproximadamente el setenta por ciento o más de la superficie es composición visual — color, forma, tipografía como forma. Para documentos tipográficos multi-página (informes analíticos, contratos, facturas, zines) la salida es un documento y pertenece a otra herramienta. Para artefactos interactivos de navegador (componentes, páginas, dashboards) el artefacto vive en un navegador y también pertenece a otra herramienta. Cuando haya duda, consulta `skills-guides/visual-craftsmanship.md` para el criterio de selección.
+**Alcance**: esta skill gestiona piezas de una sola página en las que aproximadamente el setenta por ciento o más de la superficie es composición visual — color, forma, tipografía como forma. Para documentos tipográficos multi-página (informes analíticos, contratos, facturas, zines) la salida es un documento y pertenece a otra herramienta. Para artefactos interactivos de navegador (componentes, páginas, dashboards) el artefacto vive en un navegador y también pertenece a otra herramienta. Cuando haya duda, consulta `guides/visual-craftsmanship.md` para el criterio de selección.
 
 ## 1. Lee la base
 
-Lee y sigue `skills-guides/visual-craftsmanship.md`. Define los principios compartidos, anti-patrones, roles de paleta, filosofía de emparejamiento tipográfico y checklist de artesanía usados en todas las skills visuales del monorepo. Esta skill añade encima el workflow específico de canvas.
+Lee y sigue `guides/visual-craftsmanship.md`. Define los principios compartidos, anti-patrones, roles de paleta, filosofía de emparejamiento tipográfico y checklist de artesanía usados en todas las skills visuales del monorepo. Esta skill añade encima el workflow específico de canvas.
 
 ## 2. Workflow de dos pasos
 
@@ -83,7 +83,7 @@ Nunca te apoyes en la Helvetica integrada de reportlab para artefactos finales. 
 Los valores concretos de la paleta vienen del tema, no de esta skill.
 
 - **Si el agente tiene disponible una skill de theming centralizada** (una skill tipo brand-kit que aporta un catálogo de temas más un flujo para que el usuario elija o defina uno), ejecuta ese flujo ANTES de codear. Mapea los tokens `primary` / `ink` / `accent` / `bg` del tema a los cuatro colores como mucho que tolera esta superficie.
-- **Si no hay tal skill disponible**, improvisa siguiendo los roles de paleta tonal en `skills-guides/visual-craftsmanship.md`.
+- **Si no hay tal skill disponible**, improvisa siguiendo los roles de paleta tonal en `guides/visual-craftsmanship.md`.
 
 Los artefactos renderizados para impresión se benefician de:
 - Neutros profundos que no son `#000` (café oscuro cálido, índigo frío, azul-negro).
@@ -94,7 +94,7 @@ Declara RGB en floats `0–1` para reportlab (`colors.Color(<r>, <g>, <b>)`). Ma
 
 ## 4. Pipeline combinada: portada + cuerpo
 
-Cuando el brief es un informe con portada diseñada, esta skill produce solo la portada. El cuerpo multi-página lo ensambla la herramienta de documento tipográfico (consulta `skills-guides/visual-craftsmanship.md` para el criterio de selección). Merge final con `pypdf`:
+Cuando el brief es un informe con portada diseñada, esta skill produce solo la portada. El cuerpo multi-página lo ensambla la herramienta de documento tipográfico (consulta `guides/visual-craftsmanship.md` para el criterio de selección). Merge final con `pypdf`:
 
 ```python
 from pypdf import PdfWriter

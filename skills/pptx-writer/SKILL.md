@@ -89,7 +89,7 @@ they come from the theme chosen for the deck.
   run its workflow BEFORE authoring; it returns a token set that maps
   onto the `DESIGN` dict below.
 - Otherwise, improvise tokens coherent with the deliverable following
-  the tonal palette roles in `skills-guides/visual-craftsmanship.md`.
+  the tonal palette roles in `guides/visual-craftsmanship.md`.
 
 The `DESIGN` dict in the scaffold uses placeholders — fill them from
 the theme, don't hard-code.
@@ -229,7 +229,7 @@ Where those concrete values come from depends on what the agent has:
   supplies a complete, coherent token set (primary, accent, ink,
   muted, rule, bg, bg_alt, typography, sizes). Use it verbatim.
 - Otherwise, improvise from the tonal palette roles in
-  `skills-guides/visual-craftsmanship.md`.
+  `guides/visual-craftsmanship.md`.
 
 ## 7. Slide types you'll build
 

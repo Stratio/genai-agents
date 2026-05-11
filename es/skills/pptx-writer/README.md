@@ -52,7 +52,7 @@ Ninguno — la skill opera exclusivamente sobre ficheros locales.
 
 ## Guías compartidas
 
-- `visual-craftsmanship.md` (vía `skill-guides`) — principios de diseño compartidos entre la familia visual-craftsmanship (`web-craft`, `canvas-craft`, `pdf-writer`, `docx-writer`, `pptx-writer`).
+- `visual-craftsmanship.md` (vía `guides`) — principios de diseño compartidos entre la familia visual-craftsmanship (`web-craft`, `canvas-craft`, `pdf-writer`, `docx-writer`, `pptx-writer`).
 
 ## Assets incluidos
 

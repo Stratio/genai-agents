@@ -17,7 +17,7 @@ Crea descripciones técnicas de tablas y columnas de un dominio en Stratio Gover
 | `list_domain_tables(domain)` | sql | Listar tablas con sus descripciones (indica si ya tienen términos técnicos) |
 | `create_technical_terms(domain, table_names?, user_instructions?, regenerate?)` | gov | Crear términos técnicos. Salta existentes. Con `regenerate=true`: DESTRUCTIVO, borra y recrea |
 
-**Reglas clave**: `domain_name` inmutable (valor exacto de `list_domains` o `search_domains`). Confirmación obligatoria para `regenerate=true`. Construir `user_instructions` mediante el Workflow de Enriquecimiento con Instrucciones del Glosario (`skills-guides/stratio-semantic-layer-tools.md` §11) antes de invocar.
+**Reglas clave**: `domain_name` inmutable (valor exacto de `list_domains` o `search_domains`). Confirmación obligatoria para `regenerate=true`. Construir `user_instructions` mediante el Workflow de Enriquecimiento con Instrucciones del Glosario (`guides/stratio-semantic-layer-tools.md` §11) antes de invocar.
 
 ## Workflow
 
@@ -51,7 +51,7 @@ Preguntar al usuario con opciones:
 
 ### 4. Enriquecimiento con instrucciones del glosario
 
-Antes de invocar la tool MCP, aplicar el Workflow de Enriquecimiento con Instrucciones del Glosario descrito en `skills-guides/stratio-semantic-layer-tools.md` §11, acotado a **technical terms** (al llamar a `get_glossary_instructions`, pedir solo la fase de technical terms).
+Antes de invocar la tool MCP, aplicar el Workflow de Enriquecimiento con Instrucciones del Glosario descrito en `guides/stratio-semantic-layer-tools.md` §11, acotado a **technical terms** (al llamar a `get_glossary_instructions`, pedir solo la fase de technical terms).
 
 Si el orquestador ya pre-cargó instrucciones enriquecidas para esta fase durante el flujo de `build-semantic-layer`, reutilizarlas en lugar de volver a preguntar — opcionalmente preguntar al usuario si quiere añadir algo específico para esta fase encima de lo que ya se cargó.
 

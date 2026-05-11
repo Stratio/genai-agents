@@ -29,7 +29,7 @@ This task does not call a single plugin endpoint — it dispatches the sub-bundl
 
 ## Procedure
 
-1. **Pre-check** — follow `skills-guides/external-api-calls.md` §2 (`preflight_external_api`). If it fails, stop and surface the missing prerequisites verbatim — do not refuse with a generic "I can't".
+1. **Pre-check** — follow `guides/external-api-calls.md` §2 (`preflight_external_api`). If it fails, stop and surface the missing prerequisites verbatim — do not refuse with a generic "I can't".
 
 2. **Open the wrapper** in a temporary directory. Read `plugin.yaml` and validate that `bundles[]` is present and non-empty.
 
@@ -102,7 +102,7 @@ Plugin: <plugin-name>
   Unresolved MCPs (warnings): ["Stratio_Data"]
 ```
 
-If any sub-bundle returned a non-2xx HTTP code, surface the code and the body verbatim alongside the aggregated summary. See `skills-guides/external-api-calls.md` §5 for how to interpret common codes (`401/403` = mTLS or RBAC; `400/422` = validation).
+If any sub-bundle returned a non-2xx HTTP code, surface the code and the body verbatim alongside the aggregated summary. See `guides/external-api-calls.md` §5 for how to interpret common codes (`401/403` = mTLS or RBAC; `400/422` = validation).
 
 ## Reusable script
 

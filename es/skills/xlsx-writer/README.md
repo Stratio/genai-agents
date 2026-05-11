@@ -39,7 +39,7 @@ Ninguno — la skill opera exclusivamente sobre ficheros locales.
 
 ## Guías compartidas
 
-- `visual-craftsmanship.md` (vía `skill-guides`) — roles de paleta tonal y pairings tipográficos usados como fallback cuando no hay skill centralizada de theming que resolvió un tema.
+- `visual-craftsmanship.md` (vía `guides`) — roles de paleta tonal y pairings tipográficos usados como fallback cuando no hay skill centralizada de theming que resolvió un tema.
 
 ## Assets empaquetados
 

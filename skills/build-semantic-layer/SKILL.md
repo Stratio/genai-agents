@@ -10,7 +10,7 @@ Orchestrates the 5 phases of the semantic layer construction pipeline for an exi
 
 **Important**: This skill calls the MCP tools directly (inline). It does NOT delegate to other skills — skills cannot programmatically invoke other skills. The shared skills for each phase exist for independent use by the user; the pipeline replicates them in an integrated manner.
 
-For a complete tools and rules reference, see `skills-guides/stratio-semantic-layer-tools.md`.
+For a complete tools and rules reference, see `guides/stratio-semantic-layer-tools.md`.
 
 ## Workflow
 
@@ -50,7 +50,7 @@ Present **status dashboard**:
 
 ### 3. Glossary instruction enrichment (pre-load for the whole pipeline)
 
-Apply the Glossary Instruction Enrichment Workflow described in `skills-guides/stratio-semantic-layer-tools.md` §11 **once**, covering the four phases of the pipeline that accept `user_instructions`: technical terms, ontology, SQL mappings, and semantic terms.
+Apply the Glossary Instruction Enrichment Workflow described in `guides/stratio-semantic-layer-tools.md` §11 **once**, covering the four phases of the pipeline that accept `user_instructions`: technical terms, ontology, SQL mappings, and semantic terms.
 
 When asking the user the four-option question (§11.2), scope it to "for the phases of this pipeline" and treat the answer as the policy for all of them; offer a per-phase override only if the user explicitly asks. Combine the glossary-derived instructions with any reference files the user wants to bring (option 3) and any free-text business rules or definitions they layer on top.
 
@@ -98,7 +98,7 @@ Execute each phase in strict order, calling the tools directly:
 - Use the `processed_views` list returned by Phase 4's `create_sql_mappings` call (each entry carries the freshly generated SQL in `sql_mapping`). Use that SQL verbatim, wrapping it as `SELECT * FROM (<sql_mapping>) AS m LIMIT 5` so the original projection is preserved. No need to call `list_technical_domain_concepts` again here.
 - If the user accepts, list the candidate views and **cap by default at 5 views**. If `processed_views` has more, ask the user which subset to validate.
 - For each selected view: run `execute_sql` with the wrapped query. Launch all selected views **in parallel** in the same response.
-- Render results as Markdown tables following `skills-guides/stratio-data-tools.md` §4 (default cap of 10 rows in chat).
+- Render results as Markdown tables following `guides/stratio-data-tools.md` §4 (default cap of 10 rows in chat).
 - **No improvisation**: if `sql_mapping` comes back empty for a view inside `processed_views` (gov backend not yet exposing the field, or mapping failed to persist), do NOT improvise a SELECT over source tables. Tell the user: "I cannot validate this mapping's SQL from here because the backend is not exposing it. You can validate it from the Governance UI under the view." Skip that view and continue with the others.
 - If `execute_sql` is not available in this agent, do not fall back to a natural-language `query_data` over source tables (it would not validate the mapping). Inform the user and point to the Governance UI.
 
@@ -154,6 +154,6 @@ If the views were published during the pipeline (or were already published), off
   - **Pattern**: if the first `query_data` / `execute_sql` call fails because the domain or term is not yet visible, inform the user, wait the appropriate window (60s post-publish, 90s post-Phase-5), retry once. If still failing, propose continuing later. Tell the user explicitly which propagation window is being respected so they understand the wait.
 - If the user accepts, ask them for 1–3 business questions OR propose them. **Pattern for proposed questions** (deterministic, not free-form): pick one ontology class with the highest number of mapped attributes and propose: (a) `count(*)` of the corresponding view, (b) top-5 grouping by a categorical attribute if any exists, (c) min/max/avg over a numeric attribute if any exists. List the proposals as numbered options before executing.
 - Resolve each question with `query_data` (preferred — uses the governed semantic layer with NL). If the user wants to see / tweak the generated SQL before running, use `generate_sql` first and offer `execute_sql` afterwards.
-- Render results following `skills-guides/stratio-data-tools.md` §4 (default cap 10 rows).
+- Render results following `guides/stratio-data-tools.md` §4 (default cap 10 rows).
 - If validation surfaces unexpected results (empty, type mismatches, semantic terms not found), report it and suggest next steps: `/create-semantic-terms` to refine, or `/create-sql-mappings` to fix the SQL.
 - If the agent does not have data tools (`query_data`, `execute_sql`, `generate_sql`), point the user to the Governance UI / data analytics agent and skip.

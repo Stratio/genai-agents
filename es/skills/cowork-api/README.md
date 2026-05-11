@@ -21,7 +21,7 @@ Esta skill **no** es para acceso a datos en runtime (eso son las MCPs `stratio_d
 
 ## Guías compartidas
 
-- `external-api-calls.md` — declarada en `skill-guides`. Cubre las env vars (`GENAI_API_URL`, `USER_CERT_PATH`, `USER_KEY_PATH`, `CA_CERT_PATH`), el pre-check estándar y las plantillas curl/Python sobre las que se apoya esta skill. Cada sub-fichero bajo `tasks/` la referencia para los aspectos transversales (mTLS, manejo de errores).
+- `external-api-calls.md` — declarada en `guides`. Cubre las env vars (`GENAI_API_URL`, `USER_CERT_PATH`, `USER_KEY_PATH`, `CA_CERT_PATH`), el pre-check estándar y las plantillas curl/Python sobre las que se apoya esta skill. Cada sub-fichero bajo `tasks/` la referencia para los aspectos transversales (mTLS, manejo de errores).
 
 ## MCPs
 

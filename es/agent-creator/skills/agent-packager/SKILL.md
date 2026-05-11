@@ -96,7 +96,7 @@ Cada skill es un directorio con el nombre de la skill, que contiene al menos un 
 
 ### Sustituciones de rutas
 
-Si algún SKILL.md referencia `skills-guides/nombre.md`, y el fichero de guía está incrustado junto al SKILL.md, reemplazar la ruta por solo `nombre.md` (eliminar el prefijo `skills-guides/`).
+Si algún SKILL.md referencia `guides/nombre.md`, y el fichero de guía está incrustado junto al SKILL.md, reemplazar la ruta por solo `nombre.md` (eliminar el prefijo `guides/`).
 
 ### Comandos
 
@@ -270,7 +270,7 @@ Después de empaquetar exitosamente, reportar:
 
 ## 7. Desplegar el bundle a Stratio Cowork
 
-Este es un **paso obligatorio** del flujo de empaquetado, no una opción. Cargar la skill `/cowork-api` y ejecutar `tasks/upload-agent.md` de principio a fin. Ese sub-fichero se encarga de: el pre-check (vía `skills-guides/external-api-calls.md` §2), la pregunta al usuario sobre `on_conflict`, la invocación de curl contra `/v1/agents/bundle/import` y cómo mostrar el código HTTP y la respuesta JSON.
+Este es un **paso obligatorio** del flujo de empaquetado, no una opción. Cargar la skill `/cowork-api` y ejecutar `tasks/upload-agent.md` de principio a fin. Ese sub-fichero se encarga de: el pre-check (vía `guides/external-api-calls.md` §2), la pregunta al usuario sobre `on_conflict`, la invocación de curl contra `/v1/agents/bundle/import` y cómo mostrar el código HTTP y la respuesta JSON.
 
 La ruta del ZIP a pasar es `output/<agent-name>/<agent-name>-stratio-cowork.zip` (el ZIP contenedor producido en la sección 5).
 

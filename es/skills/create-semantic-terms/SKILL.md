@@ -17,7 +17,7 @@ Genera o regenera términos semánticos de negocio en el glosario de Stratio Gov
 | `list_technical_domain_concepts(domain)` | gov | Listar vistas con estado de gobernanza, términos semánticos y mappings |
 | `create_semantic_terms(domain, view_names?, user_instructions?, regenerate?)` | gov | Crear términos semánticos. Con `regenerate=true`: DESTRUCTIVO, borra y recrea |
 
-**Reglas clave**: `domain_name` inmutable. Confirmación obligatoria para `regenerate=true`. Construir `user_instructions` mediante el Workflow de Enriquecimiento con Instrucciones del Glosario (`skills-guides/stratio-semantic-layer-tools.md` §11) antes de invocar. Pre-requisito: las vistas deben tener SQL mapping antes de generar términos semánticos.
+**Reglas clave**: `domain_name` inmutable. Confirmación obligatoria para `regenerate=true`. Construir `user_instructions` mediante el Workflow de Enriquecimiento con Instrucciones del Glosario (`guides/stratio-semantic-layer-tools.md` §11) antes de invocar. Pre-requisito: las vistas deben tener SQL mapping antes de generar términos semánticos.
 
 ## Workflow
 
@@ -56,7 +56,7 @@ Preguntar al usuario con opciones (solo vistas con mapping):
 
 ### 5. Enriquecimiento con instrucciones del glosario
 
-Antes de invocar la tool MCP, aplicar el Workflow de Enriquecimiento con Instrucciones del Glosario descrito en `skills-guides/stratio-semantic-layer-tools.md` §11, acotado a **semantic terms** (al llamar a `get_glossary_instructions`, pedir solo la fase de semantic terms). Aquí es donde el usuario puede traerse las instrucciones GenAI de semantic terms desde el diccionario de datos, aportar un fichero externo (glosario de negocio, documentación funcional, guía de estilo terminológico) como su fuente, superponer definiciones en texto libre, o saltar el enriquecimiento por completo.
+Antes de invocar la tool MCP, aplicar el Workflow de Enriquecimiento con Instrucciones del Glosario descrito en `guides/stratio-semantic-layer-tools.md` §11, acotado a **semantic terms** (al llamar a `get_glossary_instructions`, pedir solo la fase de semantic terms). Aquí es donde el usuario puede traerse las instrucciones GenAI de semantic terms desde el diccionario de datos, aportar un fichero externo (glosario de negocio, documentación funcional, guía de estilo terminológico) como su fuente, superponer definiciones en texto libre, o saltar el enriquecimiento por completo.
 
 Si el orquestador ya pre-cargó instrucciones enriquecidas para esta fase durante el flujo de `build-semantic-layer`, reutilizarlas — opcionalmente preguntar al usuario si quiere añadir algo específico para esta fase encima de lo que ya se cargó.
 

@@ -65,7 +65,7 @@ encargos se parecen pero pertenecen a otra herramienta:
   piezas, aproximadamente el setenta por ciento o más de la superficie
   es composición visual más que prosa o datos. La tipografía se
   convierte en elemento visual. Otra skill se ocupa de ese medio;
-  consulta `skills-guides/visual-craftsmanship.md` para el criterio de
+  consulta `guides/visual-craftsmanship.md` para el criterio de
   selección.
 - **Interfaces web interactivas** — componentes, páginas, dashboards
   que viven en un navegador. El PDF es estático; esos encargos piden
@@ -124,7 +124,7 @@ skill — vienen del tema elegido para el PDF.
   ejecuta su flujo ANTES de autorar; devuelve un set de tokens que se
   mapea sobre los tokens `HexColor` de abajo.
 - Si no, improvisa tokens coherentes con el entregable siguiendo los
-  roles de paleta tonal en `skills-guides/visual-craftsmanship.md`.
+  roles de paleta tonal en `guides/visual-craftsmanship.md`.
 
 ### Sensibilidades específicas para impresión
 

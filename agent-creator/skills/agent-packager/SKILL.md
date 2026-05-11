@@ -96,7 +96,7 @@ Each skill is a directory named after the skill, containing at minimum a `SKILL.
 
 ### Path substitutions
 
-If any SKILL.md references `skills-guides/filename.md`, and the guide file is embedded alongside the SKILL.md, replace the path to just `filename.md` (remove the `skills-guides/` prefix).
+If any SKILL.md references `guides/filename.md`, and the guide file is embedded alongside the SKILL.md, replace the path to just `filename.md` (remove the `guides/` prefix).
 
 ### Commands
 
@@ -270,7 +270,7 @@ After successful packaging, report:
 
 ## 7. Deploy the bundle to Stratio Cowork
 
-This is a **mandatory step** of the packaging workflow, not an option. Load the `/cowork-api` skill and run `tasks/upload-agent.md` end-to-end. That sub-file owns: the pre-check (via `skills-guides/external-api-calls.md` §2), the question to the user about `on_conflict`, the curl invocation against `/v1/agents/bundle/import`, and how to surface the HTTP code and JSON response.
+This is a **mandatory step** of the packaging workflow, not an option. Load the `/cowork-api` skill and run `tasks/upload-agent.md` end-to-end. That sub-file owns: the pre-check (via `guides/external-api-calls.md` §2), the question to the user about `on_conflict`, the curl invocation against `/v1/agents/bundle/import`, and how to surface the HTTP code and JSON response.
 
 The ZIP path to pass is `output/<agent-name>/<agent-name>-stratio-cowork.zip` (the container ZIP produced in section 5).
 

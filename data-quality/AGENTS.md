@@ -211,11 +211,11 @@ Examples: `dq-account-completeness-id`, `dq-card-uniqueness-card-id`, `dq-transa
 
 ## 6. MCP Usage
 
-All base Stratio MCP rules (available tools, strict rules, MCP-first, immutable domain_name, profiling, parallel execution, clarification cascade, post-query validation, timeouts, and best practices) are in `skills-guides/stratio-data-tools.md`. Follow ALL rules defined there.
+All base Stratio MCP rules (available tools, strict rules, MCP-first, immutable domain_name, profiling, parallel execution, clarification cascade, post-query validation, timeouts, and best practices) are in `guides/stratio-data-tools.md`. Follow ALL rules defined there.
 
 ### Additional quality tools
 
-In addition to the tools listed in `skills-guides/stratio-data-tools.md`, this agent has:
+In addition to the tools listed in `guides/stratio-data-tools.md`, this agent has:
 
 | Tool | Server | When to use |
 |------|--------|-------------|

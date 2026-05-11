@@ -194,10 +194,10 @@ Ask the user with options: "What level of depth?"
 
 ```markdown
 All rules for [topic] (available tools, strict rules, [list key topics])
-are in `skills-guides/[guide-name].md`. Follow ALL rules defined there.
+are in `guides/[guide-name].md`. Follow ALL rules defined there.
 ```
 
-**Important**: The path format `skills-guides/filename.md` is used in the source AGENTS.md. Pack scripts may rewrite this to a local path when embedding guides inside skills.
+**Important**: The path format `guides/filename.md` is used in the source AGENTS.md. Pack scripts may rewrite this to a local path when embedding guides inside skills.
 
 ---
 

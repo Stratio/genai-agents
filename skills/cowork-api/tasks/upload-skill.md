@@ -33,7 +33,7 @@ The API extracts the contents, parses any `SKILL.md` it finds (one or more), and
 
 ## Procedure
 
-1. **Pre-check** — follow `skills-guides/external-api-calls.md` §2 (`preflight_external_api`). The pre-check is an environment health check (env vars, certificate paths). If it fails, stop and report to the user which prerequisites are missing — do not silence the failure and do not refuse with a generic "I can't". The bundle is already packaged correctly; only the deployment step did not complete, and the user can decide how to proceed.
+1. **Pre-check** — follow `guides/external-api-calls.md` §2 (`preflight_external_api`). The pre-check is an environment health check (env vars, certificate paths). If it fails, stop and report to the user which prerequisites are missing — do not silence the failure and do not refuse with a generic "I can't". The bundle is already packaged correctly; only the deployment step did not complete, and the user can decide how to proceed.
 
 2. **Ask the user** which conflict strategy to apply (use the question convention provided by the environment; otherwise present numbered options):
 
@@ -87,7 +87,7 @@ The API extracts the contents, parses any `SKILL.md` it finds (one or more), and
 ## Reporting back to the user
 
 - On 2xx: summarize `imported`, `conflicts`, and `errors`. If `errors` is non-empty, show each verbatim.
-- On non-2xx: surface HTTP code and body verbatim. See `skills-guides/external-api-calls.md` §5 for how to interpret common codes (`401/403` = mTLS or RBAC; `400/422` = validation).
+- On non-2xx: surface HTTP code and body verbatim. See `guides/external-api-calls.md` §5 for how to interpret common codes (`401/403` = mTLS or RBAC; `400/422` = validation).
 
 ## Reusable script
 

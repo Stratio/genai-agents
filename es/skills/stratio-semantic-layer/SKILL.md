@@ -16,4 +16,4 @@ create_technical_terms, etc.).
 en una conversación, o cuando necesites refrescar las reglas de uso (domain_name inmutable,
 user_instructions, confirmación de destructivas, ontologías ADD+DELETE, detección de estado).
 
-Leer `skills-guides/stratio-semantic-layer-tools.md` para la referencia completa.
+Leer `guides/stratio-semantic-layer-tools.md` para la referencia completa.

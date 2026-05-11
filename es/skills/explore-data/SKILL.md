@@ -10,7 +10,7 @@ Guía para explorar rapidamente los datos disponibles en los dominios gobernados
 
 ## 1. Descubrimiento del Dominio
 
-Leer y seguir `skills-guides/stratio-data-tools.md` sec 5 para los pasos de descubrimiento del dominio (buscar o listar dominios, seleccionar, explorar tablas, columnas y terminología).
+Leer y seguir `guides/stratio-data-tools.md` sec 5 para los pasos de descubrimiento del dominio (buscar o listar dominios, seleccionar, explorar tablas, columnas y terminología).
 
 Si el usuario proporciona un argumento ($ARGUMENTS), buscar con `search_domains($ARGUMENTS, prefer_semantic=true)` (defecto: colapsar entradas técnicas cuando existe una contraparte semántica con prefijo `semantic_` — el nombre desnudo del usuario se resuelve a la versión semántica). Cambiar a `prefer_semantic=false` solo si la redacción del usuario apunta explícitamente a la capa técnica (ver las instrucciones de Descubrimiento del agente para la lista cerrada de disparadores). Si el argumento coincide con un dominio, saltar directamente a explorar tablas. Si no coincide, preguntar al usuario cual dominio explorar siguiendo la convención de preguntas al usuario (adaptativa al entorno: interactivas si disponibles, lista numerada en chat si no). Preguntar si quiere profundizar en alguna tabla específica o ver todas.
 
@@ -23,8 +23,8 @@ Si `output/MEMORY.md` existe, leer la sección "Patrones de Datos Conocidos" del
 Cuando el usuario está centrado en un dominio concreto o un subconjunto reducido de tablas, añadir un paso de enriquecimiento ligero tras explorar columnas. Omitir este paso en exploraciones amplias de múltiples dominios — el profiling es costoso.
 
 Para cada tabla clave identificada, lanzar **en paralelo**:
-- `profile_data` por tabla — seguir `skills-guides/stratio-data-tools.md` sec 6.1 (SQL generada con `generate_sql`, umbrales adaptativos por tamaño, parámetro `limit`).
-- `get_tables_quality_details(domain_name, [tablas])` — ver `skills-guides/stratio-data-tools.md` sec 6.2.
+- `profile_data` por tabla — seguir `guides/stratio-data-tools.md` sec 6.1 (SQL generada con `generate_sql`, umbrales adaptativos por tamaño, parámetro `limit`).
+- `get_tables_quality_details(domain_name, [tablas])` — ver `guides/stratio-data-tools.md` sec 6.2.
 
 Resumir de forma ligera (descriptivo, sin convertir esto en un análisis):
 - De `profile_data`: porcentajes de nulos destacables, rango temporal si hay columnas de fecha, cardinalidades anómalas u outliers que merezca flaggear.

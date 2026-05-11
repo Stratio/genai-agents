@@ -10,7 +10,7 @@ Guide for quickly exploring available data in governed domains.
 
 ## 1. Domain Discovery
 
-Read and follow `skills-guides/stratio-data-tools.md` sec 5 for domain discovery steps (search or list domains, select, explore tables, columns and terminology).
+Read and follow `guides/stratio-data-tools.md` sec 5 for domain discovery steps (search or list domains, select, explore tables, columns and terminology).
 
 If the user provides an argument ($ARGUMENTS), search with `search_domains($ARGUMENTS, prefer_semantic=true)` (default: collapse technical entries when a semantic counterpart with prefix `semantic_` exists — the user's bare name resolves to the semantic version). Switch to `prefer_semantic=false` only if the user's wording explicitly targets the technical layer (see the agent's Discovery instructions for the closed list of trigger phrases). If the argument matches a domain, skip directly to exploring tables. If it does not match, ask the user which domain to explore following the user question convention (adaptive to the environment: interactive if available, numbered list in chat otherwise). Ask if they want to drill into a specific table or see all of them.
 
@@ -23,8 +23,8 @@ If `output/MEMORY.md` exists, read the "Known Data Patterns" section for the dom
 When the user is focused on a specific domain or a small subset of tables, add a lightweight enrichment step after exploring columns. Skip this for broad multi-domain exploration — profiling is costly.
 
 For each key table identified, launch **in parallel**:
-- `profile_data` per table — follow `skills-guides/stratio-data-tools.md` sec 6.1 (SQL generated with `generate_sql`, adaptive thresholds by size, `limit` parameter).
-- `get_tables_quality_details(domain_name, [tables])` — see `skills-guides/stratio-data-tools.md` sec 6.2.
+- `profile_data` per table — follow `guides/stratio-data-tools.md` sec 6.1 (SQL generated with `generate_sql`, adaptive thresholds by size, `limit` parameter).
+- `get_tables_quality_details(domain_name, [tables])` — see `guides/stratio-data-tools.md` sec 6.2.
 
 Summarize lightly (descriptive, do not turn this into an analysis):
 - From `profile_data`: notable null percentages, temporal range if date columns exist, anomalous cardinalities or outliers worth flagging.

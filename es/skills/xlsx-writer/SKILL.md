@@ -66,7 +66,7 @@ Landscape es el default para matrices de cobertura, pivot tables y cualquier tab
 Los tokens de diseño (colores, tipografía, tamaños) no viven en esta skill — vienen del tema elegido para el entregable.
 
 - Si hay disponible una skill centralizada de theming (estilo brand-kit), ejecuta su workflow ANTES de autorizar; devuelve un set de tokens que mapea sobre el dict `DESIGN` debajo.
-- Si no, improvisa tokens coherentes con el entregable siguiendo los roles de paleta tonal en `skills-guides/visual-craftsmanship.md`.
+- Si no, improvisa tokens coherentes con el entregable siguiendo los roles de paleta tonal en `guides/visual-craftsmanship.md`.
 
 El dict `DESIGN` en el scaffold usa placeholders (`<hex>`, `<font-family>`, `<pt>`) — rellénalos desde el tema, no hardcodees.
 
@@ -269,7 +269,7 @@ Nunca mezcles dos azules distintos, dos rojos distintos o dos saturaciones de ac
 De dónde vienen esos valores concretos depende de lo que el agente tenga:
 
 - Si hay una skill centralizada de theming disponible, el tema elegido suministra un set de tokens completo y coherente (primary, ink, muted, rule, bg_alt, accent, colores de estado, tipografía, tamaños). Úsalo verbatim.
-- Si no, improvisa desde los roles de paleta tonal en `skills-guides/visual-craftsmanship.md`. Para defaults específicos de XLSX (sober-audit, technical-minimal) ver `REFERENCE.md` §Palette reference.
+- Si no, improvisa desde los roles de paleta tonal en `guides/visual-craftsmanship.md`. Para defaults específicos de XLSX (sober-audit, technical-minimal) ver `REFERENCE.md` §Palette reference.
 
 ## 7. Bloques de construcción de libros
 
