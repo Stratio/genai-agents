@@ -69,8 +69,9 @@ genai-agents/
       imported-skills
   plugins/                 # Functional plugins (verticals): see "Plugins funcionales"
     stratio-governance/    # plugin.yaml + README.md
+    stratio-data/
+    stratio-cowork-development/
     stratio-productivity/
-    stratio-data-storytelling/
 ```
 
 ## Development instructions
@@ -291,7 +292,7 @@ The deployment is orchestrated by the `upload-plugin` task of the [`cowork-api`]
 4. Run `bash pack_plugin.sh --plugin <name> --platform stratio-cowork` (and `--platform claude` if applicable) to produce the artifacts.
 5. The full release pipeline (`make package`) picks the plugin up automatically — nothing extra to register.
 
-Use the three plugins under `plugins/` as templates: `stratio-governance` for plugins with agents, `stratio-productivity` for skills-only plugins without MCP requirements, and `stratio-data-storytelling` for skills-only plugins that declare required MCPs.
+Use the plugins under `plugins/` as templates: `stratio-governance` and `stratio-cowork-development` for multi-agent verticals, `stratio-data` for a single-agent vertical, and `stratio-productivity` for a skills-only plugin.
 
 ## Internationalization (i18n)
 
@@ -315,10 +316,12 @@ Supported languages are listed in the `languages` file at the monorepo root.
 
 ### Packaging by language
 
-Each pack script accepts `--lang <code>` to package in a specific language. When `--lang es` is passed, the script internally resolves the Spanish content from `es/` and generates output in `dist/es/{format}/{name}/` (intermediate files available for inspection). `bin/package.sh` orchestrates this for all agents and languages, producing final versioned ZIPs in `dist/`:
+Each pack script accepts `--lang <code>` to package in a specific language. When `--lang es` is passed, the script internally resolves the Spanish content from `es/` and generates output in `dist/es/{format}/{name}/` (intermediate files available for inspection). `bin/package.sh` orchestrates this for all agents and languages, producing final versioned ZIPs in `dist/` with consistent type prefixes:
 
-- English (primary): `data-analytics-opencode-0.2.0.zip` (no suffix)
-- Spanish: `data-analytics-opencode-es-0.2.0.zip`
+- Agent: `agent-data-analytics-opencode-0.2.0.zip` / `agent-data-analytics-opencode-es-0.2.0.zip`
+- Skill: `skill-stratio-data-0.2.0.zip` / `skill-stratio-data-es-0.2.0.zip`
+- Bulk skills: `skills-0.2.0.zip` / `skills-es-0.2.0.zip`
+- Plugin: `plugin-stratio-governance-stratio-cowork-0.2.0.zip` / `plugin-stratio-governance-stratio-cowork-es-0.2.0.zip`
 
 Individual pack script usage:
 

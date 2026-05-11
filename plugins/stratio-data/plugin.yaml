@@ -1,0 +1,10 @@
+name: stratio-data
+description: "Data analytics vertical: senior BI/BA analyst that turns business questions into actionable analyses with real data from governed domains. Bundles the data-analytics agent for deployment in Stratio Cowork."
+tags:
+  - data-analytics
+  - reporting
+contents:
+  agents:
+    - data-analytics
+platforms:
+  - stratio-cowork

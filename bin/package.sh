@@ -65,17 +65,17 @@ for lang in "${LANGUAGES[@]}"; do
       INTERMEDIATE="$MODULE_DIR/dist/opencode/$module"
     fi
     if [[ -d "$INTERMEDIATE" ]]; then
-      bash "$REPO_ROOT/bin/zip-deterministic.sh" "$INTERMEDIATE" "$DIST_DIR/${module}-opencode${LANG_SUFFIX}-${VERSION}.zip"
-      echo "    -> dist/${module}-opencode${LANG_SUFFIX}-${VERSION}.zip"
+      bash "$REPO_ROOT/bin/zip-deterministic.sh" "$INTERMEDIATE" "$DIST_DIR/agent-${module}-opencode${LANG_SUFFIX}-${VERSION}.zip"
+      echo "    -> dist/agent-${module}-opencode${LANG_SUFFIX}-${VERSION}.zip"
     fi
 
-    echo "  [$module] Packaging Stratio cowork (agent + mcps + shared skills separately)..."
+    echo "  [$module] Packaging Stratio cowork (agent + mcps + imported skills separately)..."
     bash "$REPO_ROOT/pack_stratio_cowork.sh" --agent "$module" --name "$module" --version "$VERSION" "${LANG_ARGS[@]}" || {
       echo "  WARN: pack_stratio_cowork.sh failed for $module — continuing"
     }
     if [[ -f "$REPO_ROOT/dist/${module}-stratio-cowork.zip" ]]; then
-      mv "$REPO_ROOT/dist/${module}-stratio-cowork.zip" "$DIST_DIR/${module}-stratio-cowork${LANG_SUFFIX}-${VERSION}.zip"
-      echo "    -> dist/${module}-stratio-cowork${LANG_SUFFIX}-${VERSION}.zip"
+      mv "$REPO_ROOT/dist/${module}-stratio-cowork.zip" "$DIST_DIR/agent-${module}-stratio-cowork${LANG_SUFFIX}-${VERSION}.zip"
+      echo "    -> dist/agent-${module}-stratio-cowork${LANG_SUFFIX}-${VERSION}.zip"
     fi
 
   done < "$REPO_ROOT/release-modules"
@@ -124,8 +124,8 @@ for lang in "${LANGUAGES[@]}"; do
         }
         SRC_ZIP="$REPO_ROOT/dist/${plugin_name}-${plugin_platform}.zip"
         if [[ -f "$SRC_ZIP" ]]; then
-          mv "$SRC_ZIP" "$DIST_DIR/${plugin_name}-${plugin_platform}${LANG_SUFFIX}-${VERSION}.zip"
-          echo "    -> dist/${plugin_name}-${plugin_platform}${LANG_SUFFIX}-${VERSION}.zip"
+          mv "$SRC_ZIP" "$DIST_DIR/plugin-${plugin_name}-${plugin_platform}${LANG_SUFFIX}-${VERSION}.zip"
+          echo "    -> dist/plugin-${plugin_name}-${plugin_platform}${LANG_SUFFIX}-${VERSION}.zip"
         fi
       done
     done

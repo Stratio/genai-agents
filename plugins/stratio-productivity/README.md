@@ -1,6 +1,6 @@
 # Stratio Productivity plugin
 
-Skills-only functional plugin that bundles document I/O, visual crafting and skill authoring capabilities. Pluggable into any agent (Cowork or Claude) that needs to read, author or transform office documents and visual outputs.
+Skills-only functional plugin that bundles document I/O, visual crafting and brand-identity capabilities. Pluggable into any agent (Cowork or Claude) that needs to read, author or transform office documents and visual outputs with consistent design.
 
 ## What's inside
 
@@ -14,9 +14,9 @@ Skills-only functional plugin that bundles document I/O, visual crafting and ski
 | [pptx-writer](../../skills/pptx-writer/) | PPTX authoring: merge, split, reorder, find-replace in slides and notes, `.ppt` → `.pptx`. |
 | [xlsx-reader](../../skills/xlsx-reader/) | XLSX reading and content extraction. |
 | [xlsx-writer](../../skills/xlsx-writer/) | XLSX authoring: analytical workbooks, pivot matrices, tabular exports, `.xls` → `.xlsx`, formula refresh. |
-| [skill-creator](../../skills/skill-creator/) | Designs and generates new agent skills (SKILL.md authoring guide, quality checklist). |
 | [web-craft](../../skills/web-craft/) | Interactive frontend output (HTML/CSS/JS, React, Vue): components, pages, dashboards. |
 | [canvas-craft](../../skills/canvas-craft/) | Single-page static visual artifacts (PDF/PNG): posters, covers, certificates, infographics. |
+| [brand-kit](../../skills/brand-kit/) | Centralised visual identity tokens (colors, typography, chart palettes, sizes, tone). Ten curated themes; clients can extend or replace. |
 
 ## Supported platforms
 
@@ -36,8 +36,4 @@ Use the `upload-plugin` task of the [`cowork-api`](../../skills/cowork-api/) sha
 
 ## MCPs
 
-This plugin does not require any MCP — its skills operate on local files and produce local output. Skills like `web-craft` and `canvas-craft` may receive data from any MCP the consuming agent has configured, but the plugin itself imposes no MCP requirement.
-
-## Overlap with other plugins
-
-`web-craft` and `canvas-craft` also appear in `stratio-data-storytelling`. This is intentional: a skill can belong to multiple plugins, since plugins are additive composition units, not exclusive partitions of the skill catalog.
+This plugin does not require any MCP — its skills operate on local files and produce local output.

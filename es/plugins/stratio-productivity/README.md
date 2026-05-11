@@ -1,6 +1,6 @@
 # Plugin Stratio Productivity
 
-Plugin funcional skills-only que agrupa capacidades de I/O documental, crafting visual y autoría de skills. Enchufable en cualquier agente (Cowork o Claude) que necesite leer, crear o transformar documentos ofimáticos y output visual.
+Plugin funcional skills-only que agrupa capacidades de I/O documental, crafting visual e identidad de marca. Enchufable en cualquier agente (Cowork o Claude) que necesite leer, crear o transformar documentos ofimáticos y output visual con diseño consistente.
 
 ## Qué incluye
 
@@ -14,9 +14,9 @@ Plugin funcional skills-only que agrupa capacidades de I/O documental, crafting 
 | [pptx-writer](../../skills/pptx-writer/) | Creación de PPTX: merge, split, reordenar, find-replace en diapositivas y notas, `.ppt` → `.pptx`. |
 | [xlsx-reader](../../skills/xlsx-reader/) | Lectura y extracción de contenido de XLSX. |
 | [xlsx-writer](../../skills/xlsx-writer/) | Creación de XLSX: workbooks analíticos, matrices pivot, exports tabulares, `.xls` → `.xlsx`, refresh de fórmulas. |
-| [skill-creator](../../skills/skill-creator/) | Diseña y genera nuevas skills de agente (guía de autoría de SKILL.md, checklist de calidad). |
 | [web-craft](../../skills/web-craft/) | Output frontend interactivo (HTML/CSS/JS, React, Vue): componentes, páginas, dashboards. |
 | [canvas-craft](../../skills/canvas-craft/) | Artefactos visuales estáticos de una página (PDF/PNG): pósters, portadas, certificados, infografías. |
+| [brand-kit](../../skills/brand-kit/) | Tokens centralizados de identidad visual (colores, tipografía, paletas de gráficos, tamaños, tono). Diez temas curados; los clientes pueden extender o reemplazar. |
 
 ## Plataformas soportadas
 
@@ -36,8 +36,4 @@ Usa la task `upload-plugin` de la skill compartida [`cowork-api`](../../skills/c
 
 ## MCPs
 
-Este plugin no requiere ningún MCP — sus skills operan sobre ficheros locales y generan output local. Skills como `web-craft` y `canvas-craft` pueden recibir datos de cualquier MCP que tenga configurado el agente consumidor, pero el plugin en sí no impone ningún requisito de MCP.
-
-## Solape con otros plugins
-
-`web-craft` y `canvas-craft` también aparecen en `stratio-data-storytelling`. Es intencional: una skill puede pertenecer a varios plugins, porque los plugins son unidades aditivas de composición, no particiones exclusivas del catálogo de skills.
+Este plugin no requiere ningún MCP — sus skills operan sobre ficheros locales y generan output local.

@@ -31,8 +31,9 @@ Each plugin is packaged for two targets: a **Stratio Cowork** wrapper bundle (de
 | Plugin | Description | Contents | Platforms |
 |--------|-------------|----------|-----------|
 | **stratio-governance** | Data governance vertical: ontologies, views, mappings, terms, quality rules and coverage reports. | governance-officer + data-quality + semantic-layer (agents) | Stratio Cowork |
-| **stratio-productivity** | Productivity skills: read/author office docs (PDF/DOCX/PPTX/XLSX), craft visual output, author new skills. | pdf/docx/pptx/xlsx readers+writers, skill-creator, web-craft, canvas-craft (skills-only) | Stratio Cowork, Claude |
-| **stratio-data-storytelling** | Tell stories with Stratio governed data: query data, apply visual identity, produce visual output. | stratio-data, brand-kit, web-craft, canvas-craft (skills-only) | Stratio Cowork, Claude |
+| **stratio-data** | Data analytics vertical: senior BI/BA analyst that turns business questions into actionable analyses with real data from governed domains. | data-analytics (agent) | Stratio Cowork |
+| **stratio-cowork-development** | AI agent development: design and generate new agents and skills from inside Stratio Cowork. | agent-creator + skill-creator (agents) | Stratio Cowork |
+| **stratio-productivity** | Productivity skills: read/author office docs (PDF/DOCX/PPTX/XLSX), craft visual output, apply brand identity. | pdf/docx/pptx/xlsx readers+writers, web-craft, canvas-craft, brand-kit (skills-only) | Stratio Cowork, Claude |
 
 ### Platform rules
 
@@ -49,16 +50,16 @@ The validator (`bin/validate-plugins.py`) enforces these rules: a plugin with ag
 
 ```
 dist/
-├── stratio-governance-stratio-cowork-{version}.zip            # wrapper of 3 agent sub-zips
-├── stratio-governance-stratio-cowork-es-{version}.zip
-├── stratio-productivity-stratio-cowork-{version}.zip          # wrapper with one skills sub-zip
-├── stratio-productivity-stratio-cowork-es-{version}.zip
-├── stratio-productivity-claude-{version}.zip                  # .claude-plugin marketplace zip
-├── stratio-productivity-claude-es-{version}.zip
-├── stratio-data-storytelling-stratio-cowork-{version}.zip
-├── stratio-data-storytelling-stratio-cowork-es-{version}.zip
-├── stratio-data-storytelling-claude-{version}.zip
-└── stratio-data-storytelling-claude-es-{version}.zip
+├── plugin-stratio-governance-stratio-cowork-{version}.zip            # wrapper of 3 agent sub-zips
+├── plugin-stratio-governance-stratio-cowork-es-{version}.zip
+├── plugin-stratio-data-stratio-cowork-{version}.zip                  # wrapper of the data-analytics agent
+├── plugin-stratio-data-stratio-cowork-es-{version}.zip
+├── plugin-stratio-cowork-development-stratio-cowork-{version}.zip    # wrapper of agent-creator + skill-creator
+├── plugin-stratio-cowork-development-stratio-cowork-es-{version}.zip
+├── plugin-stratio-productivity-stratio-cowork-{version}.zip          # wrapper with one skills sub-zip
+├── plugin-stratio-productivity-stratio-cowork-es-{version}.zip
+├── plugin-stratio-productivity-claude-{version}.zip                  # .claude-plugin marketplace zip
+└── plugin-stratio-productivity-claude-es-{version}.zip
 ```
 
 ### Installing a plugin
@@ -106,20 +107,20 @@ All artifacts are generated under `dist/`, both at agent level (intermediates) a
 
 ```
 genai-agents/
-  dist/                                         # Final versioned ZIPs (EN + ES)
-    data-analytics-opencode-{v}.zip
-    data-analytics-opencode-es-{v}.zip
-    data-analytics-stratio-cowork-{v}.zip
-    data-analytics-stratio-cowork-es-{v}.zip
-    ...                                         # Same pattern for all agents
-    skills-{v}.zip
+  dist/                                                # Final versioned ZIPs (EN + ES)
+    agent-data-analytics-opencode-{v}.zip              # Per-agent OpenCode bundles
+    agent-data-analytics-opencode-es-{v}.zip
+    agent-data-analytics-stratio-cowork-{v}.zip        # Per-agent Stratio Cowork bundles
+    agent-data-analytics-stratio-cowork-es-{v}.zip
+    ...                                                # Same pattern for all 6 agents
+    skills-{v}.zip                                     # Bulk skills bundle
     skills-es-{v}.zip
-    skill-explore-data-{v}.zip
+    skill-explore-data-{v}.zip                         # Individual skill bundles
     skill-explore-data-es-{v}.zip
-    ...                                         # Same pattern for all skills
-    stratio-governance-stratio-cowork-{v}.zip   # Plugins (functional verticals)
-    stratio-productivity-claude-{v}.zip
-    ...                                         # Same pattern for each plugin × platform
+    ...                                                # Same pattern for all skills
+    plugin-stratio-governance-stratio-cowork-{v}.zip   # Functional plugins (verticals)
+    plugin-stratio-productivity-claude-{v}.zip
+    ...                                                # Same pattern for each plugin × platform
 
   agents/
     data-analytics/
@@ -347,10 +348,13 @@ bash pack_opencode.sh --agent data-analytics --lang es
 
 `bin/package.sh` orchestrates all agents and languages, passing `--lang` to each pack script. Final versioned ZIPs go to `dist/`:
 
-| Language | Pattern | Example |
+| Type | Pattern | Example |
 |----------|---------|---------|
-| English (primary) | `{agent}-{format}-{version}.zip` | `data-analytics-opencode-0.2.0.zip` |
-| Spanish | `{agent}-{format}-es-{version}.zip` | `data-analytics-opencode-es-0.2.0.zip` |
+| Agent (English) | `agent-{name}-{format}-{version}.zip` | `agent-data-analytics-opencode-0.2.0.zip` |
+| Agent (Spanish) | `agent-{name}-{format}-es-{version}.zip` | `agent-data-analytics-opencode-es-0.2.0.zip` |
+| Skill | `skill-{name}-[es-]{version}.zip` | `skill-stratio-data-0.2.0.zip` |
+| Bulk skills | `skills-[es-]{version}.zip` | `skills-0.2.0.zip` |
+| Plugin | `plugin-{name}-{platform}-[es-]{version}.zip` | `plugin-stratio-governance-stratio-cowork-0.2.0.zip` |
 
 ### Translation workflow
 

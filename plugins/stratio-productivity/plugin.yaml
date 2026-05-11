@@ -1,11 +1,9 @@
 name: stratio-productivity
-description: "Productivity skills bundle: read and author office documents (PDF, DOCX, PPTX, XLSX), craft web and canvas visual outputs, and create new skills. No agents — pluggable into any agent that needs document and visual output capabilities."
+description: "Productivity skills bundle: read and author office documents (PDF, DOCX, PPTX, XLSX), craft web and canvas visual outputs, and apply consistent brand identity. No agents — pluggable into any agent that needs document and visual output capabilities."
 tags:
   - productivity
   - documents
-  - office
   - visual-output
-  - skill-authoring
 contents:
   skills:
     - pdf-reader
@@ -16,9 +14,9 @@ contents:
     - pptx-writer
     - xlsx-reader
     - xlsx-writer
-    - skill-creator
     - web-craft
     - canvas-craft
+    - brand-kit
 platforms:
   - stratio-cowork
   - claude
