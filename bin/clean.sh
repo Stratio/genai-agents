@@ -16,7 +16,7 @@ fi
 if [[ -f "$REPO_ROOT/release-modules" ]]; then
   while IFS= read -r module; do
     [[ -z "$module" || "$module" =~ ^# ]] && continue
-    MODULE_DIR="$REPO_ROOT/$module"
+    MODULE_DIR="$REPO_ROOT/agents/$module"
     [[ ! -d "$MODULE_DIR" ]] && continue
 
     if [[ -d "$MODULE_DIR/dist" ]]; then

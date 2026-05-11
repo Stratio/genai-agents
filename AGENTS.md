@@ -43,28 +43,30 @@ genai-agents/
   es/                      # Spanish translations (overlay directory, mirrors main tree)
     skills/
     guides/
-    data-analytics/
-    semantic-layer/
-    data-quality/
-    governance-officer/
-    skill-creator/
-    agent-creator/
-  data-analytics/          # Full agent (analysis + multi-format reports)
-    imported-skills        # List of skills imported from monorepo skills/
-    guides                 # List of root-level guides this agent uses directly
-  semantic-layer/          # Semantic layer construction agent
-    imported-skills
-    guides                 # List of root-level guides this agent uses directly
-  data-quality/            # Data quality agent (assessment, rules, reports)
-    imported-skills
-    guides                 # List of root-level guides this agent uses directly
-  governance-officer/      # Governance officer: semantic layer + data quality combined
-    imported-skills
-    guides                 # List of root-level guides this agent uses directly
-  skill-creator/           # Skill creation agent
-    imported-skills
-  agent-creator/           # Agent creation agent
-    imported-skills
+    agents/
+      data-analytics/
+      semantic-layer/
+      data-quality/
+      governance-officer/
+      skill-creator/
+      agent-creator/
+  agents/                  # All agents live under agents/<name>/
+    data-analytics/        # Full agent (analysis + multi-format reports)
+      imported-skills      # List of skills imported from monorepo skills/
+      guides               # List of root-level guides this agent uses directly
+    semantic-layer/        # Semantic layer construction agent
+      imported-skills
+      guides
+    data-quality/          # Data quality agent (assessment, rules, reports)
+      imported-skills
+      guides
+    governance-officer/    # Governance officer: semantic layer + data quality combined
+      imported-skills
+      guides
+    skill-creator/         # Skill creation agent
+      imported-skills
+    agent-creator/         # Agent creation agent
+      imported-skills
   plugins/                 # Functional plugins (verticals): see "Plugins funcionales"
     stratio-governance/    # plugin.yaml + README.md
     stratio-productivity/
@@ -301,15 +303,15 @@ The monorepo supports multiple languages. **English is the primary language** â€
 genai-agents/
   skills/explore-data/SKILL.md          # English (primary)
   es/skills/explore-data/SKILL.md        # Spanish (overlay)
-  data-analytics/AGENTS.md                      # English
-  es/data-analytics/AGENTS.md                   # Spanish
+  agents/data-analytics/AGENTS.md               # English
+  es/agents/data-analytics/AGENTS.md            # Spanish
 ```
 
 Supported languages are listed in the `languages` file at the monorepo root.
 
-**What gets translated:** `AGENTS.md`, `SKILL.md`, sub-guides (`*.md` inside `skills/`), `guides/*.md`, `guides/*.md`, `USER_README.md`, `README.md` (including `plugins/<name>/README.md`), `cowork-metadata.yaml`, `templates/memory/*.md`.
+**What gets translated:** `AGENTS.md`, `SKILL.md`, sub-guides (`*.md` inside `skills/`), `guides/*.md` (root-level and per-agent), `USER_README.md`, `README.md` (including `plugins/<name>/README.md`), `cowork-metadata.yaml`, `templates/memory/*.md`.
 
-**What stays language-neutral (not translated):** Python code, HTML templates, CSS, shell scripts, JSON configs (`.mcp.json`, `opencode.json`), manifests (`imported-skills`, `guides`, `guides`, `plugin.yaml`), `Makefile`, `Jenkinsfile`, `VERSION`.
+**What stays language-neutral (not translated):** Python code, HTML templates, CSS, shell scripts, JSON configs (`.mcp.json`, `opencode.json`), manifests (`imported-skills`, `guides`, `plugin.yaml`), `Makefile`, `Jenkinsfile`, `VERSION`.
 
 **Skill and folder names are technical identifiers** â€” they stay in English regardless of language (`explore-data`, not `explorar-datos`).
 

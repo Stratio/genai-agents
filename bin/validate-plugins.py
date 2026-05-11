@@ -51,8 +51,8 @@ class Issue:
 
 
 def _agent_exists(name: str) -> bool:
-    """An agent is a top-level monorepo directory containing an AGENTS.md file."""
-    candidate = REPO_ROOT / name
+    """An agent is a directory under agents/ containing an AGENTS.md file."""
+    candidate = REPO_ROOT / "agents" / name
     return candidate.is_dir() and (candidate / "AGENTS.md").is_file()
 
 
@@ -63,7 +63,7 @@ def _skill_exists(name: str) -> bool:
 def _collect_known_mcps() -> set[str]:
     """Read every <agent>/mcps file in the monorepo and collect declared MCP names."""
     known: set[str] = set()
-    for mcps_file in REPO_ROOT.glob("*/mcps"):
+    for mcps_file in REPO_ROOT.glob("agents/*/mcps"):
         # Only count agent-owned mcps files (sibling of AGENTS.md).
         if not (mcps_file.parent / "AGENTS.md").is_file():
             continue
@@ -155,7 +155,7 @@ def _validate_plugin(plugin_dir: Path, known_mcps: set[str]) -> list[Issue]:
 
     for agent in agents:
         if not _agent_exists(agent):
-            err(f"agent '{agent}' not found in monorepo (expected directory with AGENTS.md)")
+            err(f"agent '{agent}' not found at agents/{agent}/ (expected directory with AGENTS.md)")
     for skill in skills:
         if not _skill_exists(skill):
             err(f"skill '{skill}' not found at skills/{skill}/SKILL.md")

@@ -57,7 +57,7 @@ MODULES_FILE="$REPO_ROOT/release-modules"
 if [[ -f "$MODULES_FILE" ]]; then
   while IFS= read -r module || [[ -n "$module" ]]; do
     [[ -z "$module" || "$module" == "#"* ]] && continue
-    MODULE_DIR="$REPO_ROOT/$module"
+    MODULE_DIR="$REPO_ROOT/agents/$module"
     [[ ! -d "$MODULE_DIR" ]] && continue
 
     # Agent-level files

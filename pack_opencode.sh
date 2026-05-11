@@ -28,8 +28,13 @@ if [[ -z "$AGENT_PATH" ]]; then
   exit 1
 fi
 
-# Resolve absolute path: first relative to SCRIPT_DIR, then as absolute
-if [[ -d "$SCRIPT_DIR/$AGENT_PATH" ]]; then
+# Resolve absolute path with 3-level fallback:
+#   1. $SCRIPT_DIR/agents/$AGENT_PATH (post-refactor: agents live under agents/)
+#   2. $SCRIPT_DIR/$AGENT_PATH         (retro-compat: pre-refactor layout)
+#   3. $AGENT_PATH                     (absolute path or relative to cwd)
+if [[ -d "$SCRIPT_DIR/agents/$AGENT_PATH" ]]; then
+  AGENT_ABS="$(cd "$SCRIPT_DIR/agents/$AGENT_PATH" && pwd)"
+elif [[ -d "$SCRIPT_DIR/$AGENT_PATH" ]]; then
   AGENT_ABS="$(cd "$SCRIPT_DIR/$AGENT_PATH" && pwd)"
 elif [[ -d "$AGENT_PATH" ]]; then
   AGENT_ABS="$(cd "$AGENT_PATH" && pwd)"
@@ -59,7 +64,12 @@ if [[ -n "$LANG_CODE" && "$LANG_CODE" != "en" ]]; then
   _LANG_TMPDIR=$(mktemp -d "/tmp/pack-lang-${LANG_CODE}-XXXXXX")
   bash "$MONOREPO_ROOT/bin/resolve-lang.sh" --lang "$LANG_CODE" --source "$MONOREPO_ROOT" --target "$_LANG_TMPDIR"
   MONOREPO_ROOT="$_LANG_TMPDIR"
-  AGENT_ABS="$_LANG_TMPDIR/$(basename "$REAL_AGENT_ABS")"
+  AGENT_BASENAME="$(basename "$REAL_AGENT_ABS")"
+  if [[ -d "$_LANG_TMPDIR/agents/$AGENT_BASENAME" ]]; then
+    AGENT_ABS="$_LANG_TMPDIR/agents/$AGENT_BASENAME"
+  else
+    AGENT_ABS="$_LANG_TMPDIR/$AGENT_BASENAME"
+  fi
 fi
 trap '[[ -n "$_LANG_TMPDIR" ]] && rm -rf "$_LANG_TMPDIR"' EXIT
 

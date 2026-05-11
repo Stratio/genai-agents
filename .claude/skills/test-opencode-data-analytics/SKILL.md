@@ -21,7 +21,7 @@ set -e
 cd "$(git rev-parse --show-toplevel)"
 bash pack_opencode.sh --agent data-analytics --lang es
 mkdir -p ~/genai-agents-tests/opencode/data-analytics
-rsync -a data-analytics/dist/es/opencode/data-analytics/ ~/genai-agents-tests/opencode/data-analytics/
+rsync -a agents/data-analytics/dist/es/opencode/data-analytics/ ~/genai-agents-tests/opencode/data-analytics/
 echo "OK: data-analytics opencode-es desplegado en ~/genai-agents-tests/opencode/data-analytics"
 ```
 

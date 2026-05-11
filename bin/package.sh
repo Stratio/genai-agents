@@ -50,7 +50,7 @@ for lang in "${LANGUAGES[@]}"; do
   # --- Generic pack per agent (opencode + stratio_cowork) ---
   while IFS= read -r module; do
     [[ -z "$module" || "$module" =~ ^# ]] && continue
-    MODULE_DIR="$REPO_ROOT/$module"
+    MODULE_DIR="$REPO_ROOT/agents/$module"
 
     if [[ ! -d "$MODULE_DIR" ]]; then
       echo "  WARN: Module '$module' does not exist, skipping"

@@ -8,12 +8,12 @@ The repository is oriented towards **OpenCode**, the open-source tool on which S
 
 | Agent | Description | Platforms | Folder |
 |-------|-------------|-----------|--------|
-| **data-analytics** | Full BI/BA agent with advanced analysis, clustering, multi-format reports (PDF, DOCX, web, PowerPoint), read-only data quality coverage assessment and reporting, and reasoning documentation | OpenCode, Stratio Cowork | `data-analytics/` |
-| **semantic-layer** | Agent specialized in building and maintaining semantic layers in Stratio Governance: creation of data collections (technical domains), technical terms, ontologies, business views, SQL mappings, view publishing, semantic terms and business terms | OpenCode, Stratio Cowork | `semantic-layer/` |
-| **data-quality** | Data quality agent: coverage assessment, gap identification, quality rule creation with human-in-the-loop and coverage report generation | OpenCode, Stratio Cowork | `data-quality/` |
-| **governance-officer** | Combined governance agent: full semantic layer building + data quality management in a single agent with unrestricted access to all governance tools | OpenCode, Stratio Cowork | `governance-officer/` |
-| **skill-creator** | Agent for designing and generating AI agent skills (SKILL.md). Interactive requirements → design → generation → review → ZIP packaging | OpenCode, Stratio Cowork | `skill-creator/` |
-| **agent-creator** | Agent for designing and generating complete AI agents for Stratio Cowork. Interactive requirements → architecture design → AGENTS.md generation → skill creation → review → agents/v1 ZIP packaging | OpenCode, Stratio Cowork | `agent-creator/` |
+| **data-analytics** | Full BI/BA agent with advanced analysis, clustering, multi-format reports (PDF, DOCX, web, PowerPoint), read-only data quality coverage assessment and reporting, and reasoning documentation | OpenCode, Stratio Cowork | `agents/data-analytics/` |
+| **semantic-layer** | Agent specialized in building and maintaining semantic layers in Stratio Governance: creation of data collections (technical domains), technical terms, ontologies, business views, SQL mappings, view publishing, semantic terms and business terms | OpenCode, Stratio Cowork | `agents/semantic-layer/` |
+| **data-quality** | Data quality agent: coverage assessment, gap identification, quality rule creation with human-in-the-loop and coverage report generation | OpenCode, Stratio Cowork | `agents/data-quality/` |
+| **governance-officer** | Combined governance agent: full semantic layer building + data quality management in a single agent with unrestricted access to all governance tools | OpenCode, Stratio Cowork | `agents/governance-officer/` |
+| **skill-creator** | Agent for designing and generating AI agent skills (SKILL.md). Interactive requirements → design → generation → review → ZIP packaging | OpenCode, Stratio Cowork | `agents/skill-creator/` |
+| **agent-creator** | Agent for designing and generating complete AI agents for Stratio Cowork. Interactive requirements → architecture design → AGENTS.md generation → skill creation → review → agents/v1 ZIP packaging | OpenCode, Stratio Cowork | `agents/agent-creator/` |
 
 ## Functional plugins
 
@@ -114,20 +114,20 @@ genai-agents/
     ...                                         # Same pattern for all agents
     skills-{v}.zip
     skills-es-{v}.zip
-    shared-skill-explore-data-{v}.zip
-    shared-skill-explore-data-es-{v}.zip
-    ...                                         # Same pattern for all shared skills
+    skill-explore-data-{v}.zip
+    skill-explore-data-es-{v}.zip
+    ...                                         # Same pattern for all skills
     stratio-governance-stratio-cowork-{v}.zip   # Plugins (functional verticals)
     stratio-productivity-claude-{v}.zip
     ...                                         # Same pattern for each plugin × platform
 
-  data-analytics/
-    dist/                                       # Intermediate artifacts (EN)
-      opencode/data-analytics/
-      es/                                       # Intermediate artifacts (ES)
+  agents/
+    data-analytics/
+      dist/                                     # Intermediate artifacts (EN)
         opencode/data-analytics/
-
-  ...                                           # Same pattern for the rest of the agents
+        es/                                     # Intermediate artifacts (ES)
+          opencode/data-analytics/
+    ...                                         # Same pattern for the other 5 agents
 ```
 
 `make clean` removes all `dist/` directories (root + agents).
@@ -304,8 +304,8 @@ The monorepo supports multiple languages. **English is the primary language** �
 genai-agents/
   skills/explore-data/SKILL.md       # English (primary)
   es/skills/explore-data/SKILL.md     # Spanish (overlay)
-  data-analytics/AGENTS.md                   # English
-  es/data-analytics/AGENTS.md                # Spanish
+  agents/data-analytics/AGENTS.md            # English
+  es/agents/data-analytics/AGENTS.md         # Spanish
 ```
 
 Supported languages are listed in the `languages` file at the root.
@@ -316,7 +316,7 @@ All content files that the agent presents to the user or uses as instructions:
 
 | File type | English (main tree) | Spanish (es/ overlay) | Translated? |
 |-----------|--------------------|-----------------------|-------------|
-| Agent instructions | `data-analytics/AGENTS.md` | `es/data-analytics/AGENTS.md` | Yes |
+| Agent instructions | `agents/data-analytics/AGENTS.md` | `es/agents/data-analytics/AGENTS.md` | Yes |
 | Skills | `skills/analyze/SKILL.md` | `es/.../skills/analyze/SKILL.md` | Yes |
 | Skill sub-guides | `analytical-patterns.md` | `es/.../analytical-patterns.md` | Yes |
 | Shared skill guides | `guides/*.md` | `es/guides/*.md` | Yes |
