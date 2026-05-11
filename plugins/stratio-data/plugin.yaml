@@ -1,0 +1,10 @@
+name: stratio-data
+description: "Senior BI/BA analyst that turns business questions into actionable analyses with real data from your governed domains."
+tags:
+  - data-analytics
+  - reporting
+contents:
+  agents:
+    - data-analytics
+platforms:
+  - stratio-cowork

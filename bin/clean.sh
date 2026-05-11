@@ -16,21 +16,13 @@ fi
 if [[ -f "$REPO_ROOT/release-modules" ]]; then
   while IFS= read -r module; do
     [[ -z "$module" || "$module" =~ ^# ]] && continue
-    MODULE_DIR="$REPO_ROOT/$module"
+    MODULE_DIR="$REPO_ROOT/agents/$module"
     [[ ! -d "$MODULE_DIR" ]] && continue
 
     if [[ -d "$MODULE_DIR/dist" ]]; then
       rm -rf "$MODULE_DIR/dist"
       echo "  [OK] $module/dist"
     fi
-
-    # Legacy: clean pre-migration artifact directories
-    for legacy_dir in claude_code opencode claude_projects claude_ai_projects claude_plugins; do
-      if [[ -d "$MODULE_DIR/$legacy_dir" ]]; then
-        rm -rf "$MODULE_DIR/$legacy_dir"
-        echo "  [OK] $module/$legacy_dir (legacy)"
-      fi
-    done
 
     for artifact_dir in __pycache__ .pytest_cache .venv; do
       if [[ -d "$MODULE_DIR/$artifact_dir" ]]; then

@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # pack_stratio_cowork.sh — Generates a composite ZIP in agents/v1 format for Stratio Cowork:
 #   metadata.yaml                   → bundle manifest (agents/v1)
-#   {name}-opencode-agent.zip       → agent without the declared shared skills
-#   {name}-shared-skills.zip        → agent's shared skills (self-contained, optional)
+#   {name}-opencode-agent.zip       → agent without the declared imported skills
+#   {name}-skills.zip               → agent's imported skills (self-contained, optional)
 #   Result: dist/{name}-stratio-cowork.zip
 #
 # Usage: bash pack_stratio_cowork.sh --agent <path> [--name <kebab-name>] [--version <semver>] [--lang <code>]
@@ -39,8 +39,10 @@ if [[ -z "$AGENT_PATH" ]]; then
   exit 1
 fi
 
-# Resolve absolute path
-if [[ -d "$SCRIPT_DIR/$AGENT_PATH" ]]; then
+# Resolve absolute path with 3-level fallback (mirrors pack_opencode.sh)
+if [[ -d "$SCRIPT_DIR/agents/$AGENT_PATH" ]]; then
+  AGENT_ABS="$(cd "$SCRIPT_DIR/agents/$AGENT_PATH" && pwd)"
+elif [[ -d "$SCRIPT_DIR/$AGENT_PATH" ]]; then
   AGENT_ABS="$(cd "$SCRIPT_DIR/$AGENT_PATH" && pwd)"
 elif [[ -d "$AGENT_PATH" ]]; then
   AGENT_ABS="$(cd "$AGENT_PATH" && pwd)"
@@ -71,7 +73,12 @@ if [[ -n "$LANG_CODE" && "$LANG_CODE" != "en" ]]; then
   _LANG_TMPDIR=$(mktemp -d "/tmp/pack-lang-${LANG_CODE}-XXXXXX")
   bash "$MONOREPO_ROOT/bin/resolve-lang.sh" --lang "$LANG_CODE" --source "$MONOREPO_ROOT" --target "$_LANG_TMPDIR"
   MONOREPO_ROOT="$_LANG_TMPDIR"
-  AGENT_ABS="$_LANG_TMPDIR/$(basename "$REAL_AGENT_ABS")"
+  AGENT_BASENAME="$(basename "$REAL_AGENT_ABS")"
+  if [[ -d "$_LANG_TMPDIR/agents/$AGENT_BASENAME" ]]; then
+    AGENT_ABS="$_LANG_TMPDIR/agents/$AGENT_BASENAME"
+  else
+    AGENT_ABS="$_LANG_TMPDIR/$AGENT_BASENAME"
+  fi
   LANG_ARGS=(--lang "$LANG_CODE")
 fi
 trap '[[ -n "$_LANG_TMPDIR" ]] && rm -rf "$_LANG_TMPDIR"' EXIT
@@ -80,27 +87,27 @@ echo "==> Generating Stratio Cowork bundle (agents/v1) for '$AGENT_NAME'${LANG_C
 echo "    Source : $AGENT_ABS"
 
 # ---------------------------------------------------------------------------
-# Phase 1 — Read shared skills manifest
+# Phase 1 — Read imported skills manifest
 # ---------------------------------------------------------------------------
-SHARED_SKILLS=()
+IMPORTED_SKILLS=()
 
-if [[ -f "$AGENT_ABS/shared-skills" ]]; then
+if [[ -f "$AGENT_ABS/imported-skills" ]]; then
   while IFS= read -r skill_name || [[ -n "$skill_name" ]]; do
     [[ -z "$skill_name" || "$skill_name" == \#* ]] && continue
-    # Only include skills that actually exist in shared-skills/
-    if [[ -d "$MONOREPO_ROOT/shared-skills/$skill_name" ]]; then
-      SHARED_SKILLS+=("$skill_name")
+    # Only include skills that actually exist in skills/
+    if [[ -d "$MONOREPO_ROOT/skills/$skill_name" ]]; then
+      IMPORTED_SKILLS+=("$skill_name")
     else
-      echo "    WARN: shared skill '$skill_name' not found in shared-skills/ — skipped"
+      echo "    WARN: imported skill '$skill_name' not found in skills/ — skipped"
     fi
-  done < "$AGENT_ABS/shared-skills"
+  done < "$AGENT_ABS/imported-skills"
 fi
 
-if [[ ${#SHARED_SKILLS[@]} -eq 0 ]]; then
-  echo "    WARN: no shared skills declared for this agent"
+if [[ ${#IMPORTED_SKILLS[@]} -eq 0 ]]; then
+  echo "    WARN: no imported skills declared for this agent"
 fi
 
-echo "    [1] ${#SHARED_SKILLS[@]} shared skill(s) detected: ${SHARED_SKILLS[*]:-none}"
+echo "    [1] ${#IMPORTED_SKILLS[@]} imported skill(s) detected: ${IMPORTED_SKILLS[*]:-none}"
 
 # ---------------------------------------------------------------------------
 # Phase 2 — Package full agent with pack_opencode.sh
@@ -129,16 +136,16 @@ echo "${LANG_CODE:-en}" > "$STAGING_FULL/.agent_lang"
 echo "    [2] Full staging ready at $STAGING_FULL"
 
 # ---------------------------------------------------------------------------
-# Phase 3 — Clone staging and remove shared skills from the clone
+# Phase 3 — Clone staging and remove imported skills from the clone
 # ---------------------------------------------------------------------------
-echo "    [3] Cloning staging for version without shared skills..."
+echo "    [3] Cloning staging for version without imported skills..."
 STAGING_NO_SHARED=$(mktemp -d)
 trap 'rm -rf "$STAGING_NO_SHARED"' EXIT
 
 cp -r "$STAGING_FULL/." "$STAGING_NO_SHARED/"
 
 N_REMOVED=0
-for skill_name in "${SHARED_SKILLS[@]}"; do
+for skill_name in "${IMPORTED_SKILLS[@]}"; do
   skill_dst="$STAGING_NO_SHARED/.opencode/skills/$skill_name"
   if [[ -d "$skill_dst" ]]; then
     rm -rf "$skill_dst"
@@ -149,14 +156,15 @@ for skill_name in "${SHARED_SKILLS[@]}"; do
   fi
 done
 
-# If skills-guides/ became empty after removing shared skills, clean it up
-SKILLS_GUIDES_DIR="$STAGING_NO_SHARED/skills-guides"
-if [[ -d "$SKILLS_GUIDES_DIR" ]]; then
-  # Check if local skills use any guide from skills-guides/
-  # Shared-skills guides are embedded within each skill folder,
-  # not in skills-guides/ — but agent's shared-guides are copied there.
-  # Therefore we leave skills-guides/ alone: it may contain agent-specific guides.
-  echo "    [3] skills-guides/ preserved (may contain agent-specific guides)"
+# If guides/ became empty after removing imported skills, clean it up
+GUIDES_DIR="$STAGING_NO_SHARED/guides"
+if [[ -d "$GUIDES_DIR" ]]; then
+  # Check if local skills use any guide from guides/
+  # Imported-skill guides are embedded within each skill folder,
+  # not in guides/ — but the guides declared in the agent's `guides`
+  # manifest are copied there. Therefore we leave guides/ alone: it may
+  # contain agent-specific guides.
+  echo "    [3] guides/ preserved (may contain agent-specific guides)"
 fi
 
 echo "    [3] $N_REMOVED skill(s) removed from clone"
@@ -167,7 +175,7 @@ echo "    [3] $N_REMOVED skill(s) removed from clone"
 find "$STAGING_NO_SHARED" -maxdepth 1 \( -name 'requirements.txt' -o -name 'setup_env.sh' \) -delete
 
 # ---------------------------------------------------------------------------
-# Phase 4 — Sub-ZIP of agent without shared skills
+# Phase 4 — Sub-ZIP of agent without imported skills
 # ---------------------------------------------------------------------------
 BUNDLE_STAGING=$(mktemp -d)
 trap 'rm -rf "$STAGING_NO_SHARED" "$BUNDLE_STAGING"' EXIT
@@ -182,9 +190,9 @@ ZIP_SIZE=$(du -sh "$BUNDLE_STAGING/$ZIP_NO_SHARED" | cut -f1)
 echo "    [4] $ZIP_NO_SHARED generated ($ZIP_SIZE)"
 
 # ---------------------------------------------------------------------------
-# Phase 5 — Sub-ZIP of agent's shared skills
+# Phase 5 — Sub-ZIP of agent's imported skills
 # ---------------------------------------------------------------------------
-ZIP_SHARED="${AGENT_NAME}-shared-skills.zip"
+ZIP_SHARED="${AGENT_NAME}-skills.zip"
 echo "    [5] Generating $ZIP_SHARED..."
 
 SKILLS_STAGING=$(mktemp -d)
@@ -193,18 +201,18 @@ trap 'rm -rf "$STAGING_NO_SHARED" "$BUNDLE_STAGING" "$SKILLS_STAGING"' EXIT
 N_SKILLS_PACKED=0
 N_GUIDES_PACKED=0
 
-for skill_name in "${SHARED_SKILLS[@]}"; do
-  skill_src="$MONOREPO_ROOT/shared-skills/$skill_name"
+for skill_name in "${IMPORTED_SKILLS[@]}"; do
+  skill_src="$MONOREPO_ROOT/skills/$skill_name"
   skill_dst="$SKILLS_STAGING/$skill_name"
 
   mkdir -p "$skill_dst"
   cp -r "$skill_src/." "$skill_dst/"
 
-  # Embed guides declared in skill-guides
-  if [[ -f "$skill_src/skill-guides" ]]; then
+  # Embed guides declared in the skill's `guides` manifest
+  if [[ -f "$skill_src/guides" ]]; then
     while IFS= read -r guide || [[ -n "$guide" ]]; do
       [[ -z "$guide" || "$guide" == \#* ]] && continue
-      guide_src="$MONOREPO_ROOT/shared-skill-guides/$guide"
+      guide_src="$MONOREPO_ROOT/guides/$guide"
       if [[ -d "$guide_src" ]]; then
         cp -r "$guide_src" "$skill_dst/$guide"
         N_GUIDES_PACKED=$((N_GUIDES_PACKED + 1))
@@ -214,11 +222,11 @@ for skill_name in "${SHARED_SKILLS[@]}"; do
       else
         echo "    WARN: guide '$guide' not found — skipped"
       fi
-    done < "$skill_src/skill-guides"
+    done < "$skill_src/guides"
   fi
 
-  # Remove the skill-guides manifest from output
-  rm -f "$skill_dst/skill-guides"
+  # Remove the `guides` manifest from output
+  rm -f "$skill_dst/guides"
 
   N_SKILLS_PACKED=$((N_SKILLS_PACKED + 1))
 done
@@ -226,10 +234,7 @@ done
 # Path substitutions
 find "$SKILLS_STAGING" \
   -type f \( -name '*.md' -o -name '*.txt' \) \
-  -exec sed -i 's|skills-guides/||g' {} \;
-find "$SKILLS_STAGING" \
-  -type f \( -name '*.md' -o -name '*.txt' \) \
-  -exec sed -i 's|shared-skill-guides/||g' {} \;
+  -exec sed -i 's|guides/||g' {} \;
 
 if [[ $N_SKILLS_PACKED -gt 0 ]]; then
   bash "$SCRIPT_DIR/bin/sweep-nonruntime.sh" "$SKILLS_STAGING"
@@ -237,7 +242,7 @@ if [[ $N_SKILLS_PACKED -gt 0 ]]; then
   ZIP_SIZE=$(du -sh "$BUNDLE_STAGING/$ZIP_SHARED" | cut -f1)
   echo "    [5] $ZIP_SHARED generated ($N_SKILLS_PACKED skill(s), $N_GUIDES_PACKED guide(s)) ($ZIP_SIZE)"
 else
-  echo "    [5] No shared skills — $ZIP_SHARED skipped"
+  echo "    [5] No imported skills — $ZIP_SHARED skipped"
 fi
 
 # ---------------------------------------------------------------------------
@@ -251,7 +256,7 @@ METADATA_FILE="$BUNDLE_STAGING/metadata.yaml"
   echo 'format_version: "agents/v1"'
   echo "name: \"${AGENT_NAME}\""
   echo "agent_zip: \"${ZIP_NO_SHARED}\""
-  if [[ ${#SHARED_SKILLS[@]} -gt 0 ]]; then
+  if [[ ${#IMPORTED_SKILLS[@]} -gt 0 ]]; then
     echo "skills_zip: \"${ZIP_SHARED}\""
   fi
   if [[ -n "$AGENT_VERSION" ]]; then
@@ -308,7 +313,7 @@ if ! echo "$BUNDLE_CONTENTS" | grep -q "$ZIP_NO_SHARED"; then
   echo "    ERROR: $ZIP_NO_SHARED not found in the bundle" >&2
   ERRORS=$((ERRORS + 1))
 fi
-if [[ ${#SHARED_SKILLS[@]} -gt 0 ]]; then
+if [[ ${#IMPORTED_SKILLS[@]} -gt 0 ]]; then
   if ! echo "$BUNDLE_CONTENTS" | grep -q "$ZIP_SHARED"; then
     echo "    ERROR: $ZIP_SHARED not found in the bundle" >&2
     ERRORS=$((ERRORS + 1))
@@ -341,8 +346,8 @@ if ! echo "$AGENT_ZIP_CONTENTS" | grep -q 'AGENTS\.md'; then
   ERRORS=$((ERRORS + 1))
 fi
 
-# Agent sub-ZIP must NOT contain the removed shared skills
-for skill_name in "${SHARED_SKILLS[@]}"; do
+# Agent sub-ZIP must NOT contain the removed imported skills
+for skill_name in "${IMPORTED_SKILLS[@]}"; do
   if echo "$AGENT_ZIP_CONTENTS" | grep -q "\.opencode/skills/$skill_name/"; then
     echo "    ERROR: skill '$skill_name' still present in $ZIP_NO_SHARED" >&2
     ERRORS=$((ERRORS + 1))
@@ -351,29 +356,29 @@ done
 
 # Skills sub-ZIP must contain SKILL.md for each skill
 SKILLS_ZIP_CONTENTS=""
-if [[ ${#SHARED_SKILLS[@]} -gt 0 ]]; then
+if [[ ${#IMPORTED_SKILLS[@]} -gt 0 ]]; then
   if ! SKILLS_ZIP_CONTENTS=$(unzip -Z1 "$BUNDLE_STAGING/$ZIP_SHARED" 2>/dev/null); then
     echo "    ERROR: cannot list skills sub-ZIP '$ZIP_SHARED'" >&2
     ERRORS=$((ERRORS + 1))
   fi
 fi
-for skill_name in "${SHARED_SKILLS[@]}"; do
+for skill_name in "${IMPORTED_SKILLS[@]}"; do
   if ! echo "$SKILLS_ZIP_CONTENTS" | grep -q "${skill_name}/SKILL\.md"; then
     echo "    ERROR: ${skill_name}/SKILL.md not found in $ZIP_SHARED" >&2
     ERRORS=$((ERRORS + 1))
   fi
 done
 
-# No residual references to skill-guides in the skills ZIP
-if [[ ${#SHARED_SKILLS[@]} -gt 0 ]]; then
+# No residual references to guides/ in the skills ZIP
+if [[ ${#IMPORTED_SKILLS[@]} -gt 0 ]]; then
   _skills_md_content=""
   if ! _skills_md_content=$(unzip -p "$BUNDLE_STAGING/$ZIP_SHARED" "*/SKILL.md" 2>/dev/null); then
     echo "    ERROR: cannot extract SKILL.md files from skills sub-ZIP '$ZIP_SHARED'" >&2
     ERRORS=$((ERRORS + 1))
   fi
-  SKILLS_REFS=$(echo "$_skills_md_content" | grep -c 'skills-guides/' || true)
+  SKILLS_REFS=$(echo "$_skills_md_content" | grep -c 'guides/' || true)
   if [[ "$SKILLS_REFS" -gt 0 ]]; then
-    echo "    ERROR: residual references to skills-guides/ in $ZIP_SHARED" >&2
+    echo "    ERROR: residual references to guides/ in $ZIP_SHARED" >&2
     ERRORS=$((ERRORS + 1))
   fi
 fi
@@ -386,7 +391,7 @@ fi
 echo "==> OK — dist/${AGENT_NAME}-stratio-cowork.zip"
 echo "    Contains:"
 echo "      - metadata.yaml  (agents/v1 manifest)"
-echo "      - $ZIP_NO_SHARED  (agent without shared skills)"
-if [[ ${#SHARED_SKILLS[@]} -gt 0 ]]; then
-  echo "      - $ZIP_SHARED  (${#SHARED_SKILLS[@]} shared skill(s))"
+echo "      - $ZIP_NO_SHARED  (agent without imported skills)"
+if [[ ${#IMPORTED_SKILLS[@]} -gt 0 ]]; then
+  echo "      - $ZIP_SHARED  (${#IMPORTED_SKILLS[@]} imported skill(s))"
 fi

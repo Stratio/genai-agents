@@ -3,7 +3,8 @@
 # their counterpart in each language directory declared in 'languages'.
 #
 # Translatable files: AGENTS.md, SKILL.md, USER_README.md, README.md (agents),
-#   cowork-metadata.yaml, *.md in skills/*/ and skills-guides/, shared-skill-guides/,
+#   cowork-metadata.yaml, *.md in <agent>/skills/*/ and <agent>/guides/,
+#   the root-level skills/ and guides/ directories (scanned below),
 #   templates/memory/
 #
 # Usage: bin/check-translations.sh [--lang <code>]
@@ -56,7 +57,7 @@ MODULES_FILE="$REPO_ROOT/release-modules"
 if [[ -f "$MODULES_FILE" ]]; then
   while IFS= read -r module || [[ -n "$module" ]]; do
     [[ -z "$module" || "$module" == "#"* ]] && continue
-    MODULE_DIR="$REPO_ROOT/$module"
+    MODULE_DIR="$REPO_ROOT/agents/$module"
     [[ ! -d "$MODULE_DIR" ]] && continue
 
     # Agent-level files
@@ -74,11 +75,12 @@ if [[ -f "$MODULES_FILE" ]]; then
       done < <(find "$MODULE_DIR/skills" -type f -name '*.md' 2>/dev/null)
     fi
 
-    # Local skills-guides
-    if [[ -d "$MODULE_DIR/skills-guides" ]]; then
+    # Local guides directory (note: shares the name with the `guides` manifest
+    # file at the same path — only one of the two can exist per agent).
+    if [[ -d "$MODULE_DIR/guides" ]]; then
       while IFS= read -r md_file; do
         TRANSLATABLE+=("$md_file")
-      done < <(find "$MODULE_DIR/skills-guides" -type f -name '*.md' 2>/dev/null)
+      done < <(find "$MODULE_DIR/guides" -type f -name '*.md' 2>/dev/null)
     fi
 
     # Memory templates (used to seed output/MEMORY.md and ANALYSIS_MEMORY.md
@@ -91,9 +93,9 @@ if [[ -f "$MODULES_FILE" ]]; then
   done < "$MODULES_FILE"
 fi
 
-# Shared skills
-if [[ -d "$REPO_ROOT/shared-skills" ]]; then
-  for skill_dir in "$REPO_ROOT/shared-skills"/*/; do
+# Shared skills (root-level skills/ directory)
+if [[ -d "$REPO_ROOT/skills" ]]; then
+  for skill_dir in "$REPO_ROOT/skills"/*/; do
     [[ ! -d "$skill_dir" ]] && continue
     while IFS= read -r md_file; do
       TRANSLATABLE+=("$md_file")
@@ -101,11 +103,11 @@ if [[ -d "$REPO_ROOT/shared-skills" ]]; then
   done
 fi
 
-# Shared skill guides
-if [[ -d "$REPO_ROOT/shared-skill-guides" ]]; then
+# Shared guides (root-level guides/ directory)
+if [[ -d "$REPO_ROOT/guides" ]]; then
   while IFS= read -r md_file; do
     TRANSLATABLE+=("$md_file")
-  done < <(find "$REPO_ROOT/shared-skill-guides" -type f -name '*.md' 2>/dev/null)
+  done < <(find "$REPO_ROOT/guides" -type f -name '*.md' 2>/dev/null)
 fi
 
 # ---------------------------------------------------------------------------

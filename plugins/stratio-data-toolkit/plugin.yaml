@@ -1,0 +1,16 @@
+name: stratio-data-toolkit
+description: "Pluggable skills for Stratio governed data: query patterns for the Stratio MCPs, guided domain exploration, knowledge contributions to the data dictionary, and quality coverage assessment. Requires Stratio data and governance MCPs configured in your agent."
+tags:
+  - data-analytics
+  - data-quality
+contents:
+  skills:
+    - stratio-data
+    - explore-data
+    - propose-knowledge
+    - assess-quality
+mcps:
+  - Stratio_Data
+  - Stratio_Gov
+platforms:
+  - claude

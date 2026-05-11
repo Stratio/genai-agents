@@ -1,0 +1,22 @@
+name: stratio-productivity
+description: "Productivity skills: read and author office documents (PDF, DOCX, PPTX, XLSX), craft web and canvas visual outputs, and apply consistent brand identity."
+tags:
+  - productivity
+  - documents
+  - visual-output
+contents:
+  skills:
+    - pdf-reader
+    - pdf-writer
+    - docx-reader
+    - docx-writer
+    - pptx-reader
+    - pptx-writer
+    - xlsx-reader
+    - xlsx-writer
+    - web-craft
+    - canvas-craft
+    - brand-kit
+platforms:
+  - stratio-cowork
+  - claude

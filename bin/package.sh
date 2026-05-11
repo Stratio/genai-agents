@@ -47,27 +47,14 @@ for lang in "${LANGUAGES[@]}"; do
     LANG_SUFFIX="-${lang}"
   fi
 
-  # --- Generic pack per agent (claude_code + opencode + stratio_cowork) ---
+  # --- Generic pack per agent (opencode + stratio_cowork) ---
   while IFS= read -r module; do
     [[ -z "$module" || "$module" =~ ^# ]] && continue
-    MODULE_DIR="$REPO_ROOT/$module"
+    MODULE_DIR="$REPO_ROOT/agents/$module"
 
     if [[ ! -d "$MODULE_DIR" ]]; then
       echo "  WARN: Module '$module' does not exist, skipping"
       continue
-    fi
-
-    echo "  [$module] Packaging claude_code..."
-    bash "$REPO_ROOT/pack_claude_code.sh" --agent "$module" --name "$module" "${LANG_ARGS[@]}"
-    # Intermediate output: {agent}/dist/[{lang}/]claude_code/{name}/
-    if [[ -n "$LANG_SUFFIX" ]]; then
-      INTERMEDIATE="$MODULE_DIR/dist/$lang/claude_code/$module"
-    else
-      INTERMEDIATE="$MODULE_DIR/dist/claude_code/$module"
-    fi
-    if [[ -d "$INTERMEDIATE" ]]; then
-      bash "$REPO_ROOT/bin/zip-deterministic.sh" "$INTERMEDIATE" "$DIST_DIR/${module}-claude-code${LANG_SUFFIX}-${VERSION}.zip"
-      echo "    -> dist/${module}-claude-code${LANG_SUFFIX}-${VERSION}.zip"
     fi
 
     echo "  [$module] Packaging opencode..."
@@ -78,88 +65,71 @@ for lang in "${LANGUAGES[@]}"; do
       INTERMEDIATE="$MODULE_DIR/dist/opencode/$module"
     fi
     if [[ -d "$INTERMEDIATE" ]]; then
-      bash "$REPO_ROOT/bin/zip-deterministic.sh" "$INTERMEDIATE" "$DIST_DIR/${module}-opencode${LANG_SUFFIX}-${VERSION}.zip"
-      echo "    -> dist/${module}-opencode${LANG_SUFFIX}-${VERSION}.zip"
+      bash "$REPO_ROOT/bin/zip-deterministic.sh" "$INTERMEDIATE" "$DIST_DIR/agent-${module}-opencode${LANG_SUFFIX}-${VERSION}.zip"
+      echo "    -> dist/agent-${module}-opencode${LANG_SUFFIX}-${VERSION}.zip"
     fi
 
-    if [[ "$module" != "data-analytics-light" ]]; then
-      echo "  [$module] Packaging Stratio cowork (agent + mcps + shared skills separately)..."
-      bash "$REPO_ROOT/pack_stratio_cowork.sh" --agent "$module" --name "$module" --version "$VERSION" "${LANG_ARGS[@]}" || {
-        echo "  WARN: pack_stratio_cowork.sh failed for $module — continuing"
-      }
-      if [[ -f "$REPO_ROOT/dist/${module}-stratio-cowork.zip" ]]; then
-        mv "$REPO_ROOT/dist/${module}-stratio-cowork.zip" "$DIST_DIR/${module}-stratio-cowork${LANG_SUFFIX}-${VERSION}.zip"
-        echo "    -> dist/${module}-stratio-cowork${LANG_SUFFIX}-${VERSION}.zip"
-      fi
+    echo "  [$module] Packaging Stratio cowork (agent + mcps + imported skills separately)..."
+    bash "$REPO_ROOT/pack_stratio_cowork.sh" --agent "$module" --name "$module" --version "$VERSION" "${LANG_ARGS[@]}" || {
+      echo "  WARN: pack_stratio_cowork.sh failed for $module — continuing"
+    }
+    if [[ -f "$REPO_ROOT/dist/${module}-stratio-cowork.zip" ]]; then
+      mv "$REPO_ROOT/dist/${module}-stratio-cowork.zip" "$DIST_DIR/agent-${module}-stratio-cowork${LANG_SUFFIX}-${VERSION}.zip"
+      echo "    -> dist/agent-${module}-stratio-cowork${LANG_SUFFIX}-${VERSION}.zip"
     fi
 
   done < "$REPO_ROOT/release-modules"
 
-  # --- Pack shared-skills ---
-  echo "  [shared-skills] Packaging shared skills..."
-  bash "$REPO_ROOT/pack_shared_skills.sh" --name shared-skills "${LANG_ARGS[@]}"
-  if [[ -f "$REPO_ROOT/dist/shared-skills.zip" ]]; then
-    mv "$REPO_ROOT/dist/shared-skills.zip" "$DIST_DIR/shared-skills${LANG_SUFFIX}-${VERSION}.zip"
-    echo "    -> dist/shared-skills${LANG_SUFFIX}-${VERSION}.zip"
+  # --- Pack skills (bulk) ---
+  echo "  [skills] Packaging skills bundle..."
+  bash "$REPO_ROOT/pack_skills.sh" --name skills "${LANG_ARGS[@]}"
+  if [[ -f "$REPO_ROOT/dist/skills.zip" ]]; then
+    mv "$REPO_ROOT/dist/skills.zip" "$DIST_DIR/skills${LANG_SUFFIX}-${VERSION}.zip"
+    echo "    -> dist/skills${LANG_SUFFIX}-${VERSION}.zip"
   fi
 
-  # --- Pack individual shared-skills ---
-  for skill_dir in "$REPO_ROOT/shared-skills"/*/; do
+  # --- Pack individual skills ---
+  for skill_dir in "$REPO_ROOT/skills"/*/; do
     [[ -d "$skill_dir" ]] || continue
     skill_name="$(basename "$skill_dir")"
-    echo "  [shared-skills] Packaging individual skill '$skill_name'..."
-    bash "$REPO_ROOT/pack_shared_skills.sh" --skill "$skill_name" "${LANG_ARGS[@]}"
+    echo "  [skills] Packaging individual skill '$skill_name'..."
+    bash "$REPO_ROOT/pack_skills.sh" --skill "$skill_name" "${LANG_ARGS[@]}"
     if [[ -f "$REPO_ROOT/dist/${skill_name}.zip" ]]; then
-      mv "$REPO_ROOT/dist/${skill_name}.zip" "$DIST_DIR/shared-skill-${skill_name}${LANG_SUFFIX}-${VERSION}.zip"
-      echo "    -> dist/shared-skill-${skill_name}${LANG_SUFFIX}-${VERSION}.zip"
+      mv "$REPO_ROOT/dist/${skill_name}.zip" "$DIST_DIR/skill-${skill_name}${LANG_SUFFIX}-${VERSION}.zip"
+      echo "    -> dist/skill-${skill_name}${LANG_SUFFIX}-${VERSION}.zip"
     fi
   done
 
-  # --- Additional packs for agents with their own scripts ---
-  _pack_agent_extras() {
-    local agent_name="$1"
-    local agent_dir="$REPO_ROOT/$agent_name"
-    [[ -d "$agent_dir" ]] || return 0
+  # --- Pass 2: Functional plugins (plugins/*) ---
+  if [[ -d "$REPO_ROOT/plugins" ]]; then
+    # Run validator once per language pass (the plugin manifests don't change between languages)
+    if [[ -x "$REPO_ROOT/bin/validate-plugins.py" ]]; then
+      python3 "$REPO_ROOT/bin/validate-plugins.py" >/dev/null
+    fi
+    for plugin_dir in "$REPO_ROOT/plugins"/*/; do
+      [[ -d "$plugin_dir" ]] || continue
+      plugin_name="$(basename "$plugin_dir")"
+      [[ "$plugin_name" == .* ]] && continue
+      [[ -f "$plugin_dir/plugin.yaml" ]] || continue
 
-    for pack_script in "$agent_dir"/pack_claude_*.sh; do
-      [[ ! -f "$pack_script" ]] && continue
-      local script_name
-      script_name=$(basename "$pack_script")
-
-      # Extract type from name: pack_claude_ai_project.sh -> ai_project
-      local pack_type="${script_name#pack_claude_}"
-      pack_type="${pack_type%.sh}"
-
-      echo "  [$agent_name] Running $script_name..."
-      (cd "$agent_dir" && bash "$script_name" --name "$agent_name" "${LANG_ARGS[@]}") || {
-        echo "  WARN: $script_name failed — continuing"
-        continue
-      }
-
-      # Find the generated output directory
-      local output_subdir=""
-      case "$pack_type" in
-        ai_project) output_subdir="dist${LANG_SUFFIX:+/$lang}/claude_ai_projects/$agent_name" ;;
-        cowork)     output_subdir="dist${LANG_SUFFIX:+/$lang}/claude_cowork/$agent_name" ;;
-        *) echo "  WARN: Unknown type: $pack_type"; continue ;;
-      esac
-
-      # Normalize PACK_TYPE for the ZIP name (ai_project -> ai-project)
-      local zip_type
-      zip_type=$(echo "$pack_type" | tr '_' '-')
-
-      local output_dir="$agent_dir/$output_subdir"
-      if [[ -d "$output_dir" ]]; then
-        bash "$REPO_ROOT/bin/zip-deterministic.sh" "$output_dir" "$DIST_DIR/${agent_name}-claude-${zip_type}${LANG_SUFFIX}-${VERSION}.zip"
-        echo "    -> dist/${agent_name}-claude-${zip_type}${LANG_SUFFIX}-${VERSION}.zip"
-      fi
+      for plugin_platform in stratio-cowork claude; do
+        echo "  [plugin:$plugin_name] Packaging for $plugin_platform${LANG_SUFFIX:+ ($lang)}..."
+        bash "$REPO_ROOT/pack_plugin.sh" \
+          --plugin "$plugin_name" \
+          --platform "$plugin_platform" \
+          --version "$VERSION" \
+          "${LANG_ARGS[@]}" >/dev/null || {
+          echo "  WARN: pack_plugin.sh failed for plugin '$plugin_name' / $plugin_platform — continuing"
+          continue
+        }
+        SRC_ZIP="$REPO_ROOT/dist/${plugin_name}-${plugin_platform}.zip"
+        if [[ -f "$SRC_ZIP" ]]; then
+          mv "$SRC_ZIP" "$DIST_DIR/plugin-${plugin_name}-${plugin_platform}${LANG_SUFFIX}-${VERSION}.zip"
+          echo "    -> dist/plugin-${plugin_name}-${plugin_platform}${LANG_SUFFIX}-${VERSION}.zip"
+        fi
+      done
     done
-  }
-
-  while IFS= read -r module; do
-    [[ -z "$module" || "$module" =~ ^# ]] && continue
-    _pack_agent_extras "$module"
-  done < "$REPO_ROOT/release-modules"
+  fi
 done
 
 # --- Summary ---

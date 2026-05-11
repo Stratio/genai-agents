@@ -28,8 +28,13 @@ if [[ -z "$AGENT_PATH" ]]; then
   exit 1
 fi
 
-# Resolve absolute path: first relative to SCRIPT_DIR, then as absolute
-if [[ -d "$SCRIPT_DIR/$AGENT_PATH" ]]; then
+# Resolve absolute path against, in order:
+#   1. $SCRIPT_DIR/agents/$AGENT_PATH (agent inside the monorepo)
+#   2. $SCRIPT_DIR/$AGENT_PATH         (agent at the monorepo root)
+#   3. $AGENT_PATH                     (absolute path or path relative to cwd)
+if [[ -d "$SCRIPT_DIR/agents/$AGENT_PATH" ]]; then
+  AGENT_ABS="$(cd "$SCRIPT_DIR/agents/$AGENT_PATH" && pwd)"
+elif [[ -d "$SCRIPT_DIR/$AGENT_PATH" ]]; then
   AGENT_ABS="$(cd "$SCRIPT_DIR/$AGENT_PATH" && pwd)"
 elif [[ -d "$AGENT_PATH" ]]; then
   AGENT_ABS="$(cd "$AGENT_PATH" && pwd)"
@@ -59,7 +64,12 @@ if [[ -n "$LANG_CODE" && "$LANG_CODE" != "en" ]]; then
   _LANG_TMPDIR=$(mktemp -d "/tmp/pack-lang-${LANG_CODE}-XXXXXX")
   bash "$MONOREPO_ROOT/bin/resolve-lang.sh" --lang "$LANG_CODE" --source "$MONOREPO_ROOT" --target "$_LANG_TMPDIR"
   MONOREPO_ROOT="$_LANG_TMPDIR"
-  AGENT_ABS="$_LANG_TMPDIR/$(basename "$REAL_AGENT_ABS")"
+  AGENT_BASENAME="$(basename "$REAL_AGENT_ABS")"
+  if [[ -d "$_LANG_TMPDIR/agents/$AGENT_BASENAME" ]]; then
+    AGENT_ABS="$_LANG_TMPDIR/agents/$AGENT_BASENAME"
+  else
+    AGENT_ABS="$_LANG_TMPDIR/$AGENT_BASENAME"
+  fi
 fi
 trap '[[ -n "$_LANG_TMPDIR" ]] && rm -rf "$_LANG_TMPDIR"' EXIT
 
@@ -168,18 +178,18 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# Phase 5.1 — Shared skills (optional)
+# Phase 5.1 — Imported skills (optional)
 # ---------------------------------------------------------------------------
 SHARED_GUIDES_NEEDED=()
 
-if [[ -f "$AGENT_ABS/shared-skills" ]]; then
+if [[ -f "$AGENT_ABS/imported-skills" ]]; then
   N_SHARED=0
   while IFS= read -r skill_name || [[ -n "$skill_name" ]]; do
     [[ -z "$skill_name" || "$skill_name" == \#* ]] && continue
-    skill_src="$MONOREPO_ROOT/shared-skills/$skill_name"
+    skill_src="$MONOREPO_ROOT/skills/$skill_name"
     skill_dst="$OUTPUT_DIR/.opencode/skills/$skill_name"
     if [[ ! -d "$skill_src" ]]; then
-      echo "    WARN: shared skill '$skill_name' not found in $skill_src — skipped" >&2
+      echo "    WARN: imported skill '$skill_name' not found in $skill_src — skipped" >&2
       continue
     fi
     if [[ -d "$skill_dst" ]]; then
@@ -187,12 +197,12 @@ if [[ -f "$AGENT_ABS/shared-skills" ]]; then
       continue
     fi
     cp -r "$skill_src" "$skill_dst"
-    rm -f "$skill_dst/skill-guides"
+    rm -f "$skill_dst/guides"
     # Copy guides declared WITHIN the skill (self-contained)
-    if [[ -f "$skill_src/skill-guides" ]]; then
+    if [[ -f "$skill_src/guides" ]]; then
       while IFS= read -r guide || [[ -n "$guide" ]]; do
         [[ -z "$guide" || "$guide" == \#* ]] && continue
-        guide_src="$MONOREPO_ROOT/shared-skill-guides/$guide"
+        guide_src="$MONOREPO_ROOT/guides/$guide"
         if [[ -d "$guide_src" ]]; then
           cp -r "$guide_src" "$skill_dst/$guide"
         elif [[ -f "$guide_src" ]]; then
@@ -200,49 +210,49 @@ if [[ -f "$AGENT_ABS/shared-skills" ]]; then
         else
           echo "    WARN: shared guide '$guide' not found — skipped" >&2
         fi
-      done < "$skill_src/skill-guides"
+      done < "$skill_src/guides"
       # Update references in the skill to make them local
-      find "$skill_dst" -type f -name '*.md' -exec sed -i 's|skills-guides/||g' {} \;
+      find "$skill_dst" -type f -name '*.md' -exec sed -i 's|guides/||g' {} \;
     fi
     N_SHARED=$((N_SHARED + 1))
-    if [[ -f "$skill_src/skill-guides" ]]; then
+    if [[ -f "$skill_src/guides" ]]; then
       while IFS= read -r guide || [[ -n "$guide" ]]; do
         [[ -z "$guide" || "$guide" == \#* ]] && continue
         SHARED_GUIDES_NEEDED+=("$guide")
-      done < "$skill_src/skill-guides"
+      done < "$skill_src/guides"
     fi
-  done < "$AGENT_ABS/shared-skills"
-  echo "    [5.1] $N_SHARED shared skill(s) included"
+  done < "$AGENT_ABS/imported-skills"
+  echo "    [5.1] $N_SHARED imported skill(s) included"
 else
-  echo "    [5.1] No shared-skills declared (continuing without error)"
+  echo "    [5.1] No imported-skills declared (continuing without error)"
 fi
 
-if [[ -f "$AGENT_ABS/shared-guides" ]]; then
+if [[ -f "$AGENT_ABS/guides" ]]; then
   while IFS= read -r guide || [[ -n "$guide" ]]; do
     [[ -z "$guide" || "$guide" == \#* ]] && continue
     SHARED_GUIDES_NEEDED+=("$guide")
-  done < "$AGENT_ABS/shared-guides"
+  done < "$AGENT_ABS/guides"
 fi
 
 if [[ ${#SHARED_GUIDES_NEEDED[@]} -gt 0 ]]; then
-  mkdir -p "$OUTPUT_DIR/skills-guides"
+  mkdir -p "$OUTPUT_DIR/guides"
   declare -A _GUIDES_SEEN=()
   N_GUIDES=0
   for guide in "${SHARED_GUIDES_NEEDED[@]}"; do
     [[ -n "${_GUIDES_SEEN[$guide]:-}" ]] && continue
     _GUIDES_SEEN[$guide]=1
-    guide_src="$MONOREPO_ROOT/shared-skill-guides/$guide"
+    guide_src="$MONOREPO_ROOT/guides/$guide"
     if [[ -d "$guide_src" ]]; then
-      cp -r "$guide_src" "$OUTPUT_DIR/skills-guides/$guide"
+      cp -r "$guide_src" "$OUTPUT_DIR/guides/$guide"
     elif [[ -f "$guide_src" ]]; then
-      cp "$guide_src" "$OUTPUT_DIR/skills-guides/$guide"
+      cp "$guide_src" "$OUTPUT_DIR/guides/$guide"
     else
       echo "    WARN: shared guide '$guide' not found in $guide_src — skipped" >&2
       continue
     fi
     N_GUIDES=$((N_GUIDES + 1))
   done
-  echo "    [5.1] $N_GUIDES shared guide(s) copied to skills-guides/"
+  echo "    [5.1] $N_GUIDES shared guide(s) copied to guides/"
 fi
 
 # ---------------------------------------------------------------------------
@@ -264,8 +274,8 @@ rsync -a \
   --exclude=opencode.json \
   --exclude=cowork-metadata.yaml \
   --exclude=skills/ \
-  --exclude=shared-skills \
-  --exclude=shared-guides \
+  --exclude=imported-skills \
+  --exclude=guides \
   --exclude='pack_*.sh' \
   --exclude=output/ \
   --exclude=dist/ \
@@ -309,17 +319,10 @@ echo "    [7b] Placeholder TOOL_QUESTIONS -> question"
 # puts skills under .opencode/skills/ but the authored content references them
 # as skills/<name>/ (the in-repo path). This rewrite makes bash invocations,
 # sys.path.insert calls, docstrings, and all absolute references resolve in
-# the packaged layout. The regex matches `skills/<kebab-name>/` only when not
-# preceded by an alphanumeric / underscore / dot / slash / hyphen — the hyphen
-# exclusion prevents `shared-skills/<name>/` from being corrupted into
-# `shared-.opencode/skills/<name>/`. Relative md references like
-# `[file.md](file.md)` and python imports `from foo import X` are also safe.
-# `shared-skills/<name>/` → `.opencode/skills/<name>/` is handled by a dedicated
-# pass first so that shared-skills content ships with runnable paths.
-find "$OUTPUT_DIR" \
-  -not -path '*/node_modules/*' -not -path '*/.venv/*' \
-  -type f \( -name '*.md' -o -name '*.json' -o -name '*.sh' -o -name '*.py' -o -name '*.txt' \) \
-  -exec sed -i -E 's#(^|[^a-zA-Z0-9_./])shared-skills/([a-z][a-z0-9-]*)/#\1.opencode/skills/\2/#g' {} \;
+# the packaged layout. The regex matches `skills/<kebab-name>/` when not
+# preceded by an alphanumeric / underscore / dot / slash / hyphen — the
+# hyphen exclusion is defensive against composite directory names like
+# `<x>-skills/<name>/`, keeping the substitution robust.
 find "$OUTPUT_DIR" \
   -not -path '*/node_modules/*' -not -path '*/.venv/*' \
   -type f \( -name '*.md' -o -name '*.json' -o -name '*.sh' -o -name '*.py' -o -name '*.txt' \) \
@@ -335,17 +338,17 @@ echo "    [7c] Non-runtime files removed"
 # ---------------------------------------------------------------------------
 # Phase 7e — Resolve guides for local skills + clean residual manifests
 # ---------------------------------------------------------------------------
-# Shared skills are already processed in Phase 5.1; this pass covers local
-# skills copied via rsync in Phase 6 that declare a `skill-guides` manifest.
+# Imported skills are already processed in Phase 5.1; this pass covers local
+# skills copied via rsync in Phase 6 that declare a `guides` manifest.
 # For any skill with the manifest still present: copy the declared guides
-# alongside SKILL.md, rewrite `skills-guides/X.md` → `X.md`, and drop the
+# alongside SKILL.md, rewrite `guides/X.md` → `X.md`, and drop the
 # manifest so it doesn't ship to runtime.
 for skill_dir in "$OUTPUT_DIR/.opencode/skills"/*/; do
   [[ -d "$skill_dir" ]] || continue
-  [[ -f "$skill_dir/skill-guides" ]] || continue
+  [[ -f "$skill_dir/guides" ]] || continue
   while IFS= read -r guide || [[ -n "$guide" ]]; do
     [[ -z "$guide" || "$guide" == \#* ]] && continue
-    guide_src="$MONOREPO_ROOT/shared-skill-guides/$guide"
+    guide_src="$MONOREPO_ROOT/guides/$guide"
     guide_dst="$skill_dir/$guide"
     if [[ ! -e "$guide_dst" ]]; then
       if [[ -d "$guide_src" ]]; then
@@ -354,9 +357,9 @@ for skill_dir in "$OUTPUT_DIR/.opencode/skills"/*/; do
         cp "$guide_src" "$guide_dst"
       fi
     fi
-  done < "$skill_dir/skill-guides"
-  find "$skill_dir" -type f -name '*.md' -exec sed -i 's|skills-guides/||g' {} \;
-  rm -f "$skill_dir/skill-guides"
+  done < "$skill_dir/guides"
+  find "$skill_dir" -type f -name '*.md' -exec sed -i 's|guides/||g' {} \;
+  rm -f "$skill_dir/guides"
 done
 echo "    [7e] Local-skill guides resolved; manifests cleaned"
 
@@ -405,14 +408,14 @@ for FORBIDDEN in .claude; do
   fi
 done
 
-# Verify that skills-guides referenced from AGENTS.md exist
+# Verify that guides referenced from AGENTS.md exist
 if [[ -f "$OUTPUT_DIR/AGENTS.md" ]]; then
   while IFS= read -r ref; do
     if [[ ! -f "$OUTPUT_DIR/$ref" ]]; then
       echo "    ERROR: broken reference in AGENTS.md: $ref" >&2
       ERRORS=$((ERRORS + 1))
     fi
-  done < <(grep -oP 'skills-guides/[a-zA-Z0-9_.-]+\.md' "$OUTPUT_DIR/AGENTS.md" | sort -u)
+  done < <(grep -oP 'guides/[a-zA-Z0-9_.-]+\.md' "$OUTPUT_DIR/AGENTS.md" | sort -u)
 fi
 
 # mcps file must not be present

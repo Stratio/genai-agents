@@ -21,7 +21,7 @@ set -e
 cd "$(git rev-parse --show-toplevel)"
 bash pack_opencode.sh --agent data-quality --lang es
 mkdir -p ~/genai-agents-tests/opencode/data-quality
-rsync -a data-quality/dist/es/opencode/data-quality/ ~/genai-agents-tests/opencode/data-quality/
+rsync -a agents/data-quality/dist/es/opencode/data-quality/ ~/genai-agents-tests/opencode/data-quality/
 echo "OK: data-quality opencode-es desplegado en ~/genai-agents-tests/opencode/data-quality"
 ```
 

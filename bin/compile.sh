@@ -22,13 +22,13 @@ if [[ ! -f "$REPO_ROOT/release-modules" ]]; then
 else
   while IFS= read -r module; do
     [[ -z "$module" || "$module" =~ ^# ]] && continue
-    if [[ ! -d "$REPO_ROOT/$module" ]]; then
-      echo "ERROR: Module '$module' listed in release-modules but does not exist as a directory" >&2
+    if [[ ! -d "$REPO_ROOT/agents/$module" ]]; then
+      echo "ERROR: Module '$module' listed in release-modules but does not exist at agents/$module" >&2
       ERRORS=$((ERRORS + 1))
     else
       echo "  [OK] Module: $module"
-      # Validate JSON if .json or .mcp.json files exist
-      for json_file in $(find "$REPO_ROOT/$module" -maxdepth 2 \( -name '*.json' -o -name '.mcp.json' \) -not -path '*/.venv/*' -not -path '*/node_modules/*' -not -path '*/claude_code/*' -not -path '*/opencode/*' -not -path '*/claude_plugins/*' -not -path '*/claude_projects/*' -not -path '*/claude_ai_projects/*' 2>/dev/null); do
+      # Validate JSON files (skip venv, node_modules, and any dist/ output)
+      for json_file in $(find "$REPO_ROOT/agents/$module" -maxdepth 2 -name '*.json' -not -path '*/.venv/*' -not -path '*/node_modules/*' -not -path '*/dist/*' 2>/dev/null); do
         if command -v python3 &>/dev/null; then
           if ! python3 -c "import json; json.load(open('$json_file'))" 2>/dev/null; then
             echo "  WARN: Invalid JSON (or contains templates): $(basename "$json_file") in $module"
@@ -41,7 +41,7 @@ fi
 
 # --- Validate bash syntax of pack_*.sh and bin/*.sh scripts ---
 echo "==> Validating bash script syntax..."
-for script in "$REPO_ROOT"/pack_*.sh "$REPO_ROOT"/data-analytics-light/pack_*.sh "$REPO_ROOT"/semantic-layer/pack_*.sh "$REPO_ROOT"/bin/*.sh; do
+for script in "$REPO_ROOT"/pack_*.sh "$REPO_ROOT"/bin/*.sh; do
   [[ ! -f "$script" ]] && continue
   if bash -n "$script" 2>/dev/null; then
     echo "  [OK] $(basename "$script")"

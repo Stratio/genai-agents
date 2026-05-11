@@ -1,0 +1,10 @@
+name: stratio-cowork-development
+description: "Build AI agents and skills interactively: requirements gathering, architecture design, code generation, quality review and packaging — all from a guided workflow."
+tags:
+  - ai-agent-creation
+contents:
+  agents:
+    - agent-creator
+    - skill-creator
+platforms:
+  - stratio-cowork

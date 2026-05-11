@@ -21,7 +21,7 @@ set -e
 cd "$(git rev-parse --show-toplevel)"
 bash pack_opencode.sh --agent governance-officer --lang es
 mkdir -p ~/genai-agents-tests/opencode/governance-officer
-rsync -a governance-officer/dist/es/opencode/governance-officer/ ~/genai-agents-tests/opencode/governance-officer/
+rsync -a agents/governance-officer/dist/es/opencode/governance-officer/ ~/genai-agents-tests/opencode/governance-officer/
 echo "OK: governance-officer opencode-es desplegado en ~/genai-agents-tests/opencode/governance-officer"
 ```
 
