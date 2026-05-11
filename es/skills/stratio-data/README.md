@@ -50,4 +50,4 @@ Ninguno.
 
 - **Cárgala pronto.** La skill está diseñada para ejecutarse antes de cualquier otra llamada a herramienta de datos en una conversación; cargarla a mitad sigue funcionando pero las reglas pueden haberse roto ya.
 - **Pareja con `stratio-semantic-layer`** — entre las dos cubren las dos familias MCP (datos + gobierno). Los agentes que tocan ambas típicamente cargan las dos.
-- **El guide se mantiene en `guides/`** para que varias skills referencien la misma fuente de verdad sin duplicar.
+- **El guide vive en la carpeta central de guides del monorepo** para que varias skills referencien la misma fuente de verdad sin duplicar.

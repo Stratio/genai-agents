@@ -75,7 +75,8 @@ if [[ -f "$MODULES_FILE" ]]; then
       done < <(find "$MODULE_DIR/skills" -type f -name '*.md' 2>/dev/null)
     fi
 
-    # Local guides (per-agent guides/ directory, if present)
+    # Local guides directory (note: shares the name with the `guides` manifest
+    # file at the same path — only one of the two can exist per agent).
     if [[ -d "$MODULE_DIR/guides" ]]; then
       while IFS= read -r md_file; do
         TRANSLATABLE+=("$md_file")

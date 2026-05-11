@@ -240,8 +240,6 @@ platforms:                    # optional — defaults derived from contents
   - claude
 ```
 
-The field is named `skills:` (not `shared_skills:`) to anticipate the upcoming rename of `skills/` → `skills/`. The builder maps `skills:` to the actual directory regardless of its current name.
-
 ### Validation rules (`bin/validate-plugins.py`)
 
 - `name` must be kebab-case and equal to the parent directory.

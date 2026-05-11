@@ -222,7 +222,7 @@ For the complete field reference, see `frontmatter-reference.md`.
 For writing patterns and anti-patterns, see `writing-patterns.md`.
 ```
 
-If a guide is shared across multiple skills, place it in `guides/` and declare it in a `guides` manifest file inside the skill directory (one filename per line).
+If a guide is shared across multiple skills, place it in the central monorepo guides folder and declare it in a `guides` manifest file inside the skill directory (one filename per line).
 
 ### 4.4 Dynamic context injection
 

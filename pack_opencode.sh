@@ -28,10 +28,10 @@ if [[ -z "$AGENT_PATH" ]]; then
   exit 1
 fi
 
-# Resolve absolute path with 3-level fallback:
-#   1. $SCRIPT_DIR/agents/$AGENT_PATH (post-refactor: agents live under agents/)
-#   2. $SCRIPT_DIR/$AGENT_PATH         (retro-compat: pre-refactor layout)
-#   3. $AGENT_PATH                     (absolute path or relative to cwd)
+# Resolve absolute path against, in order:
+#   1. $SCRIPT_DIR/agents/$AGENT_PATH (agent inside the monorepo)
+#   2. $SCRIPT_DIR/$AGENT_PATH         (agent at the monorepo root)
+#   3. $AGENT_PATH                     (absolute path or path relative to cwd)
 if [[ -d "$SCRIPT_DIR/agents/$AGENT_PATH" ]]; then
   AGENT_ABS="$(cd "$SCRIPT_DIR/agents/$AGENT_PATH" && pwd)"
 elif [[ -d "$SCRIPT_DIR/$AGENT_PATH" ]]; then
@@ -321,9 +321,8 @@ echo "    [7b] Placeholder TOOL_QUESTIONS -> question"
 # sys.path.insert calls, docstrings, and all absolute references resolve in
 # the packaged layout. The regex matches `skills/<kebab-name>/` when not
 # preceded by an alphanumeric / underscore / dot / slash / hyphen — the
-# hyphen exclusion is defensive (no `<x>-skills/<name>/` patterns ship in
-# the source after the shared-skills/ → skills/ refactor, but the anchor
-# keeps the substitution robust against future composite names).
+# hyphen exclusion is defensive against composite directory names like
+# `<x>-skills/<name>/`, keeping the substitution robust.
 find "$OUTPUT_DIR" \
   -not -path '*/node_modules/*' -not -path '*/.venv/*' \
   -type f \( -name '*.md' -o -name '*.json' -o -name '*.sh' -o -name '*.py' -o -name '*.txt' \) \

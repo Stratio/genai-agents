@@ -49,4 +49,4 @@ None.
 
 - **Load early.** The skill is designed to run before any other governance tool call; loading it mid-conversation still works, but it is less efficient because the rules may already have been broken.
 - **Pairs with `stratio-data`** — together they cover the two MCP families (governance + data). Agents that touch both usually load both.
-- **The guide itself is kept in `guides/`** so multiple skills can reference the same source of truth without duplication.
+- **The guide itself lives in the central monorepo guides folder** so multiple skills can reference the same source of truth without duplication.

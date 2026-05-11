@@ -161,8 +161,9 @@ GUIDES_DIR="$STAGING_NO_SHARED/guides"
 if [[ -d "$GUIDES_DIR" ]]; then
   # Check if local skills use any guide from guides/
   # Imported-skill guides are embedded within each skill folder,
-  # not in guides/ — but agent's shared-guides are copied there.
-  # Therefore we leave guides/ alone: it may contain agent-specific guides.
+  # not in guides/ — but the guides declared in the agent's `guides`
+  # manifest are copied there. Therefore we leave guides/ alone: it may
+  # contain agent-specific guides.
   echo "    [3] guides/ preserved (may contain agent-specific guides)"
 fi
 

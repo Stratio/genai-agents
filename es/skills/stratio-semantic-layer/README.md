@@ -49,4 +49,4 @@ Ninguno.
 
 - **Cárgala pronto.** La skill está diseñada para ejecutarse antes de cualquier otra llamada a herramienta de gobierno; cargarla a mitad de conversación sigue funcionando, pero es menos eficiente porque las reglas pueden haberse roto ya.
 - **Pareja con `stratio-data`** — entre las dos cubren las dos familias MCP (gobierno + datos). Los agentes que tocan ambas típicamente cargan las dos.
-- **El guide vive en `guides/`** para que varias skills referencien la misma fuente de verdad sin duplicar.
+- **El guide vive en la carpeta central de guides del monorepo** para que varias skills referencien la misma fuente de verdad sin duplicar.

@@ -222,7 +222,7 @@ For the complete field reference, see `frontmatter-reference.md`.
 For writing patterns and anti-patterns, see `writing-patterns.md`.
 ```
 
-Si una guía es compartida entre varias skills, colócala en `guides/` y declárala en un archivo de manifiesto `guides` dentro del directorio de la skill (un nombre de archivo por línea).
+Si una guía es compartida entre varias skills, colócala en la carpeta central de guides del monorepo y declárala en un archivo de manifiesto `guides` dentro del directorio de la skill (un nombre de archivo por línea).
 
 ### 4.4 Inyección dinámica de contexto
 
