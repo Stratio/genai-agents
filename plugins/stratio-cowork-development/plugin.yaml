@@ -1,5 +1,5 @@
 name: stratio-cowork-development
-description: "AI agent development vertical for Stratio Cowork: bundles the agents that design and generate new agents and skills from inside the platform. Interactive workflows that take an idea from requirements to a deployable agents/v1 bundle, with quality review and packaging."
+description: "Build AI agents and skills interactively: requirements gathering, architecture design, code generation, quality review and packaging — all from a guided workflow."
 tags:
   - ai-agent-creation
 contents:

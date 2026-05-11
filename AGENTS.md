@@ -72,6 +72,7 @@ genai-agents/
     stratio-data/
     stratio-cowork-development/
     stratio-productivity/
+    stratio-data-toolkit/
 ```
 
 ## Development instructions
@@ -292,7 +293,7 @@ The deployment is orchestrated by the `upload-plugin` task of the [`cowork-api`]
 4. Run `bash pack_plugin.sh --plugin <name> --platform stratio-cowork` (and `--platform claude` if applicable) to produce the artifacts.
 5. The full release pipeline (`make package`) picks the plugin up automatically — nothing extra to register.
 
-Use the plugins under `plugins/` as templates: `stratio-governance` and `stratio-cowork-development` for multi-agent verticals, `stratio-data` for a single-agent vertical, and `stratio-productivity` for a skills-only plugin.
+Use the plugins under `plugins/` as templates: `stratio-governance` and `stratio-cowork-development` for multi-agent verticals, `stratio-data` for a single-agent vertical, `stratio-productivity` for a skills-only plugin published to both platforms, and `stratio-data-toolkit` for a skills-only plugin restricted to Claude only.
 
 ## Internationalization (i18n)
 

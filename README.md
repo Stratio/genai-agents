@@ -30,10 +30,11 @@ Each plugin is packaged for two targets: a **Stratio Cowork** wrapper bundle (de
 
 | Plugin | Description | Contents | Platforms |
 |--------|-------------|----------|-----------|
-| **stratio-governance** | Data governance vertical: ontologies, views, mappings, terms, quality rules and coverage reports. | governance-officer + data-quality + semantic-layer (agents) | Stratio Cowork |
-| **stratio-data** | Data analytics vertical: senior BI/BA analyst that turns business questions into actionable analyses with real data from governed domains. | data-analytics (agent) | Stratio Cowork |
-| **stratio-cowork-development** | AI agent development: design and generate new agents and skills from inside Stratio Cowork. | agent-creator + skill-creator (agents) | Stratio Cowork |
-| **stratio-productivity** | Productivity skills: read/author office docs (PDF/DOCX/PPTX/XLSX), craft visual output, apply brand identity. | pdf/docx/pptx/xlsx readers+writers, web-craft, canvas-craft, brand-kit (skills-only) | Stratio Cowork, Claude |
+| **stratio-governance** | Data governance: semantic layers and data quality coverage end-to-end. | governance-officer + data-quality + semantic-layer (agents) | Stratio Cowork |
+| **stratio-data** | Senior BI/BA analyst that turns business questions into actionable analyses on governed data. | data-analytics (agent) | Stratio Cowork |
+| **stratio-cowork-development** | Build AI agents and skills interactively from a guided workflow. | agent-creator + skill-creator (agents) | Stratio Cowork |
+| **stratio-productivity** | Productivity skills: office documents, visual outputs and brand identity. | pdf/docx/pptx/xlsx readers+writers, web-craft, canvas-craft, brand-kit (skills-only) | Stratio Cowork, Claude |
+| **stratio-data-toolkit** | Pluggable Stratio data skills (query patterns, exploration, knowledge contributions, quality assessment). | stratio-data, explore-data, propose-knowledge, assess-quality (skills-only) | Claude |
 
 ### Platform rules
 
@@ -59,7 +60,9 @@ dist/
 ├── plugin-stratio-productivity-stratio-cowork-{version}.zip          # wrapper with one skills sub-zip
 ├── plugin-stratio-productivity-stratio-cowork-es-{version}.zip
 ├── plugin-stratio-productivity-claude-{version}.zip                  # .claude-plugin marketplace zip
-└── plugin-stratio-productivity-claude-es-{version}.zip
+├── plugin-stratio-productivity-claude-es-{version}.zip
+├── plugin-stratio-data-toolkit-claude-{version}.zip                  # Claude-only data skills bundle
+└── plugin-stratio-data-toolkit-claude-es-{version}.zip
 ```
 
 ### Installing a plugin

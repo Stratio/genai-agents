@@ -1,5 +1,5 @@
 name: stratio-governance
-description: "Data governance vertical for Stratio. Combines governance-officer, data-quality and semantic-layer agents to cover the full governance lifecycle: ontologies, views, mappings, terms, quality rules, and coverage reports."
+description: "Data governance vertical: builds and maintains semantic layers (ontologies, views, mappings, terms) and manages data quality (assessment, rule creation, scheduling, coverage reports)."
 tags:
   - data-governance
   - semantic-layer
