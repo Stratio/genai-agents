@@ -40,6 +40,6 @@ None.
 
 ## Notes
 
-- **Profiling is costly.** The skill restricts `profile_data` to focused scopes (single domain or short list of tables) and uses adaptive sampling thresholds (100k / 1M rows) defined in `stratio-data-tools.md` section 5.1.
+- **Profiling is costly.** The skill restricts `profile_data` to focused scopes (single domain or short list of tables) and uses adaptive sampling thresholds (100k / 1M rows) defined in `stratio-data-tools.md` section 6.1.
 - **Semantic vs. technical domains:** by default the skill prefers the semantic layer (`prefer_semantic=true`) — the user's bare domain name resolves to the `semantic_*` entry when one exists. Switches to technical only on explicit user phrasing.
 - **MEMORY.md integration:** when `output/MEMORY.md` exists, known data patterns are surfaced up-front so the user does not re-discover them.

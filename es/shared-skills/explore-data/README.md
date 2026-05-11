@@ -40,6 +40,6 @@ Ninguno.
 
 ## Notas
 
-- **El profiling es costoso.** La skill restringe `profile_data` a alcances focalizados (un dominio o una lista corta de tablas) y usa umbrales adaptativos de muestreo (100k / 1M filas) definidos en `stratio-data-tools.md` sección 5.1.
+- **El profiling es costoso.** La skill restringe `profile_data` a alcances focalizados (un dominio o una lista corta de tablas) y usa umbrales adaptativos de muestreo (100k / 1M filas) definidos en `stratio-data-tools.md` sección 6.1.
 - **Dominios semánticos vs. técnicos:** por defecto la skill prefiere la capa semántica (`prefer_semantic=true`) — el nombre de dominio a secas del usuario se resuelve a la entrada `semantic_*` cuando existe. Cambia a técnico solo ante expresiones explícitas del usuario.
 - **Integración con MEMORY.md:** cuando `output/MEMORY.md` existe, los patrones de datos conocidos se presentan al inicio para que el usuario no los redescubra.

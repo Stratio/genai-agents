@@ -1,5 +1,7 @@
 # Guía de Uso de MCPs Stratio
 
+> **Guía compañera.** Para polling de `task_id` y truncación de salidas grandes — ambos pueden ocurrir en cualquier tool MCP de las listadas más abajo — ver `stratio-mcp-response-patterns.md`. Referencia rápida en §9.
+
 ## 1. Regla Fundamental
 
 **NUNCA escribas SQL manualmente.** El sistema MCP tiene un motor sofisticado de generación de queries que entiende el dominio gobernado, sus reglas de negocio, relaciones entre tablas y restricciones. Siempre delega la generación y ejecución de queries al MCP.
@@ -20,7 +22,7 @@
 | 9 | `profile_data` | EDA estadístico rápido |
 | 10 | `get_tables_quality_details` | Cobertura de reglas de calidad de gobierno por tabla (OK/KO/WARNING/not-executed) |
 | 11 | `propose_knowledge` | Proponer términos de negocio descubiertos |
-| — | `get_mcp_task_result(task_id)` | Obtener el resultado de una tool de larga duración que sigue ejecutándose en segundo plano. Se llama cuando cualquier tool devuelve solo un `task_id` (ver sección 8.1) |
+| — | `get_mcp_task_result(task_id)` | Obtener el resultado de una tool de larga duración que sigue ejecutándose en segundo plano. Se llama cuando cualquier tool devuelve solo un `task_id` — ver §9 y `stratio-mcp-response-patterns.md` §1 |
 
 ## 3. Reglas Estrictas
 
@@ -39,7 +41,7 @@
 - **Profiling (`profile_data`)**: Requiere SQL como parámetro — generarla SIEMPRE con `generate_sql`, nunca escribirla manualmente. NUNCA añadir LIMIT a la SQL; usar el parámetro `limit` de la tool
 - **Ejecución en paralelo**: Cuando el plan define múltiples preguntas de datos independientes (ninguna necesita el resultado de otra para formularse), lanzar TODAS las llamadas a `query_data` en una sola respuesta para que se ejecuten en paralelo. Aplica también a llamadas de metadata (`get_table_columns_details`, `profile_data`, etc.). Solo serializar cuando una query depende del resultado de otra (ej: necesitas un valor de la query A para formular la query B)
 
-## 3.5 Mostrar resultados de queries al usuario
+## 4. Mostrar resultados de queries al usuario
 
 Siempre que el usuario pida ver el resultado de una query — señales explícitas o implícitas: *muéstrame*, *enséñame*, *show me*, *dame*, *top N*, *primeras N*, *no veo los resultados*, *preview*, *validación*, *una muestra*, *los datos*, *los resultados*, *qué devuelve* — renderizar el resultado en línea en chat como tabla Markdown con **todas** las columnas devueltas. El agente nunca sustituye el resultado por un resumen, ni muestra solo "una fila representativa".
 
@@ -59,39 +61,17 @@ Aplica a `query_data`, `execute_sql` y a cualquier otro flujo que devuelva datos
 
 Esta regla rige **solo la presentación final al usuario en chat**. Los datos que se pasan a otra skill (p. ej. una skill writer que producirá un artefacto PDF/DOCX/PPTX/XLSX/web, o una skill de gráficos) son intermedios y no están sujetos al cap.
 
-## 3.6 Salidas de Tools de Gran Tamaño — Truncadas y Guardadas en Fichero
-
-Cuando la salida inline de una tool superaría el límite de respuesta del entorno anfitrión, la respuesta se sustituye por un aviso de truncación y la ruta de un fichero donde se escribió el contenido completo. Los datos están ahí — la tool tuvo éxito — pero ya no son inline. Esto es **distinto de §8.1** (donde la respuesta es un `task_id` porque la tool sigue ejecutándose): aquí el trabajo ya está hecho; allí sigue pendiente.
-
-**Detección** (cualquiera de):
-- La respuesta contiene un marcador de truncación explícito (p. ej. `…N bytes truncated…`, "output was truncated", "Full output saved to ...") y una ruta de fichero
-- La respuesta lleva una ruta de fichero guardado y no hay campo `task_id`
-
-**Protocolo** (aplicar en orden):
-1. **Nunca leas el fichero guardado completo en tu propio contexto.** Disparará el mismo límite que provocó la truncación
-2. **Preferir delegar la inspección del fichero a un subagente** cuando el entorno anfitrión exponga uno (p. ej. un subagente Explore / Task). Bríefea al subagente con la ruta del fichero y la extracción concreta a realizar, y pídele que devuelva solo el fragmento que necesitas — no el contenido del fichero
-3. **Si no hay delegación a subagente disponible**, inspecciona el fichero tú mismo con topes estrictos: primero `Grep` para patrones concretos, luego `Read` con `offset` y `limit` pequeño (≤ 200 líneas por llamada). Nunca leas de extremo a extremo en una sola llamada
-4. **Iterar por necesidad**: una primera pasada suele extraer un inventario (identificadores, nombres, conteos); pasadas posteriores recuperan registros completos bajo demanda. Para en cuanto la pregunta del usuario quede respondida
-
-**Patrones típicos de extracción** para payloads tipo listado:
-- _Inventario_: `Grep` por la clave JSON que delimita cada entrada (p. ej. `"name":`) y cuenta / lista las coincidencias
-- _Subconjunto temático_: `Grep` por palabras clave de la pregunta del usuario sobre el fichero guardado
-- _Registro concreto_: `Grep` por el identificador, luego `Read` ±N líneas alrededor de la coincidencia para obtener el contexto
-- _Muestra_: `Read` con `offset=0`, `limit=200` para inspeccionar la estructura antes de lanzar lecturas más dirigidas
-
-Aplica a cualquier tool que pueda devolver payloads grandes, incluyendo `list_domain_tables`, `list_domains`, `get_tables_details` sobre muchas tablas y `query_data` sobre resultados anchos/largos.
-
-## 4. Workflow de Descubrimiento de Dominio
+## 5. Workflow de Descubrimiento de Dominio
 
 Pasos para explorar un dominio gobernado y entender sus datos antes de un análisis.
 
-### 4.1 Descubrir Dominios
+### 5.1 Descubrir Dominios
 
 **Preferir buscar sobre listar** — `search_domains` devuelve resultados relevantes sin cargar la lista completa (que puede ser muy extensa).
 
 Si el usuario proporciona un dominio o da pistas sobre el tema:
 - Ejecutar `search_domains(nombre_o_pista)` para buscar coincidencias
-- Si coincide con un resultado → usarlo directamente e ir al paso 4.2
+- Si coincide con un resultado → usarlo directamente e ir al paso 5.2
 - Si no hay coincidencias → ejecutar `list_domains()` como fallback y preguntar al usuario
 
 Si no hay dominio claro, preguntar al usuario cuál le interesa. Si el usuario no da pistas, ejecutar `list_domains()` para mostrar todos los dominios disponibles (presentar como opciones seleccionables).
@@ -100,13 +80,13 @@ Si un dominio recién publicado o creado no aparece, reintentar con `refresh=tru
 
 Cuando una colección está expuesta en ambas capas (semántica + técnica), `domain_type='both'` devuelve ambas entradas por defecto. Si solo necesitas una entrada por colección y prefieres el nombre semántico (business) cuando exista, cayendo al técnico en caso contrario, pasar `prefer_semantic=true`.
 
-### 4.2 Explorar Tablas
+### 5.2 Explorar Tablas
 
 1. `list_domain_tables(domain_name)` para listar todas las tablas del dominio
-2. **Si la salida está truncada** (ver §3.6): delegar la inspección del fichero a un subagente (o, en su defecto, recurrir a `Grep` + `Read` con `limit`). Extraer los nombres de tablas y sus descripciones — o un subconjunto temático que coincida con la pregunta del usuario — sin ingerir el fichero completo
+2. **Si la salida está truncada** (ver §9 y `stratio-mcp-response-patterns.md` §2): delegar la inspección del fichero a un subagente (o, en su defecto, recurrir a `Grep` + `Read` con `limit`). Extraer los nombres de tablas y sus descripciones — o un subconjunto temático que coincida con la pregunta del usuario — sin ingerir el fichero completo
 3. Presentar las tablas y sus descripciones en una tabla markdown. Si el inventario sigue siendo demasiado grande para renderizar de forma útil (caso de truncación, o lista plana muy por encima del tamaño presentable en chat): mostrar solo el subconjunto relevante para la pregunta del usuario, indicar el total y explicar el criterio de filtrado — p. ej. *"El dominio tiene 312 tablas; mostrando las 9 que coinciden con `<tema>`. Avisa si quieres otro recorte."*
 
-### 4.3 Detalle de Tablas
+### 5.3 Detalle de Tablas
 
 Para las tablas de interés:
 1. `get_tables_details(domain_name, table_names)` para obtener:
@@ -117,15 +97,15 @@ Para las tablas de interés:
    - Comportamientos SQL
 2. Presentar la información de forma estructurada
 
-### 4.4 Columnas
+### 5.4 Columnas
 
 Para cada tabla de interés:
 1. `get_table_columns_details(domain_name, table_name)` para obtener nombre, tipo y descripción de negocio
 2. Presentar en tabla markdown ordenada lógicamente
 
-**Lanzar en paralelo** los pasos 4.3 y 4.4 cuando sean sobre tablas independientes. También lanzar paso 4.5 en paralelo si ya se conocen los términos a buscar.
+**Lanzar en paralelo** los pasos 5.3 y 5.4 cuando sean sobre tablas independientes. También lanzar paso 5.5 en paralelo si ya se conocen los términos a buscar.
 
-### 4.5 Terminología de Negocio
+### 5.5 Terminología de Negocio
 
 `search_domain_knowledge(question, domain_name)` para buscar:
 - Definiciones de términos de negocio
@@ -133,11 +113,11 @@ Para cada tabla de interés:
 - Políticas de datos
 - Glosario del dominio
 
-## 5. Observación de Datos: Perfilado y Cobertura de Calidad
+## 6. Observación de Datos: Perfilado y Cobertura de Calidad
 
 Dos tools complementarias caracterizan las tablas seleccionadas antes de un análisis — una aporta señal estadística, la otra muestra la cobertura de reglas de gobierno. Lanzar ambas **en paralelo** cuando el alcance cubre el mismo conjunto de tablas.
 
-### 5.1 Perfilado Estadístico — `profile_data`
+### 6.1 Perfilado Estadístico — `profile_data`
 
 Para las reglas de uso de `profile_data` (generar SQL con `generate_sql`, nunca SQL manual, usar parámetro `limit` en vez de LIMIT en SQL), ver sec 3.
 
@@ -151,7 +131,7 @@ Umbrales adaptativos de profiling según tamaño estimado:
 
 Documentar en reasoning si se usó muestreo.
 
-### 5.2 Cobertura de Calidad de Gobierno — `get_tables_quality_details`
+### 6.2 Cobertura de Calidad de Gobierno — `get_tables_quality_details`
 
 `get_tables_quality_details(domain_name, table_names=[...])` devuelve las reglas de calidad de gobierno actualmente definidas para las tablas indicadas y su último estado de ejecución.
 
@@ -165,7 +145,7 @@ Cuándo usarla:
 
 Patrón de ejecución: lanzar en paralelo con `profile_data` sobre el mismo conjunto de tablas. El profiling revela anomalías estadísticas; los detalles de calidad revelan cuáles de esas anomalías ya están cubiertas por una regla de gobierno (y cuáles no).
 
-## 6. Respuestas de Aclaración del MCP
+## 7. Respuestas de Aclaración del MCP
 
 `query_data` y `generate_sql` pueden responder con una solicitud de aclaración
 en lugar de datos (ej: "¿A que periodo te refieres?", "¿'Activos' incluye usuarios con compra
@@ -186,7 +166,7 @@ Protocolo en cascada (seguir en orden):
 Máximo 2 iteraciones de aclaración por query. Si tras ambas iteraciones no hay datos,
 informar al usuario y omitir esa métrica del análisis.
 
-## 7. Validación Post-Query
+## 8. Validación Post-Query
 
 Cada resultado de `query_data` debe pasar estas 7 validaciones antes de usarse en el análisis. Cuando se lanzan queries en paralelo, validar cada resultado conforme se recibe:
 1. **Dataset no vacío** (>0 filas). Si vacío: reformular pregunta o alertar al usuario
@@ -202,24 +182,16 @@ Cada resultado de `query_data` debe pasar estas 7 validaciones antes de usarse e
 
 Si alguna validación falla: reformular la pregunta al MCP, informar al usuario de la limitación, y ajustar el plan si es necesario.
 
-## 8. Timeouts y Reintentos
+## 9. Patrones de Respuesta del MCP
 
-### 8.1. Polling de Tareas de Larga Duración
+Dos patrones de respuesta pueden ocurrir en **cualquier** tool MCP de las listadas en §2. Los protocolos están en `stratio-mcp-response-patterns.md` — aplicarlos siempre que aparezca el disparador.
 
-Cualquier tool MCP puede tardar más de lo esperado en completarse. Cuando esto ocurre, en lugar de la respuesta normal, la tool devuelve una respuesta que contiene únicamente un campo `task_id`. Esto no es un error — la operación sigue ejecutándose en segundo plano en el servidor y el resultado se puede obtener después.
+| Disparador | Sección compañera |
+|------------|-------------------|
+| La respuesta contiene únicamente un campo `task_id` (sin datos, sin error) | `stratio-mcp-response-patterns.md` §1 — Polling de Tareas de Larga Duración |
+| La respuesta sustituida por un aviso de truncación + ruta de fichero guardado, sin `task_id` | `stratio-mcp-response-patterns.md` §2 — Salidas de Tools de Gran Tamaño Truncadas |
 
-**Protocolo — seguir estrictamente cuando una respuesta contenga un `task_id`:**
-1. Esperar **5 segundos**
-2. Llamar a `get_mcp_task_result(task_id=<el task_id recibido>)`
-3. Inspeccionar el campo `status` en la respuesta:
-   - `"pending"` — la tarea sigue ejecutándose. Esperar **10 segundos** y llamar a `get_mcp_task_result` de nuevo. Repetir hasta que el estado cambie
-   - `"done"` — el campo `result` contiene la respuesta original de la tool. Parsear y usar como si la tool la hubiera devuelto directamente
-   - `"error"` — la tarea falló. Leer el campo `error` para detalles. Aplicar la estrategia de reintento de la sección 8.2 o informar al usuario
-   - `"not_found"` — el task_id ha expirado o es desconocido. Reintentar la llamada original a la tool desde cero
-
-Esto aplica a TODAS las tools MCP — `query_data`, `profile_data`, `generate_sql`, `execute_sql` y cualquier otra tool. Comprobar siempre si la respuesta contiene un campo `task_id` antes de procesar el resultado normalmente.
-
-### 8.2. Optimización de Queries
+## 10. Optimización de Queries en Errores/Timeouts
 
 Si el MCP tarda demasiado o devuelve error:
 1. **Simplificar la pregunta**: Reducir dimensiones o periodo temporal
@@ -227,7 +199,7 @@ Si el MCP tarda demasiado o devuelve error:
 3. **Reformular**: Expresar la misma pregunta de forma diferente
 4. No reintentar la misma pregunta más de 2 veces — si persiste, informar al usuario
 
-## 9. Buenas Prácticas para Formular Preguntas
+## 11. Buenas Prácticas para Formular Preguntas
 
 - **Ser específico con periodos**: "ventas mensuales del último año" en vez de "ventas"
 - **Incluir dimensiones**: "por región y categoría de producto"
@@ -244,18 +216,18 @@ Si el MCP tarda demasiado o devuelve error:
 
 Este orden es para **planificar** las preguntas. En **ejecución**, lanzar en paralelo todas las queries independientes — típicamente las categorías 1, 2 y 3 se pueden ejecutar simultáneamente. Solo las de categoría 4 (validación cruzada) pueden requerir resultados previos.
 
-## 10. Fallback por Indisponibilidad de OpenSearch
+## 12. Fallback por Indisponibilidad de OpenSearch
 
-`search_domains` consulta OpenSearch internamente. OpenSearch puede no estar disponible en todos los entornos (despliegues on-premise, entornos aislados, incidencias de infraestructura). Esta sección define el fallback cuando la tool no está disponible — distinto del fallback por *resultado vacío* ya descrito en §4.1.
+`search_domains` consulta OpenSearch internamente. OpenSearch puede no estar disponible en todos los entornos (despliegues on-premise, entornos aislados, incidencias de infraestructura). Esta sección define el fallback cuando la tool no está disponible — distinto del fallback por *resultado vacío* ya descrito en §5.1.
 
-### 10.1 Detección del caso
+### 12.1 Detección del caso
 
 | Situación | Indicador | Ruta de fallback |
 |-----------|-----------|------------------|
-| Resultado vacío (ya documentado) | La tool devuelve una respuesta bien formada con cero coincidencias | §4.1 — llamar a `list_domains()` y preguntar al usuario |
-| Indisponibilidad (nuevo) | Respuesta de error que menciona OpenSearch / index / connection / timeout, **o** dos reintentos sucesivos según §8.2 siguen fallando (no un `task_id` pendiente según §8.1) | §10.2 |
+| Resultado vacío (ya documentado) | La tool devuelve una respuesta bien formada con cero coincidencias | §5.1 — llamar a `list_domains()` y preguntar al usuario |
+| Indisponibilidad (nuevo) | Respuesta de error que menciona OpenSearch / index / connection / timeout, **o** dos reintentos sucesivos según §10 siguen fallando (no un `task_id` pendiente según §9 y `stratio-mcp-response-patterns.md` §1) | §12.2 |
 
-### 10.2 Fallback determinístico
+### 12.2 Fallback determinístico
 
 | Tool OpenSearch | Alternativa determinística | Cobertura |
 |-----------------|----------------------------|-----------|
