@@ -4,19 +4,26 @@ Compañera de `stratio-data-tools.md` (MCPs de datos) y `stratio-semantic-layer-
 
 ## 1. Polling de Tareas de Larga Duración
 
-Cualquier tool MCP puede tardar más de lo esperado en completarse. Cuando esto ocurre, en lugar de la respuesta normal, la tool devuelve una respuesta que contiene únicamente un campo `task_id`. Esto no es un error — la operación sigue ejecutándose en segundo plano en el servidor y el resultado se puede obtener después.
+Cualquier tool MCP puede tardar más de lo esperado en completarse. Cuando esto ocurre, el servidor MCP devuelve una respuesta con un `task_id` en lugar de los datos que la tool produciría en su modo normal. Esto no es un error — la operación sigue ejecutándose en segundo plano y el resultado se puede obtener después.
 
-**Protocolo — seguir estrictamente cuando una respuesta contenga un `task_id`:**
+**Antes de hacer polling, verificar ambas cosas:**
+
+- **Origen** — la respuesta viene **directamente** de una llamada a una tool MCP de Stratio. Un `task_id` anidado dentro del `result` de un subagente, en la salida de un hook o en cualquier otro envoltorio que no sea MCP pertenece al runtime del host, no al MCP. Falso positivo típico: un subagente que falla y devuelve un `result` vacío con su propio id tipo `ses_xxxxxxxx` — tratar como fallo del subagente, no hacer polling.
+- **Prefijo** — un `task_id` de Stratio **siempre empieza por `mcp-ckpt-`** (seguido de 16 caracteres hex, p. ej. `mcp-ckpt-7c3e1f0a9b224e3d`). Valores como `ses_*`, UUIDs pelados o `task_*` no son task_ids de Stratio — **no** llamar a `get_mcp_task_result` con ellos.
+
+Si falla cualquiera de los dos checks, no hacer polling: procesar la respuesta tal cual o manejar el fallo upstream.
+
+**Protocolo cuando ambos checks pasan:**
 
 1. Esperar **5 segundos**
-2. Llamar a `get_mcp_task_result(task_id=<el task_id recibido>)` — **usar el mismo servidor** donde se invocó la tool original. Si el entorno anfitrión expone más de un servidor MCP (p. ej. `gov` y `sql` en el lado de gobierno), la tool de polling de las tools del servidor `gov` debe ser el `get_mcp_task_result` del servidor `gov`, y la tool de polling de las tools del servidor `sql` debe ser el `get_mcp_task_result` del servidor `sql`. Mezclar servidores devolverá `not_found` incluso para task ids válidos.
-3. Inspeccionar el campo `status` en la respuesta:
-   - `"pending"` — la tarea sigue ejecutándose. Esperar **10 segundos** y llamar a `get_mcp_task_result` de nuevo. Repetir hasta que el estado cambie
+2. Llamar a `get_mcp_task_result(task_id=<el task_id recibido>)` en el **mismo servidor MCP que emitió el `task_id`**. Si el entorno anfitrión expone más de un servidor (p. ej. `gov` y `sql`), mezclar servidores devolverá `not_found` incluso para task ids válidos.
+3. Inspeccionar el campo `status`:
+   - `"pending"` — la tarea sigue ejecutándose. Esperar **10 segundos** y llamar de nuevo. Repetir hasta que el estado cambie
    - `"done"` — el campo `result` contiene la respuesta original de la tool. Parsear y usar como si la tool la hubiera devuelto directamente
-   - `"error"` — la tarea falló. Leer el campo `error` para detalles. Aplicar la estrategia de reintento que indique la guía que invoca este patrón (p. ej. simplificar, dividir, reformular) o informar al usuario
+   - `"error"` — leer `error` y aplicar la estrategia de reintento que indique la guía que invoca este patrón (p. ej. simplificar, dividir, reformular) o informar al usuario
    - `"not_found"` — el task_id ha expirado o es desconocido. Reintentar la llamada original a la tool desde cero
 
-Esto aplica a TODAS las tools MCP de cualquier servidor de Stratio. Comprobar siempre si la respuesta contiene un campo `task_id` antes de procesar el resultado normalmente.
+Aplica a TODAS las tools MCP de cualquier servidor de Stratio.
 
 ## 2. Salidas de Tools de Gran Tamaño — Truncadas y Guardadas en Fichero
 
@@ -28,7 +35,7 @@ Cuando la salida inline de una tool superaría el límite de respuesta del entor
 
 **Protocolo** (aplicar en orden):
 1. **Nunca leas el fichero guardado completo en tu propio contexto.** Disparará el mismo límite que provocó la truncación
-2. **Preferir delegar la inspección del fichero a un subagente** cuando el entorno anfitrión exponga uno (p. ej. un subagente Explore / Task). Bríefea al subagente con la ruta del fichero y la extracción concreta a realizar, y pídele que devuelva solo el fragmento que necesitas — no el contenido del fichero
+2. **Preferir delegar la inspección del fichero a un subagente** cuando el entorno anfitrión exponga uno (p. ej. un subagente Explore / Task). Indícale al subagente la ruta del fichero y la extracción concreta a realizar, y pídele que devuelva solo el fragmento que necesitas — no el contenido del fichero
 3. **Si no hay delegación a subagente disponible**, inspecciona el fichero tú mismo con topes estrictos: primero `Grep` para patrones concretos, luego `Read` con `offset` y `limit` pequeño (≤ 200 líneas por llamada). Nunca leas de extremo a extremo en una sola llamada
 4. **Iterar por necesidad**: una primera pasada suele extraer un inventario (identificadores, nombres, conteos); pasadas posteriores recuperan registros completos bajo demanda. Para en cuanto la pregunta del usuario quede respondida
 
