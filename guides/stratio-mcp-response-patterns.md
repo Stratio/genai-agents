@@ -4,19 +4,26 @@ Companion to `stratio-data-tools.md` (data MCPs) and `stratio-semantic-layer-too
 
 ## 1. Long-Running Task Polling
 
-Any MCP tool may take longer than expected to complete. When this happens, instead of the normal response, the tool returns a response containing only a `task_id` field. This is not an error — the operation continues running in the background on the server and the result can be retrieved later.
+Any MCP tool may take longer than expected to complete. When this happens, the MCP server returns a response carrying a `task_id` instead of the data the tool would normally produce. This is not an error — the operation continues in the background and the result can be retrieved later.
 
-**Protocol — follow strictly when a response contains a `task_id`:**
+**Before polling, verify both:**
+
+- **Origin** — the response comes **directly** from a Stratio MCP tool call. A `task_id` nested in a subagent's `result`, a hook output or any other non-MCP envelope belongs to the host runtime, not to the MCP. Typical false positive: a subagent that fails and returns an empty `result` with its own id like `ses_xxxxxxxx` — treat as a subagent failure, do not poll.
+- **Prefix** — a Stratio `task_id` **always starts with `mcp-ckpt-`** (followed by 16 hex chars, e.g. `mcp-ckpt-7c3e1f0a9b224e3d`). Values like `ses_*`, bare UUIDs or `task_*` are not Stratio task_ids — do **not** call `get_mcp_task_result` with them.
+
+If either check fails, do not poll: process the response as-is or handle the upstream failure.
+
+**Protocol when both checks pass:**
 
 1. Wait **5 seconds**
-2. Call `get_mcp_task_result(task_id=<the received task_id>)` — **use the same server** where the original tool was called. If the host environment exposes more than one MCP server (e.g. `gov` and `sql` for the governance side), the polling tool of `gov` server tools must be the `gov` server's `get_mcp_task_result`, and the polling tool of `sql` server tools must be the `sql` server's `get_mcp_task_result`. Mixing servers will return `not_found` even for valid task ids.
-3. Inspect the `status` field in the response:
-   - `"pending"` — the task is still running. Wait **10 seconds** and call `get_mcp_task_result` again. Repeat until the status changes
+2. Call `get_mcp_task_result(task_id=<the received task_id>)` on the **same MCP server that issued the `task_id`**. If the host environment exposes more than one server (e.g. `gov` and `sql`), mixing servers will return `not_found` even for valid ids.
+3. Inspect the `status` field:
+   - `"pending"` — still running. Wait **10 seconds** and call again. Repeat until the status changes
    - `"done"` — the `result` field contains the original tool response. Parse and use it as if the tool had returned it directly
-   - `"error"` — the task failed. Read the `error` field for details. Apply the retry strategy specified by the calling guide (e.g. simplify, split, reformulate) or inform the user
+   - `"error"` — read `error` and apply the calling guide's retry strategy (e.g. simplify, split, reformulate) or inform the user
    - `"not_found"` — the task_id expired or is unknown. Retry the original tool call from scratch
 
-This applies to ALL MCP tools on every Stratio MCP server. Always check the response for a `task_id` field before processing the result normally.
+Applies to ALL MCP tools on every Stratio MCP server.
 
 ## 2. Large Tool Outputs — Truncated and Saved to File
 
