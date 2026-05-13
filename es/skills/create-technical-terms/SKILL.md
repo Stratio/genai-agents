@@ -68,4 +68,6 @@ Invocar `create_technical_terms`. Para regenerar: pasar `regenerate=true` (DESTR
 Basado en la respuesta de la tool, presentar:
 - Tablas procesadas
 - Errores si los hubo (reintentar entidades fallidas con `user_instructions` mejoradas, max 2 reintentos)
-- Siguiente paso sugerido: "Puedes crear una ontología con `/create-ontology`"
+- Siguientes pasos sugeridos:
+  - "Puedes crear una ontología con `/create-ontology`"
+  - "Si necesitas corregir, añadir o eliminar claves foráneas virtuales concretas sin regenerar los términos técnicos, usa `/refine-foreign-keys`"

@@ -1,6 +1,6 @@
 # stratio-semantic-layer
 
-Reference skill that loads the **mandatory rules, usage patterns and best practices** for the Stratio Governance MCP tools (`create_ontology`, `create_business_views`, `create_technical_terms`, `create_sql_mappings`, `create_semantic_terms`, `create_business_term`, `publish_business_views`, `create_data_collection`, and the full `sql`-server exploration toolkit).
+Reference skill that loads the **mandatory rules, usage patterns and best practices** for the Stratio Governance MCP tools (`create_ontology`, `create_business_views`, `create_technical_terms`, `refine_foreign_keys`, `create_sql_mappings`, `create_semantic_terms`, `create_business_term`, `publish_business_views`, `create_data_collection`, and the full `sql`-server exploration toolkit).
 
 This skill does **not** call MCP tools — it loads the contract that every governance-related skill and agent must follow.
 

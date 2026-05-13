@@ -39,6 +39,7 @@ Antes de activar cualquier skill, evaluar que necesita el usuario:
 |---|---|---|
 | Pipeline completo | `/build-semantic-layer` | "Construye la capa semántica del dominio X" |
 | Solo términos técnicos | `/create-technical-terms` | "Crea descripciones técnicas para el dominio Y" |
+| Refinar FKs virtuales de tablas existentes | `/refine-foreign-keys` | "Modifica las FKs de la tabla X en el dominio Y", "Detecta las FKs que falten en card_csv y disp_csv", "Borra fk_obsolete de order_csv" |
 | Crear/ampliar ontología | `/create-ontology` | "Crea una ontología para X" |
 | Crear vistas de negocio | `/create-business-views` | "Crea las vistas de negocio" |
 | Actualizar mappings SQL | `/create-sql-mappings` | "Actualiza los mappings SQL de las vistas" |

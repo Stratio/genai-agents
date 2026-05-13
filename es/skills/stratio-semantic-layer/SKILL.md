@@ -1,6 +1,6 @@
 ---
 name: stratio-semantic-layer
-description: "Referencia de MCPs de capa semántica Stratio — reglas obligatorias, patrones de uso y buenas prácticas para las herramientas MCP de gobernanza (create_ontology, create_business_views, create_sql_mappings, create_semantic_terms, create_business_term, etc.). Cargar antes de interactuar con tools de gobernanza sin una skill dedicada, cuando haya dudas sobre el orden de invocación o los parámetros, o para refrescar las reglas de uso. Para un flujo concreto, preferir la skill create-* correspondiente."
+description: "Referencia de MCPs de capa semántica Stratio — reglas obligatorias, patrones de uso y buenas prácticas para las herramientas MCP de gobernanza (create_ontology, create_business_views, create_sql_mappings, create_semantic_terms, create_business_term, refine_foreign_keys, etc.). Cargar antes de interactuar con tools de gobernanza sin una skill dedicada, cuando haya dudas sobre el orden de invocación o los parámetros, o para refrescar las reglas de uso. Para un flujo concreto, preferir la skill create-* o refine-* correspondiente."
 argument-hint: ""
 ---
 
@@ -8,9 +8,9 @@ argument-hint: ""
 
 Carga esta skill cuando vayas a trabajar con herramientas MCP de gobernanza semántica de Stratio:
 crear ontologías, generar términos técnicos, construir vistas de negocio, mappings SQL o términos
-semánticos. Contiene las reglas obligatorias, patrones de uso y buenas prácticas para todas las
-herramientas MCP de gobernanza (create_ontology, create_business_views,
-create_technical_terms, etc.).
+semánticos, o refinar claves foráneas virtuales después de la creación. Contiene las reglas
+obligatorias, patrones de uso y buenas prácticas para todas las herramientas MCP de gobernanza
+(create_ontology, create_business_views, create_technical_terms, refine_foreign_keys, etc.).
 
 **Cuando invocarla**: Antes de la primera interacción con cualquier tool de gobernanza semántica
 en una conversación, o cuando necesites refrescar las reglas de uso (domain_name inmutable,

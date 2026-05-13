@@ -1,6 +1,6 @@
 # stratio-semantic-layer
 
-Skill de referencia que carga las **reglas obligatorias, patrones de uso y mejores prácticas** para los MCPs de Stratio Governance (`create_ontology`, `create_business_views`, `create_technical_terms`, `create_sql_mappings`, `create_semantic_terms`, `create_business_term`, `publish_business_views`, `create_data_collection` y el toolkit completo de exploración del servidor `sql`).
+Skill de referencia que carga las **reglas obligatorias, patrones de uso y mejores prácticas** para los MCPs de Stratio Governance (`create_ontology`, `create_business_views`, `create_technical_terms`, `refine_foreign_keys`, `create_sql_mappings`, `create_semantic_terms`, `create_business_term`, `publish_business_views`, `create_data_collection` y el toolkit completo de exploración del servidor `sql`).
 
 Esta skill **no** invoca MCPs — carga el contrato que toda skill o agente relacionado con gobierno debe seguir.
 
