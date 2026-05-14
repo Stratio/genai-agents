@@ -68,4 +68,6 @@ Invoke `create_technical_terms`. To regenerate: pass `regenerate=true` (DESTRUCT
 Based on the tool's response, present:
 - Tables processed
 - Errors if any (retry failed entities with improved `user_instructions`, max 2 retries)
-- Suggested next step: "You can create an ontology with `/create-ontology`"
+- Suggested next steps:
+  - "You can create an ontology with `/create-ontology`"
+  - "If you need to fix, add or remove individual virtual foreign keys without regenerating the technical terms, use `/refine-foreign-keys`"

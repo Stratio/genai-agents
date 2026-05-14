@@ -113,6 +113,7 @@ Step 0 runs in Phase 0 and therefore does not violate the "never proceed to subs
 |-------------|---------------|---------------|
 | "Build semantic layer for domain X" | — | `build-semantic-layer` |
 | "Create technical terms/descriptions for domain Y" | — | `create-technical-terms` |
+| "Refine/modify/add/remove FKs in tables of domain X" / "Detect missing FKs in tables Y and Z" / "Delete fk_obsolete from order_csv" | — | `refine-foreign-keys` |
 | "Create/extend ontology for X" | — | `create-ontology` |
 | "Delete ontology classes X from Y" | — | `create-ontology` |
 | "Create business views" | — | `create-business-views` |

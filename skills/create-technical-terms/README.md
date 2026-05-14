@@ -23,6 +23,7 @@ Creates or regenerates technical descriptions (tables and columns) for a technic
 ### Other skills
 - **Prerequisite:** `create-data-collection` (the technical domain must exist).
 - **Typical next step:** `create-ontology`.
+- **Typical follow-up:** `refine-foreign-keys` for surgical edits to virtual FKs (add / modify / delete) without regenerating the technical terms.
 
 ### Guides
 None. MCP rules and parameters are inline in `SKILL.md`.

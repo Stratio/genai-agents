@@ -23,6 +23,7 @@ Crea o regenera descripciones técnicas (tablas y columnas) para un dominio téc
 ### Otras skills
 - **Prerrequisito:** `create-data-collection` (el dominio técnico debe existir).
 - **Siguiente paso típico:** `create-ontology`.
+- **Seguimiento típico:** `refine-foreign-keys` para ediciones quirúrgicas de claves foráneas virtuales (añadir / modificar / eliminar) sin regenerar los términos técnicos.
 
 ### Guides
 Ninguno. Las reglas y parámetros de MCPs están inline en `SKILL.md`.

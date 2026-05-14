@@ -14,6 +14,7 @@ Puede ejecutar queries de datos de solo lectura para validar la SQL de los mappi
 
 - Construir capas semánticas completas con un pipeline guiado de 5 fases
 - Generar descripciones técnicas automáticas de tablas y columnas
+- Refinar las claves foráneas virtuales de tablas existentes: añadir las que falten, corregir destinos erróneos, eliminar las obsoletas — sin regenerar los términos técnicos
 - Crear y gestionar ontologías con planificación interactiva
 - Crear business views a partir de ontologías existentes
 - Generar y actualizar SQL mappings para business views
@@ -33,6 +34,7 @@ Puede ejecutar queries de datos de solo lectura para validar la SQL de los mappi
 
 ### Fases individuales
 - "Genera las descripciones técnicas de las tablas del dominio ventas"
+- "Detecta las claves foráneas que faltan en card_csv y disp_csv" / "Borra fk_obsolete de order_csv" / "Añade una clave foránea de orders.customer_id a customers.id"
 - "Crea una ontología para el dominio de clientes"
 - "Crea las business views a partir de la ontología existente"
 - "Actualiza los SQL mappings de las vistas del dominio"
@@ -65,6 +67,7 @@ Puede ejecutar queries de datos de solo lectura para validar la SQL de los mappi
 |---------|-------------|
 | `/build-semantic-layer` | Pipeline completo de 5 fases para construir la capa semántica de un dominio |
 | `/create-technical-terms` | Crear descripciones técnicas automáticas de tablas y columnas |
+| `/refine-foreign-keys` | Añadir, modificar o eliminar claves foráneas virtuales en tablas que ya tienen términos técnicos |
 | `/create-ontology` | Crear, ampliar o eliminar clases de ontología con planificación interactiva |
 | `/create-business-views` | Crear, regenerar o eliminar business views desde una ontología |
 | `/create-sql-mappings` | Crear o actualizar SQL mappings para business views existentes |
