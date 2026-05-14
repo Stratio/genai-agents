@@ -32,6 +32,12 @@ Ejecutar en paralelo:
 - `list_ontologies` → ontologías existentes (o `search_ontologies(texto)` si se busca una concreta)
 - `list_technical_domain_concepts(domain)` → vistas, mappings, términos semánticos
 
+> **OBLIGATORIO — sin atajos por inferencia.** Las cuatro llamadas anteriores son requeridas. `list_domain_tables` y `list_technical_domain_concepts` son **fuentes de verdad independientes** y reportan fases distintas:
+> - **Términos técnicos** viven en `list_domain_tables(domain)` y se infieren del campo `description` de cada tabla.
+> - **Vistas de negocio, SQL mappings y términos semánticos** viven en `list_technical_domain_concepts(domain)` (`has_sql_mapping`, `has_semantic_terms`, estado de la vista).
+>
+> Los términos técnicos pueden existir (o faltar) **independientemente** de que haya vistas de negocio. NUNCA inferir su estado a partir de `business_views = 0` ni de que ninguna otra fase esté vacía. Si el usuario pide "esquemáticamente", "rápido" o "qué falta", el **formato** de la respuesta puede ser compacto, pero el **alcance de la verificación es innegociable** — ejecutar las cuatro llamadas antes de responder.
+
 Para cada ontología relevante: `get_ontology_info(name)`.
 
 Presentar **dashboard de estado**:
@@ -47,6 +53,8 @@ Presentar **dashboard de estado**:
 | Publicación | ✗ Draft | 0/6 vistas publicadas |
 | Términos semánticos | ✗ Pendiente | 0/6 vistas |
 ```
+
+> **Modo diagnóstico-solo (salida temprana).** Si la pregunta del usuario indica intención diagnóstica — palabras clave o variantes próximas tipo "qué falta", "qué queda", "esquemáticamente" / "de manera esquemática" / "esquemática", "estado del pipeline", "diagnostica", "estado de la capa semántica", "por dónde vamos con X" — Y NO incluye verbos de construcción ("construye", "crea", "genera", "regenera") sobre el mismo alcance, presenta el dashboard de arriba, añade un follow-up de una línea tipo "¿Sobre qué fase quieres actuar? Puedo cargar una skill para términos técnicos, ontología, vistas de negocio, SQL mappings o términos semánticos" y **DETENTE**. NO continuar con el paso 3 (enriquecimiento del glosario) ni con ningún paso posterior. Si el usuario pide después una fase concreta, carga directamente la skill correspondiente (`/create-technical-terms`, `/create-ontology`, …) pasando el dominio; si pide construir el pipeline entero, reentra en esta skill con `/build-semantic-layer [dominio]`. Trata el matching de palabras clave **semánticamente**, no como subcadena literal — "dime esquemáticamente qué queda" y "qué falta de manera esquemática" cuentan ambos.
 
 ### 3. Enriquecimiento con instrucciones del glosario (pre-carga para todo el pipeline)
 

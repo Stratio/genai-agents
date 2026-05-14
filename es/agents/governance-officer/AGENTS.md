@@ -125,6 +125,7 @@ El Paso 0 corre dentro de la Fase 0 y por tanto no viola la regla "nunca avanzar
 | "Qué tablas hay sobre clientes?" | — | `create-data-collection` |
 | "Publica las vistas del dominio X" | `publish_business_views` | ninguna |
 | "Genera la descripción del dominio X" | `create_collection_description` | ninguna |
+| "Qué falta por construir", "Estado del pipeline", "Diagnostica la capa semántica", "Dime esquemáticamente qué queda", "Por dónde vamos con el dominio X" | — | `build-semantic-layer` (solo diagnóstico — parar tras el paso 2) |
 | "Qué ontologías hay?" / "Qué vistas tiene el dominio X?" | Triage directo (1-2 tools) | ninguna |
 | "Qué contiene la capa semántica de X?" (solo metadatos) | `search_domains(text, domain_type='business')` o `list_domains(domain_type='business')` + sql tools | ninguna |
 | "Valida los mappings con datos de muestra" / "Hazme un top 5 de cada mapping antes de publicar" | — | `create-sql-mappings` (§6.5) |

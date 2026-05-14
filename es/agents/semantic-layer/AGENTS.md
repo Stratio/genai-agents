@@ -51,6 +51,7 @@ Antes de activar cualquier skill, evaluar que necesita el usuario:
 | Crear colección de datos | `/create-data-collection` | "Necesito crear un dominio nuevo con tablas de X" |
 | Buscar tablas en el diccionario | `/create-data-collection` | "¿Qué tablas hay sobre clientes?", "Busca tablas de ventas" |
 | Descripción de dominio | Triage directo: `create_collection_description` | "Genera descripción del dominio X" |
+| Estado del pipeline / qué falta por construir | `/build-semantic-layer` (solo diagnóstico — parar tras el paso 2) | "Qué falta por construir", "Cómo está el pipeline", "Diagnostica la capa semántica", "Dime esquemáticamente qué queda", "Por dónde vamos con el dominio X" |
 | Consulta de estado | Triage directo (1-2 tools) | "¿Que ontologías hay?", "¿Que vistas tiene el dominio X?" |
 | Explorar capa publicada (solo metadatos) | Triage directo: `search_domains(texto, domain_type='business')` o `list_domains(domain_type='business')` + tools sql | "¿Qué tiene la capa semántica de X?" — solo metadatos; para queries con datos, ver "Validar capa semántica publicada" abajo |
 | Validar mappings con datos de muestra (pre-publicación) | `/create-sql-mappings` (§6.5) o `/build-semantic-layer` (Fase 4↔5) | "Hazme un top 5 de cada mapping antes de publicar", "Valida las queries antes de que dé el OK a publicar" |

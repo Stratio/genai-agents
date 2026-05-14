@@ -32,6 +32,12 @@ Execute in parallel:
 - `list_ontologies` → existing ontologies (or `search_ontologies(text)` if searching for a specific one)
 - `list_technical_domain_concepts(domain)` → views, mappings, semantic terms
 
+> **MANDATORY — no inference shortcuts.** All four calls above are required. `list_domain_tables` and `list_technical_domain_concepts` are **independent sources of truth** and report different phases:
+> - **Technical terms** live in `list_domain_tables(domain)` and are inferred from each table's `description` field.
+> - **Business views, SQL mappings and semantic terms** live in `list_technical_domain_concepts(domain)` (`has_sql_mapping`, `has_semantic_terms`, view status).
+>
+> Technical terms can exist (or be missing) **independently** of whether business views exist. NEVER infer their state from `business_views = 0` or from any other phase being empty. If the user asks "schematically", "briefly" or "what's missing", the answer **format** can be compact, but the **scope of verification is non-negotiable** — run all four calls before answering.
+
 For each relevant ontology: `get_ontology_info(name)`.
 
 Present **status dashboard**:
@@ -47,6 +53,8 @@ Present **status dashboard**:
 | Publication | ✗ Draft | 0/6 views published |
 | Semantic terms | ✗ Pending | 0/6 views |
 ```
+
+> **Diagnosis-only mode (early exit).** If the user's question signals diagnostic intent — keywords or close variants such as "what's missing", "what's left", "schematically" / "in a schematic way" / "schematic", "pipeline status", "diagnose", "status of the semantic layer", "where are we with X" — AND does NOT include construction verbs ("build", "create", "generate", "regenerate") on the same scope, present the dashboard above, add a one-line follow-up such as "Which phase would you like to work on? I can load a skill for technical terms, ontology, business views, SQL mappings, or semantic terms" and **STOP**. Do NOT proceed to step 3 (glossary enrichment) or any subsequent step. If the user later asks for a specific phase, load the matching skill directly (`/create-technical-terms`, `/create-ontology`, …) passing the domain; if they ask to build the full pipeline, re-enter this skill with `/build-semantic-layer [domain]`. Treat keyword matching semantically, not as literal substring — "tell me schematically what's left" and "what's missing schematically" both qualify.
 
 ### 3. Glossary instruction enrichment (pre-load for the whole pipeline)
 
