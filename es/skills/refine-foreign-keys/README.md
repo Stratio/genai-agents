@@ -44,6 +44,7 @@ Ninguno.
 
 - **`user_instructions` es obligatorio.** La herramienta rechaza entrada vacía o solo con espacios — sin una instrucción concreta no hay refinado.
 - **No es destructiva por defecto.** Una FK se elimina solo cuando la instrucción la nombra explícitamente o su tabla destino desapareció del dominio; las instrucciones genéricas preservan el estado actual.
+- **El contenido añadido por el usuario se preserva entre refinados.** Cualquier contenido añadido al Término de Negocio fuera de la sección autogenerada de Relaciones de Clave Foránea — encabezados adicionales, prosa, listas, tablas — se mantiene intacto cuando el flujo de refinado reescribe la sección.
 - **Las tablas sin Business Term se omiten.** Se le indica al usuario que ejecute `create_technical_terms` antes; no se hacen llamadas a LLM para esas tablas.
 - **Idempotente.** Reejecutar la misma instrucción produce un diff vacío y ningún PUT.
 - **Errores específicos del despliegue** (idioma de governance no soportado, permisos faltantes) los devuelve la herramienta tal cual y se presentan al usuario sin presuponer la causa.

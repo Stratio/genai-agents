@@ -44,6 +44,7 @@ None.
 
 - **`user_instructions` is required.** The tool rejects empty or whitespace-only input — no concrete instruction means no refine.
 - **Not destructive by default.** An FK is removed only when the instruction names it explicitly or its target table disappeared from the domain; generic instructions preserve the current state.
+- **User-added content is preserved across refines.** Any content added to the Business Term outside the auto-generated Foreign Key Relations section — additional headings, prose, lists, tables — is kept intact when the refine flow rewrites the section.
 - **Tables without a Business Term are skipped.** The user is told to run `create_technical_terms` first; no LLM calls happen for those tables.
 - **Idempotent.** Re-running the same instruction yields an empty diff and no PUT.
 - **Deployment-specific errors** (unsupported governance language, missing permissions) come back from the tool as-is and are surfaced to the user without presupposing the cause.

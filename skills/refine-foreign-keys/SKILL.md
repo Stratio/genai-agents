@@ -91,4 +91,5 @@ If a table fails for a recoverable reason (e.g. an invalid column name in the pr
 
 - The tool **never regenerates the technical term** of a table; only the Foreign Key section and the FK paragraphs of affected source columns are re-rendered.
 - The tool is **not destructive by default**: an FK is removed only when the instruction explicitly says so (or when the target table no longer exists in the domain). Generic "review" instructions preserve the current state.
+- **User-added content is preserved across refines**: any content the user has added to the Business Term outside the auto-generated Foreign Key Relations section — additional headings, prose, lists, tables — is kept intact when the refine flow rewrites the section.
 - If the deployment's `governance_language` is not supported by this tool, the response will carry an explicit error — surface it to the user as-is. The user is not expected to know the deployment configuration up front.

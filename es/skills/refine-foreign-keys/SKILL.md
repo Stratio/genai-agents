@@ -91,4 +91,5 @@ Si una tabla falla por una razón recuperable (p. ej. un nombre de columna invá
 
 - La herramienta **nunca regenera el término técnico** de una tabla; solo se re-renderizan la sección de Claves Foráneas y los párrafos de FK de las columnas origen afectadas.
 - La herramienta **no es destructiva por defecto**: una FK se elimina solo cuando la instrucción lo dice explícitamente (o cuando la tabla destino ya no existe en el dominio). Las instrucciones genéricas "revisa" preservan el estado actual.
+- **El contenido añadido por el usuario se preserva entre refinados**: cualquier contenido que el usuario haya añadido al Término de Negocio fuera de la sección autogenerada de Relaciones de Clave Foránea — encabezados adicionales, prosa, listas, tablas — se mantiene intacto cuando el flujo de refinado reescribe la sección.
 - Si el `governance_language` del despliegue no es compatible con esta herramienta, la respuesta llevará un error explícito — preséntalo al usuario tal cual. No se espera que el usuario conozca la configuración del despliegue de antemano.
