@@ -125,6 +125,7 @@ Step 0 runs in Phase 0 and therefore does not violate the "never proceed to subs
 | "What tables are there about customers?" | — | `create-data-collection` |
 | "Publish the views for domain X" | `publish_business_views` | none |
 | "Generate description for domain X" | `create_collection_description` | none |
+| "What's missing to build", "Pipeline status", "Diagnose the semantic layer", "Schematically tell me what's left", "Where are we with domain X" | — | `build-semantic-layer` (diagnosis only — stop after step 2) |
 | "What ontologies are there?" / "What views does domain X have?" | Direct triage (1-2 tools) | none |
 | "What does the semantic layer of X contain?" (metadata only) | `search_domains(text, domain_type='business')` or `list_domains(domain_type='business')` + sql tools | none |
 | "Validate the mappings with sample data" / "Run a top 5 of each mapping before publishing" | — | `create-sql-mappings` (§6.5) |
