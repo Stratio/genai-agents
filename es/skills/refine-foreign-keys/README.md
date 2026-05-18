@@ -9,7 +9,7 @@ Edición quirúrgica (añadir / modificar / eliminar) de claves foráneas virtua
 - Ofrece dos opciones de scope: todas las tablas elegibles (por defecto) o un subconjunto específico.
 - Pide al usuario `user_instructions` (obligatorio) y le guía entre los dos intents productivos — **TARGETED** (nombrar una relación concreta) o **DISCOVERY** (pedir detectar FKs que falten en tablas concretas); las frases genéricas sin specifics desperdician un round-trip y se desaconsejan.
 - Construye el `user_instructions` final mediante el **Glossary Instruction Enrichment Workflow** (`stratio-semantic-layer-tools.md` §11), con scope a la fase `technical_terms`.
-- Invoca `refine_foreign_keys` y presenta `per_table_results`: tablas modificadas (nombres de FK añadidas / reemplazadas / borradas), tablas sin cambios, tablas omitidas con su razón, y fallos de persistencia por tabla.
+- Invoca `refine_foreign_keys` y reenvía el campo `message` de la herramienta (un resumen en markdown que cubre los totales del dominio y una lista por tabla con los nombres de FK añadidas / mantenidas / reemplazadas / borradas, el resultado de la persistencia, el estado de actualización del TN y cualquier aviso de omisión) tal cual al usuario — sin parsear campos.
 
 ## Cuándo usarla
 

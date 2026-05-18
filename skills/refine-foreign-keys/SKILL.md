@@ -15,7 +15,7 @@ Surgical edits to the virtual foreign keys of tables in a technical domain. Sibl
 | `search_domains(search_text, domain_type='technical')` | sql | **Prefer**. Search technical domains by free text. Results by relevance |
 | `list_domains(domain_type='technical', refresh?)` | sql | List all technical domains. `refresh=true` for cache bypass |
 | `list_domain_tables(domain)` | sql | List tables with their descriptions (tables with descriptions already have technical terms — only these are candidates for refine) |
-| `refine_foreign_keys(domain, user_instructions, table_names?)` | gov | Add, modify or remove virtual FKs. `user_instructions` is required. Returns `per_table_results` with `fks_added` / `fks_replaced` / `fks_deleted` / `fks_kept` per table |
+| `refine_foreign_keys(domain, user_instructions, table_names?)` | gov | Add, modify or remove virtual FKs. `user_instructions` is required. Returns a single `message` field with a markdown summary in explicit `key=value` notation, e.g. `added=N, replaced=N, deleted=N, kept=N; persist=<ok\|failed\|not_needed>, BT=<updated\|unchanged>` per table, plus per-domain totals and any skip warning |
 
 **Key rules**: `domain_name` immutable (exact value from `list_domains` or `search_domains`). `user_instructions` is required — the tool rejects empty input. Build `user_instructions` through the Glossary Instruction Enrichment Workflow (`guides/stratio-semantic-layer-tools.md` §11, `phase=technical_terms`). Tables without a previous technical term are skipped automatically — run `/create-technical-terms` first if needed.
 
@@ -74,18 +74,17 @@ The enriched text concatenates with the user's intent text from step 4 and becom
 
 ### 6. Execution
 
-Invoke `refine_foreign_keys(domain, user_instructions, table_names?)`. The tool returns:
+Invoke `refine_foreign_keys(domain, user_instructions, table_names?)`. The tool returns a single `message` field whose value is a markdown summary already structured with:
 
-- `message`: short markdown summary.
-- `per_table_results`: list with `table_name`, `fks_added`, `fks_kept`, `fks_replaced`, `fks_deleted`, `persist_succeeded`, `bt_updated`, and optional `warning`.
+- per-domain totals: `Tables processed`, `Persisted with changes`, `No changes needed`, `Failures or skips`
+- a `### Per-table outcome` bullet list using explicit `key=value` notation (no diff glyphs to interpret):
+  - `- **<table>**: added=N, replaced=N, deleted=N, kept=N; persist=<ok|failed|not_needed>, BT=<updated|unchanged>`
+  - `persist=not_needed` means the diff was empty so no PUT was sent (this is a success path, not a failure).
+  - Skipped tables (unknown table, missing data_asset_id, no BT yet) render as `- **<table>**: skipped — warning: ...`.
 
-Present the per-table outcome directly:
-- Tables modified — list of `fks_added` / `fks_replaced` / `fks_deleted`, and confirm `bt_updated`.
-- Tables with no changes — "no FK matched the request" or "current state already aligned".
-- Tables skipped — show the warning (no BT yet, no data_asset_id, etc.).
-- Tables with persist failures — show the error tail (likely permissions or backend issue); the BT was left untouched intentionally to avoid showing a state that does not match the API.
+Forward the `message` markdown to the user **verbatim** — do not paraphrase, summarize or restructure it. The chain authored the wording on purpose so that user-facing output stays consistent across runs and languages.
 
-If a table fails for a recoverable reason (e.g. an invalid column name in the proposed FK), suggest re-running with a more specific instruction; the actor retries internally up to its attempt budget.
+If the markdown reports `persist=failed` or skip warnings for some tables, you may add a brief, neutral suggestion below the message (e.g. "Re-run with a more specific instruction for those tables, or check governance permissions for the failed ones"), but never edit the markdown itself. `persist=not_needed` does NOT warrant any extra suggestion — it is the normal outcome when no relationships needed adjustment.
 
 ## Notes
 
