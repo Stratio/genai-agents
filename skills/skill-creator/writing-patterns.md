@@ -250,43 +250,7 @@ When the user asks about quality, assess the domain and report back.
 
 The bad version is too abstract to guide the agent's behavior.
 
-## 6. Subagent Execution
-
-### ✅ Fork for isolated tasks
-
-Use `context: fork` for tasks that don't need conversation history.
-
-**Good:**
-```yaml
----
-name: explore-codebase
-description: Explore the codebase to find relevant files and patterns. Use when researching before implementation.
-context: fork
-agent: Explore
-allowed-tools: Read Grep Glob Bash(git log *) Bash(git show *)
----
-
-Search the codebase for:
-1. Files matching the pattern described by the user
-2. Related test files
-3. Similar implementations that could be reused
-
-Report: list of relevant files with brief descriptions of their role.
-```
-
-**Bad (for an isolated task):**
-```yaml
----
-name: explore-codebase
-description: Explore the codebase
----
-
-Search the codebase for files the user describes...
-```
-
-The bad version runs inline, consuming the main conversation's context window with exploration results the agent doesn't need to retain.
-
-## 7. Instruction Clarity
+## 6. Instruction Clarity
 
 ### ✅ Explain WHY (theory of mind)
 
@@ -305,7 +269,7 @@ ALWAYS use the EXACT domain_name from the MCP. NEVER change it. This is CRITICAL
 
 Both achieve the same goal, but the good version explains the mechanism (exact string match) and the consequence (silent failure). The agent can then apply this principle to similar situations (table names, column names) even if the skill doesn't mention them.
 
-## 8. Portability
+## 7. Portability
 
 ### ✅ Generic references to system files
 
@@ -322,7 +286,7 @@ Use the `AskUserQuestion` tool to present options to the user.
 
 The bad version only works in Claude Code. In OpenCode, the tool is called `question`. In chat-only environments, neither exists. The generic phrase lets each platform's packaging script substitute the correct reference.
 
-## 9. Dependencies
+## 8. Dependencies
 
 ### ✅ Self-contained with declared dependencies
 
@@ -346,7 +310,7 @@ know how to do domain discovery — just use the appropriate MCP calls.
 
 The bad version assumes the agent knows the workflow. It might not — different agents have different capabilities and knowledge.
 
-## 10. Skill Size
+## 9. Skill Size
 
 ### ✅ Modular with supporting files
 
@@ -372,7 +336,7 @@ my-skill/
 
 The bad version exceeds the 500-line guideline and forces the agent to load all content even when only part is needed.
 
-## 11. Triggering
+## 10. Triggering
 
 ### ✅ Proactive description with activation keywords
 
@@ -397,7 +361,7 @@ description: "Generate formal coverage reports in PDF, DOCX, or Markdown. Use wh
 
 The explicit exclusion prevents the skill from triggering when the user just wants a chat-based summary.
 
-## 12. Code in Skills
+## 11. Code in Skills
 
 ### ✅ Extract long code to scripts
 

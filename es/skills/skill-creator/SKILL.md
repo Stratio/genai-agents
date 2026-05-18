@@ -1,7 +1,6 @@
 ---
 name: skill-creator
 description: "Comprehensive guide for creating high-quality AI agent skills (SKILL.md files). Use when designing, drafting, reviewing, or improving skills. Covers anatomy, frontmatter, progressive disclosure, writing patterns, description optimization, supporting files, and quality checklist."
-argument-hint: "[skill topic or name (optional)]"
 ---
 
 # Skill: Skill Creator
@@ -85,9 +84,8 @@ Todo SKILL.md comienza con un frontmatter YAML entre marcadores `---`. El frontm
 |-------|-------------|-------------|
 | `name` | Sí | Identificador único. Se convierte en el `/slash-command`. Debe coincidir con el nombre del directorio padre |
 | `description` | Sí (muy recomendado) | Qué hace la skill y cuándo usarla. Es el **mecanismo principal de activación** |
-| `argument-hint` | No | Texto de ejemplo mostrado en el autocompletado: `[domain] [table (optional)]` |
 
-**Regla de formato**: Envuelve siempre los valores de `description` y `argument-hint` entre comillas dobles en una sola línea. Esto previene problemas de parseo YAML con caracteres especiales (dos puntos, corchetes) y asegura un frontmatter portable entre plataformas.
+**Regla de formato**: Envuelve siempre el valor de `description` entre comillas dobles en una sola línea. Esto previene problemas de parseo YAML con caracteres especiales (dos puntos, corchetes) y asegura un frontmatter portable entre plataformas.
 
 ### 2.1.1 Límites duros y reglas de validación
 
@@ -133,7 +131,7 @@ La mala descripción es demasiado vaga — rara vez se activará. La buena descr
 - Incluye siempre una cláusula "Use when..."
 - Si la skill NO debe activarse en algunos casos, menciónalo: "Do NOT use for X"
 
-Para la referencia completa de campos con todos los campos opcionales, ejemplos y control de invocación, consulta `frontmatter-reference.md`.
+Para la referencia completa de campos con los campos opcionales y los ejercicios de optimización de descripciones, consulta `frontmatter-reference.md`.
 
 ## 3. Escritura del Cuerpo de la Skill
 
@@ -277,5 +275,5 @@ Ejecuta esta lista de verificación antes de finalizar cualquier skill:
 12. `name` ≤ 64 chars, cumple `^[a-z0-9]+(-[a-z0-9]+)*$`, coincide con el nombre del directorio padre, sin palabras reservadas (`anthropic`/`claude`), sin etiquetas XML
 13. Todo el conocimiento necesario está integrado — la skill no depende de conocimiento externo no verificable
 14. La descripción es lo suficientemente proactiva para activarse cuando sea relevante
-15. Los valores de `description` y `argument-hint` están entre comillas dobles en una sola línea
+15. El valor de `description` está entre comillas dobles en una sola línea
 16. `description` ≤ 1024 chars (límite duro de Anthropic / OpenCode / Copilot — los pack scripts abortan si se excede)

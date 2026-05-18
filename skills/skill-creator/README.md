@@ -5,7 +5,7 @@ Complete reference for designing and writing high-quality agent skills (SKILL.md
 ## What it does
 
 - Teaches the anatomy of a skill: directory layout (`SKILL.md` + optional `scripts/`, `references/`, `assets/`), naming conventions (kebab-case), and the two skill types (Reference content vs. Task content).
-- Specifies the **YAML frontmatter contract**: required `name` and `description` fields, optional `argument-hint`, formatting rules (always double-quoted on a single line) and description-optimisation patterns ("action verb + what + Use when... + keywords").
+- Specifies the **YAML frontmatter contract**: required `name` and `description` fields, formatting rules (always double-quoted on a single line) and description-optimisation patterns ("action verb + what + Use when... + keywords").
 - Explains **progressive disclosure**: metadata always in memory, body loaded on activation, supporting files loaded on demand. Drives the "keep SKILL.md under 500 lines" rule.
 - Provides writing guidance: explain *why* not just *what*, imperative voice, numbered sections for sequential workflows, decision-routing tables, input/output examples, instruction budget (aim 150–200 discrete instructions).
 - Documents supporting-file strategy: when to extract to `scripts/` / `references/` / `assets/`, how to reference them, how to use dynamic context injection (`` !`command` ``).

@@ -5,7 +5,7 @@ Referencia completa para diseñar y escribir skills de agente de alta calidad (f
 ## Qué hace
 
 - Enseña la anatomía de una skill: layout de directorios (`SKILL.md` + `scripts/`, `references/`, `assets/` opcionales), convenciones de naming (kebab-case) y los dos tipos de skills (contenido de referencia vs. contenido de tarea).
-- Especifica el **contrato de frontmatter YAML**: campos obligatorios `name` y `description`, opcional `argument-hint`, reglas de formato (siempre entre comillas dobles en una línea) y patrones de optimización de descripción ("verbo acción + qué + Use when... + keywords").
+- Especifica el **contrato de frontmatter YAML**: campos obligatorios `name` y `description`, reglas de formato (siempre entre comillas dobles en una línea) y patrones de optimización de descripción ("verbo acción + qué + Use when... + keywords").
 - Explica la **progressive disclosure**: metadata siempre en memoria, body cargado en activación, ficheros de soporte on demand. Impulsa la regla "mantén SKILL.md por debajo de 500 líneas".
 - Proporciona guía de escritura: explica *por qué*, no solo *qué*, voz imperativa, secciones numeradas para flujos secuenciales, tablas de routing de decisiones, ejemplos input/output, presupuesto de instrucciones (objetivo 150–200 discretas).
 - Documenta la estrategia de ficheros de soporte: cuándo extraer a `scripts/` / `references/` / `assets/`, cómo referenciarlos, cómo usar inyección dinámica de contexto (`` !`command` ``).

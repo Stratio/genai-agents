@@ -65,7 +65,7 @@ NO hagas todas las preguntas a la vez. Agrupalas en 2-3 rondas, empezando por la
 
 Carga la skill `/skill-creator` como referencia oficial para los principios de diseno de skills. Disena:
 
-1. **Campos del frontmatter**: `name`, `description`, `argument-hint`, y cualquier campo opcional relevante (consulta `frontmatter-reference.md` en la skill skill-creator para el catalogo completo de campos)
+1. **Campos del frontmatter**: `name`, `description` (consulta `frontmatter-reference.md` en la skill skill-creator para el catalogo completo de campos y la nota sobre que otros campos ignora OpenCode)
 2. **Esquema de secciones**: secciones numeradas del cuerpo del SKILL.md con una descripcion de una linea para cada una
 3. **Lista de archivos complementarios**: que archivos adicionales se necesitan (guias, scripts, referencias) y que contiene cada uno
 4. **Estructura de directorios**: el arbol de archivos completo del paquete de la skill
@@ -81,8 +81,6 @@ Tipo: Contenido de Referencia / Contenido de Tarea
 Frontmatter:
   name: <valor>
   description: <valor>
-  argument-hint: <valor>
-  [otros campos si son relevantes]
 
 Secciones:
   1. <Nombre de seccion> — <que cubre>

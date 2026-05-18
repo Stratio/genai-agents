@@ -141,6 +141,8 @@ Before any operation, verify it does not already exist:
 - **Creation**: Sequential within the same phase
 - **Between phases**: Strict mandatory sequence: technical terms -> ontology -> business views -> SQL mappings -> (optional publishing) -> semantic terms. Each phase depends on the artifacts from the previous one. Publishing can be done after completing mappings or at any later point
 
+**"In parallel" here means emitting multiple tool calls **within the same phase** in the SAME response so the runtime executes them concurrently — NOT spawning subtasks, sub-sessions, or invoking the Task tool, and NOT mixing tool calls from different phases. Never delegate governance MCP calls to a subagent.**
+
 ## 9. MCP Response Patterns
 
 Two response patterns can occur on **any** MCP tool listed in §2, on either the `gov` or `sql` server. The protocols are in `stratio-mcp-response-patterns.md` — apply them whenever the trigger appears. For polling, always call `get_mcp_task_result` on the **same server** as the original tool. On `status="error"`, apply the recovery strategy from §7.
