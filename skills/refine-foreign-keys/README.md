@@ -9,7 +9,7 @@ Surgical add / modify / remove of virtual foreign keys in tables of a technical 
 - Offers two scope options: all eligible tables (default) or a specific subset.
 - Asks the user for `user_instructions` (required) and guides them between the two productive intents — **TARGETED** (name a specific relation) or **DISCOVERY** (ask to detect missing FKs in named tables); generic phrases without specifics waste a round trip and are warned against.
 - Builds the final `user_instructions` through the **Glossary Instruction Enrichment Workflow** (`stratio-semantic-layer-tools.md` §11), scoped to the `technical_terms` phase.
-- Invokes `refine_foreign_keys` and presents `per_table_results`: tables modified (added / replaced / deleted FK names), tables with no changes, tables skipped with reason, and per-table persist failures.
+- Invokes `refine_foreign_keys` and forwards the tool's `message` field (a markdown summary covering per-domain totals plus a per-table outcome bullet list with added / kept / replaced / deleted FK names, persistence outcome, BT update status and any skip warning) verbatim to the user — no field parsing.
 
 ## When to use it
 
