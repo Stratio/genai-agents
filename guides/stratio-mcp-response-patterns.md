@@ -34,15 +34,28 @@ When a tool's inline output would exceed the host environment's response limit, 
 - The response carries a saved-file path with no `task_id` field
 
 **Protocol** (apply in order):
-1. **Never read the full saved file directly into your own context.** It will trigger the same limit that caused the truncation
-2. **Prefer delegating the file inspection to a subagent** when the host environment exposes one (e.g. an Explore / Task subagent). Brief it with the file path and the specific extraction it should perform, and ask it to return only the fragment you need — not the file contents
-3. **If subagent delegation is not available**, inspect the file yourself with strict caps: `Grep` for targeted patterns first, then `Read` with `offset` and a small `limit` (≤ 200 lines per call). Never read end-to-end in a single call
-4. **Iterate by need**: a first pass typically extracts an inventory (identifiers, names, counts); subsequent passes retrieve full records on demand. Stop as soon as the user's question is answered
+1. **Never read the full saved file directly into your own context.** It will trigger the same limit that caused the truncation.
+2. **Delegate the file inspection to the runtime's subagent** (e.g. OpenCode's `explore` via the Task tool) to preserve your own context. The subagent has NO view of the parent conversation — it only sees the prompt you write. The prompt MUST contain three things:
+   - **The full saved file path, copied literally from the truncation notice.** Do not paraphrase. Do not ask the subagent to find it with Glob. Paste the absolute path exactly as it appeared in the runtime's hint.
+   - **The extraction goal**: what to extract (inventory, topical subset, specific record) and what to return (e.g. a markdown list of table names matching X).
+   - **A reminder to return only the extracted fragment**, not the full file.
 
-**Typical extraction patterns** for list-style payloads:
-- _Inventory_: `Grep` for the JSON key that delimits each entry (e.g. `"name":`) and count / list the matches
-- _Topical subset_: `Grep` for keywords from the user's question over the saved file
-- _Specific record_: `Grep` for the identifier, then `Read` ±N lines around the match for the surrounding context
-- _Sample_: `Read` with `offset=0`, `limit=200` to inspect the structure before issuing more targeted reads
+   Leave the *how* to the subagent — it is a file-search specialist and will pick `Read`/`Grep`/`Glob` as appropriate. Do not embed regex patterns or implementation details in the prompt.
+
+   Good prompt example:
+   > "Inspect the saved file at `<full-path-from-truncation-notice>`. Extract a topical subset: only the table entries whose name contains 'customer'. Return a markdown list of the matching names — do not return the file content."
+
+   Bad prompt (causes the bug from ROCK-14755):
+   > "Read the saved tool output file for `list_domain_tables` on adventureworks_test and extract the full table list." ← no path → subagent guesses with `Glob` → does not find it → the subagent (with `question: deny` on Stratio Cowork) returns an error to the parent, which then applies the fallback below.
+
+3. **If the subagent returns "file not found" or "permission denied"** on the saved path, do NOT retry and do NOT delegate again. Process the file yourself in this conversation with strict caps: `Grep` for targeted patterns first, then `Read` with `offset` and a small `limit` (≤ 200 lines per call). Never read end-to-end in a single call.
+4. **If `Grep`/`Read` in the main session also fails**, surface the limitation to the user and reformulate the MCP query with a narrower scope (additional filters, `domain_type`, narrower keyword) instead of looping. Never ask the user the same question twice.
+5. **Iterate by need**: first pass extracts an inventory (identifiers, names, counts); subsequent passes retrieve full records on demand. Stop as soon as the user's question is answered.
+
+**Typical extraction goals** for list-style payloads (express these to the subagent or apply them in the fallback):
+- _Inventory_: identifiers / names / count of entries.
+- _Topical subset_: only entries matching the user's keywords.
+- _Specific record_: a single entry by identifier, with surrounding context if useful.
+- _Sample_: first N entries to inspect the structure before deciding the goal.
 
 Applies to any tool that may return large payloads. On the data side, common cases include `list_domain_tables`, `list_domains`, `get_tables_details` over many tables, and `query_data` over wide/long results. On the governance side, common cases include `list_business_views`, `list_technical_domain_concepts`, `search_data_dictionary` and any `*_details` tool over large catalogs.

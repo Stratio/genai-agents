@@ -39,7 +39,7 @@
 - **`output_format` es un string**: Los valores válidos son `"dict"`, `"csv"` o `"markdown"`. Es opcional (default: `"dict"`). NUNCA pasar un booleano (`true`/`false`). Si no necesitas un formato específico, omitir el parámetro
 - Si una query falla o da resultados inesperados: reformular la pregunta en lenguaje natural, no intentar escribir SQL
 - **Profiling (`profile_data`)**: Requiere SQL como parámetro — generarla SIEMPRE con `generate_sql`, nunca escribirla manualmente. NUNCA añadir LIMIT a la SQL; usar el parámetro `limit` de la tool
-- **Ejecución en paralelo**: Cuando el plan define múltiples preguntas de datos independientes (ninguna necesita el resultado de otra para formularse), lanzar TODAS las llamadas a `query_data` en una sola respuesta para que se ejecuten en paralelo. Aplica también a llamadas de metadata (`get_table_columns_details`, `profile_data`, etc.). Solo serializar cuando una query depende del resultado de otra (ej: necesitas un valor de la query A para formular la query B)
+- **Ejecución en paralelo**: Cuando el plan define múltiples preguntas de datos independientes (ninguna necesita el resultado de otra para formularse), lanzar TODAS las llamadas a `query_data` en una sola respuesta para que se ejecuten en paralelo. Aplica también a llamadas de metadata (`get_table_columns_details`, `profile_data`, etc.). Solo serializar cuando una query depende del resultado de otra (ej: necesitas un valor de la query A para formular la query B). **"En paralelo" aquí significa emitir múltiples tool calls en la MISMA respuesta para que el runtime las ejecute concurrentemente — NO crear subtareas, sub-sesiones, ni invocar la tool Task. Nunca delegues llamadas MCP a un subagente.**
 
 ## 4. Mostrar resultados de queries al usuario
 
@@ -83,7 +83,7 @@ Cuando una colección está expuesta en ambas capas (semántica + técnica), `do
 ### 5.2 Explorar Tablas
 
 1. `list_domain_tables(domain_name)` para listar todas las tablas del dominio
-2. **Si la salida está truncada** (ver §9 y `stratio-mcp-response-patterns.md` §2): delegar la inspección del fichero a un subagente (o, en su defecto, recurrir a `Grep` + `Read` con `limit`). Extraer los nombres de tablas y sus descripciones — o un subconjunto temático que coincida con la pregunta del usuario — sin ingerir el fichero completo
+2. **Si la salida está truncada** (ver §9 y `stratio-mcp-response-patterns.md` §2): delegar la inspección del fichero al subagente del runtime (p. ej. `explore` de OpenCode vía Task). En el prompt incluye tanto la ruta literal del fichero guardado, tal como aparece en el aviso de truncación, **como el objetivo de extracción** (inventario de nombres de tablas, subconjunto temático, etc.); NO pidas al subagente que encuentre el fichero con `Glob`. Si el subagente devuelve un error, recurre a `Grep` + `Read` con `limit` en esta conversación (≤ 200 líneas por llamada). Extraer los nombres de tablas y sus descripciones — o un subconjunto temático que coincida con la pregunta del usuario — sin ingerir el fichero completo
 3. Presentar las tablas y sus descripciones en una tabla markdown. Si el inventario sigue siendo demasiado grande para renderizar de forma útil (caso de truncación, o lista plana muy por encima del tamaño presentable en chat): mostrar solo el subconjunto relevante para la pregunta del usuario, indicar el total y explicar el criterio de filtrado — p. ej. *"El dominio tiene 312 tablas; mostrando las 9 que coinciden con `<tema>`. Avisa si quieres otro recorte."*
 
 ### 5.3 Detalle de Tablas

@@ -1,6 +1,8 @@
 # Referencia de Frontmatter
 
-Referencia completa de todos los campos YAML de frontmatter disponibles en los ficheros SKILL.md. Todos los campos son opcionales salvo que se indique lo contrario, pero `name` y `description` son muy recomendables.
+Referencia de los campos YAML de frontmatter reconocidos por las skills de **OpenCode**.
+
+> **Nota de alcance.** El cargador de skills de OpenCode (verificado en `packages/opencode/src/skill/index.ts:36-58` del código fuente de OpenCode) solo lee `name` y `description` del frontmatter; cualquier otro campo top-level se ignora silenciosamente en tiempo de carga. Otros runtimes (p. ej. Claude Code) aceptan campos adicionales como `model`, `effort`, `context: fork`, `agent`, `paths`, `allowed-tools`, `shell`, `hooks`, `argument-hint`, `user-invocable` — esos campos **no surten efecto** cuando la skill se empaqueta para OpenCode y no se documentan aquí.
 
 ## Catálogo de campos
 
@@ -9,7 +11,7 @@ Referencia completa de todos los campos YAML de frontmatter disponibles en los f
 - **Tipo**: string
 - **Valor por defecto**: derivado del nombre de fichero/carpeta
 - **Descripción**: Identificador único de la skill. Se convierte en el `/slash-command` que los usuarios escriben para invocarla.
-- **Reglas**: solo letras minúsculas, números y guiones. Máximo 64 caracteres.
+- **Reglas**: solo letras minúsculas, números y guiones. Máximo 64 caracteres. Debe coincidir con el nombre del directorio padre. No debe contener las palabras reservadas `anthropic` ni `claude`.
 - **Correcto**: `name: create-quality-rules`
 - **Incorrecto**: `name: CreateQualityRules` (sin camelCase), `name: my awesome skill!` (sin espacios ni caracteres especiales)
 
@@ -18,7 +20,7 @@ Referencia completa de todos los campos YAML de frontmatter disponibles en los f
 - **Tipo**: string
 - **Valor por defecto**: ninguno
 - **Descripción**: Explica qué hace la skill y cuándo usarla. Este es el **mecanismo principal de activación** — el agente lee todas las descripciones de las skills para decidir cuál activar.
-- **Reglas**: Sitúa al inicio el caso de uso principal. Incluye una cláusula "Use when...". Incluye palabras clave que el usuario probablemente diga. Se recomiendan ~250 caracteres como máximo.
+- **Reglas**: Sitúa al inicio el caso de uso principal. Incluye una cláusula "Use when...". Incluye palabras clave que el usuario probablemente diga. Máximo 1024 caracteres (solo los primeros ~250 se muestran en los listados de la UI de slash-commands).
 
 **Buenos ejemplos:**
 
@@ -53,140 +55,6 @@ description: "Generates reports in PDF format"
 
 # Solapa con todo — se activará demasiado a menudo
 description: "Use this skill whenever the user asks anything about data."
-```
-
-### argument-hint
-
-- **Tipo**: string
-- **Valor por defecto**: ninguno
-- **Descripción**: Texto de ejemplo mostrado en el autocompletado de la interfaz cuando el usuario empieza a escribir el slash command.
-- **Correcto**: `argument-hint: "[domain] [table (optional)]"`
-- **Correcto**: `argument-hint: "[issue-number]"`
-- **Incorrecto**: `argument-hint: "enter your arguments here"` (demasiado vago)
-
-### user-invocable
-
-- **Tipo**: boolean
-- **Valor por defecto**: `true`
-- **Descripción**: Cuando es `false`, solo el agente puede invocar esta skill. La skill NO aparece en la lista de slash commands. Su descripción SÍ se carga en el contexto para que el agente pueda decidir cuándo usarla.
-- **Cuándo usarlo**: Para skills de conocimiento de fondo que el agente debería aplicar automáticamente: `legacy-system-context`, `coding-standards`.
-- **Ejemplo**:
-  ```yaml
-  name: legacy-system-context
-  description: Context about the legacy auth system. Use when working with auth-related code.
-  user-invocable: false
-  ```
-
-### Resumen de control de invocación
-
-| Frontmatter | Usuario invoca | Agente invoca | Descripción en contexto |
-|-------------|:--------------:|:-------------:|:-----------------------:|
-| Por defecto (ambos true) | ✅ | ✅ | ✅ |
-| `user-invocable: false` | ❌ | ✅ | ✅ |
-
-### allowed-tools
-
-- **Tipo**: string (nombres de herramientas separados por espacios)
-- **Valor por defecto**: todas las herramientas disponibles
-- **Descripción**: Restringe qué herramientas puede usar el agente mientras ejecuta esta skill. Las herramientas listadas aquí se conceden sin aprobación individual.
-- **Cuándo usarlo**: Cuando una skill solo debe tener acceso a herramientas específicas por seguridad o enfoque.
-- **Ejemplo**:
-  ```yaml
-  allowed-tools: Read Grep Glob Bash(git *) Bash(npm *)
-  ```
-  Esto permite Read, Grep, Glob y Bash solo para comandos `git` y `npm`.
-
-### model
-
-- **Tipo**: string (ID de modelo)
-- **Valor por defecto**: hereda de la sesión
-- **Descripción**: Especifica qué modelo utilizar cuando la skill está activa. Sobreescribe el modelo de la sesión.
-- **Cuándo usarlo**: Cuando una skill requiere las capacidades de un modelo específico (por ejemplo, una skill de razonamiento complejo que necesita el modelo más capaz).
-- **Ejemplo**: `model: claude-sonnet-4-6`
-
-### effort
-
-- **Tipo**: string (`low`, `medium`, `high`, `max`)
-- **Valor por defecto**: hereda de la sesión
-- **Descripción**: Establece el nivel de esfuerzo de razonamiento cuando la skill está activa. Sobreescribe el nivel de la sesión.
-- **Cuándo usarlo**: Usa `max` para skills de razonamiento complejo; `low` para skills simples de consulta o formateo.
-- **Ejemplo**: `effort: max`
-
-### context
-
-- **Tipo**: string
-- **Valor por defecto**: se ejecuta en línea
-- **Descripción**: Establécelo a `fork` para ejecutar la skill en un contexto aislado de subagente. El contenido de la skill se convierte en el prompt que dirige al subagente. El subagente tiene su propia ventana de contexto y no puede ver la conversación padre.
-- **Cuándo usarlo**: Para tareas aisladas y autocontenidas que no necesitan historial de conversación: exploración de código, análisis de ficheros, generación de informes.
-- **Ejemplo**: `context: fork`
-
-### agent
-
-- **Tipo**: string
-- **Valor por defecto**: `general-purpose`
-- **Descripción**: Especifica qué tipo de subagente usar cuando se establece `context: fork`. Opciones: `Explore`, `Plan`, `general-purpose`, o un subagente personalizado definido en `.claude/agents/`.
-- **Cuándo usarlo**: Combinado con `context: fork` para especializar el comportamiento del subagente.
-- **Ejemplo**:
-  ```yaml
-  context: fork
-  agent: Explore
-  ```
-
-### paths
-
-- **Tipo**: string (patrones glob separados por comas) o lista YAML
-- **Valor por defecto**: se activa en cualquier lugar
-- **Descripción**: Limita cuándo se activa la skill en función de los ficheros con los que se está trabajando. La skill solo se carga cuando la tarea actual involucra ficheros que coinciden con estos patrones.
-- **Cuándo usarlo**: Para skills específicas de ciertos tipos de fichero o directorios.
-- **Ejemplo**:
-  ```yaml
-  paths: src/**/*.ts, src/**/*.tsx
-  ```
-  o
-  ```yaml
-  paths:
-    - src/**/*.ts
-    - src/**/*.tsx
-  ```
-
-### shell
-
-- **Tipo**: string (`bash` o `powershell`)
-- **Valor por defecto**: `bash`
-- **Descripción**: Establece el shell utilizado para comandos en línea (sintaxis `` !`command` ``) en el cuerpo de la skill.
-- **Cuándo usarlo**: Solo establécelo a `powershell` si la skill está dirigida a entornos Windows.
-
-### hooks
-
-- **Tipo**: object
-- **Valor por defecto**: ninguno
-- **Descripción**: Hooks del ciclo de vida para automatización. Permite ejecutar comandos shell en puntos específicos de la ejecución de la skill.
-- **Cuándo usarlo**: Para skills que necesitan preparación/limpieza o efectos secundarios de notificación.
-
-## Sustituciones de cadenas
-
-Estos marcadores se reemplazan en tiempo de ejecución cuando se invoca la skill:
-
-| Marcador | Descripción | Ejemplo |
-|----------|-------------|---------|
-| `$ARGUMENTS` | Todos los argumentos pasados tras el slash command | `/my-skill arg1 arg2` → `$ARGUMENTS` = `arg1 arg2` |
-| `$ARGUMENTS[0]` o `$0` | Primer argumento | `/my-skill domain_name` → `$0` = `domain_name` |
-| `$ARGUMENTS[1]` o `$1` | Segundo argumento | `/my-skill domain table` → `$1` = `table` |
-| `${CLAUDE_SESSION_ID}` | ID de sesión actual (útil para logging) | `session-abc123` |
-| `${CLAUDE_SKILL_DIR}` | Ruta absoluta al directorio que contiene este SKILL.md | `/home/user/.claude/skills/my-skill` |
-
-**Ejemplo de uso:**
-
-```markdown
----
-name: assess-quality
-argument-hint: "[domain] [table (optional)]"
----
-
-## 1. Determine scope
-
-Assess the quality of domain `$ARGUMENTS[0]`.
-If a second argument was provided, focus on table `$ARGUMENTS[1]`.
 ```
 
 ## Ejercicios de optimización de descripciones

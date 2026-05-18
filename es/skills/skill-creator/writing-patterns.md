@@ -250,43 +250,7 @@ When the user asks about quality, assess the domain and report back.
 
 La versión incorrecta es demasiado abstracta para guiar el comportamiento del agente.
 
-## 6. Ejecución con subagentes
-
-### ✅ Fork para tareas aisladas
-
-Usa `context: fork` para tareas que no necesitan el historial de la conversación.
-
-**Bien:**
-```yaml
----
-name: explore-codebase
-description: Explore the codebase to find relevant files and patterns. Use when researching before implementation.
-context: fork
-agent: Explore
-allowed-tools: Read Grep Glob Bash(git log *) Bash(git show *)
----
-
-Search the codebase for:
-1. Files matching the pattern described by the user
-2. Related test files
-3. Similar implementations that could be reused
-
-Report: list of relevant files with brief descriptions of their role.
-```
-
-**Mal (para una tarea aislada):**
-```yaml
----
-name: explore-codebase
-description: Explore the codebase
----
-
-Search the codebase for files the user describes...
-```
-
-La versión incorrecta se ejecuta en línea, consumiendo la ventana de contexto de la conversación principal con resultados de exploración que el agente no necesita retener.
-
-## 7. Claridad de las instrucciones
+## 6. Claridad de las instrucciones
 
 ### ✅ Explicar el POR QUÉ (Theory of Mind)
 
@@ -305,7 +269,7 @@ ALWAYS use the EXACT domain_name from the MCP. NEVER change it. This is CRITICAL
 
 Ambas versiones consiguen el mismo objetivo, pero la versión buena explica el mecanismo (coincidencia exacta de cadena) y la consecuencia (fallo silencioso). El agente puede entonces aplicar este principio a situaciones similares (nombres de tablas, nombres de columnas) incluso si la skill no las menciona.
 
-## 8. Portabilidad
+## 7. Portabilidad
 
 ### ✅ Referencias genéricas a ficheros del sistema
 
@@ -322,7 +286,7 @@ Use the `AskUserQuestion` tool to present options to the user.
 
 La versión incorrecta solo funciona en Claude Code. En OpenCode, la herramienta se llama `question`. En entornos solo de chat, ninguna de las dos existe. La frase genérica permite que el script de empaquetado de cada plataforma sustituya la referencia correcta.
 
-## 9. Dependencias
+## 8. Dependencias
 
 ### ✅ Autocontenida con dependencias declaradas
 
@@ -346,7 +310,7 @@ know how to do domain discovery — just use the appropriate MCP calls.
 
 La versión incorrecta asume que el agente conoce el flujo. Puede que no sea así: diferentes agentes tienen diferentes capacidades y conocimiento.
 
-## 10. Tamaño de la skill
+## 9. Tamaño de la skill
 
 ### ✅ Modular con ficheros de apoyo
 
@@ -372,7 +336,7 @@ my-skill/
 
 La versión incorrecta supera la recomendación de 500 líneas y obliga al agente a cargar todo el contenido aunque solo necesite una parte.
 
-## 11. Activación
+## 10. Activación
 
 ### ✅ Descripción proactiva con palabras clave de activación
 
@@ -397,7 +361,7 @@ description: "Generate formal coverage reports in PDF, DOCX, or Markdown. Use wh
 
 La exclusión explícita evita que la skill se active cuando el usuario solo quiere un resumen en el chat.
 
-## 12. Código en skills
+## 11. Código en skills
 
 ### ✅ Extraer código largo a scripts
 

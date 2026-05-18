@@ -34,15 +34,28 @@ Cuando la salida inline de una tool superaría el límite de respuesta del entor
 - La respuesta lleva una ruta de fichero guardado y no hay campo `task_id`
 
 **Protocolo** (aplicar en orden):
-1. **Nunca leas el fichero guardado completo en tu propio contexto.** Disparará el mismo límite que provocó la truncación
-2. **Preferir delegar la inspección del fichero a un subagente** cuando el entorno anfitrión exponga uno (p. ej. un subagente Explore / Task). Indícale al subagente la ruta del fichero y la extracción concreta a realizar, y pídele que devuelva solo el fragmento que necesitas — no el contenido del fichero
-3. **Si no hay delegación a subagente disponible**, inspecciona el fichero tú mismo con topes estrictos: primero `Grep` para patrones concretos, luego `Read` con `offset` y `limit` pequeño (≤ 200 líneas por llamada). Nunca leas de extremo a extremo en una sola llamada
-4. **Iterar por necesidad**: una primera pasada suele extraer un inventario (identificadores, nombres, conteos); pasadas posteriores recuperan registros completos bajo demanda. Para en cuanto la pregunta del usuario quede respondida
+1. **Nunca leas el fichero guardado completo en tu propio contexto.** Disparará el mismo límite que provocó la truncación.
+2. **Delega la inspección del fichero al subagente del runtime** (p. ej. `explore` de OpenCode vía la tool Task) para preservar tu propio contexto. El subagente NO ve la conversación padre — solo ve el prompt que tú escribes. El prompt DEBE incluir tres cosas:
+   - **La ruta completa del fichero guardado, copiada literalmente del aviso de truncación.** No parafrasees. No pidas al subagente que busque el fichero con `Glob`. Pega la ruta absoluta exactamente como aparece en el hint del runtime.
+   - **El objetivo de extracción**: qué extraer (inventario, subconjunto temático, registro concreto) y qué devolver (p. ej. una lista markdown de nombres de tablas que coinciden con X).
+   - **Un recordatorio de devolver solo el fragmento extraído**, no el fichero completo.
 
-**Patrones típicos de extracción** para payloads tipo listado:
-- _Inventario_: `Grep` por la clave JSON que delimita cada entrada (p. ej. `"name":`) y cuenta / lista las coincidencias
-- _Subconjunto temático_: `Grep` por palabras clave de la pregunta del usuario sobre el fichero guardado
-- _Registro concreto_: `Grep` por el identificador, luego `Read` ±N líneas alrededor de la coincidencia para obtener el contexto
-- _Muestra_: `Read` con `offset=0`, `limit=200` para inspeccionar la estructura antes de lanzar lecturas más dirigidas
+   Deja el *cómo* al subagente — es un especialista en búsqueda de ficheros y elegirá `Read`/`Grep`/`Glob` según convenga. No embebas patrones regex ni detalles de implementación en el prompt.
+
+   Ejemplo de prompt bueno:
+   > "Inspecciona el fichero guardado en `<ruta-completa-del-aviso-de-truncación>`. Extrae un subconjunto temático: solo las entradas de tabla cuyo nombre contenga 'customer'. Devuelve una lista markdown con los nombres coincidentes — no devuelvas el contenido del fichero."
+
+   Prompt malo (causa el bug de ROCK-14755):
+   > "Lee el fichero guardado de salida de `list_domain_tables` sobre adventureworks_test y extrae la lista completa de tablas." ← sin ruta → el subagente adivina con `Glob` → no lo encuentra → el subagente (con `question: deny` en Stratio Cowork) devuelve un error al padre, que entonces aplica el fallback de abajo.
+
+3. **Si el subagente devuelve "file not found" o "permission denied"** sobre la ruta guardada, NO reintentes y NO vuelvas a delegar. Procesa el fichero tú mismo en esta conversación con topes estrictos: primero `Grep` para patrones concretos, luego `Read` con `offset` y `limit` pequeño (≤ 200 líneas por llamada). Nunca leas de extremo a extremo en una sola llamada.
+4. **Si `Grep`/`Read` en la sesión principal también fallan**, comunica la limitación al usuario y reformula la query MCP con un alcance más estrecho (filtros adicionales, `domain_type`, palabra clave más acotada) en lugar de entrar en bucle. Nunca preguntes lo mismo al usuario dos veces.
+5. **Iterar por necesidad**: la primera pasada extrae un inventario (identificadores, nombres, conteos); pasadas posteriores recuperan registros completos bajo demanda. Para en cuanto la pregunta del usuario quede respondida.
+
+**Objetivos típicos de extracción** para payloads tipo listado (formula uno de estos al subagente, o aplícalo en el fallback):
+- _Inventario_: identificadores / nombres / conteo de entradas.
+- _Subconjunto temático_: solo entradas que coincidan con las palabras clave del usuario.
+- _Registro concreto_: una sola entrada por identificador, con contexto alrededor si es útil.
+- _Muestra_: primeras N entradas para inspeccionar la estructura antes de decidir el objetivo.
 
 Aplica a cualquier tool que pueda devolver payloads grandes. En el lado de datos, los casos comunes incluyen `list_domain_tables`, `list_domains`, `get_tables_details` sobre muchas tablas y `query_data` sobre resultados anchos/largos. En el lado de gobierno, los casos comunes incluyen `list_business_views`, `list_technical_domain_concepts`, `search_data_dictionary` y cualquier tool `*_details` sobre catálogos grandes.
