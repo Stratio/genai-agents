@@ -36,7 +36,7 @@ When a tool's inline output would exceed the host environment's response limit, 
 **Protocol** (apply in order):
 1. **Never read the full saved file directly into your own context.** It will trigger the same limit that caused the truncation.
 2. **Delegate the file inspection to the runtime's subagent** (e.g. OpenCode's `explore` via the Task tool) to preserve your own context. The subagent has NO view of the parent conversation — it only sees the prompt you write. The prompt MUST contain three things:
-   - **The full saved file path, copied literally from the truncation notice.** Do not paraphrase. Do not ask the subagent to find it with Glob. Paste the absolute path exactly as it appeared in the runtime's hint.
+   - **The full saved file path, copied literally from the truncation notice.** Do not paraphrase. Do not ask the subagent to find it with Glob — if it has to guess, it can fail and surface an error to you. Paste the absolute path exactly as it appeared in the runtime's hint.
    - **The extraction goal**: what to extract (inventory, topical subset, specific record) and what to return (e.g. a markdown list of table names matching X).
    - **A reminder to return only the extracted fragment**, not the full file.
 
@@ -44,9 +44,6 @@ When a tool's inline output would exceed the host environment's response limit, 
 
    Good prompt example:
    > "Inspect the saved file at `<full-path-from-truncation-notice>`. Extract a topical subset: only the table entries whose name contains 'customer'. Return a markdown list of the matching names — do not return the file content."
-
-   Bad prompt (causes the bug from ROCK-14755):
-   > "Read the saved tool output file for `list_domain_tables` on adventureworks_test and extract the full table list." ← no path → subagent guesses with `Glob` → does not find it → the subagent (with `question: deny` on Stratio Cowork) returns an error to the parent, which then applies the fallback below.
 
 3. **If the subagent returns "file not found" or "permission denied"** on the saved path, do NOT retry and do NOT delegate again. Process the file yourself in this conversation with strict caps: `Grep` for targeted patterns first, then `Read` with `offset` and a small `limit` (≤ 200 lines per call). Never read end-to-end in a single call.
 4. **If `Grep`/`Read` in the main session also fails**, surface the limitation to the user and reformulate the MCP query with a narrower scope (additional filters, `domain_type`, narrower keyword) instead of looping. Never ask the user the same question twice.

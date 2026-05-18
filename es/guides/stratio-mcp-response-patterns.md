@@ -36,7 +36,7 @@ Cuando la salida inline de una tool superaría el límite de respuesta del entor
 **Protocolo** (aplicar en orden):
 1. **Nunca leas el fichero guardado completo en tu propio contexto.** Disparará el mismo límite que provocó la truncación.
 2. **Delega la inspección del fichero al subagente del runtime** (p. ej. `explore` de OpenCode vía la tool Task) para preservar tu propio contexto. El subagente NO ve la conversación padre — solo ve el prompt que tú escribes. El prompt DEBE incluir tres cosas:
-   - **La ruta completa del fichero guardado, copiada literalmente del aviso de truncación.** No parafrasees. No pidas al subagente que busque el fichero con `Glob`. Pega la ruta absoluta exactamente como aparece en el hint del runtime.
+   - **La ruta completa del fichero guardado, copiada literalmente del aviso de truncación.** No parafrasees. No pidas al subagente que busque el fichero con `Glob` — si tiene que adivinar, puede fallar y devolverte un error. Pega la ruta absoluta exactamente como aparece en el hint del runtime.
    - **El objetivo de extracción**: qué extraer (inventario, subconjunto temático, registro concreto) y qué devolver (p. ej. una lista markdown de nombres de tablas que coinciden con X).
    - **Un recordatorio de devolver solo el fragmento extraído**, no el fichero completo.
 
@@ -44,9 +44,6 @@ Cuando la salida inline de una tool superaría el límite de respuesta del entor
 
    Ejemplo de prompt bueno:
    > "Inspecciona el fichero guardado en `<ruta-completa-del-aviso-de-truncación>`. Extrae un subconjunto temático: solo las entradas de tabla cuyo nombre contenga 'customer'. Devuelve una lista markdown con los nombres coincidentes — no devuelvas el contenido del fichero."
-
-   Prompt malo (causa el bug de ROCK-14755):
-   > "Lee el fichero guardado de salida de `list_domain_tables` sobre adventureworks_test y extrae la lista completa de tablas." ← sin ruta → el subagente adivina con `Glob` → no lo encuentra → el subagente (con `question: deny` en Stratio Cowork) devuelve un error al padre, que entonces aplica el fallback de abajo.
 
 3. **Si el subagente devuelve "file not found" o "permission denied"** sobre la ruta guardada, NO reintentes y NO vuelvas a delegar. Procesa el fichero tú mismo en esta conversación con topes estrictos: primero `Grep` para patrones concretos, luego `Read` con `offset` y `limit` pequeño (≤ 200 líneas por llamada). Nunca leas de extremo a extremo en una sola llamada.
 4. **Si `Grep`/`Read` en la sesión principal también fallan**, comunica la limitación al usuario y reformula la query MCP con un alcance más estrecho (filtros adicionales, `domain_type`, palabra clave más acotada) en lugar de entrar en bucle. Nunca preguntes lo mismo al usuario dos veces.
