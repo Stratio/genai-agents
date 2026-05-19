@@ -309,9 +309,9 @@ genai-agents/
 
 Supported languages are listed in the `languages` file at the monorepo root.
 
-**What gets translated:** `AGENTS.md`, `SKILL.md`, sub-guides (`*.md` inside `skills/`), `guides/*.md` (root-level and per-agent), `USER_README.md`, `README.md` (including `plugins/<name>/README.md`), `cowork-metadata.yaml`, `templates/memory/*.md`.
+**What gets translated:** `AGENTS.md`, `SKILL.md`, sub-guides (`*.md` inside `skills/`), `guides/*.md` (root-level and per-agent), `USER_README.md`, per-artifact `README.md` (one per agent / plugin / shared skill — i.e. `agents/<name>/README.md`, `plugins/<name>/README.md`, `skills/<name>/README.md`), `cowork-metadata.yaml`, `templates/memory/*.md`.
 
-**What stays language-neutral (not translated):** Python code, HTML templates, CSS, shell scripts, JSON configs (`.mcp.json`, `opencode.json`), manifests (`imported-skills`, `guides`, `plugin.yaml`), `Makefile`, `Jenkinsfile`, `VERSION`.
+**What stays language-neutral (not translated):** Python code, HTML templates, CSS, shell scripts, JSON configs (`.mcp.json`, `opencode.json`), manifests (`imported-skills`, `guides`, `plugin.yaml`), `Makefile`, `Jenkinsfile`, `VERSION`, the repository root `README.md`, and the top-level folder READMEs `agents/README.md`, `guides/README.md`, `plugins/README.md`, `skills/README.md`. The folder READMEs are catalogue / how-to pages whose only consumer is someone browsing the repository on GitHub — they never enter any packaged bundle, so they are kept English-only.
 
 **Skill and folder names are technical identifiers** — they stay in English regardless of language (`explore-data`, not `explorar-datos`).
 

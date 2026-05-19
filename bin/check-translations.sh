@@ -104,10 +104,12 @@ if [[ -d "$REPO_ROOT/skills" ]]; then
 fi
 
 # Shared guides (root-level guides/ directory)
+# Note: guides/README.md is the catalogue README of the folder (repo-only
+# metadocumentation, never bundled) — kept English-only and excluded here.
 if [[ -d "$REPO_ROOT/guides" ]]; then
   while IFS= read -r md_file; do
     TRANSLATABLE+=("$md_file")
-  done < <(find "$REPO_ROOT/guides" -type f -name '*.md' 2>/dev/null)
+  done < <(find "$REPO_ROOT/guides" -type f -name '*.md' ! -name 'README.md' 2>/dev/null)
 fi
 
 # ---------------------------------------------------------------------------
