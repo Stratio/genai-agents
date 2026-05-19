@@ -15,7 +15,7 @@ Ediciones quirúrgicas sobre las claves foráneas virtuales de las tablas de un 
 | `search_domains(search_text, domain_type='technical')` | sql | **Preferida**. Busca dominios técnicos por texto libre. Resultados por relevancia |
 | `list_domains(domain_type='technical', refresh?)` | sql | Lista todos los dominios técnicos. `refresh=true` para saltar la caché |
 | `list_domain_tables(domain)` | sql | Lista las tablas con sus descripciones (las tablas con descripción ya tienen términos técnicos — solo estas son candidatas para refinar) |
-| `refine_foreign_keys(domain, user_instructions, table_names?)` | gov | Añade, modifica o elimina FKs virtuales. `user_instructions` es obligatorio. Devuelve `per_table_results` con `fks_added` / `fks_replaced` / `fks_deleted` / `fks_kept` por tabla |
+| `refine_foreign_keys(domain, user_instructions, table_names?)` | gov | Añade, modifica o elimina FKs virtuales. `user_instructions` es obligatorio. Devuelve un único campo `message` con un resumen en markdown en notación explícita `key=value`, p. ej. `added=N, replaced=N, deleted=N, kept=N; persist=<ok\|failed\|not_needed>, BT=<updated\|unchanged>` por tabla, más los totales por dominio y cualquier aviso de omisión |
 
 **Reglas clave**: `domain_name` inmutable (valor exacto de `list_domains` o `search_domains`). `user_instructions` es obligatorio — la herramienta rechaza entrada vacía. Construye `user_instructions` mediante el Glossary Instruction Enrichment Workflow (`guides/stratio-semantic-layer-tools.md` §11, `phase=technical_terms`). Las tablas sin un término técnico previo se omiten automáticamente — ejecuta `/create-technical-terms` antes si es necesario.
 
@@ -74,18 +74,17 @@ El texto enriquecido se concatena con el texto de intent del usuario del paso 4 
 
 ### 6. Ejecución
 
-Invoca `refine_foreign_keys(domain, user_instructions, table_names?)`. La herramienta devuelve:
+Invoca `refine_foreign_keys(domain, user_instructions, table_names?)`. La herramienta devuelve un único campo `message` cuyo valor es un resumen en markdown ya estructurado con:
 
-- `message`: resumen breve en markdown.
-- `per_table_results`: lista con `table_name`, `fks_added`, `fks_kept`, `fks_replaced`, `fks_deleted`, `persist_succeeded`, `bt_updated` y `warning` opcional.
+- totales por dominio: `Tables processed`, `Persisted with changes`, `No changes needed`, `Failures or skips`
+- una lista `### Per-table outcome` en notación explícita `key=value` (sin glifos de diff que interpretar):
+  - `- **<tabla>**: added=N, replaced=N, deleted=N, kept=N; persist=<ok|failed|not_needed>, BT=<updated|unchanged>`
+  - `persist=not_needed` significa que el diff estaba vacío y no se envió PUT (es un camino de éxito, no un fallo).
+  - Las tablas omitidas (tabla desconocida, sin data_asset_id, sin TN aún) se renderizan como `- **<tabla>**: skipped — warning: ...`.
 
-Presenta el resultado por tabla directamente:
-- Tablas modificadas — lista de `fks_added` / `fks_replaced` / `fks_deleted`, y confirma `bt_updated`.
-- Tablas sin cambios — "ninguna FK coincidía con la petición" o "el estado actual ya está alineado".
-- Tablas omitidas — muestra el aviso (aún sin TN, sin data_asset_id, etc.).
-- Tablas con fallos de persistencia — muestra la cola del error (probablemente permisos o problema de backend); el TN se dejó intacto a propósito para no mostrar un estado distinto al de la API.
+Reenvía el markdown del `message` al usuario **tal cual** — no parafrasees, resumas ni reestructures. La chain redactó el texto a propósito para que la salida al usuario sea consistente entre ejecuciones e idiomas.
 
-Si una tabla falla por una razón recuperable (p. ej. un nombre de columna inválido en la FK propuesta), sugiere reintentar con una instrucción más específica; el actor reintenta internamente hasta su presupuesto de intentos.
+Si el markdown reporta `persist=failed` o avisos de omisión para algunas tablas, puedes añadir una sugerencia breve y neutra debajo del mensaje (p. ej. "Reintenta con una instrucción más específica para esas tablas, o revisa los permisos de governance para las que fallaron"), pero nunca edites el markdown en sí. `persist=not_needed` NO justifica ninguna sugerencia extra — es el resultado normal cuando ninguna relación necesitaba ajuste.
 
 ## Notas
 
