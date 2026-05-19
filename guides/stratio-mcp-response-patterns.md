@@ -35,15 +35,16 @@ When a tool's inline output would exceed the host environment's response limit, 
 
 **Protocol** (apply in order):
 1. **Never read the full saved file directly into your own context.** It will trigger the same limit that caused the truncation.
-2. **Delegate the file inspection to the runtime's subagent** (e.g. OpenCode's `explore` via the Task tool) to preserve your own context. The subagent has NO view of the parent conversation — it only sees the prompt you write. The prompt MUST contain three things:
+2. **Delegate the file inspection to the runtime's subagent** (e.g. OpenCode's `explore` via the Task tool) to preserve your own context. The subagent has NO view of the parent conversation — it only sees the prompt you write. The prompt MUST contain:
    - **The full saved file path, copied literally from the truncation notice.** Do not paraphrase. Do not ask the subagent to find it with Glob — if it has to guess, it can fail and surface an error to you. Paste the absolute path exactly as it appeared in the runtime's hint.
    - **The extraction goal**: what to extract (inventory, topical subset, specific record) and what to return (e.g. a markdown list of table names matching X).
    - **A reminder to return only the extracted fragment**, not the full file.
+   - **If the saved file is a JSON payload minified on a single line** — the usual shape for Stratio MCP outputs — say so explicitly to the subagent and tell it that line-based tools (`Grep` counts matches per line, `Read` truncates each line to a fixed character cap that is not configurable in OpenCode) won't help. Direct it to use a structural parser via Bash: `jq` for one-shot queries (e.g. `jq '.tables | length'`, `jq '.tables[:20] | .[].name'`), or a short Python script for richer extraction (the sandbox ships Python with `json` in the standard library — the subagent can run an inline `python -c '...'` or save a small script).
 
-   Leave the *how* to the subagent — it is a file-search specialist and will pick `Read`/`Grep`/`Glob` as appropriate. Do not embed regex patterns or implementation details in the prompt.
+   Leave the rest of the *how* to the subagent — it is a file-search specialist and will pick the right primitives within the constraints above. Do not embed regex patterns beyond what is needed to convey the goal.
 
    Good prompt example:
-   > "Inspect the saved file at `<full-path-from-truncation-notice>`. Extract a topical subset: only the table entries whose name contains 'customer'. Return a markdown list of the matching names — do not return the file content."
+   > "Inspect the saved file at `<full-path-from-truncation-notice>`. The file is a JSON payload minified on a single line, so use `jq` (or a short inline Python script) via Bash rather than line-based tools. Extract a topical subset: only the table entries whose name contains 'customer'. Return a markdown list of the matching names — do not return the file content."
 
 3. **If the subagent returns "file not found" or "permission denied"** on the saved path, do NOT retry and do NOT delegate again. Process the file yourself in this conversation with strict caps: `Grep` for targeted patterns first, then `Read` with `offset` and a small `limit` (≤ 200 lines per call). Never read end-to-end in a single call.
 4. **If `Grep`/`Read` in the main session also fails**, surface the limitation to the user and reformulate the MCP query with a narrower scope (additional filters, `domain_type`, narrower keyword) instead of looping. Never ask the user the same question twice.

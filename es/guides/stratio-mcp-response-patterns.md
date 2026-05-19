@@ -35,15 +35,16 @@ Cuando la salida inline de una tool superaría el límite de respuesta del entor
 
 **Protocolo** (aplicar en orden):
 1. **Nunca leas el fichero guardado completo en tu propio contexto.** Disparará el mismo límite que provocó la truncación.
-2. **Delega la inspección del fichero al subagente del runtime** (p. ej. `explore` de OpenCode vía la tool Task) para preservar tu propio contexto. El subagente NO ve la conversación padre — solo ve el prompt que tú escribes. El prompt DEBE incluir tres cosas:
+2. **Delega la inspección del fichero al subagente del runtime** (p. ej. `explore` de OpenCode vía la tool Task) para preservar tu propio contexto. El subagente NO ve la conversación padre — solo ve el prompt que tú escribes. El prompt DEBE incluir:
    - **La ruta completa del fichero guardado, copiada literalmente del aviso de truncación.** No parafrasees. No pidas al subagente que busque el fichero con `Glob` — si tiene que adivinar, puede fallar y devolverte un error. Pega la ruta absoluta exactamente como aparece en el hint del runtime.
    - **El objetivo de extracción**: qué extraer (inventario, subconjunto temático, registro concreto) y qué devolver (p. ej. una lista markdown de nombres de tablas que coinciden con X).
    - **Un recordatorio de devolver solo el fragmento extraído**, no el fichero completo.
+   - **Si el fichero guardado es un payload JSON minificado en una sola línea** — la forma habitual de los outputs de los MCPs de Stratio — dile explícitamente al subagente que las herramientas line-based (`Grep` cuenta matches por línea, `Read` trunca cada línea a un tope fijo de caracteres no configurable en OpenCode) no le servirán. Indícale que use un parser estructural vía Bash: `jq` para consultas one-shot (p. ej. `jq '.tables | length'`, `jq '.tables[:20] | .[].name'`), o un script Python corto para extracciones más ricas (el sandbox lleva Python con la librería estándar `json` — el subagente puede ejecutar un `python -c '...'` inline o guardar un script breve).
 
-   Deja el *cómo* al subagente — es un especialista en búsqueda de ficheros y elegirá `Read`/`Grep`/`Glob` según convenga. No embebas patrones regex ni detalles de implementación en el prompt.
+   Deja el resto del *cómo* al subagente — es un especialista en búsqueda de ficheros y elegirá las primitivas adecuadas dentro de los límites de arriba. No embebas patrones regex más allá de lo necesario para transmitir el objetivo.
 
    Ejemplo de prompt bueno:
-   > "Inspecciona el fichero guardado en `<ruta-completa-del-aviso-de-truncación>`. Extrae un subconjunto temático: solo las entradas de tabla cuyo nombre contenga 'customer'. Devuelve una lista markdown con los nombres coincidentes — no devuelvas el contenido del fichero."
+   > "Inspecciona el fichero guardado en `<ruta-completa-del-aviso-de-truncación>`. El fichero es un payload JSON minificado en una sola línea, así que usa `jq` (o un script Python corto inline) vía Bash en lugar de herramientas line-based. Extrae un subconjunto temático: solo las entradas de tabla cuyo nombre contenga 'customer'. Devuelve una lista markdown con los nombres coincidentes — no devuelvas el contenido del fichero."
 
 3. **Si el subagente devuelve "file not found" o "permission denied"** sobre la ruta guardada, NO reintentes y NO vuelvas a delegar. Procesa el fichero tú mismo en esta conversación con topes estrictos: primero `Grep` para patrones concretos, luego `Read` con `offset` y `limit` pequeño (≤ 200 líneas por llamada). Nunca leas de extremo a extremo en una sola llamada.
 4. **Si `Grep`/`Read` en la sesión principal también fallan**, comunica la limitación al usuario y reformula la query MCP con un alcance más estrecho (filtros adicionales, `domain_type`, palabra clave más acotada) en lugar de entrar en bucle. Nunca preguntes lo mismo al usuario dos veces.
