@@ -6,7 +6,7 @@ Functional plugin that bundles the data governance agents of the monorepo into a
 
 | Agent | Role |
 |---|---|
-| [governance-officer](../../agents/governance-officer/) | Full-spectrum governance: builds and maintains semantic layers AND manages data quality, plus PDF/DOCX/PPTX/XLSX/web/poster/markdown reporting. |
+| [data-governance-officer](../../agents/data-governance-officer/) | Full-spectrum governance: builds and maintains semantic layers AND manages data quality, plus PDF/DOCX/PPTX/XLSX/web/poster/markdown reporting. |
 | [data-quality](../../agents/data-quality/) | Quality assessment, rule creation with mandatory human approval, scheduling and coverage reports in multiple formats. |
 | [semantic-layer](../../agents/semantic-layer/) | Semantic layer construction: data collections, technical terms, ontologies, business views, SQL mappings and term publishing. |
 
@@ -28,7 +28,7 @@ stratio-governance-stratio-cowork-{version}.zip
 ├── plugin.yaml                                  # aggregated manifest
 ├── README.md                                    # this file
 └── agents/
-    ├── governance-officer-stratio-cowork.zip    # agents/v1 sub-bundle
+    ├── data-governance-officer-stratio-cowork.zip    # agents/v1 sub-bundle
     ├── data-quality-stratio-cowork.zip          # agents/v1 sub-bundle
     └── semantic-layer-stratio-cowork.zip        # agents/v1 sub-bundle
 ```

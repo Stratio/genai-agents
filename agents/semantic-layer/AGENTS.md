@@ -82,7 +82,7 @@ For sample-data validation of mappings (pre-publication, using the `sql_mapping`
 
 When rendering query results to the user in chat, follow §3.5 "Showing query results to the user" of that guide (default cap 10 rows; respect explicit `top N` requests up to 50; closing line only when the cap kicks in).
 
-`profile_data` is denied at runtime — this agent does not perform statistical profiling; route the user to the data-analytics agent if they need it.
+`profile_data` is denied at runtime — this agent does not perform statistical profiling; route the user to the data-analytics-officer agent if they need it.
 
 ---
 

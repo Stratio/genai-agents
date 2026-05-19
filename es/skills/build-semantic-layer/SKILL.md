@@ -164,4 +164,4 @@ Si las vistas se publicaron durante el pipeline (o ya estaban publicadas), ofrec
 - Resolver cada pregunta con `query_data` (preferido — usa la capa semántica gobernada con NL). Si el usuario quiere ver / ajustar la SQL generada antes de ejecutar, usar primero `generate_sql` y ofrecer `execute_sql` después.
 - Renderizar resultados siguiendo `guides/stratio-data-tools.md` §4 (cap por defecto 10 filas).
 - Si la validación arroja resultados inesperados (vacíos, tipos no coincidentes, términos semánticos no encontrados), reportarlo y sugerir siguientes pasos: `/create-semantic-terms` para refinar, o `/create-sql-mappings` para arreglar la SQL.
-- Si el agente no tiene tools de datos (`query_data`, `execute_sql`, `generate_sql`), derivar al usuario a la UI de Governance / al agente de data-analytics y saltar este paso.
+- Si el agente no tiene tools de datos (`query_data`, `execute_sql`, `generate_sql`), derivar al usuario a la UI de Governance / al agente de data-analytics-officer y saltar este paso.

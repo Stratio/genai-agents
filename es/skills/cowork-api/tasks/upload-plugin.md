@@ -53,7 +53,7 @@ Esta task no llama a un único endpoint de plugin — reparte los sub-bundles:
    GENAI_API_URL="${GENAI_API_URL%/}"
 
    ON_CONFLICT="<estrategia elegida>"
-   SUB_PATH="<bundle.path>"      # p. ej. agents/governance-officer-stratio-cowork.zip
+   SUB_PATH="<bundle.path>"      # p. ej. agents/data-governance-officer-stratio-cowork.zip
    SUB_TYPE="<bundle.type>"      # "agent" o "skills"
    SUB_ENDPOINT="<bundle.endpoint>"
 
@@ -92,7 +92,7 @@ Devuelve al usuario un único resumen que cubra todos los sub-bundles, con esta 
 ```
 Plugin: <plugin-name>
   Agents:
-    imported: ["governance-officer", "data-quality"]
+    imported: ["data-governance-officer", "data-quality"]
     conflicts: []
     errors: []
   Skills:

@@ -1,4 +1,4 @@
-# governance-officer
+# data-governance-officer
 
 Governance officer agent combining semantic layer building and data quality management. Orchestrates the full lifecycle of governance artifacts: ontologies, views, mappings, terms, quality rules, and coverage reports.
 
@@ -70,8 +70,8 @@ All scripts accept `--lang <code>` to generate output in a specific language (e.
 
 | Script | Target | Output | Example |
 |--------|--------|--------|---------|
-| `pack_opencode.sh` | OpenCode | `dist/opencode/<name>/` | `bash ../pack_opencode.sh --agent governance-officer` |
-| `pack_stratio_cowork.sh` | Stratio Cowork (`agents/v1`) | `dist/<name>-stratio-cowork.zip` | `bash ../pack_stratio_cowork.sh --agent governance-officer` |
+| `pack_opencode.sh` | OpenCode | `dist/opencode/<name>/` | `bash ../pack_opencode.sh --agent data-governance-officer` |
+| `pack_stratio_cowork.sh` | Stratio Cowork (`agents/v1`) | `dist/<name>-stratio-cowork.zip` | `bash ../pack_stratio_cowork.sh --agent data-governance-officer` |
 
 ## Quick start
 
@@ -86,8 +86,8 @@ export MCP_GOV_API_KEY="my-governance-api-key"
 python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt
 
 # 3. Package for OpenCode
-bash ../pack_opencode.sh --agent governance-officer
+bash ../pack_opencode.sh --agent data-governance-officer
 
 # 4. Package for Stratio Cowork
-bash ../pack_stratio_cowork.sh --agent governance-officer
+bash ../pack_stratio_cowork.sh --agent data-governance-officer
 ```

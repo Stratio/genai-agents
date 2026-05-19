@@ -44,14 +44,14 @@ genai-agents/
     skills/
     guides/
     agents/
-      data-analytics/
+      data-analytics-officer/
       semantic-layer/
       data-quality/
-      governance-officer/
+      data-governance-officer/
       skill-creator/
       agent-creator/
   agents/                  # All agents live under agents/<name>/
-    data-analytics/        # Full agent (analysis + multi-format reports)
+    data-analytics-officer/        # Full agent (analysis + multi-format reports)
       imported-skills      # List of skills imported from monorepo skills/
       guides               # List of root-level guides this agent uses directly
     semantic-layer/        # Semantic layer construction agent
@@ -60,7 +60,7 @@ genai-agents/
     data-quality/          # Data quality agent (assessment, rules, reports)
       imported-skills
       guides
-    governance-officer/    # Governance officer: semantic layer + data quality combined
+    data-governance-officer/    # Governance officer: semantic layer + data quality combined
       imported-skills
       guides
     skill-creator/         # Skill creation agent
@@ -88,7 +88,7 @@ genai-agents/
 
 ## Agent summary
 
-### data-analytics
+### data-analytics-officer
 Full BI/BA agent: queries governed data via MCP, analysis with Python (pandas, scipy, scikit-learn), visualizations (matplotlib, seaborn, plotly), report generation (PDF, DOCX, web, PowerPoint, Excel/XLSX), PDF reading and extraction (`pdf-reader`), ad-hoc PDF creation and manipulation (`pdf-writer`: merge, split, watermark, encrypt, forms), DOCX reading (`docx-reader`) and ad-hoc DOCX authoring / manipulation (`docx-writer`: merge, split, find-replace, convert `.doc` to `.docx`), PPTX reading (`pptx-reader`) and ad-hoc PPTX authoring / manipulation (`pptx-writer`: merge, split, reorder, find-replace in slides and notes, convert `.ppt` to `.pptx`) for decks outside the analytical pipeline, XLSX reading (`xlsx-reader`) and ad-hoc XLSX authoring / manipulation (`xlsx-writer`: analytical workbooks with cover/KPI + detail sheets, pivot matrices, tabular exports, merge/split/find-replace, convert `.xls` to `.xlsx`, formula refresh), read-only data quality coverage assessment and reporting (uses shared skills `assess-quality` and `quality-report`; does not create rules), reasoning documentation, validation, cross-session memory management.
 
 ### semantic-layer
@@ -97,7 +97,7 @@ Agent specialized in building and maintaining semantic layers in Stratio Governa
 ### data-quality
 Agent specialized in data governance and quality. Evaluates quality coverage by domain, collection, table or column, identifies gaps (uncovered dimensions), proposes and creates quality rules with mandatory human approval, and generates coverage reports in multiple formats (PDF, DOCX, PPTX, Dashboard web, Web article / Narrative report, Poster/Infographic, XLSX, Markdown). Includes PDF reading (`pdf-reader`) and ad-hoc PDF manipulation (`pdf-writer`: merge, split, watermark, encrypt, forms), DOCX reading (`docx-reader`) and ad-hoc DOCX authoring / manipulation (`docx-writer`: merge, split, find-replace, `.doc` conversion), PPTX reading (`pptx-reader`) and ad-hoc PPTX authoring (`pptx-writer`) for executive quality summary decks and training decks on rules, plus XLSX reading (`xlsx-reader`) for rule-spec workbooks and table catalogs and XLSX authoring (`xlsx-writer`) for multi-sheet coverage workbooks (materialises the Excel option of `quality-report`) and ad-hoc XLSX (rule-spec templates, term catalog exports). Operates on governed data via SQL and governance MCPs.
 
-### governance-officer
+### data-governance-officer
 Combined governance agent with the full capabilities of both semantic-layer and data-quality. Builds and maintains semantic layers (ontologies, views, mappings, terms) AND manages data quality (assessment, rule creation, scheduling, reports in PDF, DOCX, PPTX, Dashboard web, Web article / Narrative report, Poster/Infographic, XLSX, Markdown). Includes PDF reading (`pdf-reader`) and ad-hoc PDF creation and manipulation (`pdf-writer`: merge, split, watermark, encrypt, forms, ontology documentation), DOCX reading (`docx-reader`) and ad-hoc DOCX authoring / manipulation (`docx-writer`: merge, split, find-replace, `.doc` conversion) for policy briefs, compliance reports and ontology documentation, PPTX reading (`pptx-reader`) and PPTX authoring (`pptx-writer`) for compliance briefings, policy presentations, ontology walkthroughs and steering-committee decks, plus XLSX reading (`xlsx-reader`) for data dictionaries, term catalogs and rule-spec workbooks, and XLSX authoring (`xlsx-writer`) for multi-sheet quality-coverage workbooks, ontology exports, term catalogs, compliance matrices and policy checklist workbooks. Has full access to all governance and data MCP tools with no restrictions.
 
 ### skill-creator
@@ -127,9 +127,9 @@ Repo-local Claude Code skills under `.claude/skills/` automate the test deployme
 
 | Skill | Slash form | Packs |
 |-------|-----------|-------|
-| `test-opencode-data-analytics` | `/test-opencode-data-analytics` | data-analytics opencode-es |
+| `test-opencode-data-analytics-officer` | `/test-opencode-data-analytics-officer` | data-analytics-officer opencode-es |
 | `test-opencode-data-quality` | `/test-opencode-data-quality` | data-quality opencode-es |
-| `test-opencode-governance-officer` | `/test-opencode-governance-officer` | governance-officer opencode-es |
+| `test-opencode-data-governance-officer` | `/test-opencode-data-governance-officer` | data-governance-officer opencode-es |
 
 Each skill runs `pack_opencode.sh --agent <agent> --lang es` and `rsync -a` (no `--delete`) the output into the test folder, so existing extra content in the destination (notably an `output/` folder with previous run artifacts) is preserved. Paths use `git rev-parse --show-toplevel` for the source and `~/genai-agents-tests/opencode/...` for the destination so the skills work regardless of where the repo is cloned.
 
@@ -164,7 +164,7 @@ Three shared skills cover the visual output of the monorepo. They share the guid
 - `canvas-craft` — single-page static artifacts (PDF/PNG). Posters, covers, certificates, marketing one-pagers, infographics. Ships a small set of OFL display fonts.
 - `pdf-writer` — multi-page typographic documents or prose-dominated single pages. Analytical reports, invoices, contracts, zines.
 
-Agents that produce visual output declare the family members they need in `<agent>/imported-skills` and add `visual-craftsmanship.md` to `<agent>/guides`. `data-analytics`, `governance-officer` and `data-quality` all declare the full family (pdf-writer, docx-writer, pptx-writer, web-craft, canvas-craft) so they can offer every output format through both the analytical pipeline and `quality-report`.
+Agents that produce visual output declare the family members they need in `<agent>/imported-skills` and add `visual-craftsmanship.md` to `<agent>/guides`. `data-analytics-officer`, `data-governance-officer` and `data-quality` all declare the full family (pdf-writer, docx-writer, pptx-writer, web-craft, canvas-craft) so they can offer every output format through both the analytical pipeline and `quality-report`.
 
 ### Brand-kit / centralized theming
 
@@ -303,8 +303,8 @@ The monorepo supports multiple languages. **English is the primary language** �
 genai-agents/
   skills/explore-data/SKILL.md          # English (primary)
   es/skills/explore-data/SKILL.md        # Spanish (overlay)
-  agents/data-analytics/AGENTS.md               # English
-  es/agents/data-analytics/AGENTS.md            # Spanish
+  agents/data-analytics-officer/AGENTS.md               # English
+  es/agents/data-analytics-officer/AGENTS.md            # Spanish
 ```
 
 Supported languages are listed in the `languages` file at the monorepo root.
@@ -319,7 +319,7 @@ Supported languages are listed in the `languages` file at the monorepo root.
 
 Each pack script accepts `--lang <code>` to package in a specific language. When `--lang es` is passed, the script internally resolves the Spanish content from `es/` and generates output in `dist/es/{format}/{name}/` (intermediate files available for inspection). `bin/package.sh` orchestrates this for all agents and languages, producing final versioned ZIPs in `dist/` with consistent type prefixes:
 
-- Agent: `agent-data-analytics-opencode-0.2.0.zip` / `agent-data-analytics-opencode-es-0.2.0.zip`
+- Agent: `agent-data-analytics-officer-opencode-0.2.0.zip` / `agent-data-analytics-officer-opencode-es-0.2.0.zip`
 - Skill: `skill-stratio-data-0.2.0.zip` / `skill-stratio-data-es-0.2.0.zip`
 - Bulk skills: `skills-0.2.0.zip` / `skills-es-0.2.0.zip`
 - Plugin: `plugin-stratio-governance-stratio-cowork-0.2.0.zip` / `plugin-stratio-governance-stratio-cowork-es-0.2.0.zip`
@@ -328,12 +328,12 @@ Individual pack script usage:
 
 ```bash
 # English (default)
-bash pack_opencode.sh --agent data-analytics
-# → data-analytics/dist/opencode/data-analytics/
+bash pack_opencode.sh --agent data-analytics-officer
+# → data-analytics-officer/dist/opencode/data-analytics-officer/
 
 # Spanish
-bash pack_opencode.sh --agent data-analytics --lang es
-# → data-analytics/dist/es/opencode/data-analytics/
+bash pack_opencode.sh --agent data-analytics-officer --lang es
+# → data-analytics-officer/dist/es/opencode/data-analytics-officer/
 ```
 
 ### Translation workflow

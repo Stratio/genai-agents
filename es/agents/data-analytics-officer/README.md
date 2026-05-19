@@ -1,4 +1,4 @@
-# data-analytics
+# data-analytics-officer
 
 Agente completo de Business Intelligence y Business Analytics para OpenCode y Stratio Cowork.
 
@@ -30,8 +30,8 @@ Scripts genéricos en la raíz del monorepo (desde `../`):
 
 | Script | Destino | Output | Ejemplo |
 |--------|---------|--------|---------|
-| `pack_opencode.sh` | OpenCode | `opencode/<nombre>/` | `bash ../pack_opencode.sh --agent data-analytics` |
-| `pack_stratio_cowork.sh` | Stratio Cowork (`agents/v1`) | `dist/<nombre>-stratio-cowork.zip` | `bash ../pack_stratio_cowork.sh --agent data-analytics` |
+| `pack_opencode.sh` | OpenCode | `opencode/<nombre>/` | `bash ../pack_opencode.sh --agent data-analytics-officer` |
+| `pack_stratio_cowork.sh` | Stratio Cowork (`agents/v1`) | `dist/<nombre>-stratio-cowork.zip` | `bash ../pack_stratio_cowork.sh --agent data-analytics-officer` |
 
 ## Compatibilidad
 

@@ -82,7 +82,7 @@ Para validación con datos de muestra de mappings (pre-publicación, usando el `
 
 Al renderizar resultados de queries al usuario en chat, seguir §3.5 "Mostrar resultados de queries al usuario" de esa guía (cap por defecto de 10 filas; respetar peticiones explícitas de `top N` hasta 50; línea de cierre solo cuando se aplica el cap).
 
-`profile_data` está denegado en runtime — este agente no realiza profiling estadístico; derivar al usuario al agente data-analytics si lo necesita.
+`profile_data` está denegado en runtime — este agente no realiza profiling estadístico; derivar al usuario al agente data-analytics-officer si lo necesita.
 
 ---
 

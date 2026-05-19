@@ -8,10 +8,10 @@ The repository is oriented towards **OpenCode**, the open-source tool on which S
 
 | Agent | Description | Platforms | Folder |
 |-------|-------------|-----------|--------|
-| **data-analytics** | Full BI/BA agent with advanced analysis, clustering, multi-format reports (PDF, DOCX, web, PowerPoint), read-only data quality coverage assessment and reporting, and reasoning documentation | OpenCode, Stratio Cowork | `agents/data-analytics/` |
+| **data-analytics-officer** | Full BI/BA agent with advanced analysis, clustering, multi-format reports (PDF, DOCX, web, PowerPoint), read-only data quality coverage assessment and reporting, and reasoning documentation | OpenCode, Stratio Cowork | `agents/data-analytics-officer/` |
 | **semantic-layer** | Agent specialized in building and maintaining semantic layers in Stratio Governance: creation of data collections (technical domains), technical terms, ontologies, business views, SQL mappings, view publishing, semantic terms and business terms | OpenCode, Stratio Cowork | `agents/semantic-layer/` |
 | **data-quality** | Data quality agent: coverage assessment, gap identification, quality rule creation with human-in-the-loop and coverage report generation | OpenCode, Stratio Cowork | `agents/data-quality/` |
-| **governance-officer** | Combined governance agent: full semantic layer building + data quality management in a single agent with unrestricted access to all governance tools | OpenCode, Stratio Cowork | `agents/governance-officer/` |
+| **data-governance-officer** | Combined governance agent: full semantic layer building + data quality management in a single agent with unrestricted access to all governance tools | OpenCode, Stratio Cowork | `agents/data-governance-officer/` |
 | **skill-creator** | Agent for designing and generating AI agent skills (SKILL.md). Interactive requirements → design → generation → review → ZIP packaging | OpenCode, Stratio Cowork | `agents/skill-creator/` |
 | **agent-creator** | Agent for designing and generating complete AI agents for Stratio Cowork. Interactive requirements → architecture design → AGENTS.md generation → skill creation → review → agents/v1 ZIP packaging | OpenCode, Stratio Cowork | `agents/agent-creator/` |
 
@@ -30,8 +30,8 @@ Each plugin is packaged for two targets: a **Stratio Cowork** wrapper bundle (de
 
 | Plugin | Description | Contents | Platforms |
 |--------|-------------|----------|-----------|
-| **stratio-governance** | Data governance: semantic layers and data quality coverage end-to-end. | governance-officer + data-quality + semantic-layer (agents) | Stratio Cowork |
-| **stratio-data** | Senior BI/BA analyst that turns business questions into actionable analyses on governed data. | data-analytics (agent) | Stratio Cowork |
+| **stratio-governance** | Data governance: semantic layers and data quality coverage end-to-end. | data-governance-officer + data-quality + semantic-layer (agents) | Stratio Cowork |
+| **stratio-data** | Senior BI/BA analyst that turns business questions into actionable analyses on governed data. | data-analytics-officer (agent) | Stratio Cowork |
 | **stratio-cowork-development** | Build AI agents and skills interactively from a guided workflow. | agent-creator + skill-creator (agents) | Stratio Cowork |
 | **stratio-productivity** | Productivity skills: office documents, visual outputs and brand identity. | pdf/docx/pptx/xlsx readers+writers, web-craft, canvas-craft, brand-kit (skills-only) | Stratio Cowork, Claude |
 | **stratio-data-toolkit** | Pluggable Stratio data skills (query patterns, exploration, knowledge contributions, quality assessment). | stratio-data, explore-data, propose-knowledge, assess-quality (skills-only) | Claude |
@@ -53,7 +53,7 @@ The validator (`bin/validate-plugins.py`) enforces these rules: a plugin with ag
 dist/
 ├── plugin-stratio-governance-stratio-cowork-{version}.zip            # wrapper of 3 agent sub-zips
 ├── plugin-stratio-governance-stratio-cowork-es-{version}.zip
-├── plugin-stratio-data-stratio-cowork-{version}.zip                  # wrapper of the data-analytics agent
+├── plugin-stratio-data-stratio-cowork-{version}.zip                  # wrapper of the data-analytics-officer agent
 ├── plugin-stratio-data-stratio-cowork-es-{version}.zip
 ├── plugin-stratio-cowork-development-stratio-cowork-{version}.zip    # wrapper of agent-creator + skill-creator
 ├── plugin-stratio-cowork-development-stratio-cowork-es-{version}.zip
@@ -87,11 +87,11 @@ Scripts at the monorepo root to package agents, skills and plugins:
 | `pack_plugin.sh` | Functional plugins (`stratio-cowork` wrapper or `claude` marketplace) | `dist/{plugin}-{platform}.zip` |
 
 ```bash
-# Package data-analytics for OpenCode (English, default)
-bash pack_opencode.sh --agent data-analytics
+# Package data-analytics-officer for OpenCode (English, default)
+bash pack_opencode.sh --agent data-analytics-officer
 
-# Package data-analytics for OpenCode in Spanish
-bash pack_opencode.sh --agent data-analytics --lang es
+# Package data-analytics-officer for OpenCode in Spanish
+bash pack_opencode.sh --agent data-analytics-officer --lang es
 
 # Package semantic-layer for Stratio Cowork
 bash pack_stratio_cowork.sh --agent semantic-layer
@@ -111,10 +111,10 @@ All artifacts are generated under `dist/`, both at agent level (intermediates) a
 ```
 genai-agents/
   dist/                                                # Final versioned ZIPs (EN + ES)
-    agent-data-analytics-opencode-{v}.zip              # Per-agent OpenCode bundles
-    agent-data-analytics-opencode-es-{v}.zip
-    agent-data-analytics-stratio-cowork-{v}.zip        # Per-agent Stratio Cowork bundles
-    agent-data-analytics-stratio-cowork-es-{v}.zip
+    agent-data-analytics-officer-opencode-{v}.zip              # Per-agent OpenCode bundles
+    agent-data-analytics-officer-opencode-es-{v}.zip
+    agent-data-analytics-officer-stratio-cowork-{v}.zip        # Per-agent Stratio Cowork bundles
+    agent-data-analytics-officer-stratio-cowork-es-{v}.zip
     ...                                                # Same pattern for all 6 agents
     skills-{v}.zip                                     # Bulk skills bundle
     skills-es-{v}.zip
@@ -126,11 +126,11 @@ genai-agents/
     ...                                                # Same pattern for each plugin × platform
 
   agents/
-    data-analytics/
+    data-analytics-officer/
       dist/                                     # Intermediate artifacts (EN)
-        opencode/data-analytics/
+        opencode/data-analytics-officer/
         es/                                     # Intermediate artifacts (ES)
-          opencode/data-analytics/
+          opencode/data-analytics-officer/
     ...                                         # Same pattern for the other 5 agents
 ```
 
@@ -163,12 +163,12 @@ Several skills and Python libraries require OS-level packages that `pip` cannot 
 
 | System package | Provides | Python libs that depend on it | Agents that need it |
 |---|---|---|---|
-| `poppler-utils` (Debian/Ubuntu) / `poppler` (Homebrew) | `pdfinfo`, `pdftotext`, `pdftoppm`, `pdfimages`, `pdfdetach`, `pdffonts` | `pdf2image`, `ocrmypdf`; diagnostic commands used directly by `pdf-reader` | `data-analytics`, `data-quality`, `governance-officer` |
-| `qpdf` | CLI merge/split/rotate, repair | — (used as CLI fallback by `pdf-writer` and `pdf-reader`) | `data-analytics`, `data-quality`, `governance-officer` |
-| `pdftk-java` (Debian/Ubuntu, provides `pdftk` via update-alternatives) / `pdftk-java` (Homebrew) | Form-field inspection, robust flattening | — (used directly by `pdf-writer/FORMS.md` and `pdf-reader` forms flow) | `data-analytics`, `data-quality`, `governance-officer` |
-| `tesseract-ocr` + language packs (`tesseract-ocr-eng`, `tesseract-ocr-spa`, `-fra`, `-deu`, …) | OCR engine | `pytesseract`, `ocrmypdf` | `data-analytics`, `data-quality`, `governance-officer` |
-| `ghostscript` | PDF/A conversion, repair, last-resort flattening | `ocrmypdf`; also used directly by `pdf-writer` | `data-analytics`, `data-quality`, `governance-officer` |
-| `libcairo2` + `libpango-1.0-0` + `libpangoft2-1.0-0` (Debian/Ubuntu) / `cairo` + `pango` (Homebrew) | Cairo graphics + Pango text layout | `weasyprint` | `data-analytics`, `data-quality`, `governance-officer` |
+| `poppler-utils` (Debian/Ubuntu) / `poppler` (Homebrew) | `pdfinfo`, `pdftotext`, `pdftoppm`, `pdfimages`, `pdfdetach`, `pdffonts` | `pdf2image`, `ocrmypdf`; diagnostic commands used directly by `pdf-reader` | `data-analytics-officer`, `data-quality`, `data-governance-officer` |
+| `qpdf` | CLI merge/split/rotate, repair | — (used as CLI fallback by `pdf-writer` and `pdf-reader`) | `data-analytics-officer`, `data-quality`, `data-governance-officer` |
+| `pdftk-java` (Debian/Ubuntu, provides `pdftk` via update-alternatives) / `pdftk-java` (Homebrew) | Form-field inspection, robust flattening | — (used directly by `pdf-writer/FORMS.md` and `pdf-reader` forms flow) | `data-analytics-officer`, `data-quality`, `data-governance-officer` |
+| `tesseract-ocr` + language packs (`tesseract-ocr-eng`, `tesseract-ocr-spa`, `-fra`, `-deu`, …) | OCR engine | `pytesseract`, `ocrmypdf` | `data-analytics-officer`, `data-quality`, `data-governance-officer` |
+| `ghostscript` | PDF/A conversion, repair, last-resort flattening | `ocrmypdf`; also used directly by `pdf-writer` | `data-analytics-officer`, `data-quality`, `data-governance-officer` |
+| `libcairo2` + `libpango-1.0-0` + `libpangoft2-1.0-0` (Debian/Ubuntu) / `cairo` + `pango` (Homebrew) | Cairo graphics + Pango text layout | `weasyprint` | `data-analytics-officer`, `data-quality`, `data-governance-officer` |
 
 Install everything on Debian/Ubuntu (24.04):
 
@@ -209,35 +209,35 @@ Notes:
 
 | Skill | Description | Agents that use it |
 |-------|-------------|-------------------|
-| `propose-knowledge` | Propose business terms and preferences to Stratio Governance after an analysis | data-analytics |
-| `explore-data` | Quick exploration of domains, tables, columns and governed terminology | data-analytics |
+| `propose-knowledge` | Propose business terms and preferences to Stratio Governance after an analysis | data-analytics-officer |
+| `explore-data` | Quick exploration of domains, tables, columns and governed terminology | data-analytics-officer |
 | `stratio-data` | Stratio data MCPs reference: rules, usage patterns and best practices | (standalone) |
-| `stratio-semantic-layer` | Stratio semantic layer MCPs reference: rules, usage patterns and best practices for governance tools | semantic-layer, governance-officer |
-| `create-technical-terms` | Create or regenerate technical terms (table and column descriptions) for a domain | semantic-layer, governance-officer |
-| `create-ontology` | Create or extend ontologies with interactive planning | semantic-layer, governance-officer |
-| `create-business-views` | Create, regenerate or publish business views and SQL mappings from an ontology | semantic-layer, governance-officer |
-| `create-sql-mappings` | Create or update SQL mappings for existing views | semantic-layer, governance-officer |
-| `create-semantic-terms` | Generate or regenerate semantic business terms for views | semantic-layer, governance-officer |
-| `manage-business-terms` | Create Business Terms in the dictionary with relationships to data assets | semantic-layer, governance-officer |
-| `create-data-collection` | Search for tables and paths in the technical data dictionary and create a new collection (technical domain) | semantic-layer, governance-officer |
-| `build-semantic-layer` | Full semantic layer pipeline: orchestrates technical terms, ontology, views, mappings and semantic terms creation | semantic-layer, governance-officer |
-| `assess-quality` | Assess quality coverage by domain, table or column: dimensions covered, gaps and priorities | data-analytics, data-quality, governance-officer |
-| `create-quality-rules` | Design and create quality rules to cover gaps, with mandatory human approval | data-quality, governance-officer |
-| `create-quality-schedule` | Create automatic execution schedules for quality rule folders | data-quality, governance-officer |
-| `quality-report` | Generate a formal quality coverage report in PDF, DOCX or Markdown | data-analytics, data-quality, governance-officer |
-| `pdf-reader` | Inspect, extract text, tables, images, form values and attachments from PDF files with diagnose-first strategy | data-analytics, data-quality, governance-officer |
-| `pdf-writer` | Create designed PDFs, transform existing ones (merge, split, rotate, watermark, encrypt) and fill forms. Design-first workflow with custom typography | data-analytics, data-quality, governance-officer |
-| `xlsx-reader` | Extract cell values, tables, formulas, images and metadata from `.xlsx`/`.xlsm` files (or legacy `.xls`/`.xlsb` via LibreOffice). Diagnose-first strategy | data-analytics, data-quality, governance-officer |
-| `xlsx-writer` | Create designed Excel workbooks (analytical cover/KPI + detail sheets, coverage matrices, pivot tables, tabular exports, catalogs, quantitative models). Merge/split, find-replace, legacy `.xls` conversion, formula refresh via LibreOffice | data-analytics, data-quality, governance-officer |
-| `brand-kit` | Centralized catalog of visual identity themes (colors, typography, chart palettes, sizes, tone). Ships 10 curated themes and is extensible — clients add their own | data-analytics, data-quality, governance-officer |
+| `stratio-semantic-layer` | Stratio semantic layer MCPs reference: rules, usage patterns and best practices for governance tools | semantic-layer, data-governance-officer |
+| `create-technical-terms` | Create or regenerate technical terms (table and column descriptions) for a domain | semantic-layer, data-governance-officer |
+| `create-ontology` | Create or extend ontologies with interactive planning | semantic-layer, data-governance-officer |
+| `create-business-views` | Create, regenerate or publish business views and SQL mappings from an ontology | semantic-layer, data-governance-officer |
+| `create-sql-mappings` | Create or update SQL mappings for existing views | semantic-layer, data-governance-officer |
+| `create-semantic-terms` | Generate or regenerate semantic business terms for views | semantic-layer, data-governance-officer |
+| `manage-business-terms` | Create Business Terms in the dictionary with relationships to data assets | semantic-layer, data-governance-officer |
+| `create-data-collection` | Search for tables and paths in the technical data dictionary and create a new collection (technical domain) | semantic-layer, data-governance-officer |
+| `build-semantic-layer` | Full semantic layer pipeline: orchestrates technical terms, ontology, views, mappings and semantic terms creation | semantic-layer, data-governance-officer |
+| `assess-quality` | Assess quality coverage by domain, table or column: dimensions covered, gaps and priorities | data-analytics-officer, data-quality, data-governance-officer |
+| `create-quality-rules` | Design and create quality rules to cover gaps, with mandatory human approval | data-quality, data-governance-officer |
+| `create-quality-schedule` | Create automatic execution schedules for quality rule folders | data-quality, data-governance-officer |
+| `quality-report` | Generate a formal quality coverage report in PDF, DOCX or Markdown | data-analytics-officer, data-quality, data-governance-officer |
+| `pdf-reader` | Inspect, extract text, tables, images, form values and attachments from PDF files with diagnose-first strategy | data-analytics-officer, data-quality, data-governance-officer |
+| `pdf-writer` | Create designed PDFs, transform existing ones (merge, split, rotate, watermark, encrypt) and fill forms. Design-first workflow with custom typography | data-analytics-officer, data-quality, data-governance-officer |
+| `xlsx-reader` | Extract cell values, tables, formulas, images and metadata from `.xlsx`/`.xlsm` files (or legacy `.xls`/`.xlsb` via LibreOffice). Diagnose-first strategy | data-analytics-officer, data-quality, data-governance-officer |
+| `xlsx-writer` | Create designed Excel workbooks (analytical cover/KPI + detail sheets, coverage matrices, pivot tables, tabular exports, catalogs, quantitative models). Merge/split, find-replace, legacy `.xls` conversion, formula refresh via LibreOffice | data-analytics-officer, data-quality, data-governance-officer |
+| `brand-kit` | Centralized catalog of visual identity themes (colors, typography, chart palettes, sizes, tone). Ships 10 curated themes and is extensible — clients add their own | data-analytics-officer, data-quality, data-governance-officer |
 
 Shared guides (technical documentation that skills reference) live in `guides/`:
 
 | Guide | Used by |
 |-------|---------|
-| `stratio-data-tools.md` | `explore-data`, `assess-quality`, `AGENTS.md` (data-analytics, data-quality, governance-officer) |
-| `stratio-semantic-layer-tools.md` | `stratio-semantic-layer`, `build-semantic-layer`, `AGENTS.md` (semantic-layer, governance-officer) |
-| `quality-exploration.md` | `assess-quality`, `create-quality-rules` (data-analytics, data-quality, governance-officer) |
+| `stratio-data-tools.md` | `explore-data`, `assess-quality`, `AGENTS.md` (data-analytics-officer, data-quality, data-governance-officer) |
+| `stratio-semantic-layer-tools.md` | `stratio-semantic-layer`, `build-semantic-layer`, `AGENTS.md` (semantic-layer, data-governance-officer) |
+| `quality-exploration.md` | `assess-quality`, `create-quality-rules` (data-analytics-officer, data-quality, data-governance-officer) |
 
 ### Using a shared skill in an agent
 
@@ -308,8 +308,8 @@ The monorepo supports multiple languages. **English is the primary language** �
 genai-agents/
   skills/explore-data/SKILL.md       # English (primary)
   es/skills/explore-data/SKILL.md     # Spanish (overlay)
-  agents/data-analytics/AGENTS.md            # English
-  es/agents/data-analytics/AGENTS.md         # Spanish
+  agents/data-analytics-officer/AGENTS.md            # English
+  es/agents/data-analytics-officer/AGENTS.md         # Spanish
 ```
 
 Supported languages are listed in the `languages` file at the root.
@@ -320,7 +320,7 @@ All content files that the agent presents to the user or uses as instructions:
 
 | File type | English (main tree) | Spanish (es/ overlay) | Translated? |
 |-----------|--------------------|-----------------------|-------------|
-| Agent instructions | `agents/data-analytics/AGENTS.md` | `es/agents/data-analytics/AGENTS.md` | Yes |
+| Agent instructions | `agents/data-analytics-officer/AGENTS.md` | `es/agents/data-analytics-officer/AGENTS.md` | Yes |
 | Skills | `skills/analyze/SKILL.md` | `es/.../skills/analyze/SKILL.md` | Yes |
 | Skill sub-guides | `analytical-patterns.md` | `es/.../analytical-patterns.md` | Yes |
 | Shared skill guides | `guides/*.md` | `es/guides/*.md` | Yes |
@@ -341,20 +341,20 @@ All pack scripts accept `--lang <code>` to generate output in a specific languag
 
 ```bash
 # English (default)
-bash pack_opencode.sh --agent data-analytics
-# → data-analytics/dist/opencode/data-analytics/
+bash pack_opencode.sh --agent data-analytics-officer
+# → data-analytics-officer/dist/opencode/data-analytics-officer/
 
 # Spanish
-bash pack_opencode.sh --agent data-analytics --lang es
-# → data-analytics/dist/es/opencode/data-analytics/
+bash pack_opencode.sh --agent data-analytics-officer --lang es
+# → data-analytics-officer/dist/es/opencode/data-analytics-officer/
 ```
 
 `bin/package.sh` orchestrates all agents and languages, passing `--lang` to each pack script. Final versioned ZIPs go to `dist/`:
 
 | Type | Pattern | Example |
 |----------|---------|---------|
-| Agent (English) | `agent-{name}-{format}-{version}.zip` | `agent-data-analytics-opencode-0.2.0.zip` |
-| Agent (Spanish) | `agent-{name}-{format}-es-{version}.zip` | `agent-data-analytics-opencode-es-0.2.0.zip` |
+| Agent (English) | `agent-{name}-{format}-{version}.zip` | `agent-data-analytics-officer-opencode-0.2.0.zip` |
+| Agent (Spanish) | `agent-{name}-{format}-es-{version}.zip` | `agent-data-analytics-officer-opencode-es-0.2.0.zip` |
 | Skill | `skill-{name}-[es-]{version}.zip` | `skill-stratio-data-0.2.0.zip` |
 | Bulk skills | `skills-[es-]{version}.zip` | `skills-0.2.0.zip` |
 | Plugin | `plugin-{name}-{platform}-[es-]{version}.zip` | `plugin-stratio-governance-stratio-cowork-0.2.0.zip` |
