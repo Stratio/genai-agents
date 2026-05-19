@@ -59,7 +59,7 @@ fi
 # Validate kebab-case format
 KEBAB_RE='^[a-z][a-z0-9]*(-[a-z0-9]+)*$'
 if [[ ! "$AGENT_NAME" =~ $KEBAB_RE ]]; then
-  echo "ERROR: name '$AGENT_NAME' is not valid kebab-case (e.g.: my-agent, data-analytics)" >&2
+  echo "ERROR: name '$AGENT_NAME' is not valid kebab-case (e.g.: my-agent, data-analytics-officer)" >&2
   exit 1
 fi
 

@@ -1,6 +1,6 @@
 # analyze
 
-Local skill of the `data-analytics` agent. Drives the full analytical workflow: intake, clarifying questions, plan, querying governed data via MCP, Python analysis, visualizations, optional testing, iteration, reasoning and validation documentation, and orchestration of deliverable generation via the writer skills declared in `AGENTS.md §8`.
+Local skill of the `data-analytics-officer` agent. Drives the full analytical workflow: intake, clarifying questions, plan, querying governed data via MCP, Python analysis, visualizations, optional testing, iteration, reasoning and validation documentation, and orchestration of deliverable generation via the writer skills declared in `AGENTS.md §8`.
 
 This is the single analytical engine of the agent; every other local skill (`update-memory`) is orchestrated from here. Deliverable generation is delegated to `pdf-writer`, `docx-writer`, `pptx-writer`, `web-craft`, `canvas-craft` + `brand-kit`.
 

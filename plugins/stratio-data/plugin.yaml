@@ -5,6 +5,6 @@ tags:
   - reporting
 contents:
   agents:
-    - data-analytics
+    - data-analytics-officer
 platforms:
   - stratio-cowork

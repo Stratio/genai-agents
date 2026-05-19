@@ -60,6 +60,6 @@ All scripts are non-interactive (CI/CD-friendly). If `--name` is not provided, t
 | Business Terms | `/manage-business-terms` | Create Business Terms with relationships to data assets |
 | Data collection | `/create-data-collection` | Search tables in the dictionary and create a new data collection |
 
-All skills live in `skills/` at the monorepo root and are shared with the governance-officer agent.
+All skills live in `skills/` at the monorepo root and are shared with the data-governance-officer agent.
 
 **Note**: This agent does not use persistent memory in files nor generates files on disk — the main output is interaction with MCP tools + summaries in chat.
