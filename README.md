@@ -6,14 +6,7 @@ The repository is oriented towards **OpenCode**, the open-source tool on which S
 
 ## Agents
 
-| Agent | Description | Platforms | Folder |
-|-------|-------------|-----------|--------|
-| **data-analytics-officer** | Full BI/BA agent with advanced analysis, clustering, multi-format reports (PDF, DOCX, web, PowerPoint), read-only data quality coverage assessment and reporting, and reasoning documentation | OpenCode, Stratio Cowork | `agents/data-analytics-officer/` |
-| **semantic-layer** | Agent specialized in building and maintaining semantic layers in Stratio Governance: creation of data collections (technical domains), technical terms, ontologies, business views, SQL mappings, view publishing, semantic terms and business terms | OpenCode, Stratio Cowork | `agents/semantic-layer/` |
-| **data-quality** | Data quality agent: coverage assessment, gap identification, quality rule creation with human-in-the-loop and coverage report generation | OpenCode, Stratio Cowork | `agents/data-quality/` |
-| **data-governance-officer** | Combined governance agent: full semantic layer building + data quality management in a single agent with unrestricted access to all governance tools | OpenCode, Stratio Cowork | `agents/data-governance-officer/` |
-| **skill-creator** | Agent for designing and generating AI agent skills (SKILL.md). Interactive requirements → design → generation → review → ZIP packaging | OpenCode, Stratio Cowork | `agents/skill-creator/` |
-| **agent-creator** | Agent for designing and generating complete AI agents for Stratio Cowork. Interactive requirements → architecture design → AGENTS.md generation → skill creation → review → agents/v1 ZIP packaging | OpenCode, Stratio Cowork | `agents/agent-creator/` |
+The monorepo currently ships six agents (BI/BA analytics, semantic-layer construction, data quality, combined governance, plus authoring agents for skills and full agents). The full catalogue with a one-line description per agent, the per-agent folder structure and the workflow to add a new agent lives in [`agents/README.md`](agents/).
 
 ## Functional plugins
 
@@ -26,54 +19,7 @@ Plugins live in `plugins/<name>/` with two files:
 
 Each plugin is packaged for two targets: a **Stratio Cowork** wrapper bundle (deployable via `genai-api`) and a **Claude marketplace plugin** (`.claude-plugin/plugin.json`).
 
-### Available plugins
-
-| Plugin | Description | Contents | Platforms |
-|--------|-------------|----------|-----------|
-| **stratio-governance** | Data governance: semantic layers and data quality coverage end-to-end. | data-governance-officer + data-quality + semantic-layer (agents) | Stratio Cowork |
-| **stratio-data** | Senior BI/BA analyst that turns business questions into actionable analyses on governed data. | data-analytics-officer (agent) | Stratio Cowork |
-| **stratio-cowork-development** | Build AI agents and skills interactively from a guided workflow. | agent-creator + skill-creator (agents) | Stratio Cowork |
-| **stratio-productivity** | Productivity skills: office documents, visual outputs and brand identity. | pdf/docx/pptx/xlsx readers+writers, web-craft, canvas-craft, brand-kit (skills-only) | Stratio Cowork, Claude |
-| **stratio-data-toolkit** | Pluggable Stratio data skills (query patterns, exploration, knowledge contributions, quality assessment). | stratio-data, explore-data, propose-knowledge, assess-quality (skills-only) | Claude |
-
-### Platform rules
-
-| Plugin contents | Stratio Cowork | Claude |
-|---|---|---|
-| Has agents | yes (`agents/v1` wrapper bundle) | **no** — Claude does not support agents in plugins |
-| Skills-only | yes (skills bundle compatible with `/v1/agents/skills/bundle/import`) | yes (`.claude-plugin/plugin.json`) |
-
-The validator (`bin/validate-plugins.py`) enforces these rules: a plugin with agents that explicitly declares `claude` in `platforms:` aborts the build with a clear error.
-
-### Output artifacts
-
-`make package` produces, in addition to the per-agent and per-skill ZIPs:
-
-```
-dist/
-├── plugin-stratio-governance-stratio-cowork-{version}.zip            # wrapper of 3 agent sub-zips
-├── plugin-stratio-governance-stratio-cowork-es-{version}.zip
-├── plugin-stratio-data-stratio-cowork-{version}.zip                  # wrapper of the data-analytics-officer agent
-├── plugin-stratio-data-stratio-cowork-es-{version}.zip
-├── plugin-stratio-cowork-development-stratio-cowork-{version}.zip    # wrapper of agent-creator + skill-creator
-├── plugin-stratio-cowork-development-stratio-cowork-es-{version}.zip
-├── plugin-stratio-productivity-stratio-cowork-{version}.zip          # wrapper with one skills sub-zip
-├── plugin-stratio-productivity-stratio-cowork-es-{version}.zip
-├── plugin-stratio-productivity-claude-{version}.zip                  # .claude-plugin marketplace zip
-├── plugin-stratio-productivity-claude-es-{version}.zip
-├── plugin-stratio-data-toolkit-claude-{version}.zip                  # Claude-only data skills bundle
-└── plugin-stratio-data-toolkit-claude-es-{version}.zip
-```
-
-### Installing a plugin
-
-For the Stratio Cowork variant, use the `upload-plugin` task of the [`cowork-api`](skills/cowork-api/) shared skill. The task opens the wrapper, reads the aggregated `plugin.yaml`, and dispatches each sub-ZIP to the correct `genai-api` endpoint (`/v1/agents/bundle/import` for agents, `/v1/agents/skills/bundle/import` for skills). It returns an aggregated report of imported, conflicted and failed artifacts.
-
-For the Claude variant, follow the standard Claude Code plugin install flow (`/plugin install` from a marketplace).
-
-### Adding a new plugin
-
-See [CLAUDE.md](CLAUDE.md) section "Plugins funcionales" for the dev-facing how-to (manifest schema, validation rules, how the build picks it up).
+The catalogue of available plugins, platform rules, output structure, install workflow and the workflow to add a new one live in [`plugins/README.md`](plugins/).
 
 ## Packaging
 
@@ -203,102 +149,9 @@ Notes:
 
 ## Shared skills
 
-`skills/` groups reusable skills across multiple agents in the monorepo. The pack scripts automatically include them in the output of each agent that declares them, without the need to duplicate code.
+`skills/` groups skills imported by more than one agent. The pack scripts inline a shared skill into each agent's bundle at packaging time, so there is no need to duplicate copies in every agent folder.
 
-### Available skills
-
-| Skill | Description | Agents that use it |
-|-------|-------------|-------------------|
-| `propose-knowledge` | Propose business terms and preferences to Stratio Governance after an analysis | data-analytics-officer |
-| `explore-data` | Quick exploration of domains, tables, columns and governed terminology | data-analytics-officer |
-| `stratio-data` | Stratio data MCPs reference: rules, usage patterns and best practices | (standalone) |
-| `stratio-semantic-layer` | Stratio semantic layer MCPs reference: rules, usage patterns and best practices for governance tools | semantic-layer, data-governance-officer |
-| `create-technical-terms` | Create or regenerate technical terms (table and column descriptions) for a domain | semantic-layer, data-governance-officer |
-| `create-ontology` | Create or extend ontologies with interactive planning | semantic-layer, data-governance-officer |
-| `create-business-views` | Create, regenerate or publish business views and SQL mappings from an ontology | semantic-layer, data-governance-officer |
-| `create-sql-mappings` | Create or update SQL mappings for existing views | semantic-layer, data-governance-officer |
-| `create-semantic-terms` | Generate or regenerate semantic business terms for views | semantic-layer, data-governance-officer |
-| `manage-business-terms` | Create Business Terms in the dictionary with relationships to data assets | semantic-layer, data-governance-officer |
-| `create-data-collection` | Search for tables and paths in the technical data dictionary and create a new collection (technical domain) | semantic-layer, data-governance-officer |
-| `build-semantic-layer` | Full semantic layer pipeline: orchestrates technical terms, ontology, views, mappings and semantic terms creation | semantic-layer, data-governance-officer |
-| `assess-quality` | Assess quality coverage by domain, table or column: dimensions covered, gaps and priorities | data-analytics-officer, data-quality, data-governance-officer |
-| `create-quality-rules` | Design and create quality rules to cover gaps, with mandatory human approval | data-quality, data-governance-officer |
-| `create-quality-schedule` | Create automatic execution schedules for quality rule folders | data-quality, data-governance-officer |
-| `quality-report` | Generate a formal quality coverage report in PDF, DOCX or Markdown | data-analytics-officer, data-quality, data-governance-officer |
-| `pdf-reader` | Inspect, extract text, tables, images, form values and attachments from PDF files with diagnose-first strategy | data-analytics-officer, data-quality, data-governance-officer |
-| `pdf-writer` | Create designed PDFs, transform existing ones (merge, split, rotate, watermark, encrypt) and fill forms. Design-first workflow with custom typography | data-analytics-officer, data-quality, data-governance-officer |
-| `xlsx-reader` | Extract cell values, tables, formulas, images and metadata from `.xlsx`/`.xlsm` files (or legacy `.xls`/`.xlsb` via LibreOffice). Diagnose-first strategy | data-analytics-officer, data-quality, data-governance-officer |
-| `xlsx-writer` | Create designed Excel workbooks (analytical cover/KPI + detail sheets, coverage matrices, pivot tables, tabular exports, catalogs, quantitative models). Merge/split, find-replace, legacy `.xls` conversion, formula refresh via LibreOffice | data-analytics-officer, data-quality, data-governance-officer |
-| `brand-kit` | Centralized catalog of visual identity themes (colors, typography, chart palettes, sizes, tone). Ships 10 curated themes and is extensible — clients add their own | data-analytics-officer, data-quality, data-governance-officer |
-
-Shared guides (technical documentation that skills reference) live in `guides/`:
-
-| Guide | Used by |
-|-------|---------|
-| `stratio-data-tools.md` | `explore-data`, `assess-quality`, `AGENTS.md` (data-analytics-officer, data-quality, data-governance-officer) |
-| `stratio-semantic-layer-tools.md` | `stratio-semantic-layer`, `build-semantic-layer`, `AGENTS.md` (semantic-layer, data-governance-officer) |
-| `quality-exploration.md` | `assess-quality`, `create-quality-rules` (data-analytics-officer, data-quality, data-governance-officer) |
-
-### Using a shared skill in an agent
-
-1. Create (if it doesn't exist) the `imported-skills` file in the agent folder with the skill name, one per line:
-
-   ```
-   propose-knowledge
-   explore-data
-   ```
-
-2. If the agent's `AGENTS.md` directly references any guide from `guides/`, also declare it in `guides`:
-
-   ```
-   stratio-data-tools.md
-   ```
-
-3. Package as normal — the generic pack scripts (`pack_opencode.sh`, `pack_stratio_cowork.sh`) copy each guide declared in `guides` **inside** the skill folder in the output and rewrite the references in `SKILL.md` to make them local (self-contained skill). Guides declared in the agent's `guides` are also copied to `guides/` so that `AGENTS.md` can reference them:
-
-   ```bash
-   bash pack_opencode.sh --agent my-agent
-   ```
-
-   Resulting output (example with `explore-data` which declares `stratio-data-tools.md`):
-   ```
-   .claude/
-     skills/
-       explore-data/
-         SKILL.md                  # references "stratio-data-tools.md" (local)
-         stratio-data-tools.md     # guide inside the skill
-     guides/
-       stratio-data-tools.md       # for AGENTS.md (possible duplicate, ok)
-   ```
-
-If the agent has a skill in `skills/` with the same name, the local version takes priority over the shared one.
-
-### Creating a new shared skill
-
-1. Create the folder and `SKILL.md` (in English) in `skills/`, and the Spanish translation in `es/`:
-
-   ```
-   skills/
-   └── my-skill/
-       ├── SKILL.md       # Skill definition in English (self-contained or nearly so)
-       └── guides         # (Optional) List of root-level guides it needs
-   es/skills/
-   └── my-skill/
-       └── SKILL.md       # Spanish translation
-   ```
-
-2. If the skill needs external guides, add the files in `guides/` (with their counterparts in `es/guides/`) and list them in `guides`:
-
-   ```
-   # skills/my-skill/guides
-   my-guide.md
-   ```
-
-3. Declare the skill in the agents that should include it (`imported-skills` file in each agent).
-
-A shared skill should be as self-contained as possible: no dependencies on Python tools, styles or templates specific to an agent. If a skill depends heavily on artifacts from a specific agent, keep it as a local skill in that agent.
-
-**SKILL.md content:** Do not reference `AGENTS.md` or `CLAUDE.md` directly — the pack scripts substitute these names depending on the platform, but a direct reference may not work correctly on some targets. Use generic phrasing such as "following the user question convention" or "according to the agent's instructions". Guide references must use the path `guides/<file>` in the source — the generic pack scripts copy the guide inside the skill and rewrite the reference to make it local (self-contained).
+The full catalogue (skills grouped by family — Stratio MCPs, semantic-layer pipeline, data quality, office document I/O, visual craftsmanship, platform/meta), the rules for adding a new shared skill and the import workflow for agents live in [`skills/README.md`](skills/). The shared technical guides referenced by both skills and agents live in [`guides/`](guides/) — see [`guides/README.md`](guides/) for the catalogue and the path conventions used by the pack scripts.
 
 ## Internationalization (i18n)
 
@@ -325,15 +178,19 @@ All content files that the agent presents to the user or uses as instructions:
 | Skill sub-guides | `analytical-patterns.md` | `es/.../analytical-patterns.md` | Yes |
 | Shared skill guides | `guides/*.md` | `es/guides/*.md` | Yes |
 | User READMEs | `USER_README.md` | `es/.../USER_README.md` | Yes |
-| Developer READMEs | `README.md` (agents) | `es/.../README.md` | Yes |
+| Per-artifact developer READMEs | `agents/<name>/README.md`, `plugins/<name>/README.md`, `skills/<name>/README.md` | `es/.../README.md` | Yes |
+| Top-level folder READMEs | `agents/README.md`, `guides/README.md`, `plugins/README.md`, `skills/README.md` | — | **No** — they are repo-only metadocumentation, never bundled |
+| Repository root README | `README.md` | — | **No** — same reason as above |
 | Cowork metadata | `cowork-metadata.yaml` | `es/.../cowork-metadata.yaml` | Yes |
 | Memory templates | `templates/memory/*.md` | `es/.../templates/memory/*.md` | Yes |
 | Python code, HTML, CSS | `tools/*.py`, `templates/` | — | No |
 | Config files | `.mcp.json`, `opencode.json` | — | No |
-| Manifests | `imported-skills`, `guides` | — | No |
+| Manifests | `imported-skills`, `guides`, `plugin.yaml` | — | No |
 | Shell scripts | `pack_*.sh`, `bin/*.sh` | — | No |
 
 Skill and folder names are **technical identifiers** and stay in English regardless of language.
+
+The distinction between *per-artifact* and *top-level folder* READMEs matters: per-artifact READMEs (one per agent / plugin / shared skill) end up inside the packaged ZIPs that ship to users, so they need a Spanish overlay. Top-level folder READMEs are catalogue / how-to pages whose only consumer is someone browsing the repository on GitHub — they never enter any bundle, so they are kept English-only to avoid pointless translation churn.
 
 ### Packaging by language
 
