@@ -1,7 +1,6 @@
 ---
 name: skill-creator
 description: "Comprehensive guide for creating high-quality AI agent skills (SKILL.md files). Use when designing, drafting, reviewing, or improving skills. Covers anatomy, frontmatter, progressive disclosure, writing patterns, description optimization, supporting files, and quality checklist."
-argument-hint: "[skill topic or name (optional)]"
 ---
 
 # Skill: Skill Creator
@@ -85,9 +84,8 @@ Every SKILL.md starts with YAML frontmatter between `---` markers. The frontmatt
 |-------|----------|-------------|
 | `name` | Yes | Unique identifier. Becomes the `/slash-command`. Must equal the parent directory name |
 | `description` | Yes (strongly recommended) | What the skill does and when to use it. This is the **primary triggering mechanism** |
-| `argument-hint` | No | Placeholder shown in autocomplete: `[domain] [table (optional)]` |
 
-**Formatting rule**: Always wrap `description` and `argument-hint` values in double quotes on a single line. This prevents YAML parsing issues with special characters (colons, brackets) and ensures portable frontmatter across platforms.
+**Formatting rule**: Always wrap the `description` value in double quotes on a single line. This prevents YAML parsing issues with special characters (colons, brackets) and ensures portable frontmatter across platforms.
 
 ### 2.1.1 Hard limits and validation rules
 
@@ -133,7 +131,7 @@ The bad description is too vague — it will rarely trigger. The good descriptio
 - Always include a "Use when..." clause
 - If the skill should NOT trigger in some cases, mention that: "Do NOT use for X"
 
-For the complete field reference with all optional fields, examples, and invocation control, see `frontmatter-reference.md`.
+For the complete field reference with optional fields and description-optimization exercises, see `frontmatter-reference.md`.
 
 ## 3. Writing the Skill Body
 
@@ -277,5 +275,5 @@ Run this checklist before finalizing any skill:
 12. ✅ `name` ≤ 64 chars, matches `^[a-z0-9]+(-[a-z0-9]+)*$`, equals the parent directory name, no reserved words (`anthropic`/`claude`), no XML tags
 13. ✅ All necessary knowledge is embedded — skill does not depend on unverifiable external knowledge
 14. ✅ Description is proactive enough to activate when relevant
-15. ✅ `description` and `argument-hint` values are double-quoted on a single line
+15. ✅ `description` value is double-quoted on a single line
 16. ✅ `description` ≤ 1024 chars (hard limit enforced by Anthropic / OpenCode / Copilot — pack scripts will abort if exceeded)

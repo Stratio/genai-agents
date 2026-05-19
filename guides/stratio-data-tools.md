@@ -39,7 +39,7 @@
 - **`output_format` is a string**: Valid values are `"dict"`, `"csv"`, or `"markdown"`. It is optional (default: `"dict"`). NEVER pass a boolean (`true`/`false`). If you don't need a specific format, omit the parameter
 - If a query fails or returns unexpected results: reformulate the question in natural language, do not try to write SQL
 - **Profiling (`profile_data`)**: Requires SQL as a parameter — ALWAYS generate it with `generate_sql`, never write it manually. NEVER add LIMIT to the SQL; use the tool's `limit` parameter instead
-- **Parallel execution**: When the plan defines multiple independent data questions (none needs the result of another to be formulated), launch ALL `query_data` calls in a single response so they execute in parallel. This also applies to metadata calls (`get_table_columns_details`, `profile_data`, etc.). Only serialize when one query depends on the result of another (e.g., you need a value from query A to formulate query B)
+- **Parallel execution**: When the plan defines multiple independent data questions (none needs the result of another to be formulated), launch ALL `query_data` calls in a single response so they execute in parallel. This also applies to metadata calls (`get_table_columns_details`, `profile_data`, etc.). Only serialize when one query depends on the result of another (e.g., you need a value from query A to formulate query B). **"In parallel" here means emitting multiple tool calls in the SAME response so the runtime executes them concurrently — NOT spawning subtasks, sub-sessions, or invoking the Task tool. Never delegate MCP calls to a subagent.**
 
 ## 4. Showing query results to the user
 
@@ -83,7 +83,7 @@ When a collection is exposed in both layers (semantic + technical), `domain_type
 ### 5.2 Explore Tables
 
 1. `list_domain_tables(domain_name)` to list all tables in the domain
-2. **If the output is truncated** (see §9 and `stratio-mcp-response-patterns.md` §2): delegate file inspection to a subagent (or fall back to `Grep` + `Read`-with-limit). Extract the table names and descriptions — or a topical subset matching the user's question — without ingesting the whole file
+2. **If the output is truncated** (see §9 and `stratio-mcp-response-patterns.md` §2): delegate file inspection to the runtime's subagent (e.g. OpenCode's `explore` via Task). In the prompt include both the literal saved-file path from the truncation notice **and the extraction goal** (inventory of table names, topical subset, etc.); do NOT ask the subagent to find the file with `Glob`. If the subagent returns an error, fall back to `Grep` + `Read`-with-limit in this conversation (≤ 200 lines per call). Extract the table names and descriptions — or a topical subset matching the user's question — without ingesting the whole file
 3. Present the tables and their descriptions in a markdown table. If the inventory is still too large to render meaningfully (truncation case, or a flat list far beyond chat-presentation size): show only the subset relevant to the user's question, state the total count, and tell the user the criterion you used to filter — e.g. *"Domain has 312 tables; showing the 9 matching `<topic>`. Ask if you want a different slice."*
 
 ### 5.3 Table Details

@@ -65,7 +65,7 @@ Do NOT ask all questions at once. Group them in 2-3 rounds, starting with questi
 
 Load the `/skill-creator` skill as the authoritative reference for skill design principles. Design:
 
-1. **Frontmatter fields**: `name`, `description`, `argument-hint`, and any relevant optional fields (see `frontmatter-reference.md` in the skill-creator skill for the complete field catalog)
+1. **Frontmatter fields**: `name`, `description` (see `frontmatter-reference.md` in the skill-creator skill for the complete field catalog and the note on which other fields OpenCode ignores)
 2. **Section outline**: numbered sections of the SKILL.md body with a one-line description of each
 3. **Supporting files list**: which additional files are needed (guides, scripts, references) and what each contains
 4. **Directory structure**: the complete file tree of the skill package
@@ -81,8 +81,6 @@ Type: Reference Content / Task Content
 Frontmatter:
   name: <value>
   description: <value>
-  argument-hint: <value>
-  [other fields if relevant]
 
 Sections:
   1. <Section name> — <what it covers>
