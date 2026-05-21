@@ -21,11 +21,12 @@ Creates, extends or deletes classes of an ontology in Stratio Governance through
 | `search_ontologies(search_text)` | gov | Search ontologies by free text. Results by relevance |
 | `list_ontologies()` | gov | List all existing ontologies |
 | `get_ontology_info(name)` | gov | Class structure, data properties and relationships |
-| `create_ontology(domain, name, ontology_plan)` | gov | Create new ontology with Markdown plan |
-| `update_ontology(domain, name, update_plan)` | gov | Add new classes to existing ontology |
-| `delete_ontology_classes(ontology_name, class_names)` | gov | DESTRUCTIVE: delete specific classes (protected by Published) |
+| `create_ontology(domain, name, ontology_plan, best_effort?)` | gov | Create new ontology with Markdown plan. Optional `best_effort` (bool, default off): deliver the last attempted result with warnings if supervisors keep rejecting after all retries + plan rebuilds. See `guides/stratio-semantic-layer-tools.md` §2 and §7.2 |
+| `update_ontology(domain, name, update_plan, best_effort?)` | gov | Add new classes to existing ontology. Optional `best_effort` (bool, default off): same delivery semantics as `create_ontology`. ADD-only — classes added in best-effort mode can only be removed with `delete_ontology_classes` |
+| `delete_ontology(ontology_name)` | gov | DESTRUCTIVE: delete the entire ontology and all its classes (protected by Published). Use in the post-best-effort recovery flow (see workflow §4.b) or to clean up obsolete ontologies |
+| `delete_ontology_classes(ontology_name, class_names)` | gov | DESTRUCTIVE: delete specific classes (protected by Published). Preferred when only a few classes — added in best-effort mode or otherwise — need to be removed while keeping the rest of the ontology intact |
 
-**Key rules**: `domain_name` immutable. Ontologies are ADD+DELETE: `update` adds classes, `delete_ontology_classes` deletes classes (protected: classes with dependent Published views are skipped). Existing classes cannot be modified. Naming: no spaces (→ underscores), no special characters. Build the planning context through the Glossary Instruction Enrichment Workflow (`guides/stratio-semantic-layer-tools.md` §11) before proposing the ontology plan.
+**Key rules**: `domain_name` immutable. Ontologies are ADD+DELETE: `update_ontology` adds classes; `delete_ontology_classes` deletes specific classes; `delete_ontology` deletes the entire ontology (protected: classes with dependent Published views are skipped; published ontologies cannot be deleted). Existing classes cannot be modified. Naming: no spaces (→ underscores), no special characters. Build the planning context through the Glossary Instruction Enrichment Workflow (`guides/stratio-semantic-layer-tools.md` §11) before proposing the ontology plan. Best-effort delivery via the optional `best_effort` argument is **opt-in** and only affects how quality rejections during class/view generation are handled; it does **not** override pre-generation feasibility failures (plan deemed unachievable with the available tables, table/size caps exceeded, governance services unreachable) — those still fail the call.
 
 ## Workflow
 
@@ -79,10 +80,36 @@ The enriched text becomes part of the planning context that feeds the proposed M
 
 ### 4. Execution
 
+#### 4.a Nominal call
+
 According to the decision from step 2:
 - **New ontology**: `create_ontology(domain, name, ontology_plan)` with the approved Markdown plan
 - **Extend existing**: `update_ontology(domain, name, update_plan)` — new classes only
-- **Delete classes**: DESTRUCTIVE operation — confirm with the user listing the classes to delete and warning that dependent business views will be refreshed. Execute `delete_ontology_classes(ontology_name, class_names)`. Report the result: deleted classes (`deleted`) and skipped classes due to Published views (`skipped_locked`)
+- **Delete specific classes**: DESTRUCTIVE operation — confirm with the user listing the classes to delete and warning that dependent business views will be refreshed. Execute `delete_ontology_classes(ontology_name, class_names)`. Report the result: deleted classes (`deleted`) and skipped classes due to Published views (`skipped_locked`)
+- **Delete the entire ontology**: DESTRUCTIVE operation — confirm with the user that the named ontology and **all its classes** will be deleted. Execute `delete_ontology(ontology_name)`. Report whether the deletion succeeded or whether it was blocked because the ontology is in a non-deletable status
+
+#### 4.b Recovery flow if `create_ontology` / `update_ontology` returns an error
+
+**Important distinction**: if the failure response says the chain stopped **before generating any class** (typical wordings: the plan is not achievable with the available tables, required tables are missing, the request exceeds table/size limits, the plan could not be validated), the ontology was **not** persisted — just re-call `create_ontology` with an adjusted plan. The flow below applies **only** when the chain produced or partially produced classes and quality validation kept rejecting them.
+
+In that case, present the user with the six options below and let them pick. **Confirm explicitly with the user before any call to `delete_ontology` (options A, D, E)** — the destructive-hint MCP annotation is informative, not enforcement.
+
+| Option | Steps | When to choose |
+|---|---|---|
+| **A — Clean and retry with best-effort** | `delete_ontology(name)` → `create_ontology(name, plan, best_effort=True)` | Plan is right; user accepts a sub-optimal ontology with warnings instead of more retries |
+| **B — Complete what's missing via update with best-effort** | `update_ontology(name, update_plan_for_missing_classes, best_effort=True)` | Base ontology was created; classes/views missing; user accepts sub-optimal new classes |
+| **C — Complete what's missing via update in strict mode** | `update_ontology(name, corrected_update_plan)` (no `best_effort`) | Base ontology is fine; user adjusts the update plan to pass quality validation |
+| **D — Clean and retry with a corrected plan** | `delete_ontology(name)` → `create_ontology(name, corrected_plan)` (no `best_effort`) | Structural problems in the original plan; reset and reattempt in strict mode |
+| **E — Just clean** | `delete_ontology(name)` (no recreate) | User wants to wipe the failed attempt and stop here |
+| **F — Leave as-is and review/fix manually in Governance UI** | (no tool call) | User accepts the partial ontology and will refine it manually |
+
+Default suggestion heuristic (the user always has the final word):
+
+- Only specific classes failed and the rest of the ontology is healthy → suggest C (cheaper, non-destructive).
+- Transversal or base-structure issues → suggest D.
+- Plan looks right but validation thrash is preventing finishing → suggest A.
+
+After executing the chosen option, jump back to **step 5 (Verification)** to confirm the resulting state.
 
 ### 5. Verification
 

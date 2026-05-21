@@ -11,7 +11,7 @@ La skill invoca las herramientas MCP de gobierno inline — **no** delega en las
 - Pre-carga las instrucciones enriquecidas para todo el pipeline una sola vez mediante el **Workflow de Enriquecimiento con Instrucciones del Glosario** (`stratio-semantic-layer-tools.md` §11): business terms tipados como instrucciones GenAI desde el diccionario de datos (específicas por fase, opcionalmente más globales), ficheros de referencia aportados por el usuario y reglas en texto libre, consolidados en textos por fase. Cada fase reutiliza su bloque como `user_instructions` (o, para ontología, lo incorpora al plan en Markdown) sin volver a preguntar.
 - Ejecuta cada fase en orden estricto, reportando progreso y el resumen de la herramienta tras cada una. La Fase 2 (ontología) ejecuta el mismo bucle de planning interactivo que `create-ontology`.
 - Ofrece publicación opcional de las views entre la fase 4 y la fase 5.
-- En caso de fallo, ofrece tres caminos de recuperación por fase: reintentar con instrucciones mejoradas, saltar (con aviso de dependencias) o abortar.
+- En caso de fallo, ofrece tres caminos de recuperación por fase: reintentar con instrucciones mejoradas, saltar (con aviso de dependencias) o abortar. Para la **Fase 2 (ontología)** específicamente, cuando la generación falla después de que el plan ya fue validado (la chain produjo clases/vistas parciales pero los supervisores las siguieron rechazando), el flujo genérico se reemplaza por un menú de seis opciones documentado en `stratio-semantic-layer-tools.md` §7.2 — limpia + reintenta con best-effort, completa las clases que faltan vía update (con o sin best-effort), limpia + reintenta con plan corregido, solo limpia, o dejarlo como está para arreglarlo manualmente en la UI de Governance. La limpieza destructiva (`delete_ontology`) siempre requiere confirmación explícita del usuario.
 
 ## Cuándo usarla
 
@@ -32,7 +32,7 @@ La skill invoca las herramientas MCP de gobierno inline — **no** delega en las
 - `stratio-semantic-layer-tools.md` — referencia completa de los MCPs de gobierno: listado de herramientas, inmutabilidad de `domain_name`, el §11 Workflow de Enriquecimiento con Instrucciones del Glosario que produce todo `user_instructions`, protocolo de operaciones destructivas, reglas ADD+DELETE de ontologías, tabla de detección de estado para idempotencia y fallback de disponibilidad de OpenSearch.
 
 ### MCPs
-- **Governance (`gov`):** `search_ontologies`, `list_ontologies`, `get_ontology_info`, `create_ontology`, `update_ontology`, `delete_ontology_classes`, `create_technical_terms`, `list_technical_domain_concepts`, `create_business_views`, `delete_business_views`, `publish_business_views`, `create_sql_mappings`, `create_semantic_terms`.
+- **Governance (`gov`):** `search_ontologies`, `list_ontologies`, `get_ontology_info`, `create_ontology`, `update_ontology`, `delete_ontology_classes`, `delete_ontology`, `create_technical_terms`, `list_technical_domain_concepts`, `create_business_views`, `delete_business_views`, `publish_business_views`, `create_sql_mappings`, `create_semantic_terms`.
 - **Data (`sql`):** `search_domains`, `list_domains`, `list_domain_tables`, `get_tables_details`, `get_table_columns_details`, `search_domain_knowledge`.
 
 ### Python

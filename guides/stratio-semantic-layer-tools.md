@@ -15,9 +15,10 @@
 | **Ontology** | `search_ontologies(search_text)` | Search ontologies by free text (name or description). Results by relevance. Use when part of the name is known |
 | | `list_ontologies` | List all existing ontologies |
 | | `get_ontology_info(name)` | Structure of classes, data properties, and relationships of an ontology |
-| | `create_ontology(domain, name, ontology_plan)` | Create a new ontology with a Markdown plan |
-| | `update_ontology(domain, name, update_plan)` | Add new classes to an existing ontology |
-| | `delete_ontology_classes(ontology_name, class_names)` | DESTRUCTIVE: delete specific classes (protected by Published) |
+| | `create_ontology(domain, name, ontology_plan, best_effort?)` | Create a new ontology with a Markdown plan. Optional `best_effort` (bool, default off): deliver the last attempted result anyway if the chain can't fully validate the generated classes/views after all retries + plan rebuilds. Pending feedback is surfaced as a `` `Warning (best-effort):` `` line in the final message; the ontology is still persisted, so retrying in strict mode requires `delete_ontology` first. Pre-generation failures (plan deemed unachievable with the available tables, table/size caps exceeded, governance services unreachable) still fail the call regardless of the flag. When omitted, the deployment profile value applies; True/False overrides the profile |
+| | `update_ontology(domain, name, update_plan, best_effort?)` | Add new classes to an existing ontology. Optional `best_effort` (bool, default off): same delivery semantics as `create_ontology`. Beware that update is ADD-only, so classes added in best-effort mode mix with pre-existing valid ones and can only be removed via `delete_ontology_classes(...)` or by deleting the whole ontology via `delete_ontology` and recreating |
+| | `delete_ontology(ontology_name)` | DESTRUCTIVE: delete the entire ontology and all its classes (protected by Published). Use for the post-best-effort cleanup flow when the partial ontology must be wiped before recreating from scratch, or to clean up obsolete ontologies. For removing specific classes only, use `delete_ontology_classes` |
+| | `delete_ontology_classes(ontology_name, class_names)` | DESTRUCTIVE: delete specific classes (protected by Published). Preferred over `delete_ontology` when the caller just needs to drop a few classes mixed in by a best-effort `update_ontology` while keeping the rest of the ontology intact |
 | **Technical terms** | `create_technical_terms(domain, table_names?, user_instructions?, regenerate?)` | Generate table and column descriptions. Skips existing ones. With `regenerate=true`: DESTRUCTIVE, deletes and recreates |
 | | `refine_foreign_keys(domain, user_instructions, table_names?)` | Add, modify or remove virtual foreign keys for existing tables in a technical domain. `user_instructions` is REQUIRED — describe what to add/modify/remove (TARGETED, e.g. "delete fk_x", "add fk from orders.customer_id to customers.id") or ask to detect missing FKs (DISCOVERY, e.g. "detect missing FKs in card_csv"); generic phrases ("review", "update") produce no changes. Tables without a previous technical term are skipped early with a warning. Idempotent: re-running the same instruction yields no changes. Returns `message`: a markdown summary in explicit `key=value` notation — per table `added=N, replaced=N, deleted=N, kept=N; persist=<ok\|failed\|not_needed>, BT=<updated\|unchanged>` (`not_needed` means the diff was empty so no PUT was sent), plus per-domain totals. The skill hands the markdown to the user as-is (no field parsing) |
 | **Business views** | `create_business_views(domain, ontology, class_names?, regenerate?)` | Create views + mappings. Skips existing ones. With `regenerate=true`: DESTRUCTIVE, deletes and recreates |
@@ -60,7 +61,8 @@
 - **`user_instructions` built through the enrichment workflow**: For the four phase tools that accept `user_instructions` (`create_technical_terms`, `create_sql_mappings`, `create_semantic_terms`, and analogously the planning step of `create_ontology` / `update_ontology` even though the value is folded into the Markdown plan), build the value through the Glossary Instruction Enrichment Workflow described in §11. That workflow consolidates glossary instructions, optional external files (.owl/.ttl, business documents, CSVs, etc.) and free-text rules into a single text. **Never inject glossary content silently** without going through §11.2's user-facing question — the user must see and shape what is going to be applied. The enrichment is non-blocking: option 4 (skip) is always available. **Do not suggest options that the tool controls internally** (language, output format). For `create_collection_description`, which does not have a phase-specific glossary type, just offer free-text `user_instructions` directly (it is intentionally outside §11). For `refine_foreign_keys`, `user_instructions` is REQUIRED (the tool rejects empty input) — the enrichment workflow runs scoped to `phase=technical_terms` and the user's concrete refine intent (TARGETED or DISCOVERY) is concatenated on top of the enriched text before invoking the tool
 - **Destructive operations (`regenerate=true`, `delete_*`)**: ALWAYS require explicit user confirmation with a clear warning of what will be lost. Pattern: detect existence -> inform what will be lost -> ask (skip/execute/cancel) -> additional confirmation for the destructive action
 - **View publishing (`publish_business_views`)**: Confirm with the user by listing the views that will be published. Verify prior state with `list_technical_domain_concepts`. This is not destructive and does not require "destructive-type" confirmation, but it is a governance state change that the user must approve. Present the result: published views + failed + not found
-- **Ontologies are ADD+DELETE**: `update_ontology` adds new classes. `delete_ontology_classes` deletes specific classes (protected: classes with dependent Published views are automatically skipped). Existing classes cannot be modified
+- **Ontologies are ADD+DELETE**: `update_ontology` adds new classes. `delete_ontology_classes` deletes specific classes; `delete_ontology` deletes the entire ontology including all its classes — both are DESTRUCTIVE and protected (classes with dependent Published views are automatically skipped; published ontologies cannot be deleted). Existing classes cannot be modified
+- **Best-effort delivery for `create_ontology` / `update_ontology`**: the optional `best_effort` argument lets the caller accept a sub-optimal ontology when the chain cannot fully validate the generated classes/views after all retries (and, for `create_ontology`, after the plan rebuild budget). It is opt-in and orthogonal to destructive operations: it does NOT override pre-generation failures (plan deemed unachievable with the available tables, table/size caps exceeded, governance services unreachable). Once a best-effort ontology has been persisted, retrying in strict mode requires `delete_ontology` first (for `create_ontology`) or `delete_ontology_classes` of the offending classes (for `update_ontology`). See §7 for the post-error recovery flow that drives the choice
 - **Ontology naming**: No spaces (use underscores), no special characters
 - **Collection naming**: No spaces (use underscores), no special characters — same convention as ontologies
 
@@ -119,7 +121,7 @@ Before any operation, verify it does not already exist:
 | Data collection | `list_domains(domain_type='technical')` or `search_domains(name, domain_type='technical')` -> verify if the domain already exists. If just created and not appearing, use `refresh=true` | If it exists, inform. Options: use existing / create new with a different name |
 | Technical terms | `list_domain_tables(domain)` -> tables with descriptions | Inform. Options: skip / regenerate (destructive) / cancel |
 | Domain description | `list_domains(domain_type='technical')` -> whether the domain has a description | Inform. Options: skip / regenerate (destructive) / cancel |
-| Ontology | `search_ontologies(name)` or `list_ontologies` + `get_ontology_info` | Options: extend (`update_ontology`) / delete classes (`delete_ontology_classes`) / create new |
+| Ontology | `search_ontologies(name)` or `list_ontologies` + `get_ontology_info` | Options: extend (`update_ontology`, optionally with `best_effort=True`) / delete specific classes (`delete_ontology_classes`) / delete the entire ontology (`delete_ontology`) / create new (with a different name, or after `delete_ontology` on the previous one) |
 | Business views | `list_technical_domain_concepts(domain)` | Inform of existing views. Options: skip / delete specific ones (`delete_business_views`) / regenerate (`create_business_views(regenerate=true)`) |
 | View publishing | `list_technical_domain_concepts(domain)` -> status of each view | If already Pending Publish or Published, inform. Only Draft views can be published |
 | SQL Mappings | `list_technical_domain_concepts(domain)` -> mapping status per view + `sql_mapping` of the mapping when present | `create_sql_mappings` overwrites existing mappings. Use `sql_mapping` for pre-publication sample validation (see §4 of `stratio-data-tools.md`) |
@@ -129,11 +131,34 @@ Before any operation, verify it does not already exist:
 
 ## 7. Error Handling and Recovery
 
+### 7.1 Generic recovery
+
 - Analyze the error -> try to diagnose the cause
 - If the agent can resolve it -> retry with improved `user_instructions` (reformulate, add specific context)
 - If it cannot -> ask the user what additional context to provide -> pass it as `user_instructions` in the retry
 - Retry ONLY the failed entity (specific table, class, or view), not the entire batch
 - Maximum 2 retries per entity. If it persists -> document in the summary and continue with the rest
+
+### 7.2 Ontology generation failure with a valid plan (post-plan-validation recovery)
+
+When `create_ontology` or `update_ontology` returns an error **after the plan has already been validated** — i.e. the chain produced (or partially produced) classes/views but the supervisors kept rejecting them — the recovery is different from the generic "improve `user_instructions` and retry" loop above. In that scenario the agent **must present the user with the following options and let them pick**, then execute the chosen sequence of tool calls.
+
+> Distinction first: when the response message says the failure happened **before any class was generated** — typical wordings are about the requested plan being infeasible with the available tables, missing required tables in the data domain, the request exceeding table/size limits, or the chain being unable to validate the plan — the ontology was **not** persisted. There is nothing to clean up. Simply re-call `create_ontology` with an adjusted plan (narrow the scope, fix table names, simplify relationships); do **not** enter the A-F flow below.
+
+| Option | Steps | When to choose it |
+|---|---|---|
+| **A — Clean and retry with best-effort** | `delete_ontology(name)` → `create_ontology(name, plan, best_effort=True)` | The plan looks right and the user accepts a sub-optimal ontology with warnings instead of more retries. |
+| **B — Complete what's missing via update with best-effort** | `update_ontology(name, update_plan_for_missing_classes, best_effort=True)` | The base ontology was created but classes/views are missing because of partial failures. Add-only: completes the gap without touching what already worked. |
+| **C — Complete what's missing via update in strict mode** | `update_ontology(name, corrected_update_plan)` (no `best_effort`) | The base ontology is fine but a few classes failed, and the user is willing to tweak the update plan (rename columns, simplify relationships) so the new classes pass quality validation. |
+| **D — Clean and retry with a corrected plan** | `delete_ontology(name)` → `create_ontology(name, corrected_plan)` (no `best_effort`) | Structural problems in the original plan — start from scratch with a different plan in strict mode. |
+| **E — Just clean** | `delete_ontology(name)` (no recreate) | The user wants to wipe the failed attempt and stop here (reflect, consult their team, manually fix in Governance later). |
+| **F — Leave as-is and review/fix manually in Governance UI** | (no tool call) | The user accepts the partial ontology and will refine it manually through the Governance UI without further chain involvement. |
+
+**Confirmation rule (non-negotiable):** before invoking `delete_ontology` (options A, D, E) **always** ask the user for an explicit confirmation that names the ontology being deleted. The `destructiveHint=True` MCP annotation is informative, not enforcement; confirmation is the agent's responsibility.
+
+**Choosing C vs D:** if only specific classes failed and the rest of the ontology is healthy, prefer C (cheaper and non-destructive). If the failure is transversal or the base structure is wrong, prefer D. The agent may suggest a default based on what failed, but the user makes the final call.
+
+**Choosing A/D vs B/C:** A and B accept best-effort delivery to finish the flow; C and D enforce quality at the cost of further halts. Surface the trade-off when presenting the options.
 
 ## 8. Parallel Execution
 
@@ -237,7 +262,7 @@ Combine the chosen sources into a single Markdown text with explicit headings: a
 How the consolidated text is consumed depends on the target MCP tool:
 
 - For `create_technical_terms`, `create_sql_mappings`, `create_semantic_terms`: pass it directly as the `user_instructions` argument.
-- For `create_ontology` / `update_ontology`: those tools do **not** accept `user_instructions` today. The consolidated text is incorporated into the Markdown `ontology_plan` / `update_plan` that the agent prepares before calling the tool — it shapes class proposals, naming conventions, relationships, etc. If a future version of the tool starts accepting `user_instructions`, the same text will also be passed through.
+- For `create_ontology` / `update_ontology`: those tools do **not** accept `user_instructions` today. The consolidated text is incorporated into the Markdown `ontology_plan` / `update_plan` that the agent prepares before calling the tool — it shapes class proposals, naming conventions, relationships, etc. If a future version of the tool starts accepting `user_instructions`, the same text will also be passed through. The optional `best_effort` argument (see §2, §3 and §7.2) is **orthogonal** to the consolidated plan/instructions — enrichment shapes the input, `best_effort` shapes how rejections are handled at the output side.
 
 ### 11.6 Reuse from orchestrator pre-load
 

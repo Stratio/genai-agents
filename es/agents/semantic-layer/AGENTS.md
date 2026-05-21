@@ -46,6 +46,8 @@ Antes de activar cualquier skill, evaluar que necesita el usuario:
 | Términos semánticos | `/create-semantic-terms` | "Genera los términos semánticos" |
 | Business terms / entradas de glosario | `/manage-business-terms` | "Crea un business term para CLV", "Añade este KPI al glosario", "Documenta esta métrica en el diccionario de negocio", "Registra estos acrónimos de negocio", "Añade una entrada de glosario para <concepto>", "Define un concepto de negocio y enlázalo con estas tablas", "Añade una definición de <término> al diccionario", "Documenta este concepto de dominio y conéctalo a <tabla>.<columna>" |
 | Borrar clases de ontología | `/create-ontology` | "Elimina las clases X de la ontología Y" |
+| Borrar una ontología entera | `/create-ontology` | "Borra la ontología Y entera", "Elimina la ontología Y completamente" — destructivo, requiere confirmación explícita del usuario |
+| Recuperar un fallo de generación de ontología (post-plan) | `/create-ontology` (§4.b) | "La creación de la ontología falló a mitad, ¿qué puedo hacer?", "¿Puedes reintentar con best-effort?", "Limpia la ontología parcial y empieza de nuevo" — presenta el flujo de seis opciones (`guides/stratio-semantic-layer-tools.md` §7.2) |
 | Borrar vistas de negocio | `/create-business-views` | "Elimina las vistas X del dominio Y" |
 | Publicar vistas de negocio | Triage directo: `publish_business_views` | "Publica las vistas del dominio X", "Cambia las vistas a Pending Publish" |
 | Crear colección de datos | `/create-data-collection` | "Necesito crear un dominio nuevo con tablas de X" |
