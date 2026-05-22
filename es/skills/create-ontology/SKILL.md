@@ -21,11 +21,12 @@ Crea, amplia o borra clases de una ontología en Stratio Governance mediante pla
 | `search_ontologies(search_text)` | gov | Buscar ontologías por texto libre. Resultados por relevancia |
 | `list_ontologies()` | gov | Listar todas las ontologías existentes |
 | `get_ontology_info(name)` | gov | Estructura de clases, data properties y relaciones |
-| `create_ontology(domain, name, ontology_plan)` | gov | Crear ontología nueva con plan en Markdown |
-| `update_ontology(domain, name, update_plan)` | gov | Añadir clases nuevas a ontología existente |
-| `delete_ontology_classes(ontology_name, class_names)` | gov | DESTRUCTIVO: borrar clases específicas (protegido por Published) |
+| `create_ontology(domain, name, ontology_plan, best_effort?)` | gov | Crear ontología nueva con plan en Markdown. Argumento opcional `best_effort` (bool, off por defecto): entregar el último resultado intentado con warnings si los supervisores siguen rechazando tras todos los reintentos + reconstrucciones del plan. Ver `guides/stratio-semantic-layer-tools.md` §2 y §7.2 |
+| `update_ontology(domain, name, update_plan, best_effort?)` | gov | Añadir clases nuevas a ontología existente. Argumento opcional `best_effort` (bool, off por defecto): misma semántica que `create_ontology`. ADD-only — las clases añadidas en modo best-effort solo se pueden eliminar con `delete_ontology_classes` |
+| `delete_ontology(ontology_name)` | gov | DESTRUCTIVO: borrar la ontología entera con todas sus clases (protegido por Published). Útil en el flujo de recuperación tras best-effort (ver workflow §4.b) o para deshacerse de ontologías obsoletas |
+| `delete_ontology_classes(ontology_name, class_names)` | gov | DESTRUCTIVO: borrar clases específicas (protegido por Published). Preferido cuando solo unas pocas clases —añadidas en best-effort u otras— necesitan ser eliminadas sin tocar el resto de la ontología |
 
-**Reglas clave**: `domain_name` inmutable. Ontologías son ADD+DELETE: `update` añade clases, `delete_ontology_classes` borra clases (protegido: clases con vistas Published dependientes se saltan). No se pueden modificar clases existentes. Nomenclatura: sin espacios (→ guiones bajos), sin caracteres especiales. Construir el contexto de planificación mediante el Workflow de Enriquecimiento con Instrucciones del Glosario (`guides/stratio-semantic-layer-tools.md` §11) antes de proponer el plan de ontología.
+**Reglas clave**: `domain_name` inmutable. Ontologías son ADD+DELETE: `update_ontology` añade clases; `delete_ontology_classes` borra clases específicas; `delete_ontology` borra la ontología entera (protegido: clases con vistas Published dependientes se saltan; las ontologías publicadas no se pueden eliminar). No se pueden modificar clases existentes. Nomenclatura: sin espacios (→ guiones bajos), sin caracteres especiales. Construir el contexto de planificación mediante el Workflow de Enriquecimiento con Instrucciones del Glosario (`guides/stratio-semantic-layer-tools.md` §11) antes de proponer el plan de ontología. La entrega best-effort mediante el argumento opcional `best_effort` es **opt-in** y solo afecta a cómo se gestionan los rechazos de calidad durante la generación de clases/vistas; no anula los fallos previos a la generación (plan no alcanzable con las tablas disponibles, se exceden los topes de tablas/tamaño, servicios de governance no disponibles) — esos siguen provocando el fallo de la llamada.
 
 ## Workflow
 
@@ -79,10 +80,36 @@ El texto enriquecido pasa a formar parte del contexto de planificación que alim
 
 ### 4. Ejecución
 
+#### 4.a Invocación nominal
+
 Según decisión del paso 2:
 - **Nueva ontología**: `create_ontology(domain, name, ontology_plan)` con el plan aprobado en Markdown
 - **Ampliar existente**: `update_ontology(domain, name, update_plan)` — solo clases nuevas
-- **Borrar clases**: Operación DESTRUCTIVA — confirmar con el usuario listando las clases a borrar y advirtiendo que las vistas de negocio dependientes se refrescaran. Ejecutar `delete_ontology_classes(ontology_name, class_names)`. Informar del resultado: clases borradas (`deleted`) y clases saltadas por tener vistas Published (`skipped_locked`)
+- **Borrar clases específicas**: Operación DESTRUCTIVA — confirmar con el usuario listando las clases a borrar y advirtiendo que las vistas de negocio dependientes se refrescarán. Ejecutar `delete_ontology_classes(ontology_name, class_names)`. Informar del resultado: clases borradas (`deleted`) y clases saltadas por tener vistas Published (`skipped_locked`)
+- **Borrar la ontología entera**: Operación DESTRUCTIVA — confirmar con el usuario que la ontología nombrada y **todas sus clases** serán eliminadas. Ejecutar `delete_ontology(ontology_name)`. Informar de si el borrado tuvo éxito o si fue bloqueado porque la ontología está en un estado no-borrable
+
+#### 4.b Flujo de recuperación si `create_ontology` / `update_ontology` devuelve error
+
+**Distinción importante**: si la respuesta de fallo indica que la chain se detuvo **antes de generar ninguna clase** (formulaciones típicas: el plan no es alcanzable con las tablas disponibles, faltan tablas necesarias, la petición excede los límites de tablas/tamaño, no se pudo validar el plan), la ontología **no** se persistió — basta con volver a llamar a `create_ontology` con un plan ajustado. El flujo siguiente aplica **solo** cuando la chain produjo o produjo parcialmente clases y la validación de calidad las siguió rechazando.
+
+En ese caso, presentar al usuario las seis opciones siguientes y dejar que elija. **Confirmar explícitamente con el usuario antes de cualquier llamada a `delete_ontology` (opciones A, D, E)** — la anotación destructive-hint del MCP es informativa, no enforcement.
+
+| Opción | Pasos | Cuándo elegirla |
+|---|---|---|
+| **A — Limpia y reintenta con best-effort** | `delete_ontology(name)` → `create_ontology(name, plan, best_effort=True)` | El plan parece correcto; el usuario acepta una ontología subóptima con warnings en vez de más reintentos |
+| **B — Completa lo que falta vía update con best-effort** | `update_ontology(name, update_plan_para_lo_que_falla, best_effort=True)` | La base se creó; faltan clases/vistas; el usuario acepta clases nuevas subóptimas |
+| **C — Completa lo que falta vía update en modo estricto** | `update_ontology(name, update_plan_corregido)` (sin `best_effort`) | La base está bien; el usuario ajusta el plan de update para pasar la validación |
+| **D — Limpia y reintenta con un plan corregido** | `delete_ontology(name)` → `create_ontology(name, plan_corregido)` (sin `best_effort`) | Problemas estructurales en el plan original; reseteo y reintento en modo estricto |
+| **E — Solo limpia** | `delete_ontology(name)` (sin recrear) | El usuario quiere borrar el intento fallido y detenerse aquí |
+| **F — Dejarlo como está y revisar/corregir manualmente en la UI de Governance** | (sin llamada a tool) | El usuario acepta la ontología parcial y la refinará manualmente |
+
+Heurística de sugerencia (la decisión final siempre es del usuario):
+
+- Solo unas clases concretas fallaron y el resto está sano → sugerir C (más barato, no destructivo).
+- Problemas transversales o de estructura base → sugerir D.
+- El plan parece bien pero la validación insistente impide terminar → sugerir A.
+
+Tras ejecutar la opción elegida, volver al **paso 5 (Verificación)** para confirmar el estado resultante.
 
 ### 5. Verificación
 

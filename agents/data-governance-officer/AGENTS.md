@@ -116,6 +116,8 @@ Step 0 runs in Phase 0 and therefore does not violate the "never proceed to subs
 | "Refine/modify/add/remove FKs in tables of domain X" / "Detect missing FKs in tables Y and Z" / "Delete fk_obsolete from order_csv" | — | `refine-foreign-keys` |
 | "Create/extend ontology for X" | — | `create-ontology` |
 | "Delete ontology classes X from Y" | — | `create-ontology` |
+| "Delete the whole ontology Y" / "Wipe ontology Y" | — | `create-ontology` (destructive — explicit user confirmation required) |
+| "The ontology creation failed, recover it" / "Retry ontology with best-effort" / "Clean up the partial ontology and start over" | — | `create-ontology` (§4.b — six-option recovery flow per `guides/stratio-semantic-layer-tools.md` §7.2) |
 | "Create business views" | — | `create-business-views` |
 | "Delete business views X from domain Y" | — | `create-business-views` |
 | "Update SQL mappings for the views" | — | `create-sql-mappings` |

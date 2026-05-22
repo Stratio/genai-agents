@@ -88,8 +88,9 @@ Ejecutar cada fase en orden estricto, llamando a las tools directamente:
 - El bloque de ontology del enriquecimiento pre-cargado ya cubre ficheros de referencia, instrucciones del glosario y reglas en texto libre — alimentarlo en el contexto de planificación. Solo volver a preguntar si el usuario quiere añadir explícitamente algo nuevo para esta fase
 - Explorar dominio: `list_domain_tables` + `get_tables_details` + `get_table_columns_details`
 - Proponer plan de ontología en Markdown → revisar con usuario → iterar (max 3)
-- `create_ontology(domain, name, ontology_plan)` o `update_ontology(domain, name, update_plan)`
+- `create_ontology(domain, name, ontology_plan)` o `update_ontology(domain, name, update_plan)` — ambas aceptan un argumento opcional `best_effort` (ver sección de manejo de errores más abajo para saber cuándo activarlo)
 - Verificar: `get_ontology_info(name)` — presentar estructura y ofrecer: "Si quieres eliminar alguna clase antes de continuar, puedo hacerlo (clases con vistas Published no se pueden borrar)." Si el usuario pide borrar → `delete_ontology_classes(ontology_name, class_names)` → informar de borradas/saltadas → volver a verificar
+- Si el usuario quiere borrar la ontología entera antes de continuar (por ejemplo problemas estructurales que quiere resetear) → confirmar explícitamente → `delete_ontology(name)` → re-ejecutar la Fase 2 desde cero
 
 **Fase 3 — Vistas de negocio** (si necesario):
 - `create_business_views(domain, ontology, class_names?)` con la ontología del paso anterior
@@ -126,6 +127,14 @@ Ejecutar cada fase en orden estricto, llamando a las tools directamente:
   - **Reintentar** con `user_instructions` mejoradas
   - **Saltar** esta fase (advertir dependencias: "Si saltas la ontología, no se pueden crear vistas")
   - **Abortar** el pipeline
+- **Fase 2 (ontología) — flujo específico de recuperación tras fallo** cuando el plan ya estaba validado pero la generación se rechazó (la chain produjo o produjo parcialmente clases/vistas y los supervisores las siguieron rechazando). En ese caso, las opciones genéricas Reintentar/Saltar/Abortar **se reemplazan** por el flujo de seis opciones documentado en `guides/stratio-semantic-layer-tools.md` §7.2:
+  - **A** — `delete_ontology(name)` → `create_ontology(name, plan, best_effort=True)` (limpia y reintenta aceptando subóptimo)
+  - **B** — `update_ontology(name, plan_de_lo_que_falta, best_effort=True)` (completa lo que falta aceptando subóptimo)
+  - **C** — `update_ontology(name, plan_corregido_de_lo_que_falta)` (completa lo que falta en modo estricto)
+  - **D** — `delete_ontology(name)` → `create_ontology(name, plan_corregido)` (limpia y reintenta estricto)
+  - **E** — `delete_ontology(name)` (solo limpia, no recrea; usuario reflexiona/consulta)
+  - **F** — dejarlo como está y revisar/corregir manualmente en la UI de Governance
+  Tras ejecutar la opción elegida, repetir la verificación de la Fase 2. Si el usuario escoge Saltar/Abortar del flujo genérico anterior, aplica la advertencia genérica de dependencias. **Regla de confirmación**: antes de cualquier llamada a `delete_ontology` (A, D, E) el agente debe obtener confirmación explícita nombrando la ontología que se va a borrar. Si el mensaje de fallo indica que la chain se detuvo **antes de generar ninguna clase** (formulaciones típicas: el plan no es alcanzable con las tablas disponibles, faltan tablas en el dominio de datos, se exceden los límites de tablas/tamaño, no se pudo validar el plan), la ontología no se persistió — **no** entrar en el flujo A-F; basta con volver a llamar a `create_ontology` con un plan ajustado.
 
 ### 6. Resumen final
 

@@ -15,7 +15,7 @@ The agent works with Stratio Data Governance via MCP tools, orchestrating the fu
 - Publish business views for review
 - Explore technical domains and published semantic layers
 - Validate the SQL of mappings with a sample query (LIMIT 5) before publishing, and sanity-check the published `semantic_<domain>` with business questions
-- Interactive ontology planning with local file reading (including `.docx` specifications and `.pptx` specification decks)
+- Interactive ontology planning with local file reading (including `.docx` specifications and `.pptx` specification decks), with a recovery flow when ontology generation fails midway (clean up the partial result, retry with relaxed quality acceptance, complete the missing classes, or hand off for manual review)
 - Create data collections (technical domains) from data dictionary searches
 - Manage business terms in the governance dictionary
 - Refine virtual foreign keys on existing tables: add missing ones, fix wrong targets, remove obsolete ones — without regenerating the technical terms

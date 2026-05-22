@@ -46,6 +46,8 @@ Before activating any skill, evaluate what the user needs:
 | Semantic terms | `/create-semantic-terms` | "Generate the semantic terms" |
 | Business terms / glossary entries | `/manage-business-terms` | "Create a business term for CLV", "Add this KPI to the glossary", "Document this metric in the business dictionary", "Register these business acronyms", "Add a glossary entry for <concept>", "Define a business concept and link it to these tables", "Add a definition for <term> to the dictionary", "Document this domain concept and connect it to <table>.<column>" |
 | Delete ontology classes | `/create-ontology` | "Delete classes X from ontology Y" |
+| Delete an entire ontology | `/create-ontology` | "Delete the whole ontology Y", "Wipe ontology Y" — destructive, requires explicit user confirmation |
+| Recover from an ontology generation failure (post-plan) | `/create-ontology` (§4.b) | "The ontology creation failed midway, what can I do?", "Can you retry with best-effort?", "Clean up the partial ontology and start over" — presents the six-option flow (`guides/stratio-semantic-layer-tools.md` §7.2) |
 | Delete business views | `/create-business-views` | "Delete views X from domain Y" |
 | Publish business views | Direct triage: `publish_business_views` | "Publish the views for domain X", "Change the views to Pending Publish" |
 | Create data collection | `/create-data-collection` | "I need to create a new domain with tables from X" |

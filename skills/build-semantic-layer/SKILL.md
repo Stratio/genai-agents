@@ -88,8 +88,9 @@ Execute each phase in strict order, calling the tools directly:
 - The ontology slice of the pre-loaded enrichment already covers reference files, glossary instructions and free-text rules — feed it into the planning context. Only re-prompt if the user explicitly wants to add something new for this phase
 - Explore domain: `list_domain_tables` + `get_tables_details` + `get_table_columns_details`
 - Propose ontology plan in Markdown → review with user → iterate (max 3)
-- `create_ontology(domain, name, ontology_plan)` or `update_ontology(domain, name, update_plan)`
+- `create_ontology(domain, name, ontology_plan)` or `update_ontology(domain, name, update_plan)` — both accept an optional `best_effort` argument (see error-handling section below for when to set it)
 - Verify: `get_ontology_info(name)` — present structure and offer: "If you want to delete any class before continuing, I can do it (classes with Published views cannot be deleted)." If the user requests deletion → `delete_ontology_classes(ontology_name, class_names)` → report deleted/skipped → verify again
+- If the user wants to wipe the whole ontology before continuing (e.g. structural problems they want to reset) → confirm explicitly → `delete_ontology(name)` → re-run Phase 2 from scratch
 
 **Phase 3 — Business views** (if needed):
 - `create_business_views(domain, ontology, class_names?)` with the ontology from the previous step
@@ -126,6 +127,14 @@ Execute each phase in strict order, calling the tools directly:
   - **Retry** with improved `user_instructions`
   - **Skip** this phase (warn about dependencies: "If you skip the ontology, views cannot be created")
   - **Abort** the pipeline
+- **Phase 2 (ontology) — specific failure-recovery flow** when the plan was already validated but generation kept being rejected (i.e. the chain produced or partially produced classes/views and the supervisors said no). In that case the generic Retry/Skip/Abort options above are **replaced** by the six-option flow documented in `guides/stratio-semantic-layer-tools.md` §7.2:
+  - **A** — `delete_ontology(name)` → `create_ontology(name, plan, best_effort=True)` (clean and retry accepting sub-optimal)
+  - **B** — `update_ontology(name, missing_classes_plan, best_effort=True)` (complete what's missing, accepting sub-optimal)
+  - **C** — `update_ontology(name, corrected_missing_classes_plan)` (complete what's missing in strict mode)
+  - **D** — `delete_ontology(name)` → `create_ontology(name, corrected_plan)` (clean and retry strict)
+  - **E** — `delete_ontology(name)` (just clean, do not recreate; user reflects/consults)
+  - **F** — leave as-is and review/fix manually in the Governance UI
+  After executing the chosen option, re-run the Phase 2 verification step. If the user picks Skip/Abort from the generic flow above instead, follow the generic dependency warning. **Confirmation rule**: before any `delete_ontology` call (A, D, E) the agent must obtain explicit user confirmation that names the ontology being deleted. If the failure response indicates the chain stopped **before generating any class** (typical wordings: plan not achievable with the available tables, missing tables in the data domain, table/size limits exceeded, plan could not be validated), the ontology was not persisted — do **not** enter the A-F flow; just re-call `create_ontology` with an adjusted plan.
 
 ### 6. Final summary
 

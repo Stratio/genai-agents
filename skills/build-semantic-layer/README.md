@@ -11,7 +11,7 @@ The skill calls the governance MCP tools inline — it does **not** delegate to 
 - Pre-loads enriched instructions for the whole pipeline once via the **Glossary Instruction Enrichment Workflow** (`stratio-semantic-layer-tools.md` §11): GenAI instruction business terms from the data dictionary (specific per phase, optionally plus globals), reference files supplied by the user, and free-text rules, consolidated into per-phase texts. Each phase reuses its slice as `user_instructions` (or, for ontology, folds it into the Markdown plan) without asking again.
 - Executes each phase in strict order, reporting progress and the tool summary after each one. Phase 2 (ontology) runs the same interactive planning loop as `create-ontology`.
 - Offers optional publication of the views between phase 4 and phase 5.
-- On failure, offers three recovery paths per phase: retry with improved instructions, skip (with a dependency warning), or abort.
+- On failure, offers three recovery paths per phase: retry with improved instructions, skip (with a dependency warning), or abort. For **Phase 2 (ontology)** specifically, when generation fails after the plan was already validated (the chain produced partial classes/views but supervisors kept rejecting them), the generic flow is replaced by a six-option recovery menu documented in `stratio-semantic-layer-tools.md` §7.2 — clean + retry with best-effort, complete missing classes via update (with or without best-effort), clean + retry with corrected plan, just clean, or leave as-is and fix manually in the Governance UI. Destructive cleanup (`delete_ontology`) always requires explicit user confirmation.
 
 ## When to use it
 
@@ -32,7 +32,7 @@ The skill calls the governance MCP tools inline — it does **not** delegate to 
 - `stratio-semantic-layer-tools.md` — complete reference for the governance MCPs: tool list, immutability of `domain_name`, the §11 Glossary Instruction Enrichment Workflow that produces every `user_instructions`, destructive-operation protocol, ADD+DELETE ontology rules, state-detection table for idempotency, and the OpenSearch-availability fallback.
 
 ### MCPs
-- **Governance (`gov`):** `search_ontologies`, `list_ontologies`, `get_ontology_info`, `create_ontology`, `update_ontology`, `delete_ontology_classes`, `create_technical_terms`, `list_technical_domain_concepts`, `create_business_views`, `delete_business_views`, `publish_business_views`, `create_sql_mappings`, `create_semantic_terms`.
+- **Governance (`gov`):** `search_ontologies`, `list_ontologies`, `get_ontology_info`, `create_ontology`, `update_ontology`, `delete_ontology_classes`, `delete_ontology`, `create_technical_terms`, `list_technical_domain_concepts`, `create_business_views`, `delete_business_views`, `publish_business_views`, `create_sql_mappings`, `create_semantic_terms`.
 - **Data (`sql`):** `search_domains`, `list_domains`, `list_domain_tables`, `get_tables_details`, `get_table_columns_details`, `search_domain_knowledge`.
 
 ### Python

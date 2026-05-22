@@ -15,7 +15,7 @@ Puede ejecutar queries de datos de solo lectura para validar la SQL de los mappi
 - Construir capas semánticas completas con un pipeline guiado de 5 fases
 - Generar descripciones técnicas automáticas de tablas y columnas
 - Refinar las claves foráneas virtuales de tablas existentes: añadir las que falten, corregir destinos erróneos, eliminar las obsoletas — sin regenerar los términos técnicos
-- Crear y gestionar ontologías con planificación interactiva
+- Crear y gestionar ontologías con planificación interactiva, incluyendo un flujo de recuperación cuando la generación de la ontología falla a mitad (limpiar el resultado parcial, reintentar aceptando una calidad subóptima, completar las clases que faltan, o dejar la revisión manual)
 - Crear business views a partir de ontologías existentes
 - Generar y actualizar SQL mappings para business views
 - Crear términos semánticos de negocio

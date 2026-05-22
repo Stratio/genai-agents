@@ -15,7 +15,7 @@ It can run read-only data queries to validate the SQL of mappings before publish
 - Build complete semantic layers with a guided 5-phase pipeline
 - Generate automatic technical descriptions of tables and columns
 - Refine the virtual foreign keys of existing tables: add missing ones, fix wrong targets, remove obsolete ones — without regenerating the technical terms
-- Create and manage ontologies with interactive planning
+- Create and manage ontologies with interactive planning, including a recovery flow when ontology generation fails midway (clean up the partial result, retry with relaxed quality acceptance, complete the missing classes, or hand off for manual review)
 - Create business views from existing ontologies
 - Generate and update SQL mappings for business views
 - Create business semantic terms

@@ -116,6 +116,8 @@ El Paso 0 corre dentro de la Fase 0 y por tanto no viola la regla "nunca avanzar
 | "Refina/modifica/añade/elimina FKs en tablas del dominio X" / "Detecta las FKs que falten en las tablas Y y Z" / "Borra fk_obsolete de order_csv" | — | `refine-foreign-keys` |
 | "Crea/extiende la ontología para X" | — | `create-ontology` |
 | "Elimina las clases de ontología X de Y" | — | `create-ontology` |
+| "Borra la ontología Y entera" / "Elimina la ontología Y completamente" | — | `create-ontology` (destructivo — requiere confirmación explícita del usuario) |
+| "La creación de la ontología falló, recupérala" / "Reintenta la ontología con best-effort" / "Limpia la ontología parcial y empieza de nuevo" | — | `create-ontology` (§4.b — flujo de seis opciones de recuperación según `guides/stratio-semantic-layer-tools.md` §7.2) |
 | "Crea business views" | — | `create-business-views` |
 | "Elimina las business views X del dominio Y" | — | `create-business-views` |
 | "Actualiza los SQL mappings de las vistas" | — | `create-sql-mappings` |
