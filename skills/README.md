@@ -15,6 +15,7 @@ The catalogue is grouped by family. The *Used by* column lists the agents in thi
 | [explore-data](explore-data/) | Quick exploration of data domains, tables, columns, statistical profiling, governance quality coverage and business terminology via the governed-data MCPs. | data-analytics-officer |
 | [propose-knowledge](propose-knowledge/) | Propose business terms, definitions and preferences discovered during an analysis to the Stratio Governance layer of a domain. | data-analytics-officer |
 | [refine-foreign-keys](refine-foreign-keys/) | Add, modify or remove virtual foreign keys of tables in a technical domain, after `create-technical-terms`. | data-governance-officer, semantic-layer |
+| [refine-semantic-foreign-keys](refine-semantic-foreign-keys/) | Add, modify or remove the foreign key relations persisted in the business term of semantic views in a `semantic_<x>` domain, after `create-semantic-terms`. | data-governance-officer, semantic-layer |
 | [stratio-data](stratio-data/) | Mandatory rules, usage patterns and best practices for the Stratio data MCP tools (`query_data`, `list_domains`, `generate_sql`, `profile_data`, …). | standalone (stratio-data-toolkit plugin) |
 | [stratio-semantic-layer](stratio-semantic-layer/) | Mandatory rules, usage patterns and best practices for the Stratio Governance MCP tools (`create_ontology`, `create_business_views`, `create_sql_mappings`, `create_semantic_terms`, …). | data-governance-officer, semantic-layer |
 

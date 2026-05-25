@@ -1,6 +1,7 @@
 stratio-semantic-layer
 create-technical-terms
 refine-foreign-keys
+refine-semantic-foreign-keys
 create-ontology
 create-business-views
 create-sql-mappings

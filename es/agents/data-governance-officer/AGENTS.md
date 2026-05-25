@@ -114,6 +114,7 @@ El Paso 0 corre dentro de la Fase 0 y por tanto no viola la regla "nunca avanzar
 | "Construye la capa semántica del dominio X" | — | `build-semantic-layer` |
 | "Crea términos técnicos/descripciones para el dominio Y" | — | `create-technical-terms` |
 | "Refina/modifica/añade/elimina FKs en tablas del dominio X" / "Detecta las FKs que falten en las tablas Y y Z" / "Borra fk_obsolete de order_csv" | — | `refine-foreign-keys` |
+| "Refina/modifica/añade/elimina FKs en vistas del dominio semantic_X" / "Detecta las FKs que falten en las vistas semánticas Y y Z" / "Borra la FK en rental.staff_id en semantic_X" | — | `refine-semantic-foreign-keys` |
 | "Crea/extiende la ontología para X" | — | `create-ontology` |
 | "Elimina las clases de ontología X de Y" | — | `create-ontology` |
 | "Borra la ontología Y entera" / "Elimina la ontología Y completamente" | — | `create-ontology` (destructivo — requiere confirmación explícita del usuario) |

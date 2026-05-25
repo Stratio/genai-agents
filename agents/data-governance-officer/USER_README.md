@@ -19,6 +19,7 @@ The agent works with Stratio Data Governance via MCP tools, orchestrating the fu
 - Create data collections (technical domains) from data dictionary searches
 - Manage business terms in the governance dictionary
 - Refine virtual foreign keys on existing tables: add missing ones, fix wrong targets, remove obsolete ones — without regenerating the technical terms
+- Refine the foreign key relations between business views in a published semantic layer: add missing ones, fix wrong targets, remove obsolete ones — without regenerating the semantic terms
 
 ### Data quality
 - Assess quality coverage by domain, collection, table or column
@@ -58,6 +59,7 @@ Every visual format applies the theme you choose at the start of the deliverable
 - "Build the semantic layer for domain X"
 - "Generate technical descriptions for domain Y"
 - "Detect the missing foreign keys in card_csv and disp_csv" / "Delete fk_obsolete from order_csv" / "Add a foreign key from orders.customer_id to customers.id"
+- "Detect the missing FKs in the views of semantic_X" / "Delete the FK on rental.staff_id in semantic_X" / "Add a foreign key from film_actor.film_id to film.film_id in semantic_X"
 - "Create an ontology for the customers domain"
 - "Create business views and publish them"
 - "Generate semantic terms for the views"
@@ -103,6 +105,7 @@ Every visual format applies the theme you choose at the start of the deliverable
 | `/build-semantic-layer` | Full semantic layer pipeline: terms, ontology, views, mappings, semantic terms |
 | `/create-technical-terms` | Create technical descriptions for tables and columns |
 | `/refine-foreign-keys` | Add, modify or remove virtual foreign keys on tables that already have technical terms |
+| `/refine-semantic-foreign-keys` | Add, modify or remove the foreign key relations between business views in a `semantic_<x>` domain that already have semantic terms |
 | `/create-ontology` | Create, extend or delete ontology classes with interactive planning |
 | `/create-business-views` | Create, regenerate or delete business views |
 | `/create-sql-mappings` | Create or update SQL mappings for existing views |

@@ -73,4 +73,6 @@ Si hay errores, reintentar la vista fallida con `user_instructions` mejoradas (m
 Basado en la respuesta de la tool:
 - Términos creados/regenerados
 - Errores si los hubo
-- Siguiente paso sugerido: "La capa semántica está lista para revisión. Si las vistas aún están en estado Draft, puedes enviarlas a Pending Publish pidiendo publicarlas directamente. Puedes crear business terms con `/manage-business-terms` para enriquecer el diccionario"
+- Siguientes pasos sugeridos:
+  - "La capa semántica está lista para revisión. Si las vistas aún están en estado Draft, puedes enviarlas a Pending Publish pidiendo publicarlas directamente. Puedes crear business terms con `/manage-business-terms` para enriquecer el diccionario"
+  - "Si necesitas corregir, añadir o eliminar relaciones individuales de clave foránea entre vistas sin regenerar los términos semánticos, usa `/refine-semantic-foreign-keys`"
