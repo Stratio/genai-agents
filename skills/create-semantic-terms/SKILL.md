@@ -73,4 +73,6 @@ If there are errors, retry the failed view with improved `user_instructions` (ma
 Based on the tool's response:
 - Terms created/regenerated
 - Errors if any
-- Suggested next step: "The semantic layer is ready for review. If the views are still in Draft state, you can send them to Pending Publish by requesting their publication directly. You can create business terms with `/manage-business-terms` to enrich the dictionary"
+- Suggested next steps:
+  - "The semantic layer is ready for review. If the views are still in Draft state, you can send them to Pending Publish by requesting their publication directly. You can create business terms with `/manage-business-terms` to enrich the dictionary"
+  - "If you need to fix, add or remove individual foreign key relations between views without regenerating the semantic terms, use `/refine-semantic-foreign-keys`"

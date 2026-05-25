@@ -1,6 +1,6 @@
 # stratio-semantic-layer
 
-Skill de referencia que carga las **reglas obligatorias, patrones de uso y mejores prácticas** para los MCPs de Stratio Governance (`create_ontology`, `update_ontology`, `delete_ontology`, `delete_ontology_classes`, `create_business_views`, `create_technical_terms`, `refine_foreign_keys`, `create_sql_mappings`, `create_semantic_terms`, `create_business_term`, `publish_business_views`, `create_data_collection` y el toolkit completo de exploración del servidor `sql`), incluyendo el modo opcional `best_effort` de entrega en creación/actualización de ontología y el flujo de seis opciones de recuperación tras fallos post-plan.
+Skill de referencia que carga las **reglas obligatorias, patrones de uso y mejores prácticas** para los MCPs de Stratio Governance (`create_ontology`, `update_ontology`, `delete_ontology`, `delete_ontology_classes`, `create_business_views`, `create_technical_terms`, `refine_foreign_keys`, `refine_semantic_foreign_keys`, `create_sql_mappings`, `create_semantic_terms`, `create_business_term`, `publish_business_views`, `create_data_collection` y el toolkit completo de exploración del servidor `sql`), incluyendo el modo opcional `best_effort` de entrega en creación/actualización de ontología y el flujo de seis opciones de recuperación tras fallos post-plan.
 
 Esta skill **no** invoca MCPs — carga el contrato que toda skill o agente relacionado con gobierno debe seguir.
 

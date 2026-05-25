@@ -15,6 +15,7 @@ Puede ejecutar queries de datos de solo lectura para validar la SQL de los mappi
 - Construir capas semánticas completas con un pipeline guiado de 5 fases
 - Generar descripciones técnicas automáticas de tablas y columnas
 - Refinar las claves foráneas virtuales de tablas existentes: añadir las que falten, corregir destinos erróneos, eliminar las obsoletas — sin regenerar los términos técnicos
+- Refinar las relaciones de clave foránea entre vistas de negocio en una capa semántica publicada: añadir las que falten, corregir destinos erróneos, eliminar las obsoletas — sin regenerar los términos semánticos
 - Crear y gestionar ontologías con planificación interactiva, incluyendo un flujo de recuperación cuando la generación de la ontología falla a mitad (limpiar el resultado parcial, reintentar aceptando una calidad subóptima, completar las clases que faltan, o dejar la revisión manual)
 - Crear business views a partir de ontologías existentes
 - Generar y actualizar SQL mappings para business views
@@ -35,6 +36,7 @@ Puede ejecutar queries de datos de solo lectura para validar la SQL de los mappi
 ### Fases individuales
 - "Genera las descripciones técnicas de las tablas del dominio ventas"
 - "Detecta las claves foráneas que faltan en card_csv y disp_csv" / "Borra fk_obsolete de order_csv" / "Añade una clave foránea de orders.customer_id a customers.id"
+- "Detecta las FKs que faltan en las vistas de semantic_X" / "Borra la FK en rental.staff_id en semantic_X" / "Añade una clave foránea de film_actor.film_id a film.film_id en semantic_X"
 - "Crea una ontología para el dominio de clientes"
 - "Crea las business views a partir de la ontología existente"
 - "Actualiza los SQL mappings de las vistas del dominio"
@@ -68,6 +70,7 @@ Puede ejecutar queries de datos de solo lectura para validar la SQL de los mappi
 | `/build-semantic-layer` | Pipeline completo de 5 fases para construir la capa semántica de un dominio |
 | `/create-technical-terms` | Crear descripciones técnicas automáticas de tablas y columnas |
 | `/refine-foreign-keys` | Añadir, modificar o eliminar claves foráneas virtuales en tablas que ya tienen términos técnicos |
+| `/refine-semantic-foreign-keys` | Añadir, modificar o eliminar las relaciones de clave foránea entre vistas de negocio en un dominio `semantic_<x>` que ya tienen términos semánticos |
 | `/create-ontology` | Crear, ampliar o eliminar clases de ontología con planificación interactiva |
 | `/create-business-views` | Crear, regenerar o eliminar business views desde una ontología |
 | `/create-sql-mappings` | Crear o actualizar SQL mappings para business views existentes |

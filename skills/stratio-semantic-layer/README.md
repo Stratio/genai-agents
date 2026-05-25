@@ -1,6 +1,6 @@
 # stratio-semantic-layer
 
-Reference skill that loads the **mandatory rules, usage patterns and best practices** for the Stratio Governance MCP tools (`create_ontology`, `update_ontology`, `delete_ontology`, `delete_ontology_classes`, `create_business_views`, `create_technical_terms`, `refine_foreign_keys`, `create_sql_mappings`, `create_semantic_terms`, `create_business_term`, `publish_business_views`, `create_data_collection`, and the full `sql`-server exploration toolkit), including the optional `best_effort` delivery mode on ontology creation/update and the six-option recovery flow on post-plan ontology failures.
+Reference skill that loads the **mandatory rules, usage patterns and best practices** for the Stratio Governance MCP tools (`create_ontology`, `update_ontology`, `delete_ontology`, `delete_ontology_classes`, `create_business_views`, `create_technical_terms`, `refine_foreign_keys`, `refine_semantic_foreign_keys`, `create_sql_mappings`, `create_semantic_terms`, `create_business_term`, `publish_business_views`, `create_data_collection`, and the full `sql`-server exploration toolkit), including the optional `best_effort` delivery mode on ontology creation/update and the six-option recovery flow on post-plan ontology failures.
 
 This skill does **not** call MCP tools — it loads the contract that every governance-related skill and agent must follow.
 

@@ -40,6 +40,7 @@ Before activating any skill, evaluate what the user needs:
 | Full pipeline | `/build-semantic-layer` | "Build the semantic layer for domain X" |
 | Only technical terms | `/create-technical-terms` | "Create technical descriptions for domain Y" |
 | Refine virtual FKs of existing tables | `/refine-foreign-keys` | "Modify the FKs of table X in domain Y", "Detect missing FKs in card_csv and disp_csv", "Delete fk_obsolete from order_csv" |
+| Refine FK relations between semantic views | `/refine-semantic-foreign-keys` | "Add an FK from film_actor.film_id to film.film_id in semantic_X", "Detect missing FKs in views of semantic_X", "Delete the FK on rental.staff_id in semantic_X" |
 | Create/extend ontology | `/create-ontology` | "Create an ontology for X" |
 | Create business views | `/create-business-views` | "Create the business views" |
 | Update SQL mappings | `/create-sql-mappings` | "Update the SQL mappings for the views" |

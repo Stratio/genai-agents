@@ -15,6 +15,7 @@ It can run read-only data queries to validate the SQL of mappings before publish
 - Build complete semantic layers with a guided 5-phase pipeline
 - Generate automatic technical descriptions of tables and columns
 - Refine the virtual foreign keys of existing tables: add missing ones, fix wrong targets, remove obsolete ones — without regenerating the technical terms
+- Refine the foreign key relations between business views in a published semantic layer: add missing ones, fix wrong targets, remove obsolete ones — without regenerating the semantic terms
 - Create and manage ontologies with interactive planning, including a recovery flow when ontology generation fails midway (clean up the partial result, retry with relaxed quality acceptance, complete the missing classes, or hand off for manual review)
 - Create business views from existing ontologies
 - Generate and update SQL mappings for business views
@@ -35,6 +36,7 @@ It can run read-only data queries to validate the SQL of mappings before publish
 ### Individual phases
 - "Generate the technical descriptions of the tables in the sales domain"
 - "Detect the missing foreign keys in card_csv and disp_csv" / "Delete fk_obsolete from order_csv" / "Add a foreign key from orders.customer_id to customers.id"
+- "Detect the missing FKs in the views of semantic_X" / "Delete the FK on rental.staff_id in semantic_X" / "Add a foreign key from film_actor.film_id to film.film_id in semantic_X"
 - "Create an ontology for the customers domain"
 - "Create the business views from the existing ontology"
 - "Update the SQL mappings for the domain's views"
@@ -68,6 +70,7 @@ It can run read-only data queries to validate the SQL of mappings before publish
 | `/build-semantic-layer` | Complete 5-phase pipeline to build the semantic layer of a domain |
 | `/create-technical-terms` | Create automatic technical descriptions of tables and columns |
 | `/refine-foreign-keys` | Add, modify or remove virtual foreign keys on tables that already have technical terms |
+| `/refine-semantic-foreign-keys` | Add, modify or remove the foreign key relations between business views in a `semantic_<x>` domain that already have semantic terms |
 | `/create-ontology` | Create, extend or delete ontology classes with interactive planning |
 | `/create-business-views` | Create, regenerate or delete business views from an ontology |
 | `/create-sql-mappings` | Create or update SQL mappings for existing business views |
