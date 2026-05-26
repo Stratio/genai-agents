@@ -114,7 +114,7 @@ Step 0 runs in Phase 0 and therefore does not violate the "never proceed to subs
 | "Build semantic layer for domain X" | — | `build-semantic-layer` |
 | "Create technical terms/descriptions for domain Y" | — | `create-technical-terms` |
 | "Refine/modify/add/remove FKs in tables of domain X" / "Detect missing FKs in tables Y and Z" / "Delete fk_obsolete from order_csv" | — | `refine-foreign-keys` |
-| "Refine/modify/add/remove FKs in views of semantic_X domain" / "Detect missing FKs in semantic views Y and Z" / "Delete the FK on rental.staff_id in semantic_X" | — | `refine-semantic-foreign-keys` |
+| "Refine/modify/add/remove FKs in views of X" / "Detect missing FKs in semantic views Y and Z" / "Delete the FK on shipments.carrier_id in X" (technical or `semantic_X` — both accepted) | — | `refine-semantic-foreign-keys` |
 | "Create/extend ontology for X" | — | `create-ontology` |
 | "Delete ontology classes X from Y" | — | `create-ontology` |
 | "Delete the whole ontology Y" / "Wipe ontology Y" | — | `create-ontology` (destructive — explicit user confirmation required) |

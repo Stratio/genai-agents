@@ -43,4 +43,6 @@ Ninguno.
 
 - **`regenerate=true` es destructivo.** Confirmación explícita obligatoria; los términos existentes de las views seleccionadas se borran y recrean.
 - **Prerrequisito duro: debe existir mapping.** La skill rehúsa operar sobre views sin SQL mapping y apunta a la skill de remediación.
+- **Tolerancia del formato del dominio.** La tool acepta tanto el nombre técnico (canónico, usado por esta skill en ejemplos y descubrimiento) como la contraparte `semantic_*`. Si el usuario aporta la forma semántica, la skill la normaliza en cliente y usa el equivalente técnico.
+- **Los nombres de entrada se normalizan.** Los espacios al inicio o al final y los backticks envolventes en `view_names` se eliminan automáticamente.
 - **La capa semántica se considera completa** una vez tiene éxito esta fase. Si las views siguen en Draft, el usuario puede publicarlas vía UI de Governance o pidiéndoselo al agente.

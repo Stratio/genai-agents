@@ -43,4 +43,6 @@ None.
 
 - **`regenerate=true` is destructive.** Explicit confirmation is mandatory; the existing terms of the targeted views are deleted and recreated.
 - **Hard prerequisite: mapping must exist.** The skill refuses to run on views without SQL mapping and points to the remediation skill.
+- **Domain form tolerance.** The tool accepts both the technical name (canonical, used by this skill in examples and discovery) and the `semantic_*` counterpart. If the user supplies the semantic form, the skill normalizes client-side and uses the technical equivalent.
+- **Input names are normalized.** Leading and trailing whitespace and wrapping backticks in `view_names` are trimmed automatically.
 - **The semantic layer is considered complete** once this phase succeeds. If the views are still Draft, the user can publish them via the Governance UI or by asking the agent.

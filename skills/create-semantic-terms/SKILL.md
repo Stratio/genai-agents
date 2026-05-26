@@ -1,7 +1,7 @@
 ---
 name: create-semantic-terms
-description: "Generate or regenerate semantic terms for the business views of a domain in Stratio Governance. Use when the user wants to refresh the semantic terms of a domain's views after ontology or view changes, or bulk-populate them for a new domain. For business terms in the dictionary, prefer manage-business-terms; for creating the views themselves, prefer create-business-views."
-argument-hint: "[technical domain (optional)]"
+description: "Generate or regenerate semantic terms for the business views of a domain in Stratio Governance. Use when the user wants to refresh the semantic terms of a domain's views after ontology or view changes, or bulk-populate them for a new domain. Accepts the technical domain name (canonical) or the semantic counterpart on input. For business terms in the dictionary, prefer manage-business-terms; for creating the views themselves, prefer create-business-views."
+argument-hint: "[domain (optional)]"
 ---
 
 # Skill: Create Semantic Terms
@@ -15,7 +15,7 @@ Generates or regenerates business semantic terms in the Stratio Governance gloss
 | `search_domains(search_text, domain_type='technical')` | sql | **Prefer**. Search technical domains by free text. Results by relevance |
 | `list_domains(domain_type='technical', refresh?)` | sql | List all technical domains. `refresh=true` for cache bypass |
 | `list_technical_domain_concepts(domain)` | gov | List views with governance state, semantic terms and mappings |
-| `create_semantic_terms(domain, view_names?, user_instructions?, regenerate?)` | gov | Create semantic terms. With `regenerate=true`: DESTRUCTIVE, deletes and recreates |
+| `create_semantic_terms(domain, view_names?, user_instructions?, regenerate?)` | gov | Create semantic terms. `domain` accepts the technical name (canonical, recommended) or the semantic counterpart — both work. With `regenerate=true`: DESTRUCTIVE, deletes and recreates |
 
 **Key rules**: `domain_name` immutable. Mandatory confirmation for `regenerate=true`. Build `user_instructions` through the Glossary Instruction Enrichment Workflow (`guides/stratio-semantic-layer-tools.md` §11) before invoking. Pre-requisite: views must have SQL mapping before generating semantic terms.
 
@@ -23,7 +23,12 @@ Generates or regenerates business semantic terms in the Stratio Governance gloss
 
 ### 1. Determine domain
 
-If `$ARGUMENTS` contains a domain name, search with `search_domains($ARGUMENTS, domain_type='technical')`. If it does not match, retry with `search_domains($ARGUMENTS, domain_type='technical', refresh=true)` in case it is a recently created collection. If it now matches, continue. If it does not match or there is no argument, list with `list_domains(domain_type='technical')` and ask the user following the user question convention.
+If `$ARGUMENTS` contains a domain name, normalize and discover the canonical technical name:
+
+- If it starts with the `semantic_` prefix → strip the prefix client-side. The tool accepts both forms but the canonical discovery target is the technical domain. Mention to the user that you are using the technical equivalent — both forms are accepted.
+- Search with `search_domains($ARGUMENTS, domain_type='technical')`. If it does not match, retry with `refresh=true` in case it is a recently created collection. If it now matches, continue.
+
+If it does not match or there is no argument, list with `list_domains(domain_type='technical')` and ask the user following the user question convention.
 
 ### 2. Evaluate state
 
