@@ -59,7 +59,7 @@ Cada formato visual aplica el tema que elijas al inicio del entregable (o el tem
 - "Construye la capa semántica del dominio X"
 - "Genera descripciones técnicas para el dominio Y"
 - "Detecta las claves foráneas que faltan en card_csv y disp_csv" / "Borra fk_obsolete de order_csv" / "Añade una clave foránea de orders.customer_id a customers.id"
-- "Detecta las FKs que faltan en las vistas de semantic_X" / "Borra la FK en rental.staff_id en semantic_X" / "Añade una clave foránea de film_actor.film_id a film.film_id en semantic_X"
+- "Detecta las FKs que faltan en las vistas del dominio X" / "Borra la FK en shipments.carrier_id en X" / "Añade una clave foránea de orders.customer_id a customers.id en X" (técnico o `semantic_X` — se aceptan ambos)
 - "Crea una ontología para el dominio de clientes"
 - "Crea business views y publícalas"
 - "Genera términos semánticos para las vistas"
@@ -105,7 +105,7 @@ Cada formato visual aplica el tema que elijas al inicio del entregable (o el tem
 | `/build-semantic-layer` | Pipeline completo de capa semántica: términos, ontología, vistas, mappings, términos semánticos |
 | `/create-technical-terms` | Crear descripciones técnicas para tablas y columnas |
 | `/refine-foreign-keys` | Añadir, modificar o eliminar claves foráneas virtuales en tablas que ya tienen términos técnicos |
-| `/refine-semantic-foreign-keys` | Añadir, modificar o eliminar las relaciones de clave foránea entre vistas de negocio en un dominio `semantic_<x>` que ya tienen términos semánticos |
+| `/refine-semantic-foreign-keys` | Añadir, modificar o eliminar las relaciones de clave foránea entre vistas de negocio de un dominio que ya tienen términos semánticos (no requiere publicación) |
 | `/create-ontology` | Crear, ampliar o eliminar clases de ontología con planificación interactiva |
 | `/create-business-views` | Crear, regenerar o eliminar business views |
 | `/create-sql-mappings` | Crear o actualizar SQL mappings para vistas existentes |
