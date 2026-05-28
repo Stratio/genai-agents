@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.2.0 (upcoming)
+## 0.2.0 (2026-05-28)
 
 * **No explicit waits in MCP polling protocol**: `stratio-mcp-response-patterns.md` §1 (EN + ES) no longer prescribes fixed 5 s / 10 s sleeps between `get_mcp_task_result` calls. The agent polls continuously while `status="pending"` and issues the next call as soon as the previous response is processed. Affects every agent that consumes the patterns guide.
 
