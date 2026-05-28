@@ -178,13 +178,6 @@ Two response patterns can occur on **any** MCP tool listed in §2, on either the
 | Response contains only a `task_id` field (no data, no error) | `stratio-mcp-response-patterns.md` §1 — Long-Running Task Polling |
 | Response replaced by a truncation notice + a saved file path, no `task_id` | `stratio-mcp-response-patterns.md` §2 — Large Tool Outputs Truncated |
 
-**Polling schedule override (semantic layer tools).** Many governance operations (ontology creation, business view publishing, SQL mappings, semantic terms) routinely run for 5–15 minutes. Override the fixed 5s + 10s cadence from `stratio-mcp-response-patterns.md` §1 with this exponential schedule:
-
-- **Initial wait**: 30 s before the first `get_mcp_task_result`
-- **On each `pending`**: double the wait (×2) up to a cap of **120 s**, then keep polling every 120 s
-
-Resulting cadence: 30 → 60 → 120 → 120 → 120 → … (≈9 polls cover a 15-minute task). All other rules from `stratio-mcp-response-patterns.md` §1 (prefix check, same-server polling, `done` / `error` / `not_found` handling) remain unchanged.
-
 ## 10. OpenSearch Availability Fallback
 
 `search_domains`, `search_ontologies` and `search_data_dictionary` consult OpenSearch internally. OpenSearch may not be available in every environment. This section defines the fallback when any of these tools is unavailable — distinct from the *empty result* fallback already described in §4.1 and §5.
