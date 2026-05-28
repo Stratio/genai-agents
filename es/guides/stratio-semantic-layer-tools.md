@@ -178,6 +178,13 @@ Dos patrones de respuesta pueden ocurrir en **cualquier** tool MCP de las listad
 | La respuesta contiene únicamente un campo `task_id` (sin datos, sin error) | `stratio-mcp-response-patterns.md` §1 — Polling de Tareas de Larga Duración |
 | La respuesta sustituida por un aviso de truncación + ruta de fichero guardado, sin `task_id` | `stratio-mcp-response-patterns.md` §2 — Salidas de Tools de Gran Tamaño Truncadas |
 
+**Override del calendario de polling (tools de capa semántica).** Muchas operaciones de gobierno (creación de ontologías, publicación de business views, SQL mappings, términos semánticos) tardan habitualmente 5–15 minutos. Sobrescribir la cadencia fija de 5s + 10s de `stratio-mcp-response-patterns.md` §1 con este calendario exponencial:
+
+- **Espera inicial**: 30 s antes del primer `get_mcp_task_result`
+- **En cada `pending`**: doblar la espera (×2) hasta un tope de **120 s**, luego seguir consultando cada 120 s
+
+Cadencia resultante: 30 → 60 → 120 → 120 → 120 → … (≈9 polls cubren una tarea de 15 minutos). El resto de reglas de `stratio-mcp-response-patterns.md` §1 (verificación del prefijo, polling sobre el mismo servidor, manejo de `done` / `error` / `not_found`) se mantiene sin cambios.
+
 ## 10. Fallback por Indisponibilidad de OpenSearch
 
 `search_domains`, `search_ontologies` y `search_data_dictionary` consultan OpenSearch internamente. OpenSearch puede no estar disponible en todos los entornos. Esta sección define el fallback cuando cualquiera de estas tools no está disponible — distinto del fallback por *resultado vacío* ya descrito en §4.1 y §5.
