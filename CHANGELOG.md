@@ -1,6 +1,12 @@
 # Changelog
 
-## 0.2.0 (upcoming)
+## 0.3.0 (upcoming)
+
+* Pending changelog
+
+## Previous development
+
+### Branched to branch-0.2 (2026-05-28)
 
 * **No explicit waits in MCP polling protocol**: `stratio-mcp-response-patterns.md` §1 (EN + ES) no longer prescribes fixed 5 s / 10 s sleeps between `get_mcp_task_result` calls. The agent polls continuously while `status="pending"` and issues the next call as soon as the previous response is processed. Affects every agent that consumes the patterns guide.
 
@@ -22,7 +28,7 @@
 * **`stratio-data-tools.md` section renumbering**: false subsections §3.5 and §3.6 (appended post-hoc to §3 Strict Rules without matching §3.1-§3.4) are promoted to proper top-level sections; §4-§10 shift to §5-§12 accordingly. A new §9 "MCP Response Patterns" bridge replaces the inline polling and truncation protocols and directs to the companion guide. All external references updated across agents and skills (EN + ES).
 * [ROCK-14771] CI/CD Update builder image to fix package verification
 
-## Previous development
+
 
 ### 0.1.0 (2026-05-05)
 
