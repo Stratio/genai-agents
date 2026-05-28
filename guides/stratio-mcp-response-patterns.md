@@ -15,10 +15,9 @@ If either check fails, do not poll: process the response as-is or handle the ups
 
 **Protocol when both checks pass:**
 
-1. Wait **5 seconds**
-2. Call `get_mcp_task_result(task_id=<the received task_id>)` on the **same MCP server that issued the `task_id`**. If the host environment exposes more than one server (e.g. `gov` and `sql`), mixing servers will return `not_found` even for valid ids.
-3. Inspect the `status` field:
-   - `"pending"` — still running. Wait **10 seconds** and call again. Repeat until the status changes
+1. Call `get_mcp_task_result(task_id=<the received task_id>)` on the **same MCP server that issued the `task_id`**. If the host environment exposes more than one server (e.g. `gov` and `sql`), mixing servers will return `not_found` even for valid ids. Do not introduce explicit waits between calls — issue the next poll as soon as you have processed the previous response.
+2. Inspect the `status` field:
+   - `"pending"` — still running. Call again immediately. Repeat until the status changes
    - `"done"` — the `result` field contains the original tool response. Parse and use it as if the tool had returned it directly
    - `"error"` — read `error` and apply the calling guide's retry strategy (e.g. simplify, split, reformulate) or inform the user
    - `"not_found"` — the task_id expired or is unknown. Retry the original tool call from scratch

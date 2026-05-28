@@ -15,10 +15,9 @@ Si falla cualquiera de los dos checks, no hacer polling: procesar la respuesta t
 
 **Protocolo cuando ambos checks pasan:**
 
-1. Esperar **5 segundos**
-2. Llamar a `get_mcp_task_result(task_id=<el task_id recibido>)` en el **mismo servidor MCP que emitió el `task_id`**. Si el entorno anfitrión expone más de un servidor (p. ej. `gov` y `sql`), mezclar servidores devolverá `not_found` incluso para task ids válidos.
-3. Inspeccionar el campo `status`:
-   - `"pending"` — la tarea sigue ejecutándose. Esperar **10 segundos** y llamar de nuevo. Repetir hasta que el estado cambie
+1. Llamar a `get_mcp_task_result(task_id=<el task_id recibido>)` en el **mismo servidor MCP que emitió el `task_id`**. Si el entorno anfitrión expone más de un servidor (p. ej. `gov` y `sql`), mezclar servidores devolverá `not_found` incluso para task ids válidos. No introducir esperas explícitas entre llamadas — emitir el siguiente poll en cuanto se haya procesado la respuesta anterior.
+2. Inspeccionar el campo `status`:
+   - `"pending"` — la tarea sigue ejecutándose. Llamar de nuevo inmediatamente. Repetir hasta que el estado cambie
    - `"done"` — el campo `result` contiene la respuesta original de la tool. Parsear y usar como si la tool la hubiera devuelto directamente
    - `"error"` — leer `error` y aplicar la estrategia de reintento que indique la guía que invoca este patrón (p. ej. simplificar, dividir, reformular) o informar al usuario
    - `"not_found"` — el task_id ha expirado o es desconocido. Reintentar la llamada original a la tool desde cero
