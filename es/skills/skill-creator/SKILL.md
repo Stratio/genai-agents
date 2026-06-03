@@ -89,7 +89,7 @@ Todo SKILL.md comienza con un frontmatter YAML entre marcadores `---`. El frontm
 
 ### 2.1.1 Límites duros y reglas de validación
 
-Anthropic, OpenCode y el plugin de GitHub Copilot Code aplican estas restricciones en runtime. Una skill que viole cualquiera de ellas no se carga — y `pack_opencode.sh` re-valida la longitud de la descripción en el momento del pack para que el fallo aparezca localmente en vez de al instalar.
+Anthropic, OpenCode y el plugin de GitHub Copilot Code aplican estas restricciones en runtime. Una skill que viole cualquiera de ellas no se carga — y la mayoría de herramientas de empaquetado también re-validan la longitud de la descripción en el momento del pack para que el fallo aparezca localmente en vez de al instalar.
 
 | Campo | Restricción |
 |-------|-------------|
@@ -127,7 +127,7 @@ La mala descripción es demasiado vaga — rara vez se activará. La buena descr
 - Coloca el caso de uso principal al principio (primera frase)
 - Incluye 3-5 palabras clave que el usuario probablemente usará
 - Objetivo blando: ~250 caracteres para la señal de activación — solo los primeros 250 chars se muestran en el listado UI de `/skills` para ahorrar contexto
-- Límite duro: **1024 caracteres** (Anthropic / OpenCode / Copilot — ver §2.1.1; los pack scripts abortan si se excede)
+- Límite duro: **1024 caracteres** (Anthropic / OpenCode / Copilot — ver §2.1.1; las herramientas de empaquetado pueden abortar si se excede)
 - Incluye siempre una cláusula "Use when..."
 - Si la skill NO debe activarse en algunos casos, menciónalo: "Do NOT use for X"
 
@@ -220,7 +220,7 @@ For the complete field reference, see `frontmatter-reference.md`.
 For writing patterns and anti-patterns, see `writing-patterns.md`.
 ```
 
-Si una guía es compartida entre varias skills, colócala en la carpeta central de guides del monorepo y declárala en un archivo de manifiesto `guides` dentro del directorio de la skill (un nombre de archivo por línea).
+Si una guía es compartida entre varias skills, colócala en la carpeta central de guides y declárala en un archivo de manifiesto `guides` dentro del directorio de la skill (un nombre de archivo por línea).
 
 ### 4.4 Inyección dinámica de contexto
 
@@ -276,4 +276,4 @@ Ejecuta esta lista de verificación antes de finalizar cualquier skill:
 13. Todo el conocimiento necesario está integrado — la skill no depende de conocimiento externo no verificable
 14. La descripción es lo suficientemente proactiva para activarse cuando sea relevante
 15. El valor de `description` está entre comillas dobles en una sola línea
-16. `description` ≤ 1024 chars (límite duro de Anthropic / OpenCode / Copilot — los pack scripts abortan si se excede)
+16. `description` ≤ 1024 chars (límite duro de Anthropic / OpenCode / Copilot — las herramientas de empaquetado pueden abortar si se excede)
