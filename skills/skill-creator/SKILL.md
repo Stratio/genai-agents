@@ -89,7 +89,7 @@ Every SKILL.md starts with YAML frontmatter between `---` markers. The frontmatt
 
 ### 2.1.1 Hard limits and validation rules
 
-Anthropic, OpenCode and the GitHub Copilot Code plugin enforce these constraints at runtime. A skill that violates any of them fails to load — and `pack_opencode.sh` re-validates the description length at pack time so the failure surfaces locally instead of at install.
+Anthropic, OpenCode and the GitHub Copilot Code plugin enforce these constraints at runtime. A skill that violates any of them fails to load — and most packaging tools also re-validate the description length at pack time so the failure surfaces locally instead of at install.
 
 | Field | Constraint |
 |-------|-----------|
@@ -127,7 +127,7 @@ The bad description is too vague — it will rarely trigger. The good descriptio
 - Front-load the primary use case (first sentence)
 - Include 3-5 keywords the user is likely to say
 - Soft target: ~250 characters for the triggering signal — only the first 250 chars are shown in the `/skills` list UI to save context
-- Hard limit: **1024 characters** (Anthropic / OpenCode / Copilot — see §2.1.1; pack scripts will abort if exceeded)
+- Hard limit: **1024 characters** (Anthropic / OpenCode / Copilot — see §2.1.1; packaging tools may abort if exceeded)
 - Always include a "Use when..." clause
 - If the skill should NOT trigger in some cases, mention that: "Do NOT use for X"
 
@@ -220,7 +220,7 @@ For the complete field reference, see `frontmatter-reference.md`.
 For writing patterns and anti-patterns, see `writing-patterns.md`.
 ```
 
-If a guide is shared across multiple skills, place it in the central monorepo guides folder and declare it in a `guides` manifest file inside the skill directory (one filename per line).
+If a guide is shared across multiple skills, place it in the central guides directory and declare it in a `guides` manifest file inside the skill directory (one filename per line).
 
 ### 4.4 Dynamic context injection
 
@@ -276,4 +276,4 @@ Run this checklist before finalizing any skill:
 13. ✅ All necessary knowledge is embedded — skill does not depend on unverifiable external knowledge
 14. ✅ Description is proactive enough to activate when relevant
 15. ✅ `description` value is double-quoted on a single line
-16. ✅ `description` ≤ 1024 chars (hard limit enforced by Anthropic / OpenCode / Copilot — pack scripts will abort if exceeded)
+16. ✅ `description` ≤ 1024 chars (hard limit enforced by Anthropic / OpenCode / Copilot — packaging tools may abort if exceeded)
