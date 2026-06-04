@@ -2,7 +2,7 @@
 
 ## 0.3.0 (upcoming)
 
-* Pending changelog
+* Fix `skill-creator` portability: replace references to monorepo-specific packaging scripts (`pack_opencode.sh`, "pack scripts") and "central monorepo guides folder" with generic wording so the skill works standalone outside this repo.
 
 ## Previous development
 
