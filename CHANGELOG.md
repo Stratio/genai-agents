@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1 (upcoming)
+
+* Fix `skill-creator` portability: replace references to monorepo-specific packaging scripts (`pack_opencode.sh`, "pack scripts") and "central monorepo guides folder" with generic wording so the skill works standalone outside this repo.
+
 ## 0.2.0 (2026-05-28)
 
 * **No explicit waits in MCP polling protocol**: `stratio-mcp-response-patterns.md` §1 (EN + ES) no longer prescribes fixed 5 s / 10 s sleeps between `get_mcp_task_result` calls. The agent polls continuously while `status="pending"` and issues the next call as soon as the previous response is processed. Affects every agent that consumes the patterns guide.
