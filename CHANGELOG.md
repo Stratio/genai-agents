@@ -2,6 +2,7 @@
 
 ## 0.3.0 (upcoming)
 
+* [ROCK-15011] **`stratio-data-tools.md`**: add a §3 rule that the query engine is Spark SQL and does not support `LIMIT N OFFSET M` (the `OFFSET` keyword raises a syntax error) — agents must use the tool's `limit` parameter to cap/page rows in `query_data`/`execute_sql`/`profile_data` and never add `LIMIT`/`OFFSET` to the SQL (EN + ES).
 * Fix `skill-creator` portability: replace references to monorepo-specific packaging scripts (`pack_opencode.sh`, "pack scripts") and "central monorepo guides folder" with generic wording so the skill works standalone outside this repo.
 
 ## Previous development
