@@ -2,6 +2,8 @@
 
 ## 0.3.0 (upcoming)
 
+* Remove persistent cross-session memory from `data-analytics-officer`: eliminates the `update-memory` skill, seed templates, and all references to `MEMORY.md`/`ANALYSIS_MEMORY.md` across the monorepo (agent, shared skills, other agents' branding cascades, docs and scripts).
+
 * Fix `skill-creator` portability: replace references to monorepo-specific packaging scripts (`pack_opencode.sh`, "pack scripts") and "central monorepo guides folder" with generic wording so the skill works standalone outside this repo.
 
 ## Previous development

@@ -53,4 +53,4 @@ Todos los scripts son no-interactivos (CI/CD-friendly). Si no se pasa `--name`, 
 
 Todas las skills viven en `skills/` en la raíz del monorepo y se comparten con el agente data-governance-officer.
 
-**Nota**: Este agente no usa memoria persistente en ficheros ni genera ficheros en disco — el output principal es interacción con tools MCP + resúmenes en chat.
+**Nota**: Este agente no genera ficheros en disco — el output principal es interacción con tools MCP + resúmenes en chat.

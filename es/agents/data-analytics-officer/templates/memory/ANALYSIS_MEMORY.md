@@ -1,1 +1,0 @@
-# Memoria de Análisis

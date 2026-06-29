@@ -14,11 +14,7 @@ Leer y seguir `guides/stratio-data-tools.md` sec 5 para los pasos de descubrimie
 
 Si el usuario proporciona un argumento ($ARGUMENTS), buscar con `search_domains($ARGUMENTS, prefer_semantic=true)` (defecto: colapsar entradas técnicas cuando existe una contraparte semántica con prefijo `semantic_` — el nombre desnudo del usuario se resuelve a la versión semántica). Cambiar a `prefer_semantic=false` solo si la redacción del usuario apunta explícitamente a la capa técnica (ver las instrucciones de Descubrimiento del agente para la lista cerrada de disparadores). Si el argumento coincide con un dominio, saltar directamente a explorar tablas. Si no coincide, preguntar al usuario cual dominio explorar siguiendo la convención de preguntas al usuario (adaptativa al entorno: interactivas si disponibles, lista numerada en chat si no). Preguntar si quiere profundizar en alguna tabla específica o ver todas.
 
-## 2. Contexto Previo del Dominio
-
-Si `output/MEMORY.md` existe, leer la sección "Patrones de Datos Conocidos" del dominio que se va a explorar. Si hay patrones registrados, informar al usuario antes de perfilar (ej: "En análisis anteriores se detecto que la columna X tiene ~35% nulos").
-
-## 3. Profundización (cuando el alcance está acotado)
+## 2. Profundización (cuando el alcance está acotado)
 
 Cuando el usuario está centrado en un dominio concreto o un subconjunto reducido de tablas, añadir un paso de enriquecimiento ligero tras explorar columnas. Omitir este paso en exploraciones amplias de múltiples dominios — el profiling es costoso.
 
@@ -30,9 +26,9 @@ Resumir de forma ligera (descriptivo, sin convertir esto en un análisis):
 - De `profile_data`: porcentajes de nulos destacables, rango temporal si hay columnas de fecha, cardinalidades anómalas u outliers que merezca flaggear.
 - De `get_tables_quality_details`: número de reglas por tabla, desglose por estado (OK / KO / WARNING / not-executed), dimensiones con reglas en estado KO o WARNING.
 
-Alimentar ambos hallazgos en el resumen de la sección 4. Si `profile_data` detecta una anomalía que ninguna regla de gobierno cubre (dimensión no cubierta), señalarla como candidata para la skill `assess-quality`.
+Alimentar ambos hallazgos en el resumen de la sección 3. Si `profile_data` detecta una anomalía que ninguna regla de gobierno cubre (dimensión no cubierta), señalarla como candidata para la skill `assess-quality`.
 
-## 4. Resumen y Sugerencias Proactivas
+## 3. Resumen y Sugerencias Proactivas
 
 Presentar un resumen estructurado:
 - Dominio explorado y su propósito
@@ -40,8 +36,8 @@ Presentar un resumen estructurado:
 - Tablas principales con su descripción
 - Columnas clave identificadas
 - Términos de negocio relevantes
-- Señales estadísticas destacables (si se ejecutó profiling en la sección 3)
-- Cobertura de calidad de gobierno (si se consultaron los detalles de calidad en la sección 3)
+- Señales estadísticas destacables (si se ejecutó profiling en la sección 2)
+- Cobertura de calidad de gobierno (si se consultaron los detalles de calidad en la sección 2)
 
 ### Análisis sugeridos basados en la estructura del dominio y los hallazgos
 

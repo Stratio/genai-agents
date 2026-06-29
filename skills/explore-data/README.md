@@ -7,7 +7,6 @@ Quick exploration of governed data through the Stratio data MCPs: find domains, 
 - Resolves the target domain by name or topic (`search_domains` with `prefer_semantic` by default; falls back to `list_domains`).
 - Lists tables, pulls business descriptions, column metadata and domain knowledge, and surfaces business terminology relevant to the user's question.
 - On focused scope (single domain or a small subset of tables), runs `profile_data` and `get_tables_quality_details` in parallel to add a statistical + governance-coverage layer without turning exploration into a full analysis.
-- Reads `output/MEMORY.md` (when present) for known data patterns and warns about recurring issues before profiling.
 - Produces a structured summary and 3–5 concrete analytical suggestions tailored to the tables and columns found (time trend, Pareto, segmentation, funnel, cohort, etc.).
 
 ## When to use it
@@ -42,4 +41,3 @@ None.
 
 - **Profiling is costly.** The skill restricts `profile_data` to focused scopes (single domain or short list of tables) and uses adaptive sampling thresholds (100k / 1M rows) defined in `stratio-data-tools.md` section 6.1.
 - **Semantic vs. technical domains:** by default the skill prefers the semantic layer (`prefer_semantic=true`) — the user's bare domain name resolves to the `semantic_*` entry when one exists. Switches to technical only on explicit user phrasing.
-- **MEMORY.md integration:** when `output/MEMORY.md` exists, known data patterns are surfaced up-front so the user does not re-discover them.

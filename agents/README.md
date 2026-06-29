@@ -7,7 +7,7 @@ This folder contains the generative AI agents of the monorepo. Each agent is a s
 | Agent | What it does | Main outputs |
 |---|---|---|
 | [agent-creator](agent-creator/) | Designs and generates complete AI agents for Stratio Cowork through a guided workflow: requirements → architecture → AGENTS.md → skills → review → packaging. | New agent folders and `agents/v1` ZIPs. |
-| [data-analytics-officer](data-analytics-officer/) | Full BI/BA agent. Queries governed data, runs Python analysis (pandas, scipy, scikit-learn), generates visualisations and multi-format reports (PDF, DOCX, PPTX, web, XLSX), documents reasoning, persists cross-session memory. Read-only on data quality. | Analytical reports, dashboards, decks, workbooks. |
+| [data-analytics-officer](data-analytics-officer/) | Full BI/BA agent. Queries governed data, runs Python analysis (pandas, scipy, scikit-learn), generates visualisations and multi-format reports (PDF, DOCX, PPTX, web, XLSX), documents reasoning. Read-only on data quality. | Analytical reports, dashboards, decks, workbooks. |
 | [data-governance-officer](data-governance-officer/) | Combined governance agent: builds and maintains semantic layers AND manages data quality end-to-end. Unrestricted access to every governance and data MCP. | Semantic layers, quality rules, compliance reports, ontology documentation. |
 | [data-quality](data-quality/) | Data quality specialist. Assesses coverage by domain / collection / table / column, proposes and creates rules (with mandatory human approval), schedules executions, and produces coverage reports in many formats. | Quality rules, schedules, coverage reports. |
 | [semantic-layer](semantic-layer/) | Builds and maintains semantic layers in Stratio Governance: data collections, technical terms, ontologies, business views, SQL mappings, view publishing, semantic terms and business terms. | MCP interactions; no local files. |
@@ -32,14 +32,14 @@ agents/<name>/
 │   └── <skill-name>/SKILL.md
 ├── imported-skills        # Optional. Names of shared skills loaded from the monorepo (one per line)
 ├── guides                 # Optional. Names of root-level guides AGENTS.md references directly
-└── templates/             # Optional. Static templates the agent ships (e.g. templates/memory/MEMORY.md)
+└── templates/             # Optional. Static templates the agent ships
 ```
 
-Required for any agent: `AGENTS.md` and either `opencode.json` or an equivalent host config. Everything else is optional and depends on what the agent does — a chat-only agent has no `requirements.txt`, a Cowork-only agent may skip OpenCode config, an agent without persistent memory does not ship `templates/memory/`.
+Required for any agent: `AGENTS.md` and either `opencode.json` or an equivalent host config. Everything else is optional and depends on what the agent does — a chat-only agent has no `requirements.txt`, a Cowork-only agent may skip OpenCode config.
 
 Local skills live in `<agent>/skills/`. Shared skills come from the top-level [`skills/`](../skills/) folder via the `imported-skills` manifest — see [`skills/README.md`](../skills/README.md) for the catalogue and import workflow. When an agent has a local skill with the same name as a shared one, the local version wins.
 
-For a concrete reference of scale, look at `data-analytics-officer/`: it ships several local skills, imports ~15 shared skills, declares two MCP servers and persists memory between sessions. `semantic-layer/` is the lean opposite — no Python, no memory, no writer skills, output is just MCP interactions and chat replies.
+For a concrete reference of scale, look at `data-analytics-officer/`: it ships several local skills, imports ~15 shared skills and declares two MCP servers. `semantic-layer/` is the lean opposite — no Python, no writer skills, output is just MCP interactions and chat replies.
 
 ## Packaging an agent
 

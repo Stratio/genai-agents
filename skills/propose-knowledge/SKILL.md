@@ -16,8 +16,6 @@ Guide for analyzing an analysis conversation and proposing discovered business k
 
 ## 2. Gather Conversation Context
 
-Review `output/MEMORY.md` sec "Known Data Patterns" if it exists — if there are mature patterns for the domain (observed 3+ times), consider including them as candidates for governed knowledge proposal.
-
 Analyze EVERYTHING that occurred in the conversation — original question, analysis plan, data obtained, calculations performed, insights discovered, conclusions and recommendations.
 
 Classify findings into two categories:

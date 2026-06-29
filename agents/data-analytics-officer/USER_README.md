@@ -6,7 +6,7 @@ A senior BI/BA analyst agent that turns business questions into actionable analy
 
 Data Analytics is a complete BI/BA assistant that connects to your organization's governed data to perform advanced analyses. It can discover data domains, execute queries, perform statistical analyses, generate professional visualizations, and deliver results in **seven analytical formats**: PDF reports, Word documents, PowerPoint presentations, Excel workbooks, interactive web dashboards, web articles / narrative reports and single-page posters/infographics.
 
-It can also ingest local context (PDF contracts, Word briefs, PowerPoint decks, Excel spreadsheets), apply consistent visual identity through a centralized theming catalog, and maintain memory between sessions — remembering your analysis preferences, known data patterns and learned heuristics.
+It can also ingest local context (PDF contracts, Word briefs, PowerPoint decks, Excel spreadsheets) and apply consistent visual identity through a centralized theming catalog.
 
 ## Capabilities
 
@@ -20,7 +20,6 @@ It can also ingest local context (PDF contracts, Word briefs, PowerPoint decks, 
 - **Read existing documents** — PDFs, Word (`.docx`/`.doc`), PowerPoint (`.pptx`/`.ppt`) and Excel (`.xlsx`/`.xls`) — to extract text, tables, slides, cell values and metadata
 - **Assess data quality coverage** and generate quality reports in 9 formats (Chat, PDF, DOCX, PPTX, Dashboard web, Web article / Narrative report, Poster/Infographic, XLSX, Markdown) — read-only, does not create or schedule rules
 - Apply consistent visual identity (colors, typography, chart palettes) to every deliverable using the centralized theming catalog (10 curated themes, extensible per client)
-- Remember preferences and previous analyses between sessions (persistent memory)
 - Propose business terms to the governance dictionary
 
 ## Output formats
@@ -101,12 +100,11 @@ After exploring a domain, a quality assessment, or a quick MCP lookup, you can a
 
 ## Available skills
 
-### Analysis, exploration and memory
+### Analysis and exploration
 | Command | Description |
 |---------|-------------|
 | `/analyze` | Full analysis: domain discovery, planning, queries, statistical analysis, visualizations and multi-format deliverables (PDF, DOCX, PPTX, XLSX, interactive web, poster) |
 | `/explore-data` | Quick exploration of domains, tables, columns and business terminology |
-| `/update-memory` | Update persistent memory with preferences and learned patterns |
 | `/propose-knowledge` | Propose discovered business terms to the governance dictionary |
 
 ### Quality coverage (read-only)

@@ -6,7 +6,7 @@ Agente analista senior de BI/BA que convierte preguntas de negocio en análisis 
 
 Data Analytics es un asistente de BI/BA completo que conecta con los datos gobernados de tu organización para realizar análisis avanzados. Puede descubrir dominios de datos, ejecutar consultas, realizar análisis estadísticos, generar visualizaciones profesionales y entregar los resultados en **siete formatos analíticos**: informes PDF, documentos Word, presentaciones PowerPoint, workbooks Excel, dashboards web interactivos, informes web / artículos web y pósters/infografías de una página.
 
-También puede ingerir contexto local (contratos PDF, briefs Word, decks PowerPoint, hojas Excel), aplicar identidad visual consistente mediante un catálogo centralizado de temas, y mantener memoria entre sesiones — recordando tus preferencias de análisis, patrones conocidos y heurísticas aprendidas.
+También puede ingerir contexto local (contratos PDF, briefs Word, decks PowerPoint, hojas Excel) y aplicar identidad visual consistente mediante un catálogo centralizado de temas.
 
 ## Capacidades
 
@@ -20,7 +20,6 @@ También puede ingerir contexto local (contratos PDF, briefs Word, decks PowerPo
 - **Leer documentos existentes** — PDFs, Word (`.docx`/`.doc`), PowerPoint (`.pptx`/`.ppt`) y Excel (`.xlsx`/`.xls`) — para extraer texto, tablas, diapositivas, valores de celda y metadatos
 - **Evaluar la cobertura de calidad del dato** y generar informes de calidad en 9 formatos (Chat, PDF, DOCX, PPTX, Dashboard web, Informe web / Artículo web, Póster/Infografía, XLSX, Markdown) — solo lectura, no crea ni programa reglas
 - Aplicar identidad visual consistente (colores, tipografía, paletas de gráficos) a cada entregable mediante el catálogo centralizado de temas (10 temas curados, extensible por cliente)
-- Recordar preferencias y análisis previos entre sesiones (memoria persistente)
 - Proponer términos de negocio al diccionario de gobernanza
 
 ## Formatos de salida
@@ -101,12 +100,11 @@ Tras explorar un dominio, una evaluación de calidad o una consulta MCP rápida,
 
 ## Skills disponibles
 
-### Análisis, exploración y memoria
+### Análisis y exploración
 | Comando | Descripción |
 |---------|-------------|
 | `/analyze` | Análisis completo: descubrimiento de dominio, planificación, queries, análisis estadístico, visualizaciones y entregables multi-formato (PDF, DOCX, PPTX, XLSX, web interactiva, póster) |
 | `/explore-data` | Exploración rápida de dominios, tablas, columnas y terminología de negocio |
-| `/update-memory` | Actualizar la memoria persistente con preferencias y patrones aprendidos |
 | `/propose-knowledge` | Proponer términos de negocio descubiertos al diccionario de gobernanza |
 
 ### Cobertura de calidad (solo lectura)

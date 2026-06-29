@@ -443,10 +443,9 @@ Before invoking any writer skill that produces a visual deliverable (PDF, DOCX, 
 1. **Pin in instructions** — if this AGENTS.md (or a downstream skill instruction) fixes a single theme for this role, load it silently.
 2. **Explicit signal in the user's brief** — if the user names a theme by name or an unambiguous attribute (`corporate-formal`, `luxury`, `brutalist`, `technical-minimal`, `editorial`, `forensic`), pre-fill and apply silently. Vague adjectives (`nice`, `professional`, `bonito`) do NOT count — fall through to the next rule.
 3. **Intra-session continuity** — if `brand-kit` already produced a theme earlier in this conversation and the user has not indicated a change, reuse silently.
-4. **MEMORY.md preference** — if `output/MEMORY.md` contains a brand preference coherent with the current context, apply silently.
-5. **Curated proposal by context** — propose ONE theme as default with a short list of alternatives, based on the current context.
+4. **Curated proposal by context** — propose ONE theme as default with a short list of alternatives, based on the current context.
 
-**How to build the curated proposal (rule 5)**:
+**How to build the curated proposal (rule 4)**:
 
 Read the live catalog exposed by `brand-kit` — every theme declares a human-readable descriptor (typically a `Best for` line). Do NOT hardcode audience→theme mappings in these instructions; reason dimensionally against the live catalog so any theme added to `brand-kit` later is considered automatically.
 
