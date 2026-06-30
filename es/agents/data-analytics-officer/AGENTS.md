@@ -125,7 +125,6 @@ El Paso 0 corre dentro de la Fase 0 y por tanto no viola la regla crítica "nunc
 | Artefacto visual de una sola página: "póster", "poster", "portada", "cover", "one-pager", "infografía", "infographic", "certificado", "certificate", "pieza visual", "visual piece" — dominado por composición (≥70% visual), sin narrativa analítica | `canvas-craft` |
 | Artefacto web interactivo sin narrativa analítica: "dashboard interactivo sin análisis", "interactive dashboard without analysis", "landing standalone", "componente web", "maqueta UI", "prototipo de interfaz", "landing", "dashboard puro" — ausencia explícita de encuadre analítico | `web-craft` |
 | Contribución de conocimiento a gobernanza: "propón a gobernanza", "añade este término de negocio", "guarda esta definición como conocimiento gobernado", "enriquece la capa semántica", "sube el término", "propose to governance", "add business term" | `propose-knowledge` |
-| Persistencia en memoria: "recuerda esto para la próxima vez", "guarda mi preferencia", "la próxima vez haz X", "actualiza la memoria con", "persiste esta preferencia", "remember this", "save my preference" | `update-memory` |
 
 **Nota sobre routing a artefactos con datos**: cuando el Paso 1 enruta a `pdf-writer` (ligero), `canvas-craft` o `web-craft` con una petición que implica datos del dominio gobernado (p. ej., "póster con las ventas del trimestre", "PDF con 3 KPIs de churn"), el **agente** pre-obtiene los datos necesarios vía MCP (usando las tools de Triage del Paso 2: `list_domain_tables`, `query_data`) **antes** de cargar la skill de artefacto. Al cargar la skill, los datos ya están disponibles en contexto y la skill se centra en producir el visual a partir de ellos — estas skills no obtienen datos por sí mismas.
 
@@ -203,8 +202,6 @@ Para detalle operativo completo (checklist de suficiencia, umbrales de scoring, 
 
 ### Fase 2 — Preguntas al Usuario (en fase de planificación, solo lectura)
 
-Leer `output/MEMORY.md` sec Preferencias (si existe) para ofrecer defaults personalizados.
-
 Cargar `/analyze` §4.1 para ejecutar el bloque de preguntas (Profundidad + Audiencia + Formato + Tests). Formato es una única pregunta de selección múltiple con 7 opciones (PDF / DOCX / PowerPoint / Dashboard web / Informe web-Artículo web / Póster-Infografía / Excel). No hay un segundo bloque de preguntas — la estructura por defecto es el scaffold analítico (con opt-out por señal si el usuario pide estructura libre), y la identidad visual se propone como un ítem dentro del plan (ver `/analyze` Fase 3 y §8.3). Al volver, continuar con la siguiente Fase debajo.
 
 **Nota**: SIEMPRE dar un resumen de hallazgos en la conversación, independientemente de los formatos seleccionados.
@@ -231,7 +228,6 @@ Cargar `/analyze` §4.1 para ejecutar el bloque de preguntas (Profundidad + Audi
 
 ### Fase 3 — Planificación (en fase de planificación, solo lectura)
 
-0. **Contexto histórico**: Leer `output/ANALYSIS_MEMORY.md` (triage: buscar entradas del mismo dominio) y `output/MEMORY.md` (si existen). Si hay una entrada relevante en el índice, leer su fichero `analysis_memory.md` referenciado para obtener KPIs, insights y baselines de referencia
 1. Evaluar si `requirements.txt` necesita librerías adicionales para este análisis
 2. **Evaluar enfoque analítico**: Determinar si la pregunta requiere segmentación (clustering, RFM) o feature importance como complemento al análisis descriptivo. Ver skill `/analyze` [clustering-guide.md](clustering-guide.md)
 3. **Formular hipótesis** antes de tocar datos (ver sección 3 — Framework Analítico)
@@ -263,8 +259,7 @@ Cargar `/analyze` §4.1 para ejecutar el bloque de preguntas (Profundidad + Audi
 11. **(Si profundidad >= Estándar — ver sec 9)** Generar reasoning en `output/[ANALISIS_DIR]/reasoning/reasoning.md`
 12. **Validación de output final**: Ejecutar checklist según profundidad (Rápido: Bloque A en chat; Estándar: A+B+C en .md; Profundo: A+B+C+D en .md). No bloquea la entrega. Ver skill `/analyze` [validation-guide.md](validation-guide.md)
 13. Reportar resultados en el chat: resumen de hallazgos + rutas de archivos generados + resumen de validación
-14. Propuesta de conocimiento (opcional): ver `/analyze` §9 — pregunta al usuario y, si acepta, carga `/propose-knowledge`. Nunca propone automáticamente.
-15. Memoria de análisis: ver `/analyze` §8 — escribe `output/ANALYSIS_MEMORY.md` y `output/[ANALISIS_DIR]/analysis_memory.md`; luego invoca `/update-memory` para las preferencias curadas.
+14. Propuesta de conocimiento (opcional): ver `/analyze` §8 — pregunta al usuario y, si acepta, carga `/propose-knowledge`. Nunca propone automáticamente.
 
 ---
 
@@ -470,10 +465,9 @@ Antes de invocar cualquier skill writer que produzca un entregable visual (PDF, 
 1. **Pin en instrucciones** — si este AGENTS.md (o una instrucción de skill downstream) fija un tema único para este rol, cárgalo silenciosamente.
 2. **Señal explícita en el brief del usuario** — si el usuario nombra un tema por nombre o un atributo unívoco (`corporate-formal`, `luxury`, `brutalist`, `technical-minimal`, `editorial`, `forensic`), pre-rellena y aplica silenciosamente. Adjetivos vagos (`bonito`, `profesional`) NO cuentan — pasan a la siguiente regla.
 3. **Continuidad intra-sesión** — si `brand-kit` ya produjo un tema antes en esta conversación y el usuario no ha indicado cambio, reutilizar silenciosamente.
-4. **Preferencia en MEMORY.md** — si `output/MEMORY.md` contiene una preferencia de marca coherente con el contexto actual, aplicar silenciosamente.
-5. **Propuesta curada por contexto** — proponer UN tema por defecto con lista corta de alternativos, basándose en el contexto actual.
+4. **Propuesta curada por contexto** — proponer UN tema por defecto con lista corta de alternativos, basándose en el contexto actual.
 
-**Cómo construir la propuesta curada (regla 5)**:
+**Cómo construir la propuesta curada (regla 4)**:
 
 Lee el catálogo vigente expuesto por `brand-kit` — cada tema declara un descriptor legible (típicamente una línea `Best for`). NO codifiques mapeos audiencia→tema en estas instrucciones; razona dimensionalmente contra el catálogo vivo para que cualquier tema que se añada después a `brand-kit` se considere automáticamente.
 
@@ -513,8 +507,7 @@ Escoge el tema cuyo descriptor mejor encaje en estas dimensiones. Identifica 2-3
 
 **Persistencia**:
 
-- Registrar el tema aplicado como línea en `reasoning.md` y `analysis_memory.md` (ej. `theme: editorial-serious`). Informativo, no contrato.
-- NO escribir el tema en `MEMORY.md` automáticamente. Solo persistir allí si el usuario lo pide explícitamente ("recuerda este tema para la próxima").
+- Registrar el tema aplicado como línea en `reasoning.md` (ej. `theme: editorial-serious`). Informativo, no contrato.
 
 ### 8.4 Markdown interno
 
@@ -547,7 +540,6 @@ Para contenido obligatorio y plantilla, ver skill `/analyze` [reasoning-guide.md
   - **Informes de cobertura de calidad de datos** (Chat + formatos de fichero: PDF, DOCX, PPTX, Dashboard web, Informe web/Artículo web, Póster/Infografía) generados por `/assess-quality` + `/quality-report` vía el contrato formato→skill del §8
   - Mini-resumen de la Fase 1.1 (Data Profiling Score + Governance Quality Status)
   - Ficheros de reasoning y validación
-  - Ficheros de memoria (MEMORY.md, ANALYSIS_MEMORY.md, analysis_memory.md)
   - Resúmenes en chat, preguntas al usuario, recomendaciones y cualquier otro contenido generado
 - SIEMPRE preguntar el dominio si no está claro
 - Formato de salida: capturado vía `/analyze` §4.1 Q3 — confirmar que está respondido antes de planificar
@@ -557,22 +549,3 @@ Para contenido obligatorio y plantilla, ver skill `/analyze` [reasoning-guide.md
 - Mostrar el plan completo antes de ejecutar
 - Reportar progreso durante la ejecución
 - Al finalizar: resumen de hallazgos en el chat + rutas de archivos generados
-
----
-
-## 11. Memoria Persistente
-
-Dos ficheros de memoria con propósitos distintos:
-
-| Fichero | Propósito | Escritura |
-|---------|-----------|-----------|
-| `output/ANALYSIS_MEMORY.md` | Índice compacto de análisis completados: dominio, resumen en 1 frase y ruta al detalle | Automática (skill `/analyze` sec 8) |
-| `output/[ANALISIS_DIR]/analysis_memory.md` | Detalle completo del análisis: pregunta, KPIs, insights, Data Profiling Score | Automática (skill `/analyze` sec 8) |
-| `output/MEMORY.md` | Conocimiento curado: preferencias, patrones de datos, heurísticas | Automática (skill `/update-memory`) |
-
-**Reglas de uso**:
-- Las entradas de ANALYSIS_MEMORY.md son contexto comparativo — NUNCA sustituyen queries actuales
-- Si el usuario pregunta algo ya analizado: informar y ofrecer actualizar con datos frescos
-- Registrar en reasoning si se usaron KPIs de análisis anteriores y de que fecha
-- Los patrones en MEMORY.md son observaciones operativas. Si maduran, pueden proponerse a Governance vía `/propose-knowledge`
-- Todo el contenido de los ficheros de memoria (entradas, resúmenes, insights) debe redactarse en el idioma del usuario — los ficheros de memoria son deliverables, no artefactos internos

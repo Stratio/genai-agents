@@ -4,8 +4,7 @@
 #
 # Translatable files: AGENTS.md, SKILL.md, USER_README.md, README.md (agents),
 #   cowork-metadata.yaml, *.md in <agent>/skills/*/ and <agent>/guides/,
-#   the root-level skills/ and guides/ directories (scanned below),
-#   templates/memory/
+#   the root-level skills/ and guides/ directories (scanned below)
 #
 # Usage: bin/check-translations.sh [--lang <code>]
 #   Without --lang: verifies all secondary languages from the 'languages' file
@@ -81,14 +80,6 @@ if [[ -f "$MODULES_FILE" ]]; then
       while IFS= read -r md_file; do
         TRANSLATABLE+=("$md_file")
       done < <(find "$MODULE_DIR/guides" -type f -name '*.md' 2>/dev/null)
-    fi
-
-    # Memory templates (used to seed output/MEMORY.md and ANALYSIS_MEMORY.md
-    # on first write — managed by the agent skills, not by pack scripts)
-    if [[ -d "$MODULE_DIR/templates/memory" ]]; then
-      while IFS= read -r md_file; do
-        TRANSLATABLE+=("$md_file")
-      done < <(find "$MODULE_DIR/templates/memory" -type f -name '*.md' 2>/dev/null)
     fi
   done < "$MODULES_FILE"
 fi

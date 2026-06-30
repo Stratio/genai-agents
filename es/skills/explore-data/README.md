@@ -7,7 +7,6 @@ Exploración rápida de datos gobernados mediante los MCPs de datos de Stratio: 
 - Resuelve el dominio objetivo por nombre o tópico (`search_domains` con `prefer_semantic` por defecto; cae a `list_domains` si no hay matches).
 - Lista tablas, trae descripciones de negocio, metadata de columnas y domain knowledge, y aflora terminología de negocio relevante para la pregunta del usuario.
 - Con alcance focalizado (un solo dominio o un subconjunto pequeño de tablas), ejecuta `profile_data` y `get_tables_quality_details` en paralelo para añadir una capa estadística + cobertura de gobierno sin convertir la exploración en un análisis completo.
-- Lee `output/MEMORY.md` (cuando existe) para patrones de datos conocidos y avisa de problemas recurrentes antes de profiling.
 - Produce un resumen estructurado y entre 3–5 sugerencias analíticas concretas ajustadas a las tablas y columnas encontradas (tendencia temporal, Pareto, segmentación, embudo, cohorte, etc.).
 
 ## Cuándo usarla
@@ -42,4 +41,3 @@ Ninguno.
 
 - **El profiling es costoso.** La skill restringe `profile_data` a alcances focalizados (un dominio o una lista corta de tablas) y usa umbrales adaptativos de muestreo (100k / 1M filas) definidos en `stratio-data-tools.md` sección 6.1.
 - **Dominios semánticos vs. técnicos:** por defecto la skill prefiere la capa semántica (`prefer_semantic=true`) — el nombre de dominio a secas del usuario se resuelve a la entrada `semantic_*` cuando existe. Cambia a técnico solo ante expresiones explícitas del usuario.
-- **Integración con MEMORY.md:** cuando `output/MEMORY.md` existe, los patrones de datos conocidos se presentan al inicio para que el usuario no los redescubra.

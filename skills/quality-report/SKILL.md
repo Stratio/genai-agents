@@ -70,7 +70,7 @@ For the full layout contract (iconography, KPI cards, per-format composition, de
 
 ## 4. Branding decisions
 
-Before invoking any writer skill for a file format, fix the theme following the host agent's branding cascade. When the host agent declares a format→skill contract with a §Branding decisions sub-section, follow that cascade — it is typically 5 levels: pin → explicit signal → intra-session continuity → MEMORY preference → curated proposal.
+Before invoking any writer skill for a file format, fix the theme following the host agent's branding cascade. When the host agent declares a format→skill contract with a §Branding decisions sub-section, follow that cascade — it is typically 4 levels: pin → explicit signal → intra-session continuity → curated proposal.
 
 **Primary neutral default for quality reports** (when no cascade rule resolves to a specific theme): `forensic-audit`. It matches the audit register of a coverage report and keeps month-over-month reruns of the same dataset visually stable. The curated proposal should prefer themes whose descriptor mentions "audit", "technical", "editorial" or "corporate".
 

@@ -136,29 +136,6 @@ The good version gives a clear target; the bad version is a minefield of negatio
 
 ## 3. Conditional Behavior
 
-### ✅ Check before using
-
-Verify that resources exist before referencing them.
-
-**Good:**
-```markdown
-## 2. Gather Context
-
-If `output/MEMORY.md` exists, read the "Known Data Patterns" section for patterns
-observed in previous sessions for this domain (3+ occurrences = mature pattern).
-
-If the file does not exist, proceed without prior context — this is the first session.
-```
-
-**Bad:**
-```markdown
-## 2. Gather Context
-
-Read `output/MEMORY.md` section "Known Data Patterns" for prior session context.
-```
-
-The bad version assumes the file exists and will cause an error on the first session.
-
 ### ✅ Scope-dependent behavior
 
 Adjust behavior based on the scope of the request.

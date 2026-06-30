@@ -158,7 +158,7 @@ This approach (sometimes called "theory of mind") is more effective than ALL-CAP
   | "Just show me the tables" | Skip to phase 1 only |
   ```
 - Use **imperative voice**: "Validate the input" (not "The input should be validated")
-- Use **conditional blocks** for optional behavior: "If `output/MEMORY.md` exists, read it for context"
+- Use **conditional blocks** for optional behavior
 
 ### 3.3 Instruction budget
 
@@ -252,7 +252,7 @@ Key patterns summary:
 
 - **Human-in-the-loop**: Present a complete plan → wait for explicit confirmation → execute. Never auto-execute destructive or irreversible actions
 - **Structured output**: Define output format with a JSON schema example or template, not vague descriptions
-- **Conditional behavior**: Check if resources exist before using them ("if MEMORY.md exists, read it")
+- **Conditional behavior**: Check if resources exist before using them
 - **Parallel operations**: Launch independent operations simultaneously ("launch all independent queries in parallel")
 - **Proactive description**: Include activation keywords that match real user language
 - **Self-contained skills**: All necessary knowledge embedded — never depend on unverifiable external knowledge

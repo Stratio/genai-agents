@@ -2,7 +2,7 @@
 
 Skill local del agente `data-analytics-officer`. Orquesta el flujo analítico completo: intake, preguntas de clarificación, plan, consulta de datos gobernados vía MCP, análisis Python, visualizaciones, testing opcional, iteración, documentación de razonamiento y validación, y orquestación de la generación de deliverables a través de las skills writer declaradas en `AGENTS.md §8`.
 
-Es el único motor analítico del agente; cualquier otra skill local (`update-memory`) se orquesta desde aquí. La generación de deliverables se delega a `pdf-writer`, `docx-writer`, `pptx-writer`, `web-craft`, `canvas-craft` + `brand-kit`.
+Es el único motor analítico del agente. La generación de deliverables se delega a `pdf-writer`, `docx-writer`, `pptx-writer`, `web-craft`, `canvas-craft` + `brand-kit`.
 
 ## Qué hace
 

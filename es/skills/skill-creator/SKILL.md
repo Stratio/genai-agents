@@ -158,7 +158,7 @@ Este enfoque (a veces llamado "teoría de la mente") es más efectivo que las di
   | "Solo muéstrame las tablas" | Saltar a la fase 1 únicamente |
   ```
 - Usa **voz imperativa**: "Valida la entrada" (no "La entrada debería ser validada")
-- Usa **bloques condicionales** para comportamiento opcional: "Si `output/MEMORY.md` existe, léelo para obtener contexto"
+- Usa **bloques condicionales** para comportamiento opcional
 
 ### 3.3 Presupuesto de instrucciones
 
@@ -252,7 +252,7 @@ Resumen de patrones clave:
 
 - **Human-in-the-loop**: Presenta un plan completo → espera confirmación explícita → ejecuta. Nunca auto-ejecutes acciones destructivas o irreversibles
 - **Salida estructurada**: Define el formato de salida con un ejemplo de esquema JSON o plantilla, no con descripciones vagas
-- **Comportamiento condicional**: Comprueba si los recursos existen antes de usarlos ("si MEMORY.md existe, léelo")
+- **Comportamiento condicional**: Comprueba si los recursos existen antes de usarlos
 - **Operaciones en paralelo**: Lanza operaciones independientes simultáneamente ("lanza todas las consultas independientes en paralelo")
 - **Descripción proactiva**: Incluye palabras clave de activación que coincidan con el lenguaje real de los usuarios
 - **Skills autocontenidas**: Todo el conocimiento necesario integrado — nunca dependas de conocimiento externo no verificable

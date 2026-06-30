@@ -14,11 +14,7 @@ Read and follow `guides/stratio-data-tools.md` sec 5 for domain discovery steps 
 
 If the user provides an argument ($ARGUMENTS), search with `search_domains($ARGUMENTS, prefer_semantic=true)` (default: collapse technical entries when a semantic counterpart with prefix `semantic_` exists — the user's bare name resolves to the semantic version). Switch to `prefer_semantic=false` only if the user's wording explicitly targets the technical layer (see the agent's Discovery instructions for the closed list of trigger phrases). If the argument matches a domain, skip directly to exploring tables. If it does not match, ask the user which domain to explore following the user question convention (adaptive to the environment: interactive if available, numbered list in chat otherwise). Ask if they want to drill into a specific table or see all of them.
 
-## 2. Prior Domain Context
-
-If `output/MEMORY.md` exists, read the "Known Data Patterns" section for the domain being explored. If there are registered patterns, inform the user before profiling (e.g.: "In previous analyses it was detected that column X has ~35% nulls").
-
-## 3. Deepening (when scope is focused)
+## 2. Deepening (when scope is focused)
 
 When the user is focused on a specific domain or a small subset of tables, add a lightweight enrichment step after exploring columns. Skip this for broad multi-domain exploration — profiling is costly.
 
@@ -30,9 +26,9 @@ Summarize lightly (descriptive, do not turn this into an analysis):
 - From `profile_data`: notable null percentages, temporal range if date columns exist, anomalous cardinalities or outliers worth flagging.
 - From `get_tables_quality_details`: number of rules per table, status breakdown (OK / KO / WARNING / not-executed), dimensions with failing rules.
 
-Feed both findings into the summary of section 4. If `profile_data` flags an anomaly that no governance rule tracks (uncovered dimension), call it out as a candidate for the `assess-quality` skill.
+Feed both findings into the summary of section 3. If `profile_data` flags an anomaly that no governance rule tracks (uncovered dimension), call it out as a candidate for the `assess-quality` skill.
 
-## 4. Summary and Proactive Suggestions
+## 3. Summary and Proactive Suggestions
 
 Present a structured summary:
 - Domain explored and its purpose
@@ -40,8 +36,8 @@ Present a structured summary:
 - Main tables with their description
 - Key columns identified
 - Relevant business terms
-- Statistical highlights (if profiling was performed in section 3)
-- Governance quality coverage (if quality details were retrieved in section 3)
+- Statistical highlights (if profiling was performed in section 2)
+- Governance quality coverage (if quality details were retrieved in section 2)
 
 ### Suggested analyses based on the domain structure and findings
 

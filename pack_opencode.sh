@@ -258,9 +258,6 @@ fi
 # ---------------------------------------------------------------------------
 # Phase 6 — rsync remaining files
 # ---------------------------------------------------------------------------
-# Memory templates live under templates/memory/ and are copied as-is via rsync
-# (alongside templates/pdf/ and others). The agent skills initialize output/
-# from these templates on first write.
 rsync -a \
   --exclude=/README.md \
   --exclude=/USER_README.md \

@@ -304,10 +304,9 @@ Antes de invocar cualquier writer skill que produzca un entregable visual (PDF, 
 1. **Pin en instrucciones** — si este AGENTS.md (o una instrucción de skill downstream) fija un único tema para este rol, cargar silenciosamente.
 2. **Señal explícita en el brief del usuario** — si el usuario nombra un tema por nombre o un atributo inequívoco (`corporate-formal`, `luxury`, `brutalist`, `technical-minimal`, `editorial`, `forensic`), pre-rellenar y aplicar silenciosamente. Adjetivos vagos (`bonito`, `profesional`) NO cuentan — caer a la siguiente regla.
 3. **Continuidad intra-sesión** — si `brand-kit` ya produjo un tema en esta conversación y el usuario no ha indicado cambio, reutilizar silenciosamente.
-4. **Preferencia en MEMORY.md** — si `output/MEMORY.md` contiene una preferencia de marca coherente con el contexto actual, aplicar silenciosamente.
-5. **Propuesta curada por contexto** — proponer UN tema como default con una lista corta de alternativas, basada en el contexto actual.
+4. **Propuesta curada por contexto** — proponer UN tema como default con una lista corta de alternativas, basada en el contexto actual.
 
-**Cómo construir la propuesta curada (regla 5)**:
+**Cómo construir la propuesta curada (regla 4)**:
 
 Leer el catálogo vigente expuesto por `brand-kit` — cada tema declara un descriptor legible (típicamente una línea `Best for`). NO hardcodear mapeos audiencia→tema en estas instrucciones; razonar dimensionalmente contra el catálogo vigente para que cualquier tema añadido posteriormente a `brand-kit` se considere automáticamente.
 

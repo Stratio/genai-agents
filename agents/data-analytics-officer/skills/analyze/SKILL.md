@@ -115,11 +115,6 @@ Structure defaults to the analytical scaffold (executive summary → methodology
 
 Develop a detailed plan following the analytical framework (sec "Analytical Framework" of AGENTS.md):
 
-### 5.0 Historical context
-Read in parallel (if they exist):
-- `output/ANALYSIS_MEMORY.md` — quick triage: search for entries from the same domain. If there is a relevant entry, read its `analysis_memory.md` file referenced in the **Detail** field to obtain KPIs, insights, and reference baselines
-- `output/MEMORY.md` — sec "Known Data Patterns" for the domain to anticipate known data problems
-
 ### 5.1 Additional libraries
 Evaluate whether `requirements.txt` needs to be extended
 
@@ -389,65 +384,7 @@ If a finding does not pass the 4 questions → it is information, not insight. I
 
 For data storytelling principles and mapping findings → narrative, read [visualization.md](visualization.md) sections 3 and 4.
 
-## 8. Analysis Memory (Confirmation required)
-
-After presenting the final report, ask the user (following the question convention):
-
-"Would you like to save this analysis to persistent memory? The analysis registry (`ANALYSIS_MEMORY.md`) and the knowledge memory (`MEMORY.md`) will be updated."
-- **Yes** → Continue with steps 8.1, 8.2, and 8.3
-- **No** → Skip all memory writing steps. Finish without updating any memory files
-
-The following steps are executed **only if the user responds "Yes"**:
-
-**Language**: Write all memory content (detail file, index entries) in the user's language.
-
-### 8.1 Create analysis detail file
-
-Create `output/[ANALYSIS_DIR]/analysis_memory.md` with the full content:
-
-```markdown
-# Analysis Memory: Descriptive Title
-
-- **Domain**: exact_domain_name
-- **Question**: "User's original question"
-- **Folder**: `output/YYYY-MM-DD_HHMM_name/`
-- **Report**: `output/YYYY-MM-DD_HHMM_name/report.md`
-- **KPIs**: KPI1: value (period), KPI2: value (period)
-- **Insights**: Finding 1 (confidence), Finding 2 (confidence)
-- **Data Profiling Score**: HIGH/MEDIUM/LOW (N%)
-- **Theme applied** (if visual deliverables were generated): <theme_name>
-```
-
-### 8.2 Add compact entry to the index
-
-Add an entry at the end of `output/ANALYSIS_MEMORY.md` with only the triage fields:
-
-```markdown
----
-
-## YYYY-MM-DD HH:MM — Descriptive Title
-
-- **Domain**: exact_domain_name
-- **Summary**: Question + main finding in 1 sentence (max ~120 chars)
-- **Detail**: `output/YYYY-MM-DD_HHMM_name/analysis_memory.md`
-
----
-```
-
-If `output/ANALYSIS_MEMORY.md` does not exist, initialize it from the template before adding the entry:
-
-```bash
-mkdir -p output
-cp templates/memory/ANALYSIS_MEMORY.md output/ANALYSIS_MEMORY.md
-```
-
-Then append the entry at the end (chronological).
-
-### 8.3 Knowledge Memory
-
-After writing to ANALYSIS_MEMORY.md, invoke the skill `/update-memory` to update `output/MEMORY.md` with preferences, data patterns, and heuristics discovered in this analysis.
-
-## 9. Knowledge Proposal (Optional)
+## 8. Knowledge Proposal (Optional)
 
 After presenting the final report, ask the user following the question convention:
 - **Yes**: Analyze conversation and propose knowledge to the domain

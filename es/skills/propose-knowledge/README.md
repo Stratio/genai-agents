@@ -5,7 +5,6 @@ Analiza una conversación de análisis y **propone** conocimiento de negocio des
 ## Qué hace
 
 - Resuelve el dominio objetivo desde `$ARGUMENTS`, el contexto de la conversación (llamadas MCP previas) o preguntando al usuario.
-- Lee `output/MEMORY.md` (cuando existe) y aflora patrones de datos maduros (observados 3+ veces) como candidatos.
 - Clasifica los hallazgos en tres tipos de propuesta:
   - **`business_concept`** — definiciones de términos, segmentaciones, métricas, umbrales;
   - **`sql_preference`** — patrones SQL específicos del dominio (JOINs, filtros) descubiertos durante el análisis;
@@ -18,7 +17,6 @@ Analiza una conversación de análisis y **propone** conocimiento de negocio des
 ## Cuándo usarla
 
 - Tras una sesión de análisis en la que emergieron nuevas definiciones, métricas o patrones SQL/visuales.
-- Cuando `output/MEMORY.md` ha acumulado patrones maduros que merece formalizar en Governance.
 - Cuando el usuario dice "guarda esto como término de negocio", "registra que X significa Y" o "añade esto a gobierno".
 - Para autoría explícita, one-shot, de un business term con relaciones conocidas, prefiere `manage-business-terms`.
 
