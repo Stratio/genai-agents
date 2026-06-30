@@ -31,8 +31,9 @@ Gosec. **Sin token, sin impersonación** — la skill opera con los permisos pro
 usuario en el File Browser, los mismos que ve en la UI de Rocket.
 
 El ingress público (`:443`) es solo oauth2/cookie e ignora el certificado. Apunta
-`ROCKET_API_URL` al listener **mutual**, alcanzable en-cluster por DNS de servicio:
-`https://rocket.<tenant>-rocket.svc.<cluster-domain>:7777/rocket`.
+`ROCKET_API_URL` al listener **mutual**, alcanzable en-cluster por el nombre corto de
+servicio (resuelto por el search domain del pod): `https://<rocket-instance>.<rocket-namespace>:7777/rocket`
+(p.ej. `https://rocket.s000001-rocket:7777/rocket`).
 
 ## Variables de entorno
 

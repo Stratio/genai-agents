@@ -12,7 +12,7 @@ MVP subcommands: ``filesystems``, ``download``, ``upload``.
 
 ENVIRONMENT
     ROCKET_API_URL   Base URL incl. the ``/rocket`` prefix. Required.
-                     e.g. https://rocket.s000001-rocket.svc.fifteen.int:7777/rocket
+                     e.g. https://rocket.s000001-rocket:7777/rocket
     USER_CERT_PATH   Client certificate (default /vault/secrets/cert.crt)
     USER_KEY_PATH    Client private key   (default /vault/secrets/cert.key)
     CA_CERT_PATH     CA bundle            (default /stratio/certs/ca.crt)
@@ -75,7 +75,7 @@ def base_url() -> str:
         fail(
             "ROCKET_API_URL not set. Expected the Rocket mutual-TLS base URL incl. "
             "the /rocket prefix, e.g. "
-            "https://rocket.<tenant>-rocket.svc.<cluster-domain>:7777/rocket"
+            "https://<rocket-instance>.<rocket-namespace>:7777/rocket"
         )
     return url
 
