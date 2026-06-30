@@ -11,6 +11,10 @@
 
 Codecs válidos: `ZStandard`, `Lz4`, `Snappy`, `Gzip`, `Bzip2`, `Zip` (por defecto), `TarGz`.
 
+> **Rocket añade la extensión del codec** a `compressedFile`. Pasar `out.zip` con codec
+> `Zip` produce `out.zip.zip`. Pasa el nombre base sin extensión (p.ej. `out`) o cuenta
+> con el sufijo — y usa el nombre completo resultante al extraer.
+
 ## Procedimiento
 
 1. **Pre-check** — ver `SKILL.md`.
