@@ -70,7 +70,7 @@ Para el contrato completo de layout (iconografía, KPI cards, composición por f
 
 ## 4. Decisiones de branding
 
-Antes de invocar cualquier writer skill para un formato de fichero, fijar el tema siguiendo la cascada de branding del agente host. Cuando el agente host declara un contrato format→skill con una sub-sección §Decisiones de branding, seguir esa cascada — típicamente 5 niveles: pin → señal explícita → continuidad intra-sesión → preferencia en MEMORY → propuesta curada.
+Antes de invocar cualquier writer skill para un formato de fichero, fijar el tema siguiendo la cascada de branding del agente host. Cuando el agente host declara un contrato format→skill con una sub-sección §Decisiones de branding, seguir esa cascada — típicamente 4 niveles: pin → señal explícita → continuidad intra-sesión → propuesta curada.
 
 **Default neutro primario para informes de calidad** (cuando ninguna regla de la cascada resuelve a un tema concreto): `forensic-audit`. Encaja con el registro de auditoría de un informe de cobertura y mantiene visualmente estables las re-ejecuciones mes a mes del mismo dataset. La propuesta curada debe preferir temas cuyo descriptor mencione "audit", "technical", "editorial" o "corporate".
 

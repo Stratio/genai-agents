@@ -5,7 +5,6 @@ Analyses an analysis conversation and **proposes** discovered business knowledge
 ## What it does
 
 - Resolves the target domain from `$ARGUMENTS`, the conversation context (previous MCP calls), or by asking the user.
-- Reads `output/MEMORY.md` (when present) and surfaces mature data patterns (observed 3+ times) as candidates.
 - Classifies findings into three proposal types:
   - **`business_concept`** — term definitions, segmentations, metrics, thresholds;
   - **`sql_preference`** — domain-specific SQL patterns (JOINs, filters) discovered during the analysis;
@@ -18,7 +17,6 @@ Analyses an analysis conversation and **proposes** discovered business knowledge
 ## When to use it
 
 - After an analysis session in which new definitions, metrics or SQL/visual patterns emerged.
-- When `output/MEMORY.md` has accumulated mature patterns worth formalising in Governance.
 - When the user says "save this as a business term", "record that X means Y", or "add this to governance".
 - For explicit, one-shot authoring of a business term with known relationships, prefer `manage-business-terms`.
 

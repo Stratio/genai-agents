@@ -13,7 +13,6 @@ Agente completo de Business Intelligence y Business Analytics para OpenCode y St
 - **Lectura de PDF** — extraer texto, tablas, imágenes y datos de formulario de PDFs (`pdf-reader`); lectura de Excel — extraer celdas, tablas, fórmulas y metadatos de XLSX (`xlsx-reader`)
 - **Evaluación y reporte de cobertura de calidad de datos** (solo lectura) — evaluar reglas de calidad existentes, identificar gaps de cobertura, generar informes de calidad en Chat/PDF/DOCX/Markdown. La creación y planificación de reglas queda reservada a los agentes Data Quality / Governance Officer.
 - Documentación del razonamiento y validación de output
-- Memoria persistente de análisis y preferencias
 
 ## Requisitos
 
@@ -48,7 +47,6 @@ Los pack scripts solo son necesarios para distribuir el agente fuera del reposit
 | Exploración | `/explore-data` | **shared** | Exploración rápida de dominios, tablas, columnas y terminología de negocio |
 | Evaluación de calidad | `/assess-quality` | **shared** | Evaluación de cobertura de calidad para un dominio, tabla o columna; identifica dimensiones cubiertas, gaps y prioridades |
 | Informe de calidad | `/quality-report` | **shared** | Generar un informe formal de cobertura de calidad de datos (Chat / PDF / DOCX / Markdown) |
-| Memoria | `/update-memory` | local | Actualizar memoria persistente con preferencias, patrones y heurísticas |
 | Conocimiento | `/propose-knowledge` | **shared** | Proponer términos de negocio descubiertos a Stratio Governance |
 | Lectura de PDF | `/pdf-reader` | **shared** | Extraer texto, tablas, imágenes y datos de formulario de archivos PDF |
 | Escritura de PDF | `/pdf-writer` | **shared** | PDFs multi-página o dominados por prosa (informes ligeros con ≤3 KPIs, facturas, cartas, newsletters, certificados). También combinar/dividir/rotar, marca de agua, cifrar, rellenar formularios |
@@ -67,12 +65,3 @@ Las skills marcadas como **shared** viven en `skills/` en la raíz del monorepo 
 ## Herramientas de generación
 
 Este agente delega la generación de deliverables en las skills writer (`pdf-writer`, `docx-writer`, `pptx-writer`, `web-craft`, `canvas-craft` + `brand-kit`) según el contrato formato→skill en `AGENTS.md §8`. La única utilidad local es `skills/analyze/chart_layout.py` (helpers anti-solapamiento para gráficas matplotlib y Plotly generadas durante el análisis — títulos, subtítulos, leyendas, márgenes, más conversión hex/RGB a `rgba()` compatible con Plotly).
-
-## Memoria persistente
-
-El agente mantiene memoria entre sesiones en dos ficheros:
-
-- `output/MEMORY.md` — Preferencias del usuario, patrones de datos conocidos, heurísticas aprendidas
-- `output/ANALYSIS_MEMORY.md` — Índice cronológico de análisis realizados con dominio, resumen y ruta al detalle
-
-Las plantillas iniciales (semilla) viven en `templates/memory/` (versionadas y traducidas). Las skills de escritura del agente (`/update-memory` y `/analyze`) las copian a `output/` la primera vez que necesitan escribir, así el `output/` de runtime queda fuera de git (`**/output/` está en `.gitignore`).

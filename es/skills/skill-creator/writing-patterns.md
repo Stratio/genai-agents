@@ -136,29 +136,6 @@ La versión buena establece un objetivo claro; la versión mala es un campo de m
 
 ## 3. Comportamiento condicional
 
-### ✅ Check before using (verificar antes de usar)
-
-Verifica que los recursos existen antes de referenciarlos.
-
-**Bien:**
-```markdown
-## 2. Gather Context
-
-If `output/MEMORY.md` exists, read the "Known Data Patterns" section for patterns
-observed in previous sessions for this domain (3+ occurrences = mature pattern).
-
-If the file does not exist, proceed without prior context — this is the first session.
-```
-
-**Mal:**
-```markdown
-## 2. Gather Context
-
-Read `output/MEMORY.md` section "Known Data Patterns" for prior session context.
-```
-
-La versión incorrecta asume que el fichero existe y provocará un error en la primera sesión.
-
 ### ✅ Scope-dependent behavior (comportamiento según el alcance)
 
 Ajusta el comportamiento en función del alcance de la petición.

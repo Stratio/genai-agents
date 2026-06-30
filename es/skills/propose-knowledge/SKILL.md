@@ -16,8 +16,6 @@ Guía para analizar una conversación de análisis y proponer conocimiento de ne
 
 ## 2. Recopilar Contexto de la Conversación
 
-Revisar `output/MEMORY.md` sec "Patrones de Datos Conocidos" si existe — si hay patrones maduros del dominio (observados 3+ veces), considerar incluirlos como candidatos a propuesta de conocimiento gobernado.
-
 Analizar TODO lo ocurrido en la conversación — pregunta original, plan de análisis, datos obtenidos, cálculos realizados, insights descubiertos, conclusiones y recomendaciones.
 
 Clasificar los hallazgos en dos categorías:

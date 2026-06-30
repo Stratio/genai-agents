@@ -115,11 +115,6 @@ La estructura por defecto es el scaffold analítico (resumen ejecutivo → metod
 
 Elaborar un plan detallado siguiendo el framework analítico (sec "Framework Analítico" de AGENTS.md):
 
-### 5.0 Contexto histórico
-Leer en paralelo (si existen):
-- `output/ANALYSIS_MEMORY.md` — triage rápido: buscar entradas del mismo dominio. Si hay una entrada relevante, leer su fichero `analysis_memory.md` referenciado en el campo **Detalle** para obtener KPIs, insights y baselines de referencia
-- `output/MEMORY.md` — sec "Patrones de Datos Conocidos" del dominio para anticipar problemas de datos conocidos
-
 ### 5.1 Librerias adicionales
 Evaluar si `requirements.txt` necesita ampliarse
 
@@ -389,65 +384,7 @@ Si un hallazgo no pasa las 4 preguntas → es información, no insight. No va al
 
 Para principios de data storytelling y mapping hallazgos → narrativa, leer [visualization.md](visualization.md) secciones 3 y 4.
 
-## 8. Memoria de Análisis (Confirmación requerida)
-
-Tras presentar el reporte final, preguntar al usuario (siguiendo la convención de preguntas):
-
-"¿Deseas guardar este análisis en la memoria persistente? Se actualizarán el registro de análisis (`ANALYSIS_MEMORY.md`) y la memoria de conocimiento (`MEMORY.md`)."
-- **Si** → Continuar con los pasos 8.1, 8.2 y 8.3
-- **No** → Saltar todos los pasos de escritura de memoria. Finalizar sin actualizar ningún fichero de memoria
-
-Los pasos siguientes se ejecutan **solo si el usuario responde "Sí"**:
-
-**Idioma**: Redactar todo el contenido de memoria (fichero de detalle, entradas del índice) en el idioma del usuario.
-
-### 8.1 Crear fichero de detalle del análisis
-
-Crear `output/[ANALISIS_DIR]/analysis_memory.md` con el contenido completo:
-
-```markdown
-# Memoria del Análisis: Título Descriptivo
-
-- **Dominio**: nombre_exacto_dominio
-- **Pregunta**: "Pregunta original del usuario"
-- **Carpeta**: `output/YYYY-MM-DD_HHMM_nombre/`
-- **Reporte**: `output/YYYY-MM-DD_HHMM_nombre/report.md`
-- **KPIs**: KPI1: valor (periodo), KPI2: valor (periodo)
-- **Insights**: Hallazgo 1 (confianza), Hallazgo 2 (confianza)
-- **Data Profiling Score**: ALTO/MEDIO/BAJO (N%)
-- **Tema aplicado** (si se generaron entregables visuales): <nombre_tema>
-```
-
-### 8.2 Añadir entrada compacta al índice
-
-Añadir entrada al final de `output/ANALYSIS_MEMORY.md` con solo los campos de triage:
-
-```markdown
----
-
-## YYYY-MM-DD HH:MM — Título Descriptivo
-
-- **Dominio**: nombre_exacto_dominio
-- **Resumen**: Pregunta + hallazgo principal en 1 frase (max ~120 chars)
-- **Detalle**: `output/YYYY-MM-DD_HHMM_nombre/analysis_memory.md`
-
----
-```
-
-Si `output/ANALYSIS_MEMORY.md` no existe, inicialízalo a partir del template antes de añadir la entrada:
-
-```bash
-mkdir -p output
-cp templates/memory/ANALYSIS_MEMORY.md output/ANALYSIS_MEMORY.md
-```
-
-Luego añade la entrada al final (cronológicas).
-
-### 8.3 Memoria de Conocimiento
-
-Tras escribir en ANALYSIS_MEMORY.md, invocar la skill `/update-memory` para actualizar `output/MEMORY.md` con preferencias, patrones de datos y heurísticas descubiertas en este análisis.
-
-## 9. Propuesta de Conocimiento (Opcional)
+## 8. Propuesta de Conocimiento (Opcional)
 
 Tras presentar el reporte final, preguntar al usuario siguiendo la convención de preguntas:
 - **Si**: Analizar conversación y proponer conocimiento al dominio

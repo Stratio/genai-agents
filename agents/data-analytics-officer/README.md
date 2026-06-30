@@ -13,7 +13,6 @@ Complete Business Intelligence and Business Analytics agent for OpenCode and Str
 - **PDF reading** — extract text, tables, images, form data from PDFs (`pdf-reader`); Excel reading — extract cells, tables, formulas, metadata from XLSX (`xlsx-reader`)
 - **Data quality coverage assessment and reporting** (read-only) — evaluate existing quality rules, identify coverage gaps, generate quality reports in Chat/PDF/DOCX/Markdown. Rule creation and scheduling remain in the Data Quality / Governance Officer agents.
 - Reasoning documentation and output validation
-- Persistent memory for analyses and preferences
 
 ## Requirements
 
@@ -48,7 +47,6 @@ Pack scripts are only needed to distribute the agent outside the repository.
 | Exploration | `/explore-data` | **shared** | Quick exploration of domains, tables, columns, and business terminology |
 | Quality assessment | `/assess-quality` | **shared** | Assess quality coverage for a domain, table, or column; identify dimensions covered, gaps, and priorities |
 | Quality report | `/quality-report` | **shared** | Generate a formal data quality coverage report (Chat / PDF / DOCX / Markdown) |
-| Memory | `/update-memory` | local | Update persistent memory with preferences, patterns, and heuristics |
 | Knowledge | `/propose-knowledge` | **shared** | Propose discovered business terms to Stratio Governance |
 | PDF reading | `/pdf-reader` | **shared** | Extract text, tables, images and form data from PDF files |
 | PDF writing | `/pdf-writer` | **shared** | Designed multi-page or prose-dominated PDFs (data-light reports with ≤3 KPIs, invoices, letters, newsletters, certificates). Also merge/split/rotate, watermark, encrypt, fill forms |
@@ -67,12 +65,3 @@ Skills marked as **shared** live in `skills/` at the monorepo root and are share
 ## Generation tools
 
 This agent delegates deliverable generation to the writer skills (`pdf-writer`, `docx-writer`, `pptx-writer`, `web-craft`, `canvas-craft` + `brand-kit`) per the format→skill contract in `AGENTS.md §8`. The only local utility is `skills/analyze/chart_layout.py` (anti-overlap helpers for matplotlib and Plotly charts produced during analysis — titles, subtitles, legends, margins, plus hex/RGB to `rgba()` conversion for Plotly-safe transparency).
-
-## Persistent memory
-
-The agent maintains memory between sessions in two files:
-
-- `output/MEMORY.md` — User preferences, known data patterns, learned heuristics
-- `output/ANALYSIS_MEMORY.md` — Chronological index of completed analyses with domain, summary, and path to detail
-
-Initial seed templates live under `templates/memory/` (versioned and translated). The agent's writing skills (`/update-memory` and `/analyze`) copy them into `output/` the first time they need to write, so the runtime `output/` stays out of git (`**/output/` is in `.gitignore`).

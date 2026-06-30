@@ -159,7 +159,6 @@ When writing the SKILL.md body, follow the rules at the top of this file (self-c
 
 - **Do not reference `AGENTS.md` or `CLAUDE.md` by name.** Use generic phrasing such as "according to the agent's instructions" or "following the user question convention". The pack scripts substitute the agent-instructions filename depending on the target platform (OpenCode uses `AGENTS.md`, Claude Code uses `CLAUDE.md`); a literal reference would silently break on the other platform.
 - **Reference guides as `guides/<file>.md`** regardless of how deep the referencing file lives inside the skill. The pack scripts copy the guide flat next to `SKILL.md` and run a recursive `sed 's|guides/||g'` over every `.md` in the skill at packaging time, so all references become flat filenames in the bundle and the skill stays packable standalone.
-- **Memory references must be conditional.** `output/MEMORY.md` (or similar persisted memory files) only exists for agents that persist state between sessions. Phrase memory-related instructions as "if `output/MEMORY.md` exists, …" so chat-only agents ignore the section without errors.
 
 ## See also
 

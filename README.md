@@ -95,10 +95,6 @@ The flat format is automatically normalized to canonical when packaging (`<name>
 
 Search locations (by priority order): `skills/` → `.claude/skills/` → `.opencode/skills/` → `.agents/skills/`.
 
-### Memory templates
-
-If an agent persists memory between sessions, its seed files live under `templates/memory/` (e.g. `templates/memory/MEMORY.md`). The agent's writing skills are responsible for copying the template into `output/` the first time they need to write — `**/output/` stays in `.gitignore` and pack scripts never create `output/` in the package. This keeps a single source of truth for the initial structure and avoids duplicating templates inline inside SKILL.md files.
-
 ## System dependencies
 
 Several skills and Python libraries require OS-level packages that `pip` cannot install. The table below is the single source of truth. Each agent's `README.md` and each skill's `README.md` references this section instead of duplicating the list.
@@ -182,7 +178,6 @@ All content files that the agent presents to the user or uses as instructions:
 | Top-level folder READMEs | `agents/README.md`, `guides/README.md`, `plugins/README.md`, `skills/README.md` | — | **No** — they are repo-only metadocumentation, never bundled |
 | Repository root README | `README.md` | — | **No** — same reason as above |
 | Cowork metadata | `cowork-metadata.yaml` | `es/.../cowork-metadata.yaml` | Yes |
-| Memory templates | `templates/memory/*.md` | `es/.../templates/memory/*.md` | Yes |
 | Python code, HTML, CSS | `tools/*.py`, `templates/` | — | No |
 | Config files | `.mcp.json`, `opencode.json` | — | No |
 | Manifests | `imported-skills`, `guides`, `plugin.yaml` | — | No |
@@ -263,10 +258,7 @@ my-agent/
 ├── imported-skills        # (Optional) List of shared skills imported from the monorepo
 ├── guides                 # (Optional) List of root-level guides that AGENTS.md uses directly
 └── templates/             # (Optional) Static templates used by the agent
-    └── memory/            # (Optional) Persistent memory seed files (MEMORY.md, etc.)
 ```
-
-The `templates/memory/` directory is optional: use it only if the agent needs to persist memory between sessions (the writing skill copies the seed into `output/` on first write).
 
 The `imported-skills` and `guides` files (plain text, one entry per line) allow including skills and guides from the monorepo without duplicating them. See [Shared skills](#shared-skills) for details.
 

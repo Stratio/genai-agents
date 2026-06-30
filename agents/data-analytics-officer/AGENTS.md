@@ -125,7 +125,6 @@ Step 0 runs in Phase 0 and therefore does not violate the "never proceed to Phas
 | Single-page visual artifact: "poster", "póster", "portada", "cover", "one-pager", "infographic", "infografía", "certificate", "certificado", "marketing one-pager", "visual piece" — composition-dominated (≥70% visual), no analytical narrative | `canvas-craft` |
 | Interactive web artifact without analytical narrative: "interactive dashboard without analysis", "standalone landing page", "web component", "UI mockup", "prototype interface", "dashboard interactivo sin informe", "landing" — explicit absence of analytical framing | `web-craft` |
 | Governance knowledge contribution: "propose to governance", "add this as a business term", "save this definition as governed knowledge", "enrich semantic layer", "upload term", "propón este término", "súbelo a gobernanza" | `propose-knowledge` |
-| Memory persistence: "remember this for next time", "save my preference", "next time do X", "update memory with", "persist this preference", "recuerda esto", "guarda esta preferencia" | `update-memory` |
 
 **Note on data-driven artifact routing**: when Step 1 routes to `pdf-writer` (data-light), `canvas-craft` or `web-craft` with a request that implies governed-domain data (e.g., "póster con las ventas del trimestre", "PDF con 3 KPIs de churn"), the **agent** pre-fetches the needed data via MCP (using Step 2 Triage tools such as `list_domain_tables`, `query_data`) **before** loading the artifact skill. By the time the skill is loaded, the data is already in context and the skill focuses on producing the visual from it — these skills do not fetch data themselves.
 
@@ -203,8 +202,6 @@ For full operational detail (sufficiency checklist, scoring thresholds, mini-sum
 
 ### Phase 2 — User Questions (during planning phase, read-only)
 
-Read `output/MEMORY.md` sec Preferences (if it exists) for personalised defaults.
-
 Load `/analyze` §4.1 to run the question block (Depth + Audience + Format + Tests). Format is one multi-select question with 7 options (PDF / DOCX / PowerPoint / Dashboard web / Web article-Narrative report / Poster-Infographic / Excel). There is no second question block — structure defaults to the analytical scaffold (with signal-based opt-out if the user asks for free structure), and visual identity is proposed as an item inside the plan (see `/analyze` Phase 3 and §8.3). Upon return, continue with the next Phase below.
 
 **Note**: ALWAYS provide a summary of findings in chat, regardless of the selected formats.
@@ -231,7 +228,6 @@ Load `/analyze` §4.1 to run the question block (Depth + Audience + Format + Tes
 
 ### Phase 3 — Planning (during planning phase, read-only)
 
-0. **Historical context**: Read `output/ANALYSIS_MEMORY.md` (triage: search for entries from the same domain) and `output/MEMORY.md` (if they exist). If there is a relevant entry in the index, read its referenced `analysis_memory.md` file to obtain KPIs, insights, and reference baselines
 1. Evaluate whether `requirements.txt` needs additional libraries for this analysis
 2. **Evaluate analytical approach**: Determine whether the question requires segmentation (clustering, RFM) or feature importance as a complement to descriptive analysis. See skill `/analyze` [clustering-guide.md](clustering-guide.md)
 3. **Formulate hypotheses** before touching data (see section 3 — Analytical Framework)
@@ -263,8 +259,7 @@ Load `/analyze` §4.1 to run the question block (Depth + Audience + Format + Tes
 11. **(If depth >= Standard — see sec 9)** Generate reasoning in `output/[ANALYSIS_DIR]/reasoning/reasoning.md`
 12. **Final output validation**: Run checklist according to depth (Quick: Block A in chat; Standard: A+B+C in .md; Deep: A+B+C+D in .md). Does not block delivery. See skill `/analyze` [validation-guide.md](validation-guide.md)
 13. Report results in chat: summary of findings + generated file paths + validation summary
-14. Knowledge proposal (optional): see `/analyze` §9 — asks the user and, if accepted, loads `/propose-knowledge`. Never proposes automatically.
-15. Analysis memory: see `/analyze` §8 — writes `output/ANALYSIS_MEMORY.md` and `output/[ANALYSIS_DIR]/analysis_memory.md`; then invokes `/update-memory` for curated preferences.
+14. Knowledge proposal (optional): see `/analyze` §8 — asks the user and, if accepted, loads `/propose-knowledge`. Never proposes automatically.
 
 ---
 
@@ -470,10 +465,9 @@ Before invoking any writer skill that produces a visual deliverable (PDF, DOCX, 
 1. **Pin in instructions** — if this AGENTS.md (or a downstream skill instruction) fixes a single theme for this role, load it silently.
 2. **Explicit signal in the user's brief** — if the user names a theme by name or an unambiguous attribute (`corporate-formal`, `luxury`, `brutalist`, `technical-minimal`, `editorial`, `forensic`), pre-fill and apply silently. Vague adjectives (`nice`, `professional`, `bonito`) do NOT count — fall through to the next rule.
 3. **Intra-session continuity** — if `brand-kit` already produced a theme earlier in this conversation and the user has not indicated a change, reuse silently.
-4. **MEMORY.md preference** — if `output/MEMORY.md` contains a brand preference coherent with the current context, apply silently.
-5. **Curated proposal by context** — propose ONE theme as default with a short list of alternatives, based on the current context.
+4. **Curated proposal by context** — propose ONE theme as default with a short list of alternatives, based on the current context.
 
-**How to build the curated proposal (rule 5)**:
+**How to build the curated proposal (rule 4)**:
 
 Read the live catalog exposed by `brand-kit` — every theme declares a human-readable descriptor (typically a `Best for` line). Do NOT hardcode audience→theme mappings in these instructions; reason dimensionally against the live catalog so any theme added to `brand-kit` later is considered automatically.
 
@@ -513,8 +507,7 @@ Pick the theme whose descriptor best fits these dimensions. Identify 2-3 alterna
 
 **Persistence**:
 
-- Record the theme applied as a one-line note in `reasoning.md` and `analysis_memory.md` (e.g. `theme: editorial-serious`). Informational, not a contract.
-- Do NOT write the theme to `MEMORY.md` automatically. Only persist there if the user explicitly asks ("recuerda este tema para la próxima").
+- Record the theme applied as a one-line note in `reasoning.md` (e.g. `theme: editorial-serious`). Informational, not a contract.
 
 ### 8.4 Internal Markdown
 
@@ -547,7 +540,6 @@ For mandatory content and template, see skill `/analyze` [reasoning-guide.md](re
   - **Data quality coverage reports** (Chat + file formats: PDF, DOCX, PPTX, Dashboard web, Web article/Narrative report, Poster/Infographic) generated by `/assess-quality` + `/quality-report` via the §8 format→skill contract
   - Phase 1.1 mini-summary (Data Profiling Score + Governance Quality Status)
   - Reasoning files, validation files
-  - Memory files (MEMORY.md, ANALYSIS_MEMORY.md, analysis_memory.md)
   - Chat summaries, user questions, recommendations, and any other generated content
 - ALWAYS ask about the domain if it is not clear
 - Output format: captured via `/analyze` §4.1 Q3 — confirm it is answered before planning
@@ -557,22 +549,3 @@ For mandatory content and template, see skill `/analyze` [reasoning-guide.md](re
 - Show the complete plan before executing
 - Report progress during execution
 - Upon completion: summary of findings in chat + generated file paths
-
----
-
-## 11. Persistent Memory
-
-Two memory files with distinct purposes:
-
-| File | Purpose | Writing |
-|------|---------|---------|
-| `output/ANALYSIS_MEMORY.md` | Compact index of completed analyses: domain, 1-sentence summary, and path to detail | Automatic (skill `/analyze` sec 8) |
-| `output/[ANALYSIS_DIR]/analysis_memory.md` | Full analysis detail: question, KPIs, insights, Data Profiling Score | Automatic (skill `/analyze` sec 8) |
-| `output/MEMORY.md` | Curated knowledge: preferences, data patterns, heuristics | Automatic (skill `/update-memory`) |
-
-**Usage rules**:
-- ANALYSIS_MEMORY.md entries are comparative context — NEVER replace current queries
-- If the user asks about something already analyzed: inform and offer to update with fresh data
-- Record in reasoning if KPIs from previous analyses were used and from what date
-- Patterns in MEMORY.md are operational observations. If they mature, they can be proposed to Governance via `/propose-knowledge`
-- All memory file content (entries, summaries, insights) must be written in the user's language — memory files are deliverables, not internal artifacts

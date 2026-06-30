@@ -62,4 +62,4 @@ All scripts are non-interactive (CI/CD-friendly). If `--name` is not provided, t
 
 All skills live in `skills/` at the monorepo root and are shared with the data-governance-officer agent.
 
-**Note**: This agent does not use persistent memory in files nor generates files on disk — the main output is interaction with MCP tools + summaries in chat.
+**Note**: This agent does not generate files on disk — the main output is interaction with MCP tools + summaries in chat.
