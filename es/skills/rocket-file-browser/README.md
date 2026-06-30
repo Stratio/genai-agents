@@ -9,14 +9,18 @@ Diseñada como **router** (igual que `cowork-api`): un `SKILL.md` mínimo indexa
 capacidades y apunta a un fichero autocontenido bajo `tasks/` por capacidad. Un único
 cliente Python, `scripts/rocket_file_browser.py`, hace el trabajo HTTP.
 
-## Qué hace (MVP)
+## Qué hace
 
-- **Descargar** — `POST /fileBrowser/download`, streaming de los bytes a una ruta local.
-- **Subir** — dos fases: `POST /fileBrowser/uploadLocalFile` (multipart) y luego
+- **download** — `POST /fileBrowser/download`, streaming de los bytes a una ruta local.
+- **upload** — dos fases: `POST /fileBrowser/uploadLocalFile` (multipart) y luego
   `POST /fileBrowser/putLocalFileToHadoopFs`, con reintento automático del HTTP 420.
+- **ls** — `POST /fileBrowser/findByPath` (listado de directorio / stat de fichero).
+- **cp** / **mv** — `PUT /fileBrowser/copy` / `PUT /fileBrowser/update`.
+- **rm** — `DELETE /fileBrowser/delete` (una o varias rutas).
+- **mkdir** — `POST /fileBrowser/createDir`.
+- **compress** / **extract** — `PUT /fileBrowser/compress` (codecs: ZStandard, Lz4,
+  Snappy, Gzip, Bzip2, Zip, TarGz) / `PUT /fileBrowser/extract`.
 - **filesystems** (ayudante) — `GET /fileBrowser/getFilesystems` para descubrir `id`/`type`.
-
-Extensión planificada (alcance completo): `ls`, `cp`, `mv`, `rm`, `mkdir`, `compress`, `extract`.
 
 ## Autenticación e identidad
 
