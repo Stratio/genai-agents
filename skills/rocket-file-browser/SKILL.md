@@ -18,11 +18,11 @@ which handles mTLS, the two-phase upload, and the HTTP 420 retry.
 Authentication is **mTLS only**, the same model as `guides/external-api-calls.md`
 (§1 environment, §3/§4 templates, §5 error table). The differences from that guide:
 
-- The base URL is **`ROCKET_API_URL`** (not `GENAI_API_URL`). It must include the
-  `/rocket` prefix and point at Rocket's **mutual-TLS** listener (port 7777), e.g.
-  `https://<rocket-instance>.<rocket-namespace>:7777/rocket` (in-cluster short
-  service name, resolved via the pod search domain — e.g.
-  `https://rocket.s000001-rocket:7777/rocket`). The public
+- The base URL is **`ROCKET_API_URL`** (not `GENAI_API_URL`). It is the **host:port**
+  of Rocket's **mutual-TLS** listener (port 7777) with **no path** — the skill calls
+  `/fileBrowser/...` directly. Use the in-cluster short service name (resolved via the
+  pod search domain), e.g. `https://<rocket-instance>.<rocket-namespace>:7777`
+  (e.g. `https://rocket.s000001-rocket:7777`). The public
   ingress (443) is oauth2/cookie only and will **not** accept the certificate.
 - The client cert (`/vault/secrets/cert.crt`, CN = the operating user) is the
   identity Rocket authorizes with. No token, no impersonation — calls run with the
