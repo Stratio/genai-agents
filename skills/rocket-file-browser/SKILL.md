@@ -20,7 +20,9 @@ Authentication is **mTLS only**, the same model as `guides/external-api-calls.md
 
 - The base URL is **`ROCKET_API_URL`** (not `GENAI_API_URL`). It must include the
   `/rocket` prefix and point at Rocket's **mutual-TLS** listener (port 7777), e.g.
-  `https://rocket.<tenant>-rocket.svc.<cluster-domain>:7777/rocket`. The public
+  `https://<rocket-instance>.<rocket-namespace>:7777/rocket` (in-cluster short
+  service name, resolved via the pod search domain — e.g.
+  `https://rocket.s000001-rocket:7777/rocket`). The public
   ingress (443) is oauth2/cookie only and will **not** accept the certificate.
 - The client cert (`/vault/secrets/cert.crt`, CN = the operating user) is the
   identity Rocket authorizes with. No token, no impersonation — calls run with the

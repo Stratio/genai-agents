@@ -31,8 +31,9 @@ operating user, e.g. `s000001-user`) is the identity Rocket authorizes with via 
 permissions, the same ones they see in the Rocket UI.
 
 The public ingress (`:443`) is oauth2/cookie only and ignores the certificate. Point
-`ROCKET_API_URL` at the **mutual** listener, reachable in-cluster by service DNS:
-`https://rocket.<tenant>-rocket.svc.<cluster-domain>:7777/rocket`.
+`ROCKET_API_URL` at the **mutual** listener, reachable in-cluster by the short service
+name (resolved via the pod search domain): `https://<rocket-instance>.<rocket-namespace>:7777/rocket`
+(e.g. `https://rocket.s000001-rocket:7777/rocket`).
 
 ## Environment variables
 
