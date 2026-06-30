@@ -31,15 +31,16 @@ Gosec. **Sin token, sin impersonación** — la skill opera con los permisos pro
 usuario en el File Browser, los mismos que ve en la UI de Rocket.
 
 El ingress público (`:443`) es solo oauth2/cookie e ignora el certificado. Apunta
-`ROCKET_API_URL` al listener **mutual**, alcanzable en-cluster por el nombre corto de
-servicio (resuelto por el search domain del pod): `https://<rocket-instance>.<rocket-namespace>:7777/rocket`
-(p.ej. `https://rocket.s000001-rocket:7777/rocket`).
+`ROCKET_API_URL` al listener **mutual** (host:puerto, **sin path** — la skill llama a
+`/fileBrowser/...`), alcanzable en-cluster por el nombre corto de servicio (resuelto por
+el search domain del pod): `https://<rocket-instance>.<rocket-namespace>:7777`
+(p.ej. `https://rocket.s000001-rocket:7777`).
 
 ## Variables de entorno
 
 | Variable | Requerida | Default | Propósito |
 |---|---|---|---|
-| `ROCKET_API_URL` | sí | — | URL base incl. `/rocket`, sobre el listener mutual 7777 |
+| `ROCKET_API_URL` | sí | — | Host:puerto del listener mutual 7777 (sin path), p.ej. `https://rocket.s000001-rocket:7777` |
 | `USER_CERT_PATH` | sí | `/vault/secrets/cert.crt` | Cert cliente (mTLS) |
 | `USER_KEY_PATH` | sí | `/vault/secrets/cert.key` | Clave cliente |
 | `CA_CERT_PATH` | al verificar | `/stratio/certs/ca.crt` | CA para validar el cert servidor |
