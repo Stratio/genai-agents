@@ -31,15 +31,16 @@ operating user, e.g. `s000001-user`) is the identity Rocket authorizes with via 
 permissions, the same ones they see in the Rocket UI.
 
 The public ingress (`:443`) is oauth2/cookie only and ignores the certificate. Point
-`ROCKET_API_URL` at the **mutual** listener, reachable in-cluster by the short service
-name (resolved via the pod search domain): `https://<rocket-instance>.<rocket-namespace>:7777/rocket`
-(e.g. `https://rocket.s000001-rocket:7777/rocket`).
+`ROCKET_API_URL` at the **mutual** listener (host:port, **no path** — the skill calls
+`/fileBrowser/...`), reachable in-cluster by the short service name (resolved via the
+pod search domain): `https://<rocket-instance>.<rocket-namespace>:7777`
+(e.g. `https://rocket.s000001-rocket:7777`).
 
 ## Environment variables
 
 | Variable | Required | Default | Purpose |
 |---|---|---|---|
-| `ROCKET_API_URL` | yes | — | Base URL incl. `/rocket`, on the 7777 mutual listener |
+| `ROCKET_API_URL` | yes | — | Host:port of the 7777 mutual listener (no path), e.g. `https://rocket.s000001-rocket:7777` |
 | `USER_CERT_PATH` | yes | `/vault/secrets/cert.crt` | Client cert (mTLS) |
 | `USER_KEY_PATH` | yes | `/vault/secrets/cert.key` | Client key |
 | `CA_CERT_PATH` | when verifying | `/stratio/certs/ca.crt` | CA to validate the server cert |

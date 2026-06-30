@@ -18,11 +18,11 @@ que gestiona el mTLS, la subida en dos fases y el reintento del HTTP 420.
 La autenticación es **solo mTLS**, mismo modelo que `guides/external-api-calls.md`
 (§1 entorno, §3/§4 plantillas, §5 tabla de errores). Diferencias respecto a esa guía:
 
-- La URL base es **`ROCKET_API_URL`** (no `GENAI_API_URL`). Debe incluir el prefijo
-  `/rocket` y apuntar al listener **mutual-TLS** de Rocket (puerto 7777), p.ej.
-  `https://<rocket-instance>.<rocket-namespace>:7777/rocket` (nombre corto de servicio
-  en-cluster, resuelto por el search domain del pod — p.ej.
-  `https://rocket.s000001-rocket:7777/rocket`). El ingress
+- La URL base es **`ROCKET_API_URL`** (no `GENAI_API_URL`). Es el **host:puerto** del
+  listener **mutual-TLS** de Rocket (puerto 7777), **sin path** — la skill llama a
+  `/fileBrowser/...` directamente. Usa el nombre corto de servicio en-cluster (resuelto
+  por el search domain del pod), p.ej. `https://<rocket-instance>.<rocket-namespace>:7777`
+  (p.ej. `https://rocket.s000001-rocket:7777`). El ingress
   público (443) es solo oauth2/cookie y **no** acepta el certificado.
 - El cert cliente (`/vault/secrets/cert.crt`, CN = el usuario que opera) es la
   identidad con la que Rocket autoriza. Sin token, sin impersonación — las llamadas

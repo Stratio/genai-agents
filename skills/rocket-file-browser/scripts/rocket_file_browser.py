@@ -11,8 +11,8 @@ every call runs with the operating user's own permissions (no impersonation).
 MVP subcommands: ``filesystems``, ``download``, ``upload``.
 
 ENVIRONMENT
-    ROCKET_API_URL   Base URL incl. the ``/rocket`` prefix. Required.
-                     e.g. https://rocket.s000001-rocket:7777/rocket
+    ROCKET_API_URL   Base URL (host:port) of the mutual listener, no path. Required.
+                     e.g. https://rocket.s000001-rocket:7777
     USER_CERT_PATH   Client certificate (default /vault/secrets/cert.crt)
     USER_KEY_PATH    Client private key   (default /vault/secrets/cert.key)
     CA_CERT_PATH     CA bundle            (default /stratio/certs/ca.crt)
@@ -73,9 +73,9 @@ def base_url() -> str:
     url = os.environ.get("ROCKET_API_URL", "").rstrip("/")
     if not url:
         fail(
-            "ROCKET_API_URL not set. Expected the Rocket mutual-TLS base URL incl. "
-            "the /rocket prefix, e.g. "
-            "https://<rocket-instance>.<rocket-namespace>:7777/rocket"
+            "ROCKET_API_URL not set. Expected the Rocket mutual-TLS base URL "
+            "(host:port, no path), e.g. "
+            "https://<rocket-instance>.<rocket-namespace>:7777"
         )
     return url
 
