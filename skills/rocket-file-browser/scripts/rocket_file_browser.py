@@ -301,6 +301,10 @@ def cmd_compress(args: argparse.Namespace) -> None:
         guard_path(p)
     guard_path(args.archive)
     target_fs = resolve_target_fs(args.fs)
+    log(
+        "Note: Rocket appends the codec extension to the archive name "
+        f"(e.g. {args.archive} -> {args.archive}.<ext>). Use that full name to extract."
+    )
     _post_boolean(
         "PUT", "/fileBrowser/compress",
         _with_fs(
