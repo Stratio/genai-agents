@@ -1,7 +1,7 @@
 ---
 name: rocket-file-browser
-description: "Sube y baja ficheros entre el sandbox de Stratio y el File Browser HDFS de Rocket. Úsala cuando el usuario quiera mover un fichero hacia o desde el HDFS de Rocket — frases como 'baja este fichero de Rocket', 'sube este archivo al HDFS', 'descarga del file browser', 'sube a Rocket', 'get/put de un fichero en HDFS'. Llama a la API mutual-TLS de Rocket (/rocket/fileBrowser/*) con el certificado cliente del sandbox, así que opera con los permisos propios del usuario en Rocket."
-argument-hint: "[download|upload] [rutas...]"
+description: "Gestiona ficheros en el File Browser HDFS de Rocket desde el sandbox de Stratio: descargar, subir, listar, copiar, mover/renombrar, borrar, mkdir, comprimir y extraer. Úsala cuando el usuario quiera operar sobre el HDFS de Rocket — frases como 'baja este fichero de Rocket', 'sube este archivo al HDFS', 'lista la carpeta', 'borra/copia/mueve en HDFS', 'comprime estos ficheros', 'descarga del file browser', 'sube a Rocket'. Llama a la API mutual-TLS de Rocket (/rocket/fileBrowser/*) con el certificado cliente del sandbox, así que opera con los permisos propios del usuario en Rocket."
+argument-hint: "[download|upload|ls|cp|mv|rm|mkdir|compress|extract] [rutas...]"
 ---
 
 # Skill: Rocket File Browser (subir/bajar de HDFS)
@@ -40,6 +40,13 @@ mensaje genérico.
 |---|---|---|
 | Descargar un fichero | Traer un fichero del HDFS de Rocket al workspace del sandbox. | `tasks/download.md` |
 | Subir un fichero | Empujar un fichero local del sandbox a un directorio HDFS de Rocket. | `tasks/upload.md` |
+| Listar una ruta | Mostrar el contenido de un directorio HDFS. | `tasks/ls.md` |
+| Copiar | Copiar un fichero/directorio HDFS a una ruta nueva. | `tasks/cp.md` |
+| Mover / renombrar | Mover o renombrar un fichero/directorio HDFS. | `tasks/mv.md` |
+| Borrar | Eliminar ficheros/directorios HDFS (destructivo — confirma antes). | `tasks/rm.md` |
+| Crear directorio | Crear un directorio HDFS. | `tasks/mkdir.md` |
+| Comprimir | Comprimir ficheros HDFS en un archivo. | `tasks/compress.md` |
+| Extraer | Extraer un archivo HDFS. | `tasks/extract.md` |
 
 Ayudante (sin sub-fichero): lista los filesystems con
 `python3 scripts/rocket_file_browser.py filesystems` para descubrir el `id`/`type`
@@ -47,9 +54,8 @@ que pasar en `--fs`. El script auto-resuelve el filesystem cuando solo hay uno.
 
 ## Reglas de enrutado
 
-1. Identifica la capacidad por la intención del usuario. Si no es download ni upload,
-   este MVP no puede ayudar — dilo (la cobertura completa del File Browser es una
-   extensión planificada).
+1. Identifica la capacidad por la intención del usuario. Si no encaja en ninguna entrada
+   del índice (p.ej. publicar vistas, consultar datos), esta skill no puede ayudar — dilo.
 2. Ejecuta el pre-check de arriba. Si falla, para y repórtalo.
 3. Carga el sub-fichero correspondiente y síguelo de principio a fin.
 4. Tras la llamada, muestra el resultado (o el código HTTP + cuerpo verbatim si falla)
@@ -58,6 +64,5 @@ que pasar en `--fs`. El script auto-resuelve el filesystem cuando solo hay uno.
 ## Añadir una nueva capacidad
 
 Crea un `tasks/<capacidad>.md` (cuándo usarla, la invocación exacta de
-`rocket_file_browser.py`, salida esperada, casos de error), añade una fila al índice y
-replica ambos ficheros en `skills/rocket-file-browser/` (inglés). El alcance completo
-planificado añade `ls`, `cp`, `mv`, `rm`, `mkdir`, `compress`, `extract`.
+`rocket_file_browser.py`, salida esperada, casos de error), añade un subcomando al script,
+añade una fila al índice y replica ambos ficheros en `skills/rocket-file-browser/` (inglés).
