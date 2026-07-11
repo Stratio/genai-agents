@@ -39,6 +39,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import posixpath
 import sys
 import time
 from pathlib import Path
@@ -144,7 +145,11 @@ def resolve_target_fs(spec: "str | None") -> "dict | None":
 
 
 def guard_path(hdfs_path: str) -> None:
-    norm = "/" + hdfs_path.strip("/")
+    # normpath collapses "..", "." and repeated slashes before the prefix check —
+    # a raw string comparison would let e.g. "/data/../backups/x" slip through.
+    # lstrip first: normpath keeps a *double* leading slash verbatim per POSIX, so
+    # blindly prepending "/" to an already-absolute path (-> "//...") would dodge it.
+    norm = posixpath.normpath("/" + hdfs_path.lstrip("/"))
     for prefix in RESTRICTED_PREFIXES:
         if norm == prefix or norm.startswith(prefix + "/"):
             fail(f"Path {hdfs_path} is under a Rocket-restricted root ({prefix}); refused.")
@@ -198,9 +203,10 @@ def cmd_upload(args: argparse.Namespace) -> None:
         )
     if not resp.ok:
         show_http_error(resp)
-    docker_path = resp.json() if resp.headers.get("content-type", "").startswith("application/json") else resp.text.strip().strip('"')
-    if isinstance(docker_path, str):
-        docker_path = docker_path.strip('"')
+    if resp.headers.get("content-type", "").startswith("application/json"):
+        docker_path = resp.json()  # already an unquoted string
+    else:
+        docker_path = resp.text.strip().strip('"')
     log(f"Phase 1 OK: staged at {docker_path}")
 
     # Phase 2 — commit the staged file into HDFS. Retries on HTTP 420.
