@@ -1,6 +1,6 @@
 ---
 name: rocket-file-browser
-description: "Gestiona ficheros en el File Browser HDFS de Rocket desde el sandbox de Stratio: descargar, subir, listar, copiar, mover/renombrar, borrar, mkdir, comprimir y extraer. Úsala cuando el usuario quiera operar sobre el HDFS de Rocket — frases como 'baja este fichero de Rocket', 'sube este archivo al HDFS', 'lista la carpeta', 'borra/copia/mueve en HDFS', 'comprime estos ficheros', 'descarga del file browser', 'sube a Rocket'. Llama a la API mutual-TLS de Rocket (/rocket/fileBrowser/*) con el certificado cliente del sandbox, así que opera con los permisos propios del usuario en Rocket."
+description: "Gestiona ficheros en el File Browser HDFS de Rocket desde el sandbox de Stratio: descargar, subir, listar, copiar, mover/renombrar, borrar, mkdir, comprimir y extraer. Úsala cuando el usuario quiera operar sobre el HDFS de Rocket — frases como 'baja este fichero de Rocket', 'sube este archivo al HDFS', 'lista la carpeta', 'borra/copia/mueve en HDFS', 'comprime estos ficheros', 'descarga del file browser', 'sube a Rocket'. Llama a la API mutual-TLS de Rocket (/fileBrowser/*) con el certificado cliente del sandbox, así que opera con los permisos propios del usuario en Rocket."
 argument-hint: "[download|upload|ls|cp|mv|rm|mkdir|compress|extract] [rutas...]"
 ---
 

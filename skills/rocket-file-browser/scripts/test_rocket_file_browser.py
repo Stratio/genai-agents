@@ -81,6 +81,21 @@ def test_guard_rejects_restricted(bad):
         rfb.cmd_ls(ns(hdfs_path=bad, fs="hdfs1:HDFS"))
 
 
+@pytest.mark.parametrize(
+    "bad",
+    [
+        "/data/../backups/x",
+        "/data/./../backups",
+        "//backups",
+        "/data/..//backups/../../backups/x",
+    ],
+)
+def test_guard_rejects_restricted_via_traversal(bad):
+    """A raw string comparison would miss these; normpath must collapse them first."""
+    with pytest.raises(SystemExit):
+        rfb.cmd_ls(ns(hdfs_path=bad, fs="hdfs1:HDFS"))
+
+
 # --- payload construction ---------------------------------------------------
 
 

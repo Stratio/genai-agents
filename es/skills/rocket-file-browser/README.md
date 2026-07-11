@@ -1,7 +1,7 @@
 # rocket-file-browser
 
 Skill compartida que mueve ficheros entre el sandbox de Stratio y el **File Browser
-HDFS de Rocket** (`/rocket/fileBrowser/*`), para que un agente pueda traerse un
+HDFS de Rocket** (`/fileBrowser/*`), para que un agente pueda traerse un
 dataset/documento de Rocket al workspace o empujar un fichero generado de vuelta a
 HDFS — sin el roundtrip manual por la UI web de Rocket.
 
