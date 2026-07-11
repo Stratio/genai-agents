@@ -1,7 +1,7 @@
 # rocket-file-browser
 
 Shared skill that moves files between the Stratio sandbox and **Rocket's HDFS File
-Browser** (`/rocket/fileBrowser/*`), so an agent can pull a dataset/document out of
+Browser** (`/fileBrowser/*`), so an agent can pull a dataset/document out of
 Rocket into the workspace or push a generated file back into HDFS — without the manual
 roundtrip through the Rocket web UI.
 
