@@ -70,14 +70,14 @@ Cuando la salida inline de una tool superaría el límite de respuesta del entor
 **Protocolo** (aplicar en orden):
 1. **Nunca leas el fichero guardado completo en tu propio contexto.** Disparará el mismo límite que provocó la truncación
 2. **Preferir delegar la inspección del fichero a un subagente** cuando el entorno anfitrión exponga uno (p. ej. un subagente Explore / Task). Bríefea al subagente con la ruta del fichero y la extracción concreta a realizar, y pídele que devuelva solo el fragmento que necesitas — no el contenido del fichero
-3. **Si no hay delegación a subagente disponible**, inspecciona el fichero tú mismo con topes estrictos: primero `Grep` para patrones concretos, luego `Read` con `offset` y `limit` pequeño (≤ 200 líneas por llamada). Nunca leas de extremo a extremo en una sola llamada
+3. **Si no hay delegación a subagente disponible**, inspecciona el fichero tú mismo con topes estrictos. **Si el fichero guardado es un payload JSON minificado en una sola línea** — la forma habitual de las salidas MCP de Stratio — las herramientas por líneas no ayudan y pueden **fallar en duro**: el `Grep` del runtime envuelve ripgrep `rg --json`, que aborta con `Ripgrep JSON record exceeded 65536 bytes` en cualquier línea de más de ~64 KB, y `Read` trunca cada línea a un tope fijo de caracteres. **Si te encuentras ese error de ripgrep, NO reintentes `Grep` — pasa directamente a un parser estructural** vía Bash: `jq` para consultas puntuales (p. ej. `jq '.tables | length'`, `jq '.tables[:20] | .[].name'`), o un pequeño script Python inline (`python -c '...'`). Solo para contenido no-JSON recurre a `Grep` para patrones concretos primero, luego `Read` con `offset` y `limit` pequeño (≤ 200 líneas por llamada). Nunca leas de extremo a extremo en una sola llamada
 4. **Iterar por necesidad**: una primera pasada suele extraer un inventario (identificadores, nombres, conteos); pasadas posteriores recuperan registros completos bajo demanda. Para en cuanto la pregunta del usuario quede respondida
 
-**Patrones típicos de extracción** para payloads tipo listado:
-- _Inventario_: `Grep` por la clave JSON que delimita cada entrada (p. ej. `"name":`) y cuenta / lista las coincidencias
-- _Subconjunto temático_: `Grep` por palabras clave de la pregunta del usuario sobre el fichero guardado
-- _Registro concreto_: `Grep` por el identificador, luego `Read` ±N líneas alrededor de la coincidencia para obtener el contexto
-- _Muestra_: `Read` con `offset=0`, `limit=200` para inspeccionar la estructura antes de lanzar lecturas más dirigidas
+**Patrones típicos de extracción** para payloads tipo listado (para un payload JSON de una sola línea — la forma habitual MCP — usa las variantes `jq`/Python; las variantes `Grep`/`Read` aplican solo a contenido multilínea o no-JSON):
+- _Inventario_: `jq` para contar / listar entradas (p. ej. `jq '.tables | length'`, `jq -r '.tables[].name'`); para no-JSON, `Grep` por la clave que delimita cada entrada (p. ej. `"name":`) y cuenta / lista las coincidencias
+- _Subconjunto temático_: `jq` para filtrar entradas por campo (p. ej. `jq -r '.tables[] | select(.name | test("customer")) | .name'`); para no-JSON, `Grep` por palabras clave de la pregunta del usuario sobre el fichero guardado
+- _Registro concreto_: `jq` para seleccionar la entrada por identificador (p. ej. `jq '.tables[] | select(.name=="...")'`); para no-JSON, `Grep` por el identificador, luego `Read` ±N líneas alrededor de la coincidencia para obtener el contexto
+- _Muestra_: `jq '.tables[:20]'` (o un pequeño script Python inline) para inspeccionar la estructura; para no-JSON, `Read` con `offset=0`, `limit=200` antes de lanzar lecturas más dirigidas
 
 Aplica a cualquier tool que pueda devolver payloads grandes, incluyendo `list_domain_tables`, `list_domains`, `get_tables_details` sobre muchas tablas y `query_data` sobre resultados anchos/largos.
 

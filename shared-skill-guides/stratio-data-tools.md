@@ -70,14 +70,14 @@ When a tool's inline output would exceed the host environment's response limit, 
 **Protocol** (apply in order):
 1. **Never read the full saved file directly into your own context.** It will trigger the same limit that caused the truncation
 2. **Prefer delegating the file inspection to a subagent** when the host environment exposes one (e.g. an Explore / Task subagent). Brief it with the file path and the specific extraction it should perform, and ask it to return only the fragment you need — not the file contents
-3. **If subagent delegation is not available**, inspect the file yourself with strict caps: `Grep` for targeted patterns first, then `Read` with `offset` and a small `limit` (≤ 200 lines per call). Never read end-to-end in a single call
+3. **If subagent delegation is not available**, inspect the file yourself with strict caps. **If the saved file is a JSON payload minified on a single line** — the usual shape for Stratio MCP outputs — line-based tools won't help and can **hard-fail**: the runtime's `Grep` wraps ripgrep `rg --json`, which aborts with `Ripgrep JSON record exceeded 65536 bytes` on any single line over ~64 KB, and `Read` truncates each line to a fixed character cap. **If you hit that ripgrep error, do NOT retry `Grep` — switch straight to a structural parser** via Bash: `jq` for one-shot queries (e.g. `jq '.tables | length'`, `jq '.tables[:20] | .[].name'`), or a short inline Python script (`python -c '...'`). Only for non-JSON content fall back to `Grep` for targeted patterns first, then `Read` with `offset` and a small `limit` (≤ 200 lines per call). Never read end-to-end in a single call
 4. **Iterate by need**: a first pass typically extracts an inventory (identifiers, names, counts); subsequent passes retrieve full records on demand. Stop as soon as the user's question is answered
 
-**Typical extraction patterns** for list-style payloads:
-- _Inventory_: `Grep` for the JSON key that delimits each entry (e.g. `"name":`) and count / list the matches
-- _Topical subset_: `Grep` for keywords from the user's question over the saved file
-- _Specific record_: `Grep` for the identifier, then `Read` ±N lines around the match for the surrounding context
-- _Sample_: `Read` with `offset=0`, `limit=200` to inspect the structure before issuing more targeted reads
+**Typical extraction patterns** for list-style payloads (for a single-line JSON payload — the usual MCP shape — use the `jq`/Python forms; the `Grep`/`Read` forms apply only to multi-line or non-JSON content):
+- _Inventory_: `jq` to count / list entries (e.g. `jq '.tables | length'`, `jq -r '.tables[].name'`); for non-JSON, `Grep` for the key that delimits each entry (e.g. `"name":`) and count / list the matches
+- _Topical subset_: `jq` to filter entries by field (e.g. `jq -r '.tables[] | select(.name | test("customer")) | .name'`); for non-JSON, `Grep` for keywords from the user's question over the saved file
+- _Specific record_: `jq` to select the entry by identifier (e.g. `jq '.tables[] | select(.name=="...")'`); for non-JSON, `Grep` for the identifier, then `Read` ±N lines around the match for the surrounding context
+- _Sample_: `jq '.tables[:20]'` (or a short inline Python script) to inspect the structure; for non-JSON, `Read` with `offset=0`, `limit=200` before issuing more targeted reads
 
 Applies to any tool that may return large payloads, including `list_domain_tables`, `list_domains`, `get_tables_details` over many tables, and `query_data` over wide/long results.
 
