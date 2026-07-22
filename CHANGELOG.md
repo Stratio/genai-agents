@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.2.2 (upcoming)
+## 0.2.2 (2026-07-22)
 
 * [ROCK-15076] **Harden the large-output pattern against ripgrep's 64 KB line limit**: `stratio-mcp-response-patterns.md` §2 (EN + ES) now names the concrete failure — the runtime's `Grep` wraps `rg --json`, which aborts with `Ripgrep JSON record exceeded 65536 bytes` on any single line over ~64 KB, exactly the shape of a minified Stratio MCP payload. Agents (and the subagents they dispatch) are told not to retry `Grep` with other patterns on that error but to switch straight to a structural parser (`jq` or inline Python); the main-session fallback in §2.3 is likewise redirected to `jq`/Python for single-line JSON instead of the `Grep`/`Read` path that hard-fails. Affects every MCP-using agent that consumes the patterns guide.
 
