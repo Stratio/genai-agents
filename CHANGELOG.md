@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.2 (upcoming)
+
+* [ROCK-15076] **Harden the large-output pattern against ripgrep's 64 KB line limit**: `stratio-mcp-response-patterns.md` §2 (EN + ES) now names the concrete failure — the runtime's `Grep` wraps `rg --json`, which aborts with `Ripgrep JSON record exceeded 65536 bytes` on any single line over ~64 KB, exactly the shape of a minified Stratio MCP payload. Agents (and the subagents they dispatch) are told not to retry `Grep` with other patterns on that error but to switch straight to a structural parser (`jq` or inline Python); the main-session fallback in §2.3 is likewise redirected to `jq`/Python for single-line JSON instead of the `Grep`/`Read` path that hard-fails. Affects every MCP-using agent that consumes the patterns guide.
+
 ## 0.2.1 (2026-07-09)
 
 * [ROCK-15011] **`stratio-data-tools.md`**: add a §3 rule that the query engine is Spark SQL and does not support `LIMIT N OFFSET M` (the `OFFSET` keyword raises a syntax error) — agents must use the tool's `limit` parameter to cap/page rows in `query_data`/`execute_sql`/`profile_data` and never add `LIMIT`/`OFFSET` to the SQL (EN + ES).
