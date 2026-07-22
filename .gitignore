@@ -24,3 +24,7 @@ CLAUDE.local.md
 
 # OpenCode workspace local (generado automáticamente, no versionar)
 **/.opencode/
+
+# Local caches of AI dev tools (code-graph / context compression)
+.tokensave/
+.headroom/
