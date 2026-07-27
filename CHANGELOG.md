@@ -2,7 +2,7 @@
 
 ## 0.4.0 (upcoming)
 
-* Pending changelog
+* **New agent `observability-evaluation-agent`** ([ROCK-15106]): read-only observability and evaluation agent over the platform's OpenTelemetry traces. It queries Grafana Tempo through the Grafana datasource proxy (plain `GET`s with `curl`/`jq`, no MCPs) to answer usage questions (Cowork agents used, active users, sessions per user), inspect and reconstruct Cowork sessions turn by turn — producing the input for black-box evaluations — and analyze SQL chain invocations (errors, latency, platform-service calls, turn content). Evaluation criteria always come from the user, and every claim cites its trace evidence. Ships the local skill `tempo-queries` (connection setup, schema discovery, and a live-validated TraceQL cookbook plus the platform trace vocabulary). EN + ES.
 
 ## Previous development
 

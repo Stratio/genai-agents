@@ -1,0 +1,6 @@
+description: "Observability and evaluation agent over OpenTelemetry traces. Answers usage questions (agents, users, sessions), reconstructs Cowork conversations and SQL chain invocations from Grafana Tempo, and evaluates them against user-provided criteria. Read-only."
+tags:
+  - observability
+  - opentelemetry
+  - tracing
+  - evaluation
