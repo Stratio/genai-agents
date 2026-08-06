@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.3.0 (2026-07-09)
+## 0.3.0 (2026-08-06)
 
 * **MCP data-retrieval discipline** ([ROCK-15011] + context-flooding fix): `stratio-data-tools.md` §3 now states the query engine is Spark SQL (no `LIMIT N OFFSET M` — use the tool's `limit` parameter, never inline `LIMIT`/`OFFSET`) and enforces a 3-level hierarchy for statistical markers and data retrieval — aggregate via the MCP first, fall back to `profile_data` for EDA, and only pull row-level detail (read from disk, never pasted into context) when a real statistical test or clustering needs it. `data-analytics-officer` also forbids hand-written `execute_sql` that bypasses `generate_sql`. EN + ES.
 * **MCP response-patterns hardening**: `stratio-mcp-response-patterns.md` §1 requires agents to keep polling long-running tasks through latency and never fabricate a substitute deliverable; new §2 "data-for-computation" branch handles truncated-file outputs consumed by a script; new §3 forbids executing or polling MCP tools inside a subagent (allowed only for inspecting truncated files). Referenced from the data/semantic guides and surfaced in the 4 MCP-using agents. EN + ES.
