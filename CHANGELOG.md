@@ -6,7 +6,7 @@
 
 ## Previous development
 
-### Branched to branch-0.3 (2026-07-09)
+### 0.3.0 (2026-08-06)
 
 * **MCP data-retrieval discipline** ([ROCK-15011] + context-flooding fix): `stratio-data-tools.md` §3 now states the query engine is Spark SQL (no `LIMIT N OFFSET M` — use the tool's `limit` parameter, never inline `LIMIT`/`OFFSET`) and enforces a 3-level hierarchy for statistical markers and data retrieval — aggregate via the MCP first, fall back to `profile_data` for EDA, and only pull row-level detail (read from disk, never pasted into context) when a real statistical test or clustering needs it. `data-analytics-officer` also forbids hand-written `execute_sql` that bypasses `generate_sql`. EN + ES.
 * **MCP response-patterns hardening**: `stratio-mcp-response-patterns.md` §1 requires agents to keep polling long-running tasks through latency and never fabricate a substitute deliverable; new §2 "data-for-computation" branch handles truncated-file outputs consumed by a script; new §3 forbids executing or polling MCP tools inside a subagent (allowed only for inspecting truncated files). Referenced from the data/semantic guides and surfaced in the 4 MCP-using agents. EN + ES.
@@ -14,7 +14,17 @@
 * **Cleanups**: remove persistent cross-session memory from `data-analytics-officer` (drops the `update-memory` skill, seed templates and all `MEMORY.md`/`ANALYSIS_MEMORY.md` references across the monorepo); fix `skill-creator` portability by replacing monorepo-specific packaging references with generic wording so it works standalone.
 * [ROCK-15167] CI/CD: bump the Jenkins builder image to `python-builder-3.14:1.3.4` (Ubuntu 26.04, Poetry 2.4.1; Python version depends on the image).
 
+### 0.2.2 (2026-07-22)
 
+* [ROCK-15076] **Harden the large-output pattern against ripgrep's 64 KB line limit**: `stratio-mcp-response-patterns.md` §2 (EN + ES) now names the concrete failure — the runtime's `Grep` wraps `rg --json`, which aborts with `Ripgrep JSON record exceeded 65536 bytes` on any single line over ~64 KB, exactly the shape of a minified Stratio MCP payload. Agents (and the subagents they dispatch) are told not to retry `Grep` with other patterns on that error but to switch straight to a structural parser (`jq` or inline Python); the main-session fallback in §2.3 is likewise redirected to `jq`/Python for single-line JSON instead of the `Grep`/`Read` path that hard-fails. Affects every MCP-using agent that consumes the patterns guide.
+
+### 0.2.1 (2026-07-09)
+
+* [ROCK-15011] **`stratio-data-tools.md`**: add a §3 rule that the query engine is Spark SQL and does not support `LIMIT N OFFSET M` (the `OFFSET` keyword raises a syntax error) — agents must use the tool's `limit` parameter to cap/page rows in `query_data`/`execute_sql`/`profile_data` and never add `LIMIT`/`OFFSET` to the SQL (EN + ES).
+* Harden MCP guidance: `stratio-mcp-response-patterns.md` §1 now requires agents to keep polling long-running tasks through latency instead of abandoning them, and to never fabricate a substitute deliverable (e.g. a manual plan for the Governance UI); new §3 forbids executing or polling MCP tools inside a subagent (allowed only for inspecting truncated files, §2). Referenced from `stratio-data-tools.md`, `stratio-semantic-layer-tools.md`, and surfaced at the top level in the 4 MCP-using agents (EN + ES).
+* Fix `skill-creator` portability: replace references to monorepo-specific packaging scripts (`pack_opencode.sh`, "pack scripts") and "central monorepo guides folder" with generic wording so the skill works standalone outside this repo.
+* **Prevent context-flooding data downloads in `data-analytics-officer`**: `stratio-data-tools.md` §3 now states a 3-level hierarchy for statistical markers and data retrieval — aggregate via the MCP first, fall back to `profile_data` for EDA, and only pull row-level detail (read from disk, never pasted into the model context) when a real statistical test or clustering needs it. `stratio-mcp-response-patterns.md` §2 gains a "data-for-computation" branch for truncated-file outputs consumed by a script instead of a subagent. `data-analytics-officer` additionally forbids hand-written `execute_sql` queries that bypass `generate_sql`. EN + ES.
+* Semantic-layer skills: recognise the governance chain's new data-precondition errors (collection with no tables, tables with no columns, or — for ontology — no technical terms yet) as **non-retryable** and react correctly — surface the actionable message, offer `/create-technical-terms` when terms are missing, direct to a Governance refresh when columns are missing — instead of looping retries or re-calling with an adjusted plan. Updates `stratio-semantic-layer-tools.md` §7 and the `create-technical-terms` / `create-ontology` / `build-semantic-layer` skills (EN + ES).
 
 ### 0.2.0 (2026-05-28)
 
