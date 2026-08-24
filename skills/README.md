@@ -72,6 +72,7 @@ These three skills cover every visual output of the monorepo. They share [`guide
 | Skill | Purpose | Used by |
 |---|---|---|
 | [cowork-api](cowork-api/) | Upload, import, deploy or register packaged agent/skill/plugin bundles to Stratio Cowork via `genai-api`. Calls `/v1/agents/bundle/import` and `/v1/agents/skills/bundle/import`; plugins dispatch to both. | agent-creator, skill-creator |
+| [dashboard-builder](dashboard-builder/) | Create native GenAI dashboards or append canonical text, data, chart and image cards through the dashboard MCP, with append-only safety and self-contained workspace images. | standalone |
 | [skill-creator](skill-creator/) | Authoring guide for creating high-quality SKILL.md files. Anatomy, frontmatter, progressive disclosure, writing patterns, quality checklist. | agent-creator, skill-creator |
 
 ## Anatomy of a shared skill
