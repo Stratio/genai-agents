@@ -25,7 +25,8 @@ class FakeResp:
         self._json = json_data if json_data is not None else {}
         self.text = text
         self.headers = headers or {"content-type": "application/json"}
-        self.request = types.SimpleNamespace(method="POST", url="https://rocket/x")
+        self.url = "https://rocket/x"
+        self.request = types.SimpleNamespace(method="POST", url=self.url)
 
     def json(self):
         return self._json
