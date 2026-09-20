@@ -1,13 +1,25 @@
 # Tarea: subir un fichero al HDFS de Rocket
 
-Empuja un fichero local del sandbox a un directorio HDFS de Rocket. Es una operación
-en **dos fases**, ambas gestionadas por el script:
+Empuja un fichero local del sandbox a un directorio HDFS de Rocket.
 
-1. `POST /fileBrowser/uploadLocalFile` (multipart, campo `binary`) → deja el fichero en
-   una ruta temporal del pod de Rocket y devuelve `/tmp/uploads/<uuid>/<nombre>`.
-2. `POST /fileBrowser/putLocalFileToHadoopFs` con `{"pathHdfs": "<dir>", "dockerPath":
-   "<temp>", "targetFilesystem": {...}}` → lo confirma en HDFS. Puede responder
-   **HTTP 420** ("subida en curso") — el script reintenta con backoff.
+Desde Rocket 4.x (ROCK #5384) es una **sola petición**, gestionada por el script:
+
+`POST /fileBrowser/upload?path=<dir_hdfs>[&filesystemId=<id>&filesystemType=<type>]`
+con el fichero en la parte multipart `binary`.
+
+- La escritura se **autoriza antes de aceptar un solo byte**, así que a quien no tenga
+  permiso sobre `path` se le rechaza sin haber transferido el fichero.
+- Los bytes van **en streaming directo al filesystem** — ya no se escribe nada en el
+  disco del pod de Rocket.
+- El fichero se guarda bajo `path` con el nombre que lleva la parte multipart, y la
+  petición se **rechaza si ese nombre ya existe** (no sobrescribe). Borra o renombra
+  antes, o sube con otro nombre.
+- La respuesta es `200` con la ruta donde quedó almacenado.
+
+El flujo antiguo de dos peticiones (`POST /fileBrowser/uploadLocalFile` →
+`POST /fileBrowser/putLocalFileToHdfs`, con su reintento del HTTP 420) sigue existiendo
+por compatibilidad. El script repliega a él automáticamente si el servidor responde
+404/405 a la ruta de una sola petición, y `--legacy` lo fuerza.
 
 ## Procedimiento
 
@@ -23,27 +35,34 @@ en **dos fases**, ambas gestionadas por el script:
 
    ```bash
    python3 scripts/rocket_file_browser.py upload \
-     "<origen_local>" "<dir_hdfs>" [--fs <id>:<type>]
+     "<origen_local>" "<dir_hdfs>" [--fs <id>:<type>] [--legacy]
    ```
 
    - `<origen_local>`: fichero local existente en el sandbox.
-   - `<dir_hdfs>`: **directorio** HDFS destino; el fichero conserva su nombre.
+   - `<dir_hdfs>`: **directorio** HDFS destino (absoluto); el fichero conserva su nombre.
 
 ## Salida esperada
 
 ```
-Phase 1 OK: staged at /tmp/uploads/8b2afa0f-.../Screenshot.png
 Uploaded /root/project/Screenshot.png -> /data/kk/LoadDocument/Screenshot.png
 ```
 
+Con el repliegue antiguo, antes aparece una línea `Phase 1 OK: staged at /tmp/uploads/...`.
+
 ## Notas y errores
 
-- El tamaño máximo de subida es grande (default servidor 5 GB) pero finito; ficheros
-  muy grandes pueden dar timeout — muestra el cuerpo verbatim si pasa.
-- Los temporales del pod se auto-limpian (~30 min); una confirmación correcta saca el
-  fichero antes de eso.
-- `401/403` — no autorizado para ese directorio destino (Gosec). `420` tras todos los
-  reintentos — una subida concurrente al mismo destino mantuvo el slot ocupado; reintenta luego.
+- El tamaño máximo de subida es el `file-browser.max-content-length` del servidor
+  (por defecto 5 GB); los ficheros muy grandes pueden dar timeout — muestra el cuerpo
+  verbatim si pasa.
+- `Target <ruta> already exists` — el nombre destino ya está ocupado; la subida se
+  rechaza antes de la transferencia.
+- Un `<dir_hdfs>` relativo se rechaza (Rocket solo acepta rutas absolutas en el File
+  Browser).
+- Un nombre de fichero que HDFS o S3 no admiten (dos puntos, llaves) se rechaza antes de
+  la transferencia.
+- `401/403` — no autorizado para ese directorio destino (Gosec).
+- El `420` solo aparece en el flujo antiguo — una subida concurrente mantuvo el slot
+  ocupado; el script reintenta con backoff y avisa si no se libera.
 - Las raíces restringidas se rechazan en cliente antes de la llamada.
 
 Ver `guides/external-api-calls.md` §5 para leer los códigos HTTP habituales.

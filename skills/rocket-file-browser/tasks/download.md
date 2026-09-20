@@ -11,8 +11,11 @@ Bring a file from Rocket's HDFS File Browser into the sandbox workspace.
 | Body | `{"pathHdfs": "<path>", "targetFilesystem": {"id": "...", "type": "..."}}` |
 | Response | the raw file bytes (streamed) |
 
-> Use the POST variant, not `GET /fileBrowser/download?pathHdfs=` — the GET form forces
-> the internal filesystem and cannot target a named datastore.
+> The script uses the POST variant. The GET twin
+> (`GET /fileBrowser/download?path=<p>[&filesystemId=&filesystemType=]`, also accepting
+> the older `pathHdfs` name) exists so a browser can save a large file by navigating to
+> it; it authorizes through the same actor message, so both grant exactly the same
+> access. Either works — POST keeps the path out of access logs.
 
 ## Procedure
 
@@ -36,7 +39,8 @@ Bring a file from Rocket's HDFS File Browser into the sandbox workspace.
      "<hdfs_path>" "<local_dest>" [--fs <id>:<type>]
    ```
 
-   - `<hdfs_path>`: absolute path in HDFS, e.g. `/data/kk/report.json`.
+   - `<hdfs_path>`: absolute path in HDFS, e.g. `/data/kk/report.json`. A directory is
+     downloaded as a zip built on the fly (subject to the server size limit).
    - `<local_dest>`: a local file path, or a directory (the HDFS basename is kept).
 
 ## Expected output

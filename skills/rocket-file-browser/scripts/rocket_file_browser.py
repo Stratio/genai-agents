@@ -8,7 +8,8 @@ user (e.g. ``s000001-user``); Rocket runs in ``Oauth2Mutual`` mode and exposes a
 mutual-TLS listener on port 7777. This client talks to that listener directly, so
 every call runs with the operating user's own permissions (no impersonation).
 
-MVP subcommands: ``filesystems``, ``download``, ``upload``.
+Subcommands: ``filesystems``, ``download``, ``upload``, ``ls``, ``mkdir``, ``rm``,
+``cp``, ``mv``, ``compress``, ``extract``.
 
 ENVIRONMENT
     ROCKET_API_URL   Base URL (host:port) of the mutual listener, no path. Required.
@@ -25,14 +26,26 @@ USAGE
     python3 rocket_file_browser.py filesystems
     python3 rocket_file_browser.py download <hdfs_path> <local_dest> [--fs id:type]
     python3 rocket_file_browser.py upload   <local_src> <hdfs_dir>   [--fs id:type]
+                                                                     [--legacy]
 
     --fs is "<id>:<type>" (e.g. hdfs1.s000001-datastores:HDFS). When omitted, the
     target filesystem is auto-resolved via the ``filesystems`` endpoint: if exactly
     one exists it is used; if several exist you must pass --fs explicitly.
 
+UPLOAD
+    Since Rocket 4.x (ROCK #5384) the File Browser takes an upload in a single
+    request: ``POST /fileBrowser/upload?path=<dir>[&filesystemId=&filesystemType=]``
+    with the file in the ``binary`` multipart part. The write is authorized before
+    any byte is accepted and the bytes stream straight into the filesystem — the
+    pod's disk is no longer used. An existing name at the destination is refused
+    (no overwrite). The legacy two-request flow (``uploadLocalFile`` +
+    ``putLocalFileToHdfs``/``putLocalFileToHadoopFs``) still exists for
+    compatibility: this client falls back to it automatically when the server
+    answers 404/405 to the one-shot route, and ``--legacy`` forces it.
+
 On any non-2xx response the HTTP status and body are printed verbatim and the
 process exits non-zero. This client never silently retries except for HTTP 420
-on the upload commit phase (Rocket signals "upload already in progress").
+on the legacy upload commit phase (Rocket signals "upload already in progress").
 """
 from __future__ import annotations
 
@@ -54,6 +67,24 @@ RESTRICTED_PREFIXES = (
     "/mlProjectModelArtifacts",
     "/mlProjectExecutionsArtifacts",
 )
+
+# Codecs carrying an archive of their own — the only ones that can hold more than one
+# file (Rocket: RocketFileCompressionCodec.isJavaCompressionCodec).
+ARCHIVE_CODECS = ("Zip", "TarGz", "TarZstd")
+# Plain stream codecs: exactly one source file, and only when the native codec is loaded.
+SINGLE_FILE_CODECS = ("ZStandard", "Lz4", "Snappy", "Gzip", "Bzip2")
+CODECS = SINGLE_FILE_CODECS + ARCHIVE_CODECS
+# Extension Rocket appends to the destination name, per codec.
+CODEC_EXTENSION = {
+    "ZStandard": ".zst",
+    "Lz4": ".lz4",
+    "Snappy": ".snappy",
+    "Gzip": ".gz",
+    "Bzip2": ".bz2",
+    "Zip": ".zip",
+    "TarGz": ".tar.gz",
+    "TarZstd": ".tar.zst",
+}
 
 CONNECT_TIMEOUT = 10
 READ_TIMEOUT = 180
@@ -145,6 +176,10 @@ def resolve_target_fs(spec: "str | None") -> "dict | None":
 
 
 def guard_path(hdfs_path: str) -> None:
+    # Rocket builds every File Browser path through ProvidedPath.fromApi, which refuses
+    # a relative one — in the body and, since ROCK #5384, in a query parameter too.
+    if not hdfs_path.startswith("/"):
+        fail(f"Path {hdfs_path!r} is not absolute; Rocket refuses relative File Browser paths.")
     # normpath collapses "..", "." and repeated slashes before the prefix check —
     # a raw string comparison would let e.g. "/data/../backups/x" slip through.
     # lstrip first: normpath keeps a *double* leading slash verbatim per POSIX, so
@@ -194,6 +229,51 @@ def cmd_upload(args: argparse.Namespace) -> None:
     guard_path(args.hdfs_dir)
     target_fs = resolve_target_fs(args.fs)
 
+    if args.legacy:
+        upload_two_phase(src, args.hdfs_dir, target_fs)
+        return
+
+    # One request: the destination is authorized before a byte is accepted and the
+    # bytes are streamed into the filesystem, never onto the Rocket pod's disk.
+    params = {"path": args.hdfs_dir}
+    if target_fs is not None:
+        params["filesystemId"] = target_fs["id"]
+        params["filesystemType"] = target_fs["type"]
+
+    with open(src, "rb") as fh:
+        resp = request(
+            "POST", "/fileBrowser/upload",
+            params=params,
+            headers={"Accept": "application/json"},
+            files={"binary": (src.name, fh)},
+        )
+    if resp.status_code in (404, 405):
+        log(
+            "This Rocket does not serve /fileBrowser/upload "
+            f"(HTTP {resp.status_code}); falling back to the legacy two-request upload."
+        )
+        upload_two_phase(src, args.hdfs_dir, target_fs)
+        return
+    if not resp.ok:
+        show_http_error(resp)
+    stored = response_text(resp) or f"{args.hdfs_dir}/{src.name}"
+    print(f"Uploaded {src} -> {stored}")
+
+
+def response_text(resp: requests.Response) -> str:
+    """The body of a route that answers a bare string, JSON-quoted or not."""
+    if resp.headers.get("content-type", "").startswith("application/json"):
+        try:
+            payload = resp.json()
+        except ValueError:
+            payload = None
+        if isinstance(payload, str):
+            return payload
+    return resp.text.strip().strip('"')
+
+
+def upload_two_phase(src: Path, hdfs_dir: str, target_fs: "dict | None") -> None:
+    """Legacy flow, kept for Rocket versions without /fileBrowser/upload."""
     # Phase 1 — push the bytes to a temp path on the Rocket pod.
     with open(src, "rb") as fh:
         resp = request(
@@ -203,14 +283,11 @@ def cmd_upload(args: argparse.Namespace) -> None:
         )
     if not resp.ok:
         show_http_error(resp)
-    if resp.headers.get("content-type", "").startswith("application/json"):
-        docker_path = resp.json()  # already an unquoted string
-    else:
-        docker_path = resp.text.strip().strip('"')
+    docker_path = response_text(resp)
     log(f"Phase 1 OK: staged at {docker_path}")
 
     # Phase 2 — commit the staged file into HDFS. Retries on HTTP 420.
-    payload = {"pathHdfs": args.hdfs_dir, "dockerPath": docker_path}
+    payload = {"pathHdfs": hdfs_dir, "dockerPath": docker_path}
     if target_fs is not None:
         payload["targetFilesystem"] = target_fs
 
@@ -227,7 +304,7 @@ def cmd_upload(args: argparse.Namespace) -> None:
             continue
         if not resp.ok:
             show_http_error(resp)
-        print(f"Uploaded {src} -> {args.hdfs_dir}/{src.name}")
+        print(f"Uploaded {src} -> {hdfs_dir}/{src.name}")
         return
     fail(f"Upload commit kept returning HTTP 420 after {UPLOAD_COMMIT_RETRIES} attempts.")
 
@@ -306,10 +383,17 @@ def cmd_compress(args: argparse.Namespace) -> None:
     for p in args.sources:
         guard_path(p)
     guard_path(args.archive)
+    if len(args.sources) > 1 and args.codec not in ARCHIVE_CODECS:
+        fail(
+            f"Codec {args.codec} compresses a single file; several sources (or a directory) "
+            f"need one of {', '.join(ARCHIVE_CODECS)}."
+        )
     target_fs = resolve_target_fs(args.fs)
+    extension = CODEC_EXTENSION[args.codec]
     log(
         "Note: Rocket appends the codec extension to the archive name "
-        f"(e.g. {args.archive} -> {args.archive}.<ext>). Use that full name to extract."
+        f"({args.archive} -> {args.archive}{extension}). Use that full name to extract. "
+        "The destination must not exist yet."
     )
     _post_boolean(
         "PUT", "/fileBrowser/compress",
@@ -321,21 +405,24 @@ def cmd_compress(args: argparse.Namespace) -> None:
             },
             target_fs,
         ),
-        f"Compressed {len(args.sources)} item(s) -> {args.archive} ({args.codec})",
+        f"Compressed {len(args.sources)} item(s) -> {args.archive}{extension} ({args.codec})",
     )
 
 
 def cmd_extract(args: argparse.Namespace) -> None:
     guard_path(args.archive)
-    entry = {"path": args.archive}
-    if args.dest:
-        guard_path(args.dest)
-        entry["newPath"] = args.dest
+    # Rocket requires a destination ("A destination path must be defined in order to
+    # extract the selected file(s)"); default to the directory the archive sits in.
+    dest = args.dest or posixpath.dirname(posixpath.normpath(args.archive)) or "/"
+    if not args.dest:
+        log(f"No --dest given; extracting into the archive's directory {dest}")
+    guard_path(dest)
+    entry = {"path": args.archive, "newPath": dest}
     target_fs = resolve_target_fs(args.fs)
     _post_boolean(
         "PUT", "/fileBrowser/extract",
         _with_fs({"files": [entry]}, target_fs),
-        f"Extracted {args.archive}" + (f" -> {args.dest}" if args.dest else ""),
+        f"Extracted {args.archive} -> {dest}",
     )
 
 
@@ -354,6 +441,10 @@ def build_parser() -> argparse.ArgumentParser:
     p_up.add_argument("local_src")
     p_up.add_argument("hdfs_dir", help="Target HDFS directory.")
     p_up.add_argument("--fs", help="Target filesystem as '<id>:<type>'.")
+    p_up.add_argument(
+        "--legacy", action="store_true",
+        help="Force the legacy two-request upload (uploadLocalFile + putLocalFileToHdfs).",
+    )
 
     p_ls = sub.add_parser("ls", help="List the contents of an HDFS path.")
     p_ls.add_argument("hdfs_path")
@@ -383,14 +474,20 @@ def build_parser() -> argparse.ArgumentParser:
     p_cmp.add_argument(
         "--codec",
         default="Zip",
-        choices=["ZStandard", "Lz4", "Snappy", "Gzip", "Bzip2", "Zip", "TarGz"],
-        help="Compression codec (default: Zip).",
+        choices=list(CODECS),
+        help=(
+            "Compression codec (default: Zip). Several sources or a directory require "
+            f"{', '.join(ARCHIVE_CODECS)}."
+        ),
     )
     p_cmp.add_argument("--fs", help="Target filesystem as '<id>:<type>'.")
 
     p_ext = sub.add_parser("extract", help="Extract an HDFS archive.")
     p_ext.add_argument("archive", help="HDFS archive path to extract.")
-    p_ext.add_argument("--dest", help="Optional target HDFS directory.")
+    p_ext.add_argument(
+        "--dest",
+        help="Target HDFS directory (created if missing). Defaults to the archive's directory.",
+    )
     p_ext.add_argument("--fs", help="Target filesystem as '<id>:<type>'.")
     return parser
 

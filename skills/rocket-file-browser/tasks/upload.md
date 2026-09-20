@@ -1,13 +1,25 @@
 # Task: upload a file to Rocket's HDFS
 
-Push a local sandbox file into a Rocket HDFS directory. This is a **two-phase**
-operation, both handled by the script:
+Push a local sandbox file into a Rocket HDFS directory.
 
-1. `POST /fileBrowser/uploadLocalFile` (multipart, field `binary`) → stages the file on
-   the Rocket pod and returns a temp path `/tmp/uploads/<uuid>/<name>`.
-2. `POST /fileBrowser/putLocalFileToHadoopFs` with `{"pathHdfs": "<dir>", "dockerPath":
-   "<temp>", "targetFilesystem": {...}}` → commits it into HDFS. May answer **HTTP 420**
-   ("upload already in progress") — the script retries with backoff.
+Since Rocket 4.x (ROCK #5384) this is a **single request**, handled by the script:
+
+`POST /fileBrowser/upload?path=<hdfs_dir>[&filesystemId=<id>&filesystemType=<type>]`
+with the file in the `binary` multipart part.
+
+- The write is **authorized before any byte is accepted**, so a caller without
+  permission over `path` is refused without having transferred the file.
+- The bytes are **streamed straight into the filesystem** — nothing is written to the
+  Rocket pod's disk any more.
+- The file is stored under `path` with the name the multipart part carries, and the
+  request is **refused when that name is already taken** (no overwrite). Delete or
+  rename first, or upload under a different name.
+- The response is `200` with the stored path.
+
+The legacy two-request flow (`POST /fileBrowser/uploadLocalFile` →
+`POST /fileBrowser/putLocalFileToHdfs`, with its HTTP 420 retry) still exists for
+compatibility. The script falls back to it automatically when the server answers
+404/405 to the one-shot route, and `--legacy` forces it.
 
 ## Procedure
 
@@ -23,27 +35,31 @@ operation, both handled by the script:
 
    ```bash
    python3 scripts/rocket_file_browser.py upload \
-     "<local_src>" "<hdfs_dir>" [--fs <id>:<type>]
+     "<local_src>" "<hdfs_dir>" [--fs <id>:<type>] [--legacy]
    ```
 
    - `<local_src>`: existing local file in the sandbox.
-   - `<hdfs_dir>`: target HDFS **directory**; the file keeps its basename.
+   - `<hdfs_dir>`: target HDFS **directory** (absolute); the file keeps its basename.
 
 ## Expected output
 
 ```
-Phase 1 OK: staged at /tmp/uploads/8b2afa0f-.../Screenshot.png
 Uploaded /root/project/Screenshot.png -> /data/kk/LoadDocument/Screenshot.png
 ```
 
+With the legacy fallback, a `Phase 1 OK: staged at /tmp/uploads/...` line precedes it.
+
 ## Notes & errors
 
-- Max upload size is large (server default 5 GB) but finite; very large files may hit
-  timeouts — surface the body verbatim if so.
-- Staged temp files on the pod are auto-cleaned (~30 min); a successful commit moves the
-  file out before then.
-- `401/403` — not authorized for that target directory (Gosec). `420` after all retries —
-  a concurrent upload to the same target kept the slot busy; retry later.
+- Max upload size is the server's `file-browser.max-content-length` (default 5 GB);
+  very large files may still hit timeouts — surface the body verbatim if so.
+- `Target <path> already exists` — the destination name is taken; the upload is refused
+  before the transfer.
+- A relative `<hdfs_dir>` is refused (Rocket only accepts absolute File Browser paths).
+- A file name HDFS or S3 cannot hold (a colon, braces) is refused before the transfer.
+- `401/403` — not authorized for that target directory (Gosec).
+- `420` only appears in the legacy flow — a concurrent upload kept the slot busy; the
+  script retries with backoff and reports if it never clears.
 - Restricted roots are refused client-side before the call.
 
 See `guides/external-api-calls.md` §5 for reading common HTTP codes.

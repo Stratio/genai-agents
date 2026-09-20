@@ -12,14 +12,21 @@ cliente Python, `scripts/rocket_file_browser.py`, hace el trabajo HTTP.
 ## Qué hace
 
 - **download** — `POST /fileBrowser/download`, streaming de los bytes a una ruta local.
-- **upload** — dos fases: `POST /fileBrowser/uploadLocalFile` (multipart) y luego
-  `POST /fileBrowser/putLocalFileToHadoopFs`, con reintento automático del HTTP 420.
+- **upload** — una sola petición: `POST /fileBrowser/upload?path=<dir>` (multipart
+  `binary`), autorizada antes de aceptar un solo byte y con los bytes en streaming
+  directo al filesystem; un nombre ya ocupado se rechaza. Repliega al flujo antiguo de
+  dos peticiones (`uploadLocalFile` + `putLocalFileToHdfs`, con reintento del HTTP 420)
+  en un Rocket que no lo sirva, o con `--legacy`.
 - **ls** — `POST /fileBrowser/findByPath` (listado de directorio / stat de fichero).
 - **cp** / **mv** — `PUT /fileBrowser/copy` / `PUT /fileBrowser/update`.
 - **rm** — `DELETE /fileBrowser/delete` (una o varias rutas).
 - **mkdir** — `POST /fileBrowser/createDir`.
-- **compress** / **extract** — `PUT /fileBrowser/compress` (codecs: ZStandard, Lz4,
-  Snappy, Gzip, Bzip2, Zip, TarGz) / `PUT /fileBrowser/extract`.
+- **compress** / **extract** — `PUT /fileBrowser/compress` (codecs de archivo Zip,
+  TarGz, TarZstd para uno o varios orígenes; codecs de flujo ZStandard, Lz4, Snappy,
+  Gzip, Bzip2 para un único fichero) / `PUT /fileBrowser/extract` (el tipo de archivo se
+  detecta por contenido, no por extensión; el destino es obligatorio y el script lo pone
+  por defecto al directorio del propio archivo). Ambos hacen streaming en el servidor
+  sin tocar el disco del pod.
 - **filesystems** (ayudante) — `GET /fileBrowser/getFilesystems` para descubrir `id`/`type`.
 
 ## Autenticación e identidad
@@ -64,9 +71,12 @@ el search domain del pod): `https://<rocket-instance>.<rocket-namespace>:7777`
 ## Notas
 
 - Nunca reintenta en silencio salvo el HTTP 420 en la fase de confirmación de la subida
-  (Rocket señala subida concurrente). Cualquier otro fallo se muestra con código HTTP +
-  cuerpo verbatim.
+  antigua (Rocket señala subida concurrente). Cualquier otro fallo se muestra con código
+  HTTP + cuerpo verbatim.
+- Las rutas relativas se rechazan en cliente: el `ProvidedPath.fromApi` de Rocket las
+  rechaza en el cuerpo y, desde ROCK #5384, también en los parámetros de query.
 - Las raíces reservadas (`/extensions`, `/mockData`, `/backups`, `/mlProjectModelArtifacts`,
   `/mlProjectExecutionsArtifacts`) se rechazan en cliente antes de cualquier llamada.
-- `download` usa la variante POST (soporta datastores con nombre); la forma
-  `GET ...?pathHdfs=` fuerza el filesystem interno y no se usa.
+- `download` usa la variante POST. El gemelo GET ahora también acepta `filesystemId` /
+  `filesystemType` (y sigue aceptando el antiguo `pathHdfs`) y autoriza igual — existe
+  para que un navegador pueda guardar un fichero navegando a él.
