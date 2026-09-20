@@ -11,8 +11,12 @@ Trae un fichero del File Browser HDFS de Rocket al workspace del sandbox.
 | Cuerpo | `{"pathHdfs": "<ruta>", "targetFilesystem": {"id": "...", "type": "..."}}` |
 | Respuesta | los bytes crudos del fichero (streaming) |
 
-> Usa la variante POST, no `GET /fileBrowser/download?pathHdfs=` — el GET fuerza el
-> filesystem interno y no puede apuntar a un datastore con nombre.
+> El script usa la variante POST. El gemelo GET
+> (`GET /fileBrowser/download?path=<r>[&filesystemId=&filesystemType=]`, que además
+> sigue aceptando el nombre antiguo `pathHdfs`) existe para que un navegador pueda
+> guardar un fichero grande navegando a él; autoriza con el mismo mensaje de actor, así
+> que ambos dan exactamente el mismo acceso. Sirven los dos — POST mantiene la ruta
+> fuera de los logs de acceso.
 
 ## Procedimiento
 
@@ -36,7 +40,8 @@ Trae un fichero del File Browser HDFS de Rocket al workspace del sandbox.
      "<ruta_hdfs>" "<destino_local>" [--fs <id>:<type>]
    ```
 
-   - `<ruta_hdfs>`: ruta absoluta en HDFS, p.ej. `/data/kk/report.json`.
+   - `<ruta_hdfs>`: ruta absoluta en HDFS, p.ej. `/data/kk/report.json`. Un directorio
+     se descarga como zip construido al vuelo (sujeto al límite de tamaño del servidor).
    - `<destino_local>`: ruta de fichero local, o un directorio (se conserva el nombre).
 
 ## Salida esperada

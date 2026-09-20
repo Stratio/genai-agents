@@ -1,6 +1,7 @@
 """Tests for rocket_file_browser.py — payload construction, fs resolution,
-restricted-path guard, and the HTTP 420 upload-commit retry. No network: the
-module-level ``request`` is monkeypatched."""
+restricted-path guard, the one-request upload with its legacy fallback, and the
+HTTP 420 retry of that legacy commit. No network: the module-level ``request`` is
+monkeypatched."""
 
 import argparse
 import sys
@@ -157,12 +158,35 @@ def test_compress_payload(monkeypatch):
     }
 
 
+def test_compress_rejects_several_sources_with_a_stream_codec():
+    """Gzip & co. compress one file; Rocket would refuse the request."""
+    with pytest.raises(SystemExit):
+        rfb.cmd_compress(
+            ns(archive="/data/out", sources=["/data/a", "/data/b"], codec="Gzip", fs="hdfs1:HDFS")
+        )
+
+
+def test_compress_accepts_tarzstd(monkeypatch):
+    calls = _recorder(monkeypatch)
+    rfb.cmd_compress(
+        ns(archive="/data/out", sources=["/data/a", "/data/b"], codec="TarZstd", fs="hdfs1:HDFS")
+    )
+    assert calls[0][2]["json"]["compressionCodec"] == "TarZstd"
+
+
 def test_extract_payload_with_dest(monkeypatch):
     calls = _recorder(monkeypatch)
     rfb.cmd_extract(ns(archive="/data/a.zip", dest="/data/out", fs="hdfs1:HDFS"))
     method, path, kwargs = calls[0]
     assert (method, path) == ("PUT", "/fileBrowser/extract")
     assert kwargs["json"]["files"] == [{"path": "/data/a.zip", "newPath": "/data/out"}]
+
+
+def test_extract_defaults_dest_to_the_archive_directory(monkeypatch):
+    """Rocket requires newPath; without --dest the archive's own directory is used."""
+    calls = _recorder(monkeypatch)
+    rfb.cmd_extract(ns(archive="/data/in/a.zip", dest=None, fs="hdfs1:HDFS"))
+    assert calls[0][2]["json"]["files"] == [{"path": "/data/in/a.zip", "newPath": "/data/in"}]
 
 
 # --- error surfacing --------------------------------------------------------
@@ -174,7 +198,78 @@ def test_non_ok_exits(monkeypatch):
         rfb.cmd_ls(ns(hdfs_path="/data/x", fs="hdfs1:HDFS"))
 
 
-# --- upload two-phase + 420 retry ------------------------------------------
+# --- relative paths ---------------------------------------------------------
+
+
+def test_guard_rejects_relative_path():
+    """ProvidedPath.fromApi refuses a non-absolute path, body or query parameter."""
+    with pytest.raises(SystemExit):
+        rfb.cmd_ls(ns(hdfs_path="data/x", fs="hdfs1:HDFS"))
+
+
+# --- upload: one request, legacy fallback, 420 retry ------------------------
+
+
+def test_upload_single_request(monkeypatch, tmp_path):
+    src = tmp_path / "f.txt"
+    src.write_text("hi")
+    calls = _recorder(monkeypatch, FakeResp(json_data="/data/f.txt"))
+
+    rfb.cmd_upload(ns(local_src=str(src), hdfs_dir="/data", fs="hdfs1:HDFS", legacy=False))
+
+    assert len(calls) == 1
+    method, path, kwargs = calls[0]
+    assert (method, path) == ("POST", "/fileBrowser/upload")
+    assert kwargs["params"] == {
+        "path": "/data",
+        "filesystemId": "hdfs1",
+        "filesystemType": "HDFS",
+    }
+    assert "binary" in kwargs["files"]
+
+
+def test_upload_falls_back_to_the_legacy_flow(monkeypatch, tmp_path):
+    """An older Rocket has no /fileBrowser/upload — the two-request flow still works."""
+    src = tmp_path / "f.txt"
+    src.write_text("hi")
+    seq = [
+        FakeResp(ok=False, status_code=404, text="not found"),
+        FakeResp(json_data="/tmp/uploads/u/f.txt"),
+        FakeResp(ok=True, status_code=200),
+    ]
+    calls = []
+
+    def fr(method, path, **kwargs):
+        calls.append((method, path, kwargs))
+        return seq.pop(0)
+
+    monkeypatch.setattr(rfb, "request", fr)
+    rfb.cmd_upload(ns(local_src=str(src), hdfs_dir="/data", fs="hdfs1:HDFS", legacy=False))
+
+    assert [c[1] for c in calls] == [
+        "/fileBrowser/upload",
+        "/fileBrowser/uploadLocalFile",
+        "/fileBrowser/putLocalFileToHadoopFs",
+    ]
+
+
+def test_upload_legacy_flag_skips_the_one_shot_route(monkeypatch, tmp_path):
+    src = tmp_path / "f.txt"
+    src.write_text("hi")
+    seq = [FakeResp(json_data="/tmp/uploads/u/f.txt"), FakeResp(ok=True, status_code=200)]
+    calls = []
+
+    def fr(method, path, **kwargs):
+        calls.append((method, path, kwargs))
+        return seq.pop(0)
+
+    monkeypatch.setattr(rfb, "request", fr)
+    rfb.cmd_upload(ns(local_src=str(src), hdfs_dir="/data", fs="hdfs1:HDFS", legacy=True))
+
+    assert [c[1] for c in calls] == [
+        "/fileBrowser/uploadLocalFile",
+        "/fileBrowser/putLocalFileToHadoopFs",
+    ]
 
 
 def test_upload_retries_on_420(monkeypatch, tmp_path):
@@ -194,7 +289,7 @@ def test_upload_retries_on_420(monkeypatch, tmp_path):
     monkeypatch.setattr(rfb, "request", fr)
     monkeypatch.setattr(rfb.time, "sleep", lambda _s: None)
 
-    rfb.cmd_upload(ns(local_src=str(src), hdfs_dir="/data", fs="hdfs1:HDFS"))
+    rfb.cmd_upload(ns(local_src=str(src), hdfs_dir="/data", fs="hdfs1:HDFS", legacy=True))
 
     assert len(calls) == 3
     assert calls[0][1] == "/fileBrowser/uploadLocalFile"

@@ -11,7 +11,9 @@ deliberadamente mínimo** — al ejecutar una tarea, carga y sigue el sub-ficher
 correspondiente entero. No improvises la petición desde este índice.
 
 Todas las operaciones las sirve un único cliente Python, `scripts/rocket_file_browser.py`,
-que gestiona el mTLS, la subida en dos fases y el reintento del HTTP 420.
+que gestiona el mTLS, la subida en una sola petición (`POST /fileBrowser/upload`) y su
+repliegue al flujo antiguo de dos peticiones con reintento del HTTP 420 en versiones de
+Rocket anteriores.
 
 ## Prerrequisitos — leer primero
 

@@ -12,14 +12,20 @@ single Python client, `scripts/rocket_file_browser.py`, does the HTTP work.
 ## What it does
 
 - **download** — `POST /fileBrowser/download`, streaming the raw bytes to a local path.
-- **upload** — two phases: `POST /fileBrowser/uploadLocalFile` (multipart) then
-  `POST /fileBrowser/putLocalFileToHadoopFs`, with automatic retry on HTTP 420.
+- **upload** — one request: `POST /fileBrowser/upload?path=<dir>` (multipart `binary`),
+  authorized before any byte is accepted and streamed straight into the filesystem; an
+  existing name is refused. Falls back to the legacy two-request flow
+  (`uploadLocalFile` + `putLocalFileToHdfs`, retrying HTTP 420) on a Rocket that does
+  not serve it, or with `--legacy`.
 - **ls** — `POST /fileBrowser/findByPath` (directory listing / file stat).
 - **cp** / **mv** — `PUT /fileBrowser/copy` / `PUT /fileBrowser/update`.
 - **rm** — `DELETE /fileBrowser/delete` (one or more paths).
 - **mkdir** — `POST /fileBrowser/createDir`.
-- **compress** / **extract** — `PUT /fileBrowser/compress` (codecs: ZStandard, Lz4,
-  Snappy, Gzip, Bzip2, Zip, TarGz) / `PUT /fileBrowser/extract`.
+- **compress** / **extract** — `PUT /fileBrowser/compress` (archive codecs Zip, TarGz,
+  TarZstd for one or many sources; stream codecs ZStandard, Lz4, Snappy, Gzip, Bzip2 for
+  a single file) / `PUT /fileBrowser/extract` (archive kind detected by content, not by
+  extension; destination mandatory, defaulted by the script to the archive's directory).
+  Both stream through the server without touching the pod's disk.
 - **filesystems** helper — `GET /fileBrowser/getFilesystems` to discover `id`/`type`.
 
 ## Authentication & identity
@@ -63,9 +69,13 @@ pod search domain): `https://<rocket-instance>.<rocket-namespace>:7777`
 
 ## Notes
 
-- Never silently retries except HTTP 420 on the upload commit phase (Rocket signals a
-  concurrent upload). Every other failure is surfaced with HTTP code + body verbatim.
+- Never silently retries except HTTP 420 on the legacy upload commit phase (Rocket
+  signals a concurrent upload). Every other failure is surfaced with HTTP code + body
+  verbatim.
+- Relative paths are refused client-side: Rocket's `ProvidedPath.fromApi` rejects them
+  in the body and, since ROCK #5384, in query parameters too.
 - Reserved roots (`/extensions`, `/mockData`, `/backups`, `/mlProjectModelArtifacts`,
   `/mlProjectExecutionsArtifacts`) are refused client-side before any call.
-- `download` uses the POST variant (supports named datastores); the `GET ...?pathHdfs=`
-  form forces the internal filesystem and is not used.
+- `download` uses the POST variant. The GET twin now also takes `filesystemId` /
+  `filesystemType` (and still the legacy `pathHdfs`) and authorizes identically — it
+  exists so a browser can save a file by navigating to it.

@@ -11,7 +11,8 @@ intentionally minimal** — when the agent performs a task, load and follow the
 matching sub-file in full. Do not improvise the request from this index.
 
 All operations are served by a single Python client, `scripts/rocket_file_browser.py`,
-which handles mTLS, the two-phase upload, and the HTTP 420 retry.
+which handles mTLS, the one-request upload (`POST /fileBrowser/upload`) and its fallback
+to the legacy two-request flow with the HTTP 420 retry on older Rocket versions.
 
 ## Prerequisites — read first
 
