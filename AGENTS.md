@@ -50,6 +50,7 @@ genai-agents/
       data-governance-officer/
       skill-creator/
       agent-creator/
+      observability-evaluation-agent/
   agents/                  # All agents live under agents/<name>/
     data-analytics-officer/        # Full agent (analysis + multi-format reports)
       imported-skills      # List of skills imported from monorepo skills/
@@ -67,6 +68,7 @@ genai-agents/
       imported-skills
     agent-creator/         # Agent creation agent
       imported-skills
+    observability-evaluation-agent/   # Trace observability & evaluation (Grafana Tempo, read-only)
   plugins/                 # Functional plugins (verticals): see "Plugins funcionales"
     stratio-governance/    # plugin.yaml + README.md
     stratio-data/
@@ -105,6 +107,9 @@ Agent for designing and generating AI agent skills (SKILL.md files). Interactive
 
 ### agent-creator
 Agent for designing and generating complete AI agents for Stratio Cowork. Interactive workflow: requirements gathering, architecture design (workflow phases, triage tables, skill decomposition), AGENTS.md generation following proven patterns, skill creation via shared skill-creator, supporting files (README.md, opencode.json), quality review with 26-point checklist, and agents/v1 ZIP packaging. No MCPs — works purely with conversation and file generation.
+
+### observability-evaluation-agent
+Read-only observability and evaluation agent over the platform's OpenTelemetry traces. Queries Grafana Tempo through the Grafana datasource proxy (`curl`/`jq`, no MCPs) to answer usage questions (Cowork agents used, active users, sessions per user), inspect and reconstruct Cowork sessions turn by turn (black-box evaluation input), and analyze SQL chain invocations (errors, latency, platform-service calls, turn content). Evaluates reconstructed behavior only against user-provided criteria; every claim cites its trace evidence. Local skill `tempo-queries` carries the query cookbook and the platform trace vocabulary.
 
 ## Packaging scripts (root)
 

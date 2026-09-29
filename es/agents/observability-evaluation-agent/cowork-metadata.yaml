@@ -1,0 +1,6 @@
+description: "Agente de observabilidad y evaluación sobre trazas OpenTelemetry. Responde preguntas de uso (agentes, usuarios, sesiones), reconstruye conversaciones de Cowork e invocaciones de la chain SQL desde Grafana Tempo, y las evalúa contra criterios aportados por el usuario. De solo lectura."
+tags:
+  - observabilidad
+  - opentelemetry
+  - trazabilidad
+  - evaluacion
