@@ -2,7 +2,7 @@
 
 ## 0.4.0 (upcoming)
 
-* Pending changelog
+* [ROCK-14541] **Native `dashboard-builder` shared skill**: add EN + ES guidance for creating GenAI dashboards and appending canonical text, data, chart and image cards through the dashboard MCP. The skill enforces append-only mutations, validates the 12-column card contract, keeps dashboard navigation in the UI, and persists authorized File Browser images as self-contained Base64 data through the API.
 
 ## Previous development
 
