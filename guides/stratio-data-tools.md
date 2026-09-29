@@ -24,6 +24,10 @@
 | 11 | `propose_knowledge` | Propose discovered business terms |
 | — | `get_mcp_task_result(task_id)` | Retrieve the result of a long-running tool that continues executing in the background. Called when any tool returns only a `task_id` — see §9 and `stratio-mcp-response-patterns.md` §1 |
 
+### 2.1 Non-MCP tools — the Virtualizer client
+
+Not every retrieval path is an MCP tool. For **row-level detail retrieved straight to a CSV file** (Python/pandas work), use the Virtualizer client — a Bash CLI `virtualizer-sql` and its Python class `VirtualizerHttpClient`. It executes MCP-generated SQL on Virtualizer and writes CSV; it **never generates SQL** (that stays with `generate_sql`). Full routing, availability check and usage in §13.
+
 ## 3. Strict Rules
 
 - **IMMUTABILITY of `domain_name`**: The `domain_name` parameter in ALL MCP calls must be **exactly** the value returned by `list_domains` or `search_domains`. NEVER translate, interpret, paraphrase, or infer it. If the domain is called `semantic_AnaliticaBanca`, use `"semantic_AnaliticaBanca"` — not `"Banca Particulares"`, not `"Analítica Banca"`, not `"banca"`. If in doubt about the exact name, call `search_domains` or `list_domains` again to confirm
@@ -32,11 +36,11 @@
 - **Statistical markers and aggregates come from the MCP, not from downloading rows.** Means, medians, standard deviations, percentiles, counts, cardinality and even correlations (`corr(a, b)`) are all expressible in Spark SQL — request them **aggregated** so the result is a handful of rows, never row-level detail. This is the default for any "give me the averages / statistical markers" request. Resolve data needs in this order:
   1. **Aggregate in the MCP (SQL)** — resolve in the MCP everything expressible as a SQL query; it understands the governed domain, its relationships and business rules. Use `query_data` (natural language) or `generate_sql` + `execute_sql` (a tailored aggregate query). Prefer **a single MCP query** when the result needs several related tables (the MCP generates the JOINs) or aggregations with complex filters; use **multiple independent queries** (launched in parallel) for orthogonal slices (one temporal + one by segment + one ranking).
   2. **`profile_data`** for the statistical profile of the EDA (null %, distributions, outliers, cardinality). It is the source of the profiling markers — not a data download.
-  3. **Row-level detail + Python/pandas** ONLY when the calculation genuinely cannot be expressed in SQL nor obtained from `profile_data` (real statistical tests, clustering, iterative/procedural transformations, or preparing data for a visualization). This path is legitimate — do not avoid it when truly needed — but the detail must live **on disk, never in the model context**: a Python script reads the data from disk and aggregates there. Large data-tool outputs are truncated to a file by the host runtime (see `stratio-mcp-response-patterns.md` §2, "data-for-computation" branch); the script reads that file directly (`json.load(path)` → `pd.DataFrame(resp["data"])`). Never echo the row-level `dict`/`csv` payload into the conversation.
+  3. **Row-level detail + Python/pandas** ONLY when the calculation genuinely cannot be expressed in SQL nor obtained from `profile_data` (real statistical tests, clustering, iterative/procedural transformations, or preparing data for a visualization). This path is legitimate — do not avoid it when truly needed — but the detail must live **on disk, never in the model context**: a Python script reads the data from disk and aggregates there. Large data-tool outputs are truncated to a file by the host runtime (see `stratio-mcp-response-patterns.md` §2, "data-for-computation" branch); the script reads that file directly (`json.load(path)` → `pd.DataFrame(resp["data"])`). Never echo the row-level `dict`/`csv` payload into the conversation. **When the Virtualizer client is available, prefer it (§13)**: it writes the result straight to a CSV on disk deterministically, instead of relying on the host runtime truncating a `query_data` payload to a file.
 - **Disk is not the context**: saving rows to a CSV/JSON on disk is fine; what degrades the session is row-level detail landing in the *model context*. The host runtime truncates any tool output above ~2000 lines or ~50 KiB to a file — transactional detail crosses that with a few hundred rows, so forcing it either truncates (you cannot compute statistics over the truncated preview) or floods the context turn after turn. Aggregating in the MCP keeps results small by construction.
 - **Inconsistencies**: If two queries yield different totals, verify granularity and filters. Reformulate with `additional_context` to align
 - You can provide `additional_context` to the MCP to guide generation (e.g., business definitions, specific filters)
-- **`output_format` is a string**: Valid values are `"dict"`, `"csv"`, or `"markdown"`. It is optional (default: `"dict"`). NEVER pass a boolean (`true`/`false`). If you don't need a specific format, omit the parameter
+- **`output_format` is a string**: Valid values are `"dict"`, `"csv"`, or `"markdown"`. It is optional (default: `"dict"`). NEVER pass a boolean (`true`/`false`). If you don't need a specific format, omit the parameter. This governs `query_data` **inline** retrieval; for row-level detail written to a file, use the Virtualizer client (§13)
 - If a query fails or returns unexpected results: reformulate the question in natural language, do not try to write SQL
 - **Profiling (`profile_data`)**: Requires SQL as a parameter — ALWAYS generate it with `generate_sql`, never write it manually. NEVER add LIMIT to the SQL; use the tool's `limit` parameter instead
 - **Spark SQL dialect — row limiting**: The query engine is Spark SQL; it does NOT support the `LIMIT N OFFSET M` syntax (the `OFFSET` keyword raises a syntax error). To cap or page through rows in `query_data`, `execute_sql` or `profile_data`, use the tool's `limit` parameter — never add `LIMIT` or `OFFSET` to the SQL. If a result is truncated (`limit_reached`), raise `limit` or refine the question; do not paginate with `OFFSET`
@@ -54,7 +58,7 @@ Applies to `query_data`, `execute_sql`, and any other flow that returns tabular 
 - **Explicit user N**: when the user asked for a specific count (`top 50`, `primeras 25`, `muéstrame 100`, `give me 30`), respect that intent up to a **hard ceiling of 50 rows** painted in chat. Above 50, fall back to the cap and report the total in the closing line.
 - **Closing line** (one short italic line right after the table):
   - `N_returned ≤ painted`: no closing line. Just the table.
-  - `N_returned > painted`: add `_Showing {painted} of {N_returned} rows — query executed with LIMIT {LIMIT_query}_` (use the user's language).
+  - `N_returned > painted`: add `_Showing {painted} of {N_returned} rows — query executed with LIMIT {LIMIT_query}_` (use the user's language). For a result read from a §13 CSV file (the client runs the full SQL with **no LIMIT**), instead use `_Showing {painted} of {total} rows — full result in {csv_path}_`.
   - `N_returned == 0`: do not paint a table. Emit a single short message `_The query returned no rows._` (in the user's language).
 - **Headers**: include all columns returned by the tool, in the order returned. Do not abbreviate or hide columns.
 
@@ -169,7 +173,7 @@ inform the user and omit that metric from the analysis.
 
 ## 8. Post-Query Validation
 
-Each `query_data` result must pass these 7 validations before being used in the analysis. When queries are launched in parallel, validate each result as it is received:
+Each retrieved dataset must pass these 7 validations before being used in the analysis — whether it came from `query_data` inline or was written to a file via the Virtualizer client (§13). When queries are launched in parallel, validate each result as it is received. **For a file-based result, run checks 1–6 on the result's profile, not by loading rows into context — §13.3 explains how** (`--profile` for the CLI, or the DataFrame inside the script):
 1. **Non-empty dataset** (>0 rows). If empty: reformulate the question or alert the user
 2. **Expected columns present**. If missing: review the question formulation
 3. **Coherent data types** (dates are dates, numerics are numerics)
@@ -240,3 +244,60 @@ Procedure:
 3. Continue the workflow normally (non-blocking).
 4. Stop only if the alternative cannot cover the user's need (the listing is too large for the user to pick from, or a free-text search is genuinely required). In that case, ask the user to narrow the scope manually.
 5. Note the degradation in any reasoning or summary produced at the end of the turn.
+
+## 13. File-based retrieval via the Virtualizer client
+
+When step 3 of the §3 cascade applies — you genuinely need row-level detail for a calculation SQL cannot do (real statistical tests, clustering, iterative/procedural transforms, or preparing data for a visualization) — retrieve it **straight to a file on disk** with the Virtualizer client instead of pulling rows through `query_data` into the context. The client executes MCP-generated SQL directly on Virtualizer and writes the result to CSV; only summaries reach the model.
+
+This is the deterministic alternative to relying on the host runtime truncating a large `query_data` payload to a file (`stratio-mcp-response-patterns.md` §2): you choose the file and its path, and the rows never enter the context in the first place.
+
+### 13.1 Availability — check before using it (per surface)
+
+The client is preinstalled in Stratio-controlled runtimes but may be absent elsewhere. Check once per session, per surface, before routing anything to it:
+
+- **CLI (any agent, via Bash)**: `command -v virtualizer-sql`. Exit status 0 → available. Non-zero → **fall back** to the §3 cascade with `query_data` as before.
+- **Python client (inside an analysis script)**: guard the import — `try: from virtualizer import VirtualizerHttpClient` / `except ImportError:` fall back. The import succeeding is the check for this path; do not rely on the CLI probe for it (the two can diverge).
+
+Cache the outcome for the turn — do not re-probe before every query. If the client is present but the first call errors (Virtualizer unreachable, connection/env problem), do not loop: fall back to `query_data` and note the degradation (same posture as §12).
+
+### 13.2 The flow (SQL stays MCP-governed)
+
+1. `generate_sql(question, domain_name)` → SQL text (§1: never write SQL by hand).
+2. **Confirm step 1 returned SQL** — not a clarification request (§7) nor a `task_id` (§9). Never pass a clarification string or a `task_id` to the client as if it were SQL.
+3. Execute and write to disk:
+   - **CLI**: `virtualizer-sql --query-file <sql-file> --out output/[ANALYSIS_DIR]/data/<name>.csv` (or `--query "<sql>"`). It always prints a compact profile to stdout — the validation signal for §8 (§13.3).
+   - **Python**: `df = VirtualizerHttpClient().sql_to_df(sql)` then `df.to_csv(path, index=False)`. Instantiation takes no arguments — the runtime provides the connection via environment.
+4. Downstream reads the file with pandas; only summaries, the profile and KPIs reach the context.
+
+CSV is the default format. The CLI prints `rows=<n> cols=[...] -> <path>` plus a compact profile (§13.3); it never prints the rows themselves.
+
+### 13.3 Validation of a file-based result (§8 on the profile, not the rows)
+
+The §8 validations are mandatory. On the CLI path this is automatic: the command **always prints a compact profile** — the only way to run checks 1–6 without loading rows into context. Three blocks to stdout after the `rows=… -> path` line:
+
+```
+rows=1234 cols=['customer_id', 'amount', 'signup_date'] -> …/data/tx.csv
+customer_id             int64        # block 1: df.dtypes  → checks 2 (cols), 3 (types)
+amount                float64
+signup_date    datetime64[ns]
+customer_id    0.000                 # block 2: null fraction/col → check 5 (null %)
+amount         0.012
+signup_date    0.004
+               customer_id      amount     # block 3: describe() → checks 1 (rows>0),
+count          1234.0          1234.0      #          4/6 (ranges: min/max/mean)
+mean              …             152.3
+min               …               0.0
+max               …            9800.0
+```
+
+- **Python** (in-script): the script already holds the DataFrame — validate it directly (`df.shape`, `df.dtypes`, `df.isna().mean()`, value ranges); no flag needed.
+
+Validation 7 (business sanity) runs on the profile plus the KPIs the script prints. An empty result is a header-only CSV (`rows=0`) — treat it as "no rows" (§8 check 1); do not feed an empty frame into clustering.
+
+### 13.4 Showing a file-based result to the user
+
+If the user asks to see the data (§4 triggers) and it lives in a CSV from this section, read only the first rows (`pd.read_csv(path, nrows=N)`) and render them as the §4 Markdown table under the same 10/50 cap. The client ran the full SQL with **no LIMIT**, so use the file closing line from §4 (`— full result in <csv_path>`), not the `LIMIT` wording.
+
+### 13.5 Parallel retrieval
+
+`generate_sql` calls parallelize as MCP calls exactly as in §3. Execution differs: independent `virtualizer-sql` retrievals are separate Bash invocations (emit them in the same response so the runtime runs them concurrently), or a loop of `sql_to_df` calls inside one analysis script. The §3 rule still holds — never delegate to a subagent.
