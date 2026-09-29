@@ -1,0 +1,6 @@
+{
+  "enabledMcpjsonServers": [
+    "stratio_gov",
+    "stratio_data"
+  ]
+}
