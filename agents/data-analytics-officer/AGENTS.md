@@ -394,7 +394,7 @@ See `/quality-report`'s `quality-report-layout.md` for the report-specific layou
 ## 5. Python Code Generation and Execution
 
 - Environment: `python3` resolves to the Python stack provided by the environment (Cowork sandbox image or local venv); no bootstrap needed
-- During planning: if the analysis requires libraries not included in `requirements.txt`, `pip install <pkg>` in the current environment. For recurring deps, also add them to `requirements.txt` so the sandbox image picks them up on next rebuild
+- During planning: if the analysis requires libraries not included in `requirements.txt`, `pip install <pkg>` in the current environment. The sandbox may have no network: if the install fails, do not retry it or look for another way to download the package — tell the user the library is not available there and continue with the installed stack. For recurring deps, also add them to `requirements.txt` so the sandbox image picks them up on next rebuild
 - **Never install or use `playwright`, `selenium`, `pyppeteer` or any headless-browser library**. Every supported output is covered by the stack already in `requirements.txt`: HTML→PDF via `weasyprint`, Plotly chart→PNG via `kaleido`, PDF generation via `reportlab`, PDF manipulation via `pypdf`/`qpdf`. If a task seems to need a headless browser, pick the equivalent from that list instead
 - Write scripts in `output/[ANALYSIS_DIR]/scripts/` with descriptive names that include analysis context (e.g.: `ventas_q4_regional.py`, `churn_segmentacion.py`)
 - Run scripts: `python3 output/[ANALYSIS_DIR]/scripts/my_script.py`

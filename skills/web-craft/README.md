@@ -47,4 +47,4 @@ None. Fonts and images are either fetched at runtime (Google Fonts) or provided 
 - **Commit to one tone.** Lukewarm mixes of two tones is the single most common cause of generic output.
 - **Accent colour scarcity:** apply the dominant accent to 5–15% of the visible surface; saturation earns its place through restraint.
 - **Motion budget is explicit:** `none`, `minimal`, or `expressive`. Any animation must respect `@media (prefers-reduced-motion: reduce)`.
-- **Fonts from Google Fonts are fine for internal artifacts;** for external distribution, bundle WOFF2 with licence files.
+- **Fonts from Google Fonts are fine for internal artifacts;** for external distribution, bundle WOFF2 with licence files. For an artifact that must work with no network (workspace preview, Stratio artifact, offline), embed the fonts as data: URIs or rely on the theme's fallback stack.

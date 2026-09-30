@@ -3,6 +3,7 @@
 ## 0.4.0 (upcoming)
 
 * [ROCK-15363] Sandbox mandatory skills: `sandbox-mandatory-skills/<name>/` holds the skills genai-agents-sandbox bakes into every sandbox, agentless projects included, never uploaded to GenAI UI nor imported by an agent. `pack_sandbox_mandatory_skills.sh` packs them into `sandbox-mandatory-skills-{v}.zip` (English only, part of `make package`/`make deploy`), copying in the guides their `guides` manifest names and the files their `bundle-assets` manifest names, so the packed skill is self-contained. First one: `artifacts` (create, find, edit and share Stratio artifacts), moved from genai-agents-sandbox; it designs HTML artifacts on brand-kit's theme catalog and the visual-craftsmanship guide, both shipped inside it
+* [ROCK-15363] Visual output that works with no network: data-analytics-officer's analytical dashboard embeds plotly.js once from the installed package instead of loading it from cdn.plot.ly (which the Cowork workspace preview and Stratio artifacts block), and avoids Plotly's built-in geography; `web-craft` embeds fonts as data: URIs, or falls back to the theme's stack, when the artifact must work offline; on-demand `pip install` no longer retries in a sandbox without network
 
 ## Previous development
 
