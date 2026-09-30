@@ -31,4 +31,21 @@ while IFS= read -r module; do
 
 done < "$REPO_ROOT/release-modules"
 
+# --- Sandbox mandatory skills ---
+# Baked into every sandbox image, so a failure here fails the build (no `|| true`). The
+# tests pack the skills first and check what ships. pytest comes from the current
+# environment, as above; a throwaway venv provides it where that has none.
+MANDATORY_TESTS=$(find "$REPO_ROOT/sandbox-mandatory-skills" -path '*/tests/test_*.py' -not -path '*/.venv/*' 2>/dev/null || true)
+if [[ -n "$MANDATORY_TESTS" ]]; then
+  echo "  [sandbox-mandatory-skills] Tests found — running pytest..."
+  PYTHON=python3
+  if ! python3 -c "import pytest" 2>/dev/null; then
+    MANDATORY_VENV="$REPO_ROOT/sandbox-mandatory-skills/.venv"
+    [[ -x "$MANDATORY_VENV/bin/python" ]] || python3 -m venv "$MANDATORY_VENV"
+    "$MANDATORY_VENV/bin/python" -m pip install --quiet pytest
+    PYTHON="$MANDATORY_VENV/bin/python"
+  fi
+  (cd "$REPO_ROOT/sandbox-mandatory-skills" && "$PYTHON" -m pytest $MANDATORY_TESTS -v)
+fi
+
 echo "==> Tests completed"

@@ -33,4 +33,10 @@ if [[ -f "$REPO_ROOT/release-modules" ]]; then
   done < "$REPO_ROOT/release-modules"
 fi
 
+# --- Sandbox mandatory skills ---
+if [[ -d "$REPO_ROOT/sandbox-mandatory-skills" ]]; then
+  find "$REPO_ROOT/sandbox-mandatory-skills" \( -name __pycache__ -o -name .pytest_cache -o -name .venv \) -prune -exec rm -rf {} +
+  echo "  [OK] sandbox-mandatory-skills caches"
+fi
+
 echo "==> Cleaning completed"

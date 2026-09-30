@@ -73,6 +73,8 @@ genai-agents/
     stratio-cowork-development/
     stratio-productivity/
     stratio-data-toolkit/
+  sandbox-mandatory-skills/  # Skills baked into every Stratio sandbox: see "Sandbox mandatory skills"
+    artifacts/
 ```
 
 ## Development instructions
@@ -116,6 +118,7 @@ Generic scripts that work with any agent in the monorepo:
 | `pack_stratio_cowork.sh` | Stratio Cowork (`agents/v1` deployable bundle) | `dist/{name}-stratio-cowork.zip` |
 | `pack_skills.sh` | All — bulk skills ZIP and individual skill ZIPs | `dist/skills.zip` or `dist/{skill}.zip` |
 | `pack_plugin.sh` | Functional plugins (`stratio-cowork` wrapper or `claude` marketplace) | `dist/{plugin}-{platform}.zip` |
+| `pack_sandbox_mandatory_skills.sh` | Skills baked into every Stratio sandbox (genai-agents-sandbox image) | `dist/sandbox-mandatory-skills.zip` |
 
 Usage: `bash pack_opencode.sh --agent <agent-path> [--name <kebab-case-name>] [--lang <code>]`
 
@@ -293,6 +296,30 @@ The deployment is orchestrated by the `upload-plugin` task of the [`cowork-api`]
 5. The full release pipeline (`make package`) picks the plugin up automatically — nothing extra to register.
 
 Use the plugins under `plugins/` as templates: `stratio-governance` and `stratio-cowork-development` for multi-agent verticals, `stratio-data` for a single-agent vertical, `stratio-productivity` for a skills-only plugin published to both platforms, and `stratio-data-toolkit` for a skills-only plugin restricted to Claude only.
+
+## Sandbox mandatory skills
+
+`sandbox-mandatory-skills/<name>/` holds the skills every Stratio sandbox carries, whatever the project, agentless ones included. They are not uploaded to GenAI UI, not imported by any agent and not part of a plugin: genai-agents-sandbox downloads `sandbox-mandatory-skills-{v}.zip` (built by `pack_sandbox_mandatory_skills.sh` in `make package`, uploaded by `make deploy`) and bakes it into its image, on OpenCode's skills path. The version it takes is pinned in its `genai_agents_version` file; a PR build (`{v}-PR<N>-SNAPSHOT`, in `raw-staging`) can be pinned there to test both PRs together. Today there is one, `artifacts` (create, find, edit and share Stratio artifacts).
+
+```
+sandbox-mandatory-skills/
+  artifacts/
+    SKILL.md          # English only: one image serves every user (no es/ overlay)
+    scripts/
+    guides            # manifest of guides/ files it uses, as for any shared skill
+    bundle-assets     # other files from the monorepo it ships with
+    tests/            # pytest, run by bin/test.sh against the packed copy; not shipped
+```
+
+To add one:
+
+1. Create `sandbox-mandatory-skills/<name>/SKILL.md` with frontmatter `name: <name>` (OpenCode finds a skill by its folder) and `metadata: system: true`.
+2. List the guides it uses in `sandbox-mandatory-skills/<name>/guides`, as for a shared skill: the pack copies them next to `SKILL.md` and makes `guides/<file>` references local.
+3. List anything else it needs from the monorepo in `sandbox-mandatory-skills/<name>/bundle-assets`, one per line: `<source from the monorepo root> <destination inside the skill>`. A sandbox mandatory skill runs in projects with no agent, so it cannot rely on an agent having imported another skill: it carries its own copy. A destination can neither overwrite a file of the skill nor be named `SKILL.md` (OpenCode would load it as a skill of its own). `artifacts` ships brand-kit's token contract (`brand-kit.md`) and its `themes/` this way.
+4. Put its tests in `sandbox-mandatory-skills/<name>/tests/`. `bin/test.sh` runs them and, unlike agent tests, a failure fails the build; `bin/compile.sh` checks that every skill packs. A `conftest.py` can pack the skill first (see `artifacts/tests/conftest.py`) so the tests check what ships.
+5. Bump `genai_agents_version` in genai-agents-sandbox once the version that contains it is deployed.
+
+`bash pack_sandbox_mandatory_skills.sh [--skill <name>] [--output-dir <dir>]` packs them locally; genai-agents-sandbox builds from such a ZIP with `SANDBOX_MANDATORY_SKILLS_ZIP=<zip>` or straight from a checkout with `GENAI_AGENTS_DIR=<path>`.
 
 ## Internationalization (i18n)
 
