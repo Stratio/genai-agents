@@ -176,7 +176,9 @@ Para datos de referencia / drill-down. Click en un `<th>` reordena la columna.
 
 ## 6. Gráficas — Plotly con títulos-insight
 
-Plotly vía CDN (un único `<script src="https://cdn.plot.ly/plotly-2.x.min.js">` en `<head>`). Figuras embebidas como JSON en `DASHBOARD_DATA`, renderizadas en `DOMContentLoaded` con `Plotly.newPlot()`.
+Plotly embebido una sola vez en `<head>` desde el paquete instalado: `<script>` + `plotly.offline.get_plotlyjs()` + `</script>` (unos 4,7 MB, así el dashboard funciona sin red). No cargarlo desde `cdn.plot.ly`: la vista previa del workspace de Stratio Cowork y los artefactos de Stratio bloquean cualquier CDN, y el sandbox puede no tener red, así que las gráficas salen en blanco. Figuras embebidas como JSON en `DASHBOARD_DATA`, renderizadas en `DOMContentLoaded` con `Plotly.newPlot()`.
+
+Nada de mapas de Plotly con geografía integrada (`choropleth` con `locations`, `scatter_geo`): Plotly descarga sus formas de `cdn.plot.ly` al pintarlos, así que salen en blanco por el mismo motivo. Usar un gráfico de barras horizontales por región.
 
 Reglas anti-solapamiento (no negociables):
 
@@ -338,7 +340,7 @@ El helper local `skills/analyze/chart_layout.py` provee `apply_plotly_layout()`,
 
 Estos son modos de fallo específicos del dominio del dashboard analítico — los pitfalls web genéricos (viewport meta, font-display, estados hover) ya los gestiona la disciplina de web-craft, no los repitas aquí.
 
-- **Duplicación del bundle de Plotly** — cuando embebes múltiples figuras de Plotly, carga Plotly UNA VEZ vía `<script src="https://cdn.plot.ly/plotly-2.x.min.js">` en `<head>` y renderiza cada figura con `Plotly.newPlot(el, data, layout)`. Nunca exportes cada figura con `include_plotlyjs=True` / `full_html=True`: cada copia pesa ~3 MB, tres gráficas se convierten en un HTML de 9 MB.
+- **Duplicación del bundle de Plotly** — cuando embebes múltiples figuras de Plotly, embebe Plotly UNA VEZ en `<head>` (`plotly.offline.get_plotlyjs()`, ver §6) y renderiza cada figura con `Plotly.newPlot(el, data, layout)`. Nunca exportes cada figura con `include_plotlyjs=True` / `full_html=True`: cada copia pesa ~4,7 MB, tres gráficas se convierten en un HTML de 14 MB.
 - **Solapamiento título / leyenda en Plotly** — los títulos-insight son más largos que los títulos por defecto. Usa `apply_plotly_layout()` de `chart_layout.py`, que reserva espacio seteando `title.y = 0.95`, leyenda debajo del área de trazado (`y = -0.12`) y márgenes `t=100, b=80, l=60, r=40`. Nunca dejes la posición de leyenda por defecto cuando la gráfica tiene un título-insight.
 - **Filtros que no hacen nada** — cada filtro global debe disparar `updateKPIs(filters)`, `updateCharts(filters)` y `updateTables(filters)`. Si alguna de las tres falta, el filtro cambia visualmente pero el dashboard no reacciona. Define las tres aunque una sea un no-op.
 - **`DASHBOARD_DATA` ausente** — los filtros corren en el navegador; los datos que filtran deben estar embebidos. Si el agente olvida definir `DASHBOARD_DATA` antes de que los scripts corran, los filtros lanzan error y el dashboard se rompe silenciosamente. Embebe los slices pre-agregados como JSON inline antes de los scripts que los leen.

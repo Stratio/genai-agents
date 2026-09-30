@@ -513,7 +513,9 @@ python3 scripts/quick_extract.py document.pdf --auto-install
 
 This is a safety net, not the normal path. For deep-mode workflows, the
 skill assumes the packages above are already installed and will suggest
-`pip install <pkg>` commands when something specific is missing.
+`pip install <pkg>` commands when something specific is missing. The sandbox may
+have no network: if an install fails, say which package is missing instead of
+retrying.
 
 
 

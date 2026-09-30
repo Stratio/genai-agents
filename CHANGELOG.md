@@ -4,6 +4,7 @@
 
 * [ROCK-15363] Sandbox mandatory skills: `sandbox-mandatory-skills/<name>/` holds the skills genai-agents-sandbox bakes into every sandbox, never uploaded to GenAI UI. `pack_sandbox_mandatory_skills.sh` packs them into `sandbox-mandatory-skills-{v}.zip` as part of `make package`
 * [ROCK-15363] First sandbox mandatory skill: `artifacts`, to create, find, edit and share Stratio artifacts from the chat, with HTML pages designed on brand-kit's themes, which can keep their stylesheets, scripts, images, fonts and short clips in files of their own and link to each other. Its `recent` command lists what the project read, edited or created across its conversations, for when the user alludes to an artifact instead of naming it. A page never carries a GenAI UI address: another artifact is cited by title and id, so nothing goes stale when the installation moves
+* [ROCK-15363] Visual output that works with no network: data-analytics-officer's analytical dashboard embeds plotly.js once from the installed package instead of loading it from cdn.plot.ly (which the Cowork workspace preview blocks, as do Stratio artifacts in an installation without internet access), and avoids Plotly's built-in geography; `web-craft` embeds fonts as data: URIs, or falls back to the theme's stack, when the artifact must work offline; on-demand `pip install` no longer retries in a sandbox without network
 
 ## Previous development
 

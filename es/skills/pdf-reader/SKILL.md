@@ -514,7 +514,9 @@ python3 scripts/quick_extract.py document.pdf --auto-install
 
 Esto es una red de seguridad, no el camino normal. Para flujos de trabajo en modo profundo, la
 skill asume que los paquetes anteriores ya están instalados y sugerirá
-comandos `pip install <pkg>` cuando falte algo concreto.
+comandos `pip install <pkg>` cuando falte algo concreto. El sandbox puede no
+tener red: si una instalación falla, di qué paquete falta en lugar de
+reintentarla.
 
 
 

@@ -509,6 +509,9 @@ pip install msoffcrypto-tool
 msoffcrypto-tool locked.pptx decrypted.pptx -p 'the-password'
 ```
 
+`msoffcrypto-tool` is not part of the sandbox image and the sandbox may have no
+network: if the install fails, tell the user the file cannot be decrypted there.
+
 Then process `decrypted.pptx` as normal. Never log or persist the
 password.
 
