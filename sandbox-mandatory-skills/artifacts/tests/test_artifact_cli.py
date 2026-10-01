@@ -864,3 +864,29 @@ class TestImages:
         assert "**Several pages.**" in text
         assert "**Separate files are possible, never required.**" in text
         assert "If the person says\nhow they want it, do that." in text
+
+
+class TestPolicy:
+    def test_asks_the_api_what_the_viewer_allows(self, cli, capsys):
+        cli.artifact = {
+            "external_sources": [],
+            "max_file_size_bytes": 16777216,
+            "max_inline_bytes": 16777216,
+        }
+
+        cli.main(["policy"])
+
+        assert [(c["method"], c["path"]) for c in cli.calls] == [
+            ("GET", "/v1/artifacts/policy")
+        ]
+        assert json.loads(capsys.readouterr().out)["external_sources"] == []
+
+    def test_the_skill_builds_self_contained_without_sources(self):
+        """No internet in the installation: a page loading a CDN renders blank, so the
+        skill must say what to do when policy lists nothing, or cannot be asked."""
+        text = (_SKILL / "SKILL.md").read_text(encoding="utf-8")
+        assert "### Without internet access" in text
+        assert "**An empty list means the installation has no internet access**" in text
+        assert "If `policy` fails, the API predates it" in text
+        assert "plotly.offline.get_plotlyjs()" in text
+        assert "scripts/embed_fonts.py" in text

@@ -47,4 +47,4 @@ Ninguno. Las fuentes y las imágenes se traen en runtime (Google Fonts) o las pr
 - **Comprométete con un solo tono.** La mezcla tibia de dos tonos es la causa más común de output genérico.
 - **Escasez del color de acento:** aplica el acento dominante al 5–15% de la superficie visible; la saturación se gana por restricción.
 - **El motion budget es explícito:** `none`, `minimal` o `expressive`. Cualquier animación debe respetar `@media (prefers-reduced-motion: reduce)`.
-- **Las fuentes de Google Fonts son válidas para artefactos internos;** para distribución externa, empaqueta WOFF2 con ficheros de licencia. Para un artefacto que tiene que funcionar sin red (vista previa del workspace, artefacto de Stratio, sin conexión), embebe las fuentes como data: URI o apóyate en la pila de respaldo del tema.
+- **Las fuentes de Google Fonts son válidas para artefactos internos;** para distribución externa, empaqueta WOFF2 con ficheros de licencia. Para un artefacto que tiene que funcionar sin acceso a internet (instalación aislada, fichero sin conexión), embebe las fuentes como data: URI o apóyate en la pila de respaldo del tema.
