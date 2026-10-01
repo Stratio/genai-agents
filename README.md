@@ -31,6 +31,7 @@ Scripts at the monorepo root to package agents, skills and plugins:
 | `pack_stratio_cowork.sh` | Stratio Cowork (`agents/v1` deployable bundle) | `dist/{name}-stratio-cowork.zip` |
 | `pack_skills.sh` | Bulk skills ZIP and individual skill ZIPs | `dist/skills.zip` or `dist/{skill}.zip` |
 | `pack_plugin.sh` | Functional plugins (`stratio-cowork` wrapper or `claude` marketplace) | `dist/{plugin}-{platform}.zip` |
+| `pack_sandbox_mandatory_skills.sh` | Skills baked into every Stratio sandbox (genai-agents-sandbox image) | `dist/sandbox-mandatory-skills.zip` |
 
 ```bash
 # Package data-analytics-officer for OpenCode (English, default)
@@ -70,6 +71,7 @@ genai-agents/
     plugin-stratio-governance-stratio-cowork-{v}.zip   # Functional plugins (verticals)
     plugin-stratio-productivity-claude-{v}.zip
     ...                                                # Same pattern for each plugin × platform
+    sandbox-mandatory-skills-{v}.zip                   # English only, baked into genai-agents-sandbox
 
   agents/
     data-analytics-officer/
@@ -148,6 +150,10 @@ Notes:
 `skills/` groups skills imported by more than one agent. The pack scripts inline a shared skill into each agent's bundle at packaging time, so there is no need to duplicate copies in every agent folder.
 
 The full catalogue (skills grouped by family — Stratio MCPs, semantic-layer pipeline, data quality, office document I/O, visual craftsmanship, platform/meta), the rules for adding a new shared skill and the import workflow for agents live in [`skills/README.md`](skills/). The shared technical guides referenced by both skills and agents live in [`guides/`](guides/) — see [`guides/README.md`](guides/) for the catalogue and the path conventions used by the pack scripts.
+
+## Sandbox mandatory skills
+
+`sandbox-mandatory-skills/` holds the skills every Stratio sandbox carries, agentless projects included, such as `artifacts`. They are never uploaded to GenAI UI nor imported by an agent: genai-agents-sandbox downloads `sandbox-mandatory-skills-{v}.zip` at build time and bakes it into its image. How to add one, and how they reuse guides and other skills' files (`guides` and `bundle-assets` manifests), is in [`AGENTS.md`](AGENTS.md#sandbox-mandatory-skills).
 
 ## Internationalization (i18n)
 

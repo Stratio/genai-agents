@@ -2,7 +2,7 @@
 
 ## 0.4.0 (upcoming)
 
-* Pending changelog
+* [ROCK-15363] Sandbox mandatory skills: `sandbox-mandatory-skills/<name>/` holds the skills genai-agents-sandbox bakes into every sandbox, agentless projects included, never uploaded to GenAI UI nor imported by an agent. `pack_sandbox_mandatory_skills.sh` packs them into `sandbox-mandatory-skills-{v}.zip` (English only, part of `make package`/`make deploy`), copying in the guides their `guides` manifest names and the files their `bundle-assets` manifest names, so the packed skill is self-contained. First one: `artifacts` (create, find, edit and share Stratio artifacts), moved from genai-agents-sandbox; it designs HTML artifacts on brand-kit's theme catalog and the visual-craftsmanship guide, both shipped inside it
 
 ## Previous development
 
