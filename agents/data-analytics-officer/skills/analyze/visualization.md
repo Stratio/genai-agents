@@ -14,7 +14,7 @@ Choose based on the analytical question:
 | Distribution | Histogram, box plot, violin | Pie chart |
 | Correlation | Scatter plot, heatmap | Bar chart |
 | Ranking | Horizontal bar chart sorted | Unsorted table |
-| Geographic | Choropleth map; without network (sandbox, workspace preview, artifact), horizontal bar by region: Plotly's built-in geography downloads its shapes from cdn.plot.ly | Tables with region codes |
+| Geographic | Choropleth map; without internet access, horizontal bar by region: Plotly's built-in geography downloads its shapes from cdn.plot.ly | Tables with region codes |
 | Highlighted KPIs | Cards with value + % change + sparkline | Numbers in text only |
 
 ## 2. Visualization Principles

@@ -14,7 +14,7 @@ Elegir según la pregunta analítica:
 | Distribución | Histograma, box plot, violin | Pie chart |
 | Correlación | Scatter plot, heatmap | Bar chart |
 | Ranking | Bar chart horizontal ordenado | Tabla sin ordenar |
-| Geográfico | Mapa coroplético; sin red (sandbox, vista previa del workspace, artefacto), barras horizontales por región: la geografía integrada de Plotly descarga sus formas de cdn.plot.ly | Tablas con códigos de región |
+| Geográfico | Mapa coroplético; sin acceso a internet, barras horizontales por región: la geografía integrada de Plotly descarga sus formas de cdn.plot.ly | Tablas con códigos de región |
 | KPIs destacados | Cards con valor + cambio % + sparkline | Solo números en texto |
 
 ## 2. Principios de Visualización

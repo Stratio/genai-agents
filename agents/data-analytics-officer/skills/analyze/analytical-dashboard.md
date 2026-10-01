@@ -176,9 +176,12 @@ For reference / drill-down data. Click on a `<th>` reorders the column.
 
 ## 6. Charts — Plotly with insight titles
 
-Plotly embedded once in `<head>` from the installed package: `<script>` + `plotly.offline.get_plotlyjs()` + `</script>` (about 4.7 MB, so the dashboard works with no network). Do not load it from `cdn.plot.ly`: the Stratio Cowork workspace preview and Stratio artifacts block every CDN, and the sandbox may have no network, so the charts render blank. Figures embedded as JSON in `DASHBOARD_DATA`, rendered on `DOMContentLoaded` with `Plotly.newPlot()`.
+Plotly via CDN (single `<script src="https://cdn.plot.ly/plotly-2.x.min.js">` in `<head>`). Figures embedded as JSON in `DASHBOARD_DATA`, rendered on `DOMContentLoaded` with `Plotly.newPlot()`.
 
-No Plotly maps with built-in geography (`choropleth` with `locations`, `scatter_geo`): Plotly downloads their shapes from `cdn.plot.ly` when it draws them, so they render blank for the same reason. Use a horizontal bar chart by region.
+**Without internet access** (an air-gapped installation, where the artifacts skill's `policy` lists no external sources, or a dashboard meant to be opened offline) a viewer's browser cannot reach the CDN and the charts render blank:
+
+- Embed plotly.js once in `<head>` from the installed package instead: `<script>` + `plotly.offline.get_plotlyjs()` + `</script>` (about 4.7 MB).
+- No Plotly maps with built-in geography (`choropleth` with `locations`, `scatter_geo`): Plotly downloads their shapes from `cdn.plot.ly` when it draws them. Use a horizontal bar chart by region.
 
 Anti-overlap rules (non-negotiable):
 
@@ -340,7 +343,7 @@ The local helper `skills/analyze/chart_layout.py` provides `apply_plotly_layout(
 
 These are failure modes specific to the analytical-dashboard domain — the generic web pitfalls (viewport meta, font-display, hover states) are already handled by the web-craft discipline, don't repeat them here.
 
-- **Plotly bundle duplication** — when embedding multiple Plotly figures, embed Plotly ONCE in `<head>` (`plotly.offline.get_plotlyjs()`, see §6) and render every figure with `Plotly.newPlot(el, data, layout)`. Never export each figure with `include_plotlyjs=True` / `full_html=True`: each copy ships ~4.7 MB, three charts becomes a 14 MB HTML.
+- **Plotly bundle duplication** — when embedding multiple Plotly figures, load Plotly ONCE in `<head>` (from the CDN, or embedded without internet access, see §6) and render every figure with `Plotly.newPlot(el, data, layout)`. Never export each figure with `include_plotlyjs=True` / `full_html=True`: each copy ships ~4.7 MB, three charts becomes a 14 MB HTML.
 - **Title / legend overlap on Plotly** — insight-style titles are longer than default titles. Use `apply_plotly_layout()` from `chart_layout.py`, which reserves space by setting `title.y = 0.95`, legend below the plot area (`y = -0.12`), and margins `t=100, b=80, l=60, r=40`. Never leave the default legend position when the chart has an insight title.
 - **Filters that do nothing** — every global filter must trigger `updateKPIs(filters)`, `updateCharts(filters)` and `updateTables(filters)`. If any of those three is missing, the filter visually changes but the dashboard doesn't react. Define all three even if one of them is a no-op.
 - **Missing `DASHBOARD_DATA`** — filters run in the browser; the data they filter must be embedded. If the agent forgets to set `DASHBOARD_DATA` before the scripts run, the filters throw and the dashboard silently breaks. Embed the pre-aggregated slices as inline JSON before the scripts that read them.
