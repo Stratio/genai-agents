@@ -103,24 +103,24 @@ If they genuinely want a separate document, say so and confirm before creating o
 When it starts from an existing artifact, `copy` it: the copy is theirs, private until
 they share it, and the original is left untouched.
 
-## HTML must be self-contained
+## The HTML sandbox
 
-An HTML artifact is served inside a sandbox with no network access. That is what makes
-it safe to run someone else's page, and it is not negotiable.
-
-The viewer loads the entry file into an iframe sandboxed to `allow-scripts allow-modals`
-and nothing else, under a policy that lets through only inline code and `data:`/`blob:`
-resources. In practice:
+An HTML artifact is someone else's page running in the viewer's browser, so the viewer
+isolates it. It loads the entry file into an iframe sandboxed to
+`allow-scripts allow-modals` and nothing else, in an opaque origin, under a policy that
+lets through inline code, `data:`/`blob:` resources and a fixed list of public CDNs. That
+is what makes it safe to open, and it is not negotiable. In practice:
 
 - **Write a full document.** The file is served as it is; nothing wraps it. Start with
   `<!doctype html>`, `<html lang="…">`, `<meta charset="utf-8">`,
   `<meta name="viewport" content="width=device-width, initial-scale=1">` and `<title>`,
   then one `<style>` block in `<head>`. The JavaScript goes in `<script>` blocks.
-- **Nothing loads from outside the file.** No CDN scripts or stylesheets, no web fonts
-  (Google Fonts included), no `fetch`, XHR or WebSocket, no external images, no
-  `<iframe>` of another page — they fail silently and the person sees a broken page.
-  Images go in as `data:` URIs. There is no Tailwind, Chart.js or Mermaid to load: write
-  the CSS yourself, and draw charts and diagrams as inline SVG or on a `<canvas>`.
+- **Libraries and fonts from the public CDNs only.** Scripts, stylesheets, fonts and
+  fetched data can come from `cdnjs.cloudflare.com`, `cdn.jsdelivr.net`, `unpkg.com`,
+  `cdn.plot.ly`, `cdn.tailwindcss.com`, `code.jquery.com`, `fonts.googleapis.com` and
+  `fonts.gstatic.com`, over `https://`, and from nowhere else: anything else fails
+  silently and the person sees a broken page. Pin the version in every CDN URL. Images
+  go in as `data:` URIs, and there is no `<iframe>` of another page.
 - **No storage.** The page runs in an opaque origin, so `localStorage`,
   `sessionStorage`, IndexedDB and cookies throw. Keep state in memory, where it resets
   on reload, and wrap any storage access in `try/catch` so the page still renders.
@@ -137,8 +137,6 @@ resources. In practice:
 - **Size.** By default a file can be up to 16 MB, `data:` URIs included: the API
   refuses a bigger one, and the viewer shows anything up to that size. Downscale and
   compress embedded images, and inline only what the page uses.
-
-Write the page so it works offline, because that is exactly how it is served.
 
 ## Designing an HTML page
 
@@ -205,10 +203,9 @@ and the chart categorical palette for series.
   in-page toggle. `body` gets an explicit `background` and `color`: the frame behind it
   is white. No hard-coded colors outside the token block, SVG included (`currentColor`
   or `var(--…)`).
-- **Fonts.** The theme's `display` (used sparingly), `body` and `mono` families, each
-  with its fallback stack. Web fonts do not load, so the fallback stack is what the
-  reader sees. Embed a font as a `data:` URI only when the person asks for that
-  typeface.
+- **Fonts.** The theme's `display` (used sparingly), `body` and `mono` families, loaded
+  from Google Fonts (a `<link>` to `fonts.googleapis.com`, with `display=swap`), each
+  with its fallback stack.
 
 The skeleton of the `<style>` block, with the design plan as its first comment:
 
@@ -249,9 +246,10 @@ body { margin: 0; background: var(--bg); color: var(--ink); }
   sequence. Keep cards for what needs to stand out, not around every block.
 - **Text:** about 65 characters per line (`max-width: 65ch` on prose) and a fixed type
   scale.
-- **Charts:** inline SVG or `<canvas>`, axes labeled with their units, series colors
-  from the theme's chart palette and status from its state tokens, readable in both
-  themes.
+- **Charts:** inline SVG, a `<canvas>`, or a chart library from the CDNs above
+  (Plotly, Chart.js, D3; Mermaid for diagrams). Axes labeled with their units, series
+  colors from the theme's chart palette and status from its state tokens, readable in
+  both themes.
 - **Basics:** real `<button>`s, visible focus, text contrast of at least 4.5:1 in both
   themes.
 
@@ -278,7 +276,7 @@ give the link. No open-ended verification loops: further changes come from the p
 on the page they have seen, and are edited in place.
 
 - [ ] Full document: charset, viewport, a 2–4 word `<title>` matching `--title`.
-- [ ] Nothing loaded from outside the file; no storage the page depends on.
+- [ ] Nothing loaded from outside the public CDNs; no storage the page depends on.
 - [ ] Tokens from the theme (or the workspace's design system), named in the design plan.
 - [ ] All colors are tokens, dark mode under both selectors, `body` has a background.
 - [ ] No horizontal page scroll at 400 px; wide content scrolls in its own wrapper.
@@ -295,7 +293,8 @@ what a viewer renders — `index.html` or `index.md` by default — and it has t
 the artifact's type.
 
 One exception, for now: do not split an HTML artifact into sibling `.css`/`.js` files.
-They will not load. Keep the entry file self-contained, as above.
+They will not load: the page's own CSS and JavaScript stay inline in the entry file
+(libraries can still come from the CDNs above).
 
 ## How to use it
 

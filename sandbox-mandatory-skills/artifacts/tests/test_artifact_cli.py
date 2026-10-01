@@ -591,11 +591,18 @@ class TestSkillRules:
         assert "Never `resolve`, `read`, `list`, `share`" in text
 
     def test_html_fits_the_viewer_sandbox(self):
-        """The viewer's CSP and iframe sandbox block every outside resource, storage,
-        forms, downloads and pop-ups; a page that relies on any of them renders
-        broken, silently."""
+        """The viewer's CSP and iframe sandbox block every resource outside the public
+        CDNs, storage, forms, downloads and pop-ups; a page that relies on any of them
+        renders broken, silently."""
         text = self._skill()
-        assert "**Nothing loads from outside the file.**" in text
+        assert "**Libraries and fonts from the public CDNs only.**" in text
+        # The hosts genai-api's artifact CSP allows (artifact_http.ARTIFACT_CDN_SOURCES).
+        for host in (
+            "cdnjs.cloudflare.com", "cdn.jsdelivr.net", "unpkg.com", "cdn.plot.ly",
+            "cdn.tailwindcss.com", "code.jquery.com", "fonts.googleapis.com",
+            "fonts.gstatic.com",
+        ):
+            assert f"`{host}`" in text, host
         assert "**No storage.**" in text
         assert "**No forms, downloads, pop-ups or new tabs.**" in text
 
