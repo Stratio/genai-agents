@@ -3,6 +3,7 @@
 ## 0.4.0 (upcoming)
 
 * [ROCK-15363] Sandbox mandatory skills: `sandbox-mandatory-skills/<name>/` holds the skills genai-agents-sandbox bakes into every sandbox, agentless projects included, never uploaded to GenAI UI nor imported by an agent. `pack_sandbox_mandatory_skills.sh` packs them into `sandbox-mandatory-skills-{v}.zip` (English only, part of `make package`/`make deploy`), copying in the guides their `guides` manifest names and the files their `bundle-assets` manifest names, so the packed skill is self-contained. First one: `artifacts` (create, find, edit and share Stratio artifacts), moved from genai-agents-sandbox; it designs HTML artifacts on brand-kit's theme catalog and the visual-craftsmanship guide, both shipped inside it
+* [ROCK-15363] Artifacts and visual output in installations without internet access: the `artifacts` sandbox mandatory skill asks genai-api which origins the viewer allows (`artifact.py policy`, `GET /v1/artifacts/policy`) and, when there are none, builds the page self-contained: Plotly embedded from the installed package, no Plotly geography, and fonts embedded as data: URIs by `scripts/embed_fonts.py` from pdf-writer's OFL fonts, which it now ships. Without internet access, data-analytics-officer's analytical dashboard embeds plotly.js instead of loading it from the CDN, `web-craft` embeds fonts (or falls back to the theme's stack) instead of `@import`, and an on-demand `pip install` that fails is reported instead of retried
 
 ## Previous development
 

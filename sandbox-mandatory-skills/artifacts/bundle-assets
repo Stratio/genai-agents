@@ -8,3 +8,8 @@
 # The Stratio theme catalog: brand-kit's token contract and its themes.
 skills/brand-kit/SKILL.md   brand-kit.md
 skills/brand-kit/themes     themes
+
+# The OFL fonts the visual skills ship, for pages that must embed their fonts: an
+# installation without internet access cannot load them from Google Fonts
+# (scripts/embed_fonts.py).
+skills/pdf-writer/fonts     fonts

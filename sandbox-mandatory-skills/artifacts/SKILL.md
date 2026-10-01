@@ -119,8 +119,10 @@ is what makes it safe to open, and it is not negotiable. In practice:
   fetched data can come from `cdnjs.cloudflare.com`, `cdn.jsdelivr.net`, `unpkg.com`,
   `cdn.plot.ly`, `cdn.tailwindcss.com`, `code.jquery.com`, `fonts.googleapis.com` and
   `fonts.gstatic.com`, over `https://`, and from nowhere else: anything else fails
-  silently and the person sees a broken page. Pin the version in every CDN URL. Images
-  go in as `data:` URIs, and there is no `<iframe>` of another page.
+  silently and the person sees a broken page. That is the default list; `policy` gives
+  the one this installation uses (see [Without internet access](#without-internet-access)).
+  Pin the version in every CDN URL. Images go in as `data:` URIs, and there is no
+  `<iframe>` of another page.
 - **No storage.** The page runs in an opaque origin, so `localStorage`,
   `sessionStorage`, IndexedDB and cookies throw. Keep state in memory, where it resets
   on reload, and wrap any storage access in `try/catch` so the page still renders.
@@ -137,6 +139,31 @@ is what makes it safe to open, and it is not negotiable. In practice:
 - **Size.** By default a file can be up to 16 MB, `data:` URIs included: the API
   refuses a bigger one, and the viewer shows anything up to that size. Downscale and
   compress embedded images, and inline only what the page uses.
+
+### Without internet access
+
+Run `python3 scripts/artifact.py policy` before building an HTML artifact. Its
+`external_sources` are the hosts the viewer lets a page load from in this installation:
+use only those (an installation may list its own mirrors instead of the public CDNs).
+**An empty list means the installation has no internet access**, so a page there loads
+nothing from outside the file. If `policy` fails, the API predates it: build as if the
+list were empty.
+
+With no external sources:
+
+- **Libraries inline, or none.** Plotly is installed in the sandbox: embed it once in
+  `<head>` from the package (`<script>` + `plotly.offline.get_plotlyjs()` +
+  `</script>`, about 4.7 MB). No other library is available: draw charts and diagrams
+  as inline SVG or on a `<canvas>`, and no Mermaid.
+- **No Plotly maps with built-in geography** (`choropleth` with `locations`,
+  `scatter_geo`): Plotly downloads their shapes from `cdn.plot.ly` when it draws them.
+  Use a horizontal bar chart by region.
+- **Fonts embedded.** Put a `/* fonts */` comment inside the page's `<style>` and run
+  `python3 scripts/embed_fonts.py index.html "<display>" "<body>" "<mono>"` with the
+  theme's families: it replaces the comment with the fonts this skill ships, as `data:`
+  URIs, without passing them through the conversation (`--list` shows the families). A
+  family it reports as `missing` keeps the theme's fallback stack.
+- **Images** as `data:` URIs, as anywhere else.
 
 ## Designing an HTML page
 
@@ -205,7 +232,8 @@ and the chart categorical palette for series.
   or `var(--…)`).
 - **Fonts.** The theme's `display` (used sparingly), `body` and `mono` families, loaded
   from Google Fonts (a `<link>` to `fonts.googleapis.com`, with `display=swap`), each
-  with its fallback stack.
+  with its fallback stack. Without internet access, embedded instead (see
+  [Without internet access](#without-internet-access)).
 
 The skeleton of the `<style>` block, with the design plan as its first comment:
 
@@ -276,7 +304,8 @@ give the link. No open-ended verification loops: further changes come from the p
 on the page they have seen, and are edited in place.
 
 - [ ] Full document: charset, viewport, a 2–4 word `<title>` matching `--title`.
-- [ ] Nothing loaded from outside the public CDNs; no storage the page depends on.
+- [ ] `policy` checked: nothing loaded from outside its `external_sources`, and from
+  nowhere at all when the list is empty; no storage the page depends on.
 - [ ] Tokens from the theme (or the workspace's design system), named in the design plan.
 - [ ] All colors are tokens, dark mode under both selectors, `body` has a background.
 - [ ] No horizontal page scroll at 400 px; wide content scrolls in its own wrapper.
@@ -338,6 +367,9 @@ python3 scripts/artifact.py members <artifact_id>             # who has it, and 
 # Only when the person asks for a list. --tags needs all of them; --search also
 # matches tags.
 python3 scripts/artifact.py list --scope shared --type html --tags ventas,q3 --pinned
+
+# What the viewer lets a page load in this installation, and the size limits
+python3 scripts/artifact.py policy   # empty external_sources: no internet, all inline
 
 # Everything the API knows about one artifact, and the link on its own
 python3 scripts/artifact.py get <artifact_id>

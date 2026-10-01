@@ -65,6 +65,8 @@ These are starting points, not mandates. Substitute freely when the brief calls 
 
 Serve fonts through `@import` from Google Fonts or the foundry's official delivery, or bundle WOFF2 alongside the artifact. Do not ship fonts without their licence files if the artifact is for external distribution.
 
+When the artifact has to work without internet access — an air-gapped installation, or a single HTML file opened offline — neither `@import` nor a WOFF2 next to the file loads there. Embed each face as a data: URI (`src: url(data:font/woff2;base64,…) format('woff2')`, one `@font-face` per file, a variable font once with its weight range), or rely on the theme's fallback stack.
+
 ### 2.4 Commit to a palette
 One dominant accent, one deep neutral for text (rarely pure black), one pale neutral for backgrounds (not pure white), optional accent colours. Declare the palette in CSS custom properties; never hand-type the same hex twice.
 

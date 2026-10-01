@@ -521,6 +521,10 @@ pip install msoffcrypto-tool
 msoffcrypto-tool locked.pptx decrypted.pptx -p 'la-contraseña'
 ```
 
+`msoffcrypto-tool` no forma parte de la imagen del sandbox y el sandbox puede no
+tener red: si la instalación falla, di al usuario que el fichero no se puede
+descifrar ahí.
+
 Luego procesa `decrypted.pptx` como normal. Nunca loguees ni
 persistas la contraseña.
 

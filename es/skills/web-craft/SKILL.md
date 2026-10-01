@@ -65,6 +65,8 @@ Son puntos de partida, no mandatos. Sustituye cuando el brief pida otra cosa. El
 
 Sirve fuentes mediante `@import` desde Google Fonts o desde la distribución oficial del foundry, o empaqueta WOFF2 junto al artefacto. No distribuyas fuentes sin sus licencias si el artefacto se distribuye externamente.
 
+Cuando el artefacto tiene que funcionar sin acceso a internet — una instalación aislada, o un único HTML abierto sin conexión — ni el `@import` ni un WOFF2 junto al fichero cargan ahí. Embebe cada fuente como data: URI (`src: url(data:font/woff2;base64,…) format('woff2')`, un `@font-face` por fichero, una fuente variable una sola vez con su rango de pesos), o apóyate en la pila de respaldo del tema.
+
 ### 2.4 Comprométete con una paleta
 Un acento dominante, un neutro profundo para texto (raramente negro puro), un neutro claro para fondos (no blanco puro), colores de acento opcionales. Declara la paleta en custom properties CSS; nunca teclees el mismo hex dos veces a mano.
 
