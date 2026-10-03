@@ -114,6 +114,7 @@ Step 0 runs in Phase 0 and therefore does not violate the "never proceed to Phas
 | Read/extract DOCX content: "read this DOCX", "extract text from this Word doc", "what does this .docx say", "extract tables from this DOCX", "convert .doc to text", "ingest this Word document" | `docx-reader` |
 | Read/extract PPTX content: "read this PowerPoint", "read this deck", "extract text from PPTX", "extract speaker notes", "what does this deck say", "extract tables from PPT", "parse this presentation", "convert .ppt to text" | `pptx-reader` |
 | Read/extract XLSX content: "read this Excel", "read this spreadsheet", "extract data from XLSX", "what does this workbook say", "extract tables from XLSX", "parse this workbook", "ingest this spreadsheet", "convert .xls to data" | `xlsx-reader` |
+| Rocket HDFS File Browser: "download this file from Rocket", "bring it from HDFS", "upload this to HDFS", "list the HDFS folder", "copy / move / delete in HDFS", "compress these files in HDFS", "baja este fichero de Rocket", "sube esto al HDFS" | `rocket-file-browser` |
 | PDF creation and manipulation: "merge PDFs", "split PDF", "rotate pages", "add watermark", "encrypt PDF", "fill PDF form", "flatten form", "create invoice/certificate/letter/newsletter/receipt in PDF", "add cover page", "attach file to PDF", "OCR to searchable PDF", "batch generate PDFs" — any PDF task not covered by `/quality-report` | `pdf-writer` |
 | DOCX creation and manipulation: "merge DOCX", "split DOCX by section", "find-replace in DOCX", "convert .doc to .docx", "create letter/memo/contract/policy brief in Word", "Word document with these contents" — any DOCX task not covered by `/quality-report` nor by the analyze pipeline | `docx-writer` |
 | PPTX creation and manipulation: "merge PPT decks", "split PPT", "reorder slides", "delete slides", "find-replace in speaker notes", "convert .ppt to .pptx", "rasterize slides", "export PPT to PDF", "create a pitch deck", "create a sales deck", "create a briefing deck", "create a training deck", "create a deck about…" — any PPTX task not covered by `/analyze` | `pptx-writer` |
@@ -452,6 +453,7 @@ When the agent needs to write a deliverable, the format dictates the skill. This
 | DOCX reading (extract text, tables, metadata, tracked changes) | `docx-reader` | Handles legacy `.doc` too. |
 | PPTX reading (extract text, speaker notes, chart data) | `pptx-reader` | Handles legacy `.ppt` too. |
 | XLSX reading (extract cells, tables, formulas, metadata) | `xlsx-reader` | Handles legacy `.xls` too. |
+| Rocket HDFS File Browser (download, upload, ls, cp, mv, rm, mkdir, compress, extract) | `rocket-file-browser` | Download source files into `output/[ANALYSIS_DIR]/data/` when an analysis is open; upload a deliverable only when the user asks. |
 
 ### 8.2 Deliverable expectations
 
