@@ -44,7 +44,7 @@ mensaje genérico.
 | Subir un fichero | Empujar un fichero local del sandbox a un directorio HDFS de Rocket. | `tasks/upload.md` |
 | Listar una ruta | Mostrar el contenido de un directorio HDFS. | `tasks/ls.md` |
 | Copiar | Copiar un fichero/directorio HDFS a una ruta nueva. | `tasks/cp.md` |
-| Mover / renombrar | Mover o renombrar un fichero/directorio HDFS. | `tasks/mv.md` |
+| Mover / renombrar | Mover o renombrar un fichero/directorio HDFS (confirma antes). | `tasks/mv.md` |
 | Borrar | Eliminar ficheros/directorios HDFS (destructivo — confirma antes). | `tasks/rm.md` |
 | Crear directorio | Crear un directorio HDFS. | `tasks/mkdir.md` |
 | Comprimir | Comprimir ficheros HDFS en un archivo. | `tasks/compress.md` |
@@ -62,6 +62,20 @@ que pasar en `--fs`. El script auto-resuelve el filesystem cuando solo hay uno.
 3. Carga el sub-fichero correspondiente y síguelo de principio a fin.
 4. Tras la llamada, muestra el resultado (o el código HTTP + cuerpo verbatim si falla)
    al usuario, según `guides/external-api-calls.md` §5.
+
+## Uso de esta skill dentro del flujo de un agente
+
+- **Las descargas van a la carpeta de trabajo de la tarea actual.** Si el agente mantiene
+  una carpeta por tarea (de análisis o de informe), descarga ahí — no en la raíz del
+  workspace — para que el fichero quede junto al trabajo que lo usa.
+- **Nunca publiques por iniciativa propia.** Sube, copia o mueve a HDFS solo cuando el
+  usuario lo pida. Generar un entregable en local no implica subirlo.
+- **Confirma el destino antes de subir.** Indica el directorio HDFS y el nombre final del
+  fichero; la subida se rechaza si ese nombre ya existe, así que compruébalo con `ls` y
+  pregunta al usuario cómo seguir (renombrar, o borrar el antiguo con `rm`) en lugar de
+  borrar por tu cuenta.
+- **Las operaciones destructivas siempre requieren confirmación explícita** — `rm` y `mv`
+  (mover o renombrar rompe toda ruta que apuntaba al original), enumerando las rutas exactas.
 
 ## Añadir una nueva capacidad
 

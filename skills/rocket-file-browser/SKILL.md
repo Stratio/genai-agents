@@ -44,7 +44,7 @@ with a generic message.
 | Upload a file | Push a local sandbox file into a Rocket HDFS directory. | `tasks/upload.md` |
 | List a path | Show the contents of an HDFS directory. | `tasks/ls.md` |
 | Copy | Copy an HDFS file/directory to a new path. | `tasks/cp.md` |
-| Move / rename | Move or rename an HDFS file/directory. | `tasks/mv.md` |
+| Move / rename | Move or rename an HDFS file/directory (confirm first). | `tasks/mv.md` |
 | Delete | Remove HDFS files/directories (destructive — confirm first). | `tasks/rm.md` |
 | Create directory | Make a new HDFS directory. | `tasks/mkdir.md` |
 | Compress | Compress HDFS files into an archive. | `tasks/compress.md` |
@@ -62,6 +62,20 @@ to pass as `--fs`. The script auto-resolves the filesystem when exactly one exis
 3. Load the matching sub-file and follow it end-to-end.
 4. After the call, surface the result (or the HTTP code + body verbatim on failure)
    to the user, per `guides/external-api-calls.md` §5.
+
+## Using this skill inside an agent workflow
+
+- **Downloads land in the current task's working folder.** When the agent keeps a
+  per-task folder (an analysis or report folder), download into it — not into the
+  workspace root — so the file sits next to the work that uses it.
+- **Never publish on your own initiative.** Upload, copy or move into HDFS only when the
+  user asks for it. Producing a deliverable locally does not imply uploading it.
+- **Confirm the destination before an upload.** State the HDFS directory and the final
+  file name; the upload is refused if that name already exists, so check with `ls` and
+  ask the user how to proceed (rename, or delete the old one with `rm`) instead of
+  deleting on your own.
+- **Destructive operations always need explicit confirmation** — `rm` and `mv` (a move
+  or rename breaks every path that pointed at the original), listing the exact paths.
 
 ## Adding a new capability
 
