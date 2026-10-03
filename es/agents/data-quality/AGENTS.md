@@ -65,6 +65,7 @@ Antes de activar cualquier skill, clasificar el intent del usuario:
 | Leer/extraer contenido de DOCX: "lee este DOCX", "extrae el texto de este Word", "qué dice este .docx", "ingiere este fichero Word", "convierte este .doc a texto" | — | `docx-reader` |
 | Leer/extraer contenido de PPTX: "lee este PowerPoint", "extrae las notas del presentador", "qué dice este deck", "parsea esta presentación", "convierte este .ppt a texto" | — | `pptx-reader` |
 | Leer/extraer contenido de XLSX: "lee este Excel", "extrae datos de XLSX", "qué dice esta hoja de cálculo", "parsea este libro", "ingiere este Excel de rule-specs", "lee este catálogo de tablas" | — | `xlsx-reader` |
+| File Browser HDFS de Rocket: "baja este fichero de Rocket", "tráelo del HDFS", "sube esto al HDFS", "lista la carpeta del HDFS", "copia / mueve / borra en HDFS", "comprime estos ficheros en HDFS", "download from Rocket", "upload to HDFS" | — | `rocket-file-browser` |
 | Creación y manipulación de PDF: "combinar PDFs", "dividir PDF", "añadir marca de agua", "cifrar PDF", "rellenar formulario PDF", "aplanar formulario", "añadir portada", "crear factura/certificado/carta/newsletter en PDF", "OCR a PDF buscable", "generar PDFs en lote" — cualquier tarea PDF no relacionada con informes de calidad | — | `pdf-writer` |
 | Creación y manipulación de DOCX: "combinar DOCX", "dividir DOCX por sección", "find-replace en DOCX", "convertir .doc a .docx", "crear carta/memo/contrato/nota de política en Word" — cualquier tarea DOCX no relacionada con informes de calidad | — | `docx-writer` |
 | Creación y manipulación de PPTX: "combinar decks PPT", "dividir PPT", "reordenar slides", "borrar slides", "find-replace en notas del presentador", "convertir .ppt a .pptx", "crear un deck de formación sobre nuestras reglas de calidad", "crear un deck ejecutivo de resumen de calidad" — cualquier tarea PPTX no relacionada con informes de calidad | — | `pptx-writer` |
@@ -278,6 +279,7 @@ Cuando el agente necesita escribir un entregable, el formato dicta la skill. Est
 | Lectura de DOCX | `docx-reader` | Texto, tablas, metadatos, cambios rastreados (maneja `.doc` heredado). |
 | Lectura de PPTX | `pptx-reader` | Texto, bullets, tablas, notas del orador, datos de chart (maneja `.ppt` heredado). |
 | Lectura de XLSX | `xlsx-reader` | Celdas, tablas, fórmulas, metadatos. Maneja `.xls` heredado también. |
+| File Browser HDFS de Rocket | `rocket-file-browser` | Download, upload, ls, cp, mv, rm, mkdir, compress, extract. Descarga las entradas (specs, libros de rule-specs) en la carpeta de la tarea actual; sube un informe de `output/` solo si el usuario lo pide. |
 
 Todos los informes de calidad en formato de fichero se producen vía la skill `quality-report`, que compone la estructura canónica de seis secciones (Resumen ejecutivo → Cobertura → Reglas → Gaps → Recomendaciones) y delega la generación del fichero a la writer skill correspondiente según esta tabla. Ver `quality-report/quality-report-layout.md` para el contrato completo de layout.
 

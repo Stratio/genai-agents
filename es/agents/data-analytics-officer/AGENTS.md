@@ -114,6 +114,7 @@ El Paso 0 corre dentro de la Fase 0 y por tanto no viola la regla crítica "nunc
 | Leer/extraer contenido de DOCX: "lee este DOCX", "extrae el texto de este Word", "qué dice este .docx", "extrae las tablas del docx", "convierte este .doc a texto", "ingiere este documento Word" | `docx-reader` |
 | Leer/extraer contenido de PPTX: "lee este PowerPoint", "lee este deck", "extrae las notas del presentador", "qué dice este deck", "extrae las tablas del PPT", "parsea esta presentación", "convierte este .ppt a texto" | `pptx-reader` |
 | Leer/extraer contenido de XLSX: "lee este Excel", "lee esta hoja de cálculo", "extrae datos de este XLSX", "qué dice este libro", "extrae tablas del XLSX", "parsea este libro", "ingiere esta hoja de cálculo", "convierte este .xls a datos" | `xlsx-reader` |
+| File Browser HDFS de Rocket: "baja este fichero de Rocket", "tráelo del HDFS", "sube esto al HDFS", "lista la carpeta del HDFS", "copia / mueve / borra en HDFS", "comprime estos ficheros en HDFS", "download from Rocket", "upload to HDFS" | `rocket-file-browser` |
 | Creación y manipulación de PDF: "combinar PDFs", "dividir PDF", "rotar páginas", "añadir marca de agua", "cifrar PDF", "rellenar formulario PDF", "aplanar formulario", "crear factura/certificado/carta/newsletter/recibo en PDF", "añadir portada", "adjuntar archivo al PDF", "OCR a PDF buscable", "generar PDFs en lote" — cualquier tarea PDF no cubierta por `/quality-report` | `pdf-writer` |
 | Creación y manipulación de DOCX: "combinar DOCX", "dividir DOCX por sección", "find-replace en DOCX", "convertir .doc a .docx", "crear carta/memo/contrato/nota de política en Word", "documento Word con estos contenidos" — cualquier tarea DOCX no cubierta por `/quality-report` ni por el pipeline de analyze | `docx-writer` |
 | Creación y manipulación de PPTX: "combinar decks PPT", "dividir PPT", "reordenar slides", "borrar slides", "find-replace en notas del presentador", "convertir .ppt a .pptx", "rasterizar slides", "exportar PPT a PDF", "crear un pitch deck", "crear un deck de ventas", "crear un deck de briefing", "crear un deck de formación", "crear un deck sobre…" — cualquier tarea PPTX no cubierta por `/analyze` | `pptx-writer` |
@@ -452,6 +453,7 @@ Cuando el agente necesita escribir un entregable, el formato dicta la skill. Est
 | Lectura de DOCX (extraer texto, tablas, metadatos, tracked changes) | `docx-reader` | Maneja legacy `.doc` también. |
 | Lectura de PPTX (extraer texto, notas del presentador, datos de chart) | `pptx-reader` | Maneja legacy `.ppt` también. |
 | Lectura de XLSX (extraer celdas, tablas, fórmulas, metadatos) | `xlsx-reader` | Maneja legacy `.xls` también. |
+| File Browser HDFS de Rocket (download, upload, ls, cp, mv, rm, mkdir, compress, extract) | `rocket-file-browser` | Descarga los ficheros fuente en `output/[ANALYSIS_DIR]/data/` cuando hay un análisis abierto; sube un entregable solo si el usuario lo pide. |
 
 ### 8.2 Expectativas del entregable
 
