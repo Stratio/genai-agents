@@ -24,6 +24,7 @@ import sys
 import urllib.error
 import urllib.parse
 import urllib.request
+import uuid
 from typing import NoReturn
 
 DEFAULT_CERT = "/vault/secrets/cert.crt"
@@ -93,6 +94,38 @@ def _call(method: str, path: str, payload=None, raw: bytes = None, content_type=
         return json.loads(content)
     except ValueError:
         return content.decode("utf-8", "replace")
+
+
+# The images a page may show, stored next to it. The API checks the bytes as well.
+_IMAGE_EXTENSIONS = (".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg")
+
+
+def _is_image(file_path: str) -> bool:
+    return file_path.lower().endswith(_IMAGE_EXTENSIONS)
+
+
+def _multipart(filename: str, content: bytes) -> tuple[bytes, str]:
+    """A one-file multipart/form-data body, as /upload expects it."""
+    boundary = f"----stratio-artifact-{uuid.uuid4().hex}"
+    head = (
+        f"--{boundary}\r\n"
+        f'Content-Disposition: form-data; name="file"; filename="{filename.replace(chr(34), "")}"\r\n'
+        "Content-Type: application/octet-stream\r\n\r\n"
+    ).encode("utf-8")
+    return head + content + f"\r\n--{boundary}--\r\n".encode("utf-8"), (
+        f"multipart/form-data; boundary={boundary}"
+    )
+
+
+def _upload(artifact_id: str, stored_path: str, local_path: str):
+    with open(local_path, "rb") as handle:
+        body, content_type = _multipart(os.path.basename(stored_path), handle.read())
+    return _call(
+        "POST",
+        f"/v1/artifacts/{artifact_id}/upload/{_quote(stored_path)}",
+        raw=body,
+        content_type=content_type,
+    )
 
 
 def _quote(file_path: str) -> str:
@@ -176,11 +209,17 @@ def cmd_create(args):
     paths = args.file or []
     if args.rename and len(paths) != 1:
         _die("--rename renames one file; pass exactly one --file with it.")
-    files = []
+    files, images = [], []
     for path in paths:
         name = args.rename or _stored_path(path, args.base or os.curdir)
+        if _is_image(name):
+            # Binary: it goes up once the artifact exists, through /upload.
+            images.append((name, path))
+            continue
         with open(path, "r", encoding="utf-8") as handle:
             files.append({"file_path": name, "content": handle.read()})
+    if images and not files:
+        _die("An artifact is a page: pass its .html or .md file along with the images.")
     payload = {
         "title": args.title,
         "type": args.type,
@@ -200,7 +239,21 @@ def cmd_create(args):
     conversation = args.conversation or os.environ.get("CONVERSATION_ID")
     if conversation:
         payload["origin_conversation_id"] = conversation
-    _emit(_call("POST", "/v1/artifacts", payload))
+    created = _call("POST", "/v1/artifacts", payload)
+    if not images:
+        _emit(created)
+        return
+    for name, path in images:
+        try:
+            _upload(created["id"], name, path)
+        except SystemExit:
+            print(
+                f"Artifact {created['id']} was created without {name} and any image "
+                "after it: upload them with `upload`.",
+                file=sys.stderr,
+            )
+            raise
+    _emit(_call("GET", f"/v1/artifacts/{created['id']}"))
 
 
 def cmd_get(args):
@@ -230,6 +283,16 @@ def cmd_write(args):
             {"content": content},
         )
     )
+
+
+def cmd_upload(args):
+    """Add or replace one of the images a page shows (png, jpg, gif, webp, svg)."""
+    if not _is_image(args.path):
+        _die(
+            f"{args.path} is not an image. `upload` carries the images a page shows "
+            "(" + ", ".join(_IMAGE_EXTENSIONS) + "); write a page with `write`."
+        )
+    _emit(_upload(args.artifact_id, args.path, args.from_file))
 
 
 def cmd_rm(args):
@@ -393,6 +456,12 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("path")
     p.add_argument("--from-file", dest="from_file")
     p.set_defaults(func=cmd_write)
+
+    p = sub.add_parser("upload")
+    p.add_argument("artifact_id")
+    p.add_argument("path", help="Where the image goes in the artifact, e.g. img/logo.png")
+    p.add_argument("--from-file", dest="from_file", required=True)
+    p.set_defaults(func=cmd_upload)
 
     p = sub.add_parser("rename")
     p.add_argument("artifact_id")

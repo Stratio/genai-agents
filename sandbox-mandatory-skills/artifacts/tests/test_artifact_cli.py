@@ -574,9 +574,10 @@ class TestSkillRules:
         cli.main(["create", "--title", "T"])
         assert cli.calls[-1]["payload"]["type"] == "html"
 
-    def test_only_html_and_markdown_files(self):
+    def test_only_pages_and_the_images_they_show(self):
         assert (
-            "**Every file inside an artifact is `.html`/`.htm` or `.md`/`.markdown`.**"
+            "**Every file inside an artifact is a page (`.html`/`.htm`, `.md`/`.markdown`) or an\n"
+            "  image a page shows (`.png`, `.jpg`/`.jpeg`, `.gif`, `.webp`, `.svg`).**"
             in self._skill()
         )
 
@@ -612,6 +613,60 @@ class TestSkillRules:
         assert ':root:not([data-theme="light"])' in text
         assert ':root[data-theme="dark"]' in text
 
-    def test_there_is_no_binary_upload(self, cli):
+    def test_upload_carries_images_and_nothing_else(self, cli, tmp_path):
+        """Binary files reach an artifact only as the images a page shows."""
+        page = tmp_path / "x.html"
+        page.write_text("<p>x</p>")
+        for name in ("index.html", "deck.pptx", "report.pdf"):
+            with pytest.raises(SystemExit):
+                cli.main(["upload", "an-id", name, "--from-file", str(page)])
+        assert cli.calls == []
+
+
+PNG = b"\x89PNG\r\n\x1a\n" + b"\x00" * 8
+
+
+class TestImages:
+    def test_upload_sends_the_image_as_multipart(self, cli, tmp_path):
+        image = tmp_path / "logo.png"
+        image.write_bytes(PNG)
+
+        cli.main(["upload", "an-id", "img/logo.png", "--from-file", str(image)])
+
+        [call] = cli.calls
+        assert (call["method"], call["path"]) == ("POST", "/v1/artifacts/an-id/upload/img/logo.png")
+        assert call["content_type"].startswith("multipart/form-data; boundary=")
+        assert PNG in call["raw"]
+        assert b'name="file"; filename="logo.png"' in call["raw"]
+
+    def test_create_sends_the_pages_then_uploads_the_images(self, cli, tmp_path, monkeypatch):
+        """Images are binary: the artifact is created with its pages, and each image
+        goes up through /upload. The entry is the first page, never an image."""
+        (tmp_path / "img").mkdir()
+        (tmp_path / "img" / "logo.png").write_bytes(PNG)
+        (tmp_path / "index.html").write_text('<img src="img/logo.png">')
+        monkeypatch.chdir(tmp_path)
+
+        cli.main(["create", "--title", "T", "--base", ".", "--file", "img/logo.png", "--file", "index.html"])
+
+        create, upload, refresh = cli.calls
+        assert (create["method"], create["path"]) == ("POST", "/v1/artifacts")
+        assert [f["file_path"] for f in create["payload"]["files"]] == ["index.html"]
+        assert create["payload"]["entry_path"] == "index.html"
+        assert upload["path"] == f"/v1/artifacts/{_ID}/upload/img/logo.png"
+        assert PNG in upload["raw"]
+        assert (refresh["method"], refresh["path"]) == ("GET", f"/v1/artifacts/{_ID}")
+
+    def test_images_without_a_page_are_refused(self, cli, tmp_path, monkeypatch):
+        (tmp_path / "logo.png").write_bytes(PNG)
+        monkeypatch.chdir(tmp_path)
+
         with pytest.raises(SystemExit):
-            cli.main(["upload", "an-id", "a.png", "/tmp/a.png"])
+            cli.main(["create", "--title", "T", "--file", "logo.png"])
+        assert cli.calls == []
+
+    def test_the_skill_says_how_a_page_names_its_images(self):
+        text = (_SKILL / "SKILL.md").read_text(encoding="utf-8")
+        assert "**Images.**" in text
+        assert '<img src="img/logo.png">' in text
+        assert "A URL a script builds\nat run time is not one of them" in text
