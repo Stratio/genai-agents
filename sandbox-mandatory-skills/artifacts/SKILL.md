@@ -380,6 +380,11 @@ before you offer to change anything.
   and cannot delete it.
 - **reader** — read only. Can read it and `copy` it, nothing else.
 
+These roles are per artifact and need no GenAI role: someone without one can read,
+edit or share an artifact exactly as far as their role on it allows. What does need a
+GenAI role is ending up with a **new** artifact — `create` and `copy` both answer
+`403` without one.
+
 An owner shares it with users and groups, each as `reader`, `editor` or `owner`, and
 can turn on **link sharing** (`share --link on`): then any authenticated Stratio user
 who has the link can read it. Link sharing never grants editing. Share only with the
