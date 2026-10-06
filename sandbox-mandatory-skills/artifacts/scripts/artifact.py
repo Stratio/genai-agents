@@ -13,6 +13,12 @@ project, its owner — so this script already *is* the user. Three rules follow:
   read-only and is not reachable under that name;
 * never build an artifact link. The API answers `public_url`, the genai-ui page the
   user opens, from its own configuration.
+
+Inside a project every call also names it, in X-Genai-Project-Id, and the
+conversation, in X-Genai-Conversation-Id, so the API remembers which artifacts this
+project read, edited or created across all its conversations, and in which one each
+was last touched; `recent` lists them. The API decides which calls count, not this
+script.
 """
 
 import argparse
@@ -69,6 +75,10 @@ def _die(message: str) -> NoReturn:
 def _call(method: str, path: str, payload=None, raw: bytes = None, content_type=None):
     url = f"{_base()}{path}"
     headers = {"Accept": "application/json"}
+    if os.environ.get("PROJECT_ID"):
+        headers["X-Genai-Project-Id"] = os.environ["PROJECT_ID"]
+    if os.environ.get("CONVERSATION_ID"):
+        headers["X-Genai-Conversation-Id"] = os.environ["CONVERSATION_ID"]
     body = raw
     if payload is not None:
         body = json.dumps(payload).encode("utf-8")
@@ -141,7 +151,7 @@ def _tags(value: str) -> list:
     return list(dict.fromkeys(t.strip() for t in value.split(",") if t.strip()))
 
 
-def _summary(artifact: dict) -> dict:
+def _summary(artifact: dict, extra: tuple = ()) -> dict:
     """The fields the agent acts on. `public_url` is the link to hand the user."""
     return {
         key: artifact.get(key)
@@ -154,18 +164,33 @@ def _summary(artifact: dict) -> dict:
             "can_manage",
             "link_access",
             "tags",
-            "is_pinned",
+            "is_favorite",
             "file_count",
             "updated_at",
             "public_url",
+            *extra,
         )
     }
 
 
-def _listing(result) -> list:
+def _listing(result, extra: tuple = ()) -> list:
     if not isinstance(result, dict) or "artifacts" not in result:
         _die(f"Unexpected response from the artifacts API: {result!r}")
-    return [_summary(a) for a in result["artifacts"]]
+    return [_summary(a, extra) for a in result["artifacts"]]
+
+
+def _page(result, args, extra: tuple = ()) -> list:
+    """One page of a listing. stdout holds only that page, so when more follow it
+    says so on stderr — otherwise the agent takes the first page for all of them."""
+    page = _listing(result, extra)
+    total = result.get("total", 0)
+    if (args.page - 1) * args.page_size + len(page) < total:
+        print(
+            f"Page {args.page}: {len(page)} of {total} artifacts. "
+            f"More with --page {args.page + 1}.",
+            file=sys.stderr,
+        )
+    return page
 
 
 # ---------------------------------------------------------------------------
@@ -182,14 +207,33 @@ def cmd_list(args):
                 ("search", args.search),
                 ("tags", ",".join(_tags(args.tags)) if args.tags else None),
                 ("type", args.type),
-                ("pinned", "true" if args.pinned else None),
+                ("favorite", "true" if args.favorite else None),
                 ("page", args.page),
                 ("page_size", args.page_size),
             )
             if v
         }
     )
-    _emit(_listing(_call("GET", f"/v1/artifacts?{query}")))
+    _emit(_page(_call("GET", f"/v1/artifacts?{query}"), args))
+
+
+def cmd_recent(args):
+    """What this project read, edited or created, in any of its conversations, last
+    touched first. Listing an artifact or looking at its metadata does not count."""
+    project_id = os.environ.get("PROJECT_ID")
+    if not project_id:
+        _die("PROJECT_ID is not set: `recent` lists a project's artifacts, and this "
+             "sandbox does not run a project.")
+    query = urllib.parse.urlencode(
+        {"project_id": project_id, "page": args.page, "page_size": args.page_size}
+    )
+    _emit(
+        _page(
+            _call("GET", f"/v1/artifacts/accessed?{query}"),
+            args,
+            extra=("last_access", "last_accessed_at", "last_conversation_id"),
+        )
+    )
 
 
 def _stored_path(local_path: str, base: str) -> str:
@@ -233,7 +277,9 @@ def cmd_create(args):
     elif files:
         payload["entry_path"] = files[0]["file_path"]
     # Provenance. The agent is the only thing that knows the conversation, so if it
-    # does not send it the column is dead and so is the listing filter over it.
+    # does not send it the column is dead and so is the listing filter over it. The
+    # sandbox sets CONVERSATION_ID in every shell to the conversation's root OpenCode
+    # session id; the API names the project itself.
     if os.environ.get("PROJECT_ID"):
         payload["origin_project_id"] = os.environ["PROJECT_ID"]
     conversation = args.conversation or os.environ.get("CONVERSATION_ID")
@@ -411,10 +457,17 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--search", help="Free text; also matches tags")
     p.add_argument("--tags", help="Comma-separated; an artifact must carry them all")
     p.add_argument("--type", choices=("markdown", "html"))
-    p.add_argument("--pinned", action="store_true", help="Only pinned artifacts")
+    p.add_argument(
+        "--favorite", action="store_true", help="Only the user's favorite artifacts"
+    )
     p.add_argument("--page", type=int, default=1)
     p.add_argument("--page-size", dest="page_size", type=int, default=50)
     p.set_defaults(func=cmd_list)
+
+    p = sub.add_parser("recent")
+    p.add_argument("--page", type=int, default=1)
+    p.add_argument("--page-size", dest="page_size", type=int, default=20)
+    p.set_defaults(func=cmd_recent)
 
     p = sub.add_parser("resolve")
     p.add_argument("ref", help="A genai-ui link, an artifact id, or a name to search")
@@ -431,7 +484,11 @@ def _parser() -> argparse.ArgumentParser:
         "--base",
         help="Directory the --file paths are stored relative to (default: cwd)",
     )
-    p.add_argument("--conversation", help="Conversation this artifact came from")
+    p.add_argument(
+        "--conversation",
+        help="OpenCode session id of the conversation it came from "
+        "(default: CONVERSATION_ID, which the sandbox sets)",
+    )
     p.add_argument("--file", action="append")
     p.set_defaults(func=cmd_create)
 

@@ -40,7 +40,7 @@ def _artifact(**overrides):
         "can_manage": True,
         "link_access": "none",
         "tags": ["ventas", "q3"],
-        "is_pinned": False,
+        "is_favorite": False,
         "file_count": 1,
         "updated_at": "2026-09-24T10:00:00Z",
         "public_url": _PUBLIC_URL,
@@ -74,8 +74,12 @@ def cli(monkeypatch):
         )
         if path.endswith("/members"):
             return payload if method == "PUT" else module.members
-        if path.startswith("/v1/artifacts?"):
-            return {"artifacts": module.listing, "total": len(module.listing)}
+        if path.startswith(("/v1/artifacts?", "/v1/artifacts/accessed?")):
+            total = getattr(module, "total", None)
+            return {
+                "artifacts": module.listing,
+                "total": len(module.listing) if total is None else total,
+            }
         return module.artifact
 
     monkeypatch.setattr(module, "_call", _fake_call)
@@ -154,7 +158,7 @@ class TestProvenance:
         self, cli, tmp_path, monkeypatch
     ):
         monkeypatch.setenv("PROJECT_ID", "proj-1")
-        monkeypatch.setenv("CONVERSATION_ID", "conv-1")
+        monkeypatch.setenv("CONVERSATION_ID", "ses_2f1c9a7b3ffeK0abc")
         (tmp_path / "index.md").write_text("x")
         monkeypatch.chdir(tmp_path)
 
@@ -174,7 +178,7 @@ class TestProvenance:
 
         payload = cli.calls[-1]["payload"]
         assert payload["origin_project_id"] == "proj-1"
-        assert payload["origin_conversation_id"] == "conv-1"
+        assert payload["origin_conversation_id"] == "ses_2f1c9a7b3ffeK0abc"
 
 
 class TestCreate:
@@ -330,7 +334,7 @@ class TestCopy:
 class TestList:
     def test_sends_the_filters(self, cli):
         cli.main(
-            ["list", "--tags", "ventas,q3", "--type", "html", "--pinned"]
+            ["list", "--tags", "ventas,q3", "--type", "html", "--favorite"]
             + ["--scope", "mine", "--search", "informe"]
         )
 
@@ -339,7 +343,7 @@ class TestList:
             "search": "informe",
             "tags": "ventas,q3",
             "type": "html",
-            "pinned": "true",
+            "favorite": "true",
             "page": "1",
             "page_size": "50",
         }
@@ -359,6 +363,77 @@ class TestList:
         assert printed["can_edit"] is False
         assert printed["tags"] == ["ventas", "q3"]
         assert printed["public_url"] == _PUBLIC_URL
+
+
+class TestPaging:
+    def _listing(self, cli, shown, total):
+        cli.listing = [_artifact(id=f"id-{i}") for i in range(shown)]
+        cli.total = total
+
+    def test_says_when_more_pages_follow(self, cli, capsys, monkeypatch):
+        self._listing(cli, 2, 5)
+
+        cli.main(["list", "--page-size", "2"])
+
+        out = capsys.readouterr()
+        assert len(json.loads(out.out)) == 2
+        assert "2 of 5" in out.err
+        assert "--page 2" in out.err
+
+    @pytest.mark.parametrize("argv", [["--page-size", "5"], ["--page", "3", "--page-size", "2"]])
+    def test_says_nothing_on_the_last_page(self, cli, capsys, argv):
+        self._listing(cli, 1 if "--page" in argv else 5, 5)
+
+        cli.main(["list", *argv])
+
+        assert capsys.readouterr().err == ""
+
+    def test_recent_says_it_too(self, cli, capsys, monkeypatch):
+        monkeypatch.setenv("PROJECT_ID", "proj-1")
+        self._listing(cli, 2, 3)
+
+        cli.main(["recent", "--page-size", "2"])
+
+        assert "More with --page 2" in capsys.readouterr().err
+
+
+class TestRecent:
+    def test_asks_for_this_projects_history(self, cli, monkeypatch):
+        monkeypatch.setenv("PROJECT_ID", "proj-1")
+
+        cli.main(["recent", "--page-size", "5"])
+
+        call = cli.calls[-1]
+        assert call["method"] == "GET"
+        assert call["path"].startswith("/v1/artifacts/accessed?")
+        assert _query(call) == {"project_id": "proj-1", "page": "1", "page_size": "5"}
+
+    def test_prints_how_and_when_each_was_last_touched(self, cli, capsys, monkeypatch):
+        monkeypatch.setenv("PROJECT_ID", "proj-1")
+        cli.listing = [
+            _artifact(
+                last_access="edit",
+                last_accessed_at="2026-10-06T09:00:00",
+                last_conversation_id="ses_2f1c9a7b3ffeK0abc",
+            )
+        ]
+
+        cli.main(["recent"])
+
+        [printed] = json.loads(capsys.readouterr().out)
+        assert printed["last_access"] == "edit"
+        assert printed["last_accessed_at"] == "2026-10-06T09:00:00"
+        assert printed["last_conversation_id"] == "ses_2f1c9a7b3ffeK0abc"
+        assert printed["public_url"] == _PUBLIC_URL
+
+    def test_outside_a_project_says_so(self, cli, capsys, monkeypatch):
+        monkeypatch.delenv("PROJECT_ID", raising=False)
+
+        with pytest.raises(SystemExit):
+            cli.main(["recent"])
+
+        assert "PROJECT_ID" in capsys.readouterr().err
+        assert cli.calls == []
 
 
 class TestResolve:
@@ -477,6 +552,40 @@ class TestRequests:
         [request] = wire.requests
         assert request.full_url == "https://genai-api:8080/v1/artifacts/an-id"
         assert "x-client-uid" not in _headers(request)
+
+    def test_names_the_project_it_comes_from(self, wire, monkeypatch):
+        """What lets the API remember what this project touched: on every call, since
+        the API, not the script, decides which ones count."""
+        monkeypatch.setenv("PROJECT_ID", "proj-1")
+
+        wire._call("GET", "/v1/artifacts/an-id/files/index.md")
+        wire._call("PUT", "/v1/artifacts/an-id/files/index.md", {"content": "x"})
+
+        assert [_headers(r)["x-genai-project-id"] for r in wire.requests] == [
+            "proj-1",
+            "proj-1",
+        ]
+
+    def test_outside_a_project_names_none(self, wire, monkeypatch):
+        monkeypatch.delenv("PROJECT_ID", raising=False)
+        monkeypatch.delenv("CONVERSATION_ID", raising=False)
+
+        wire._call("GET", "/v1/artifacts/an-id")
+
+        [request] = wire.requests
+        assert "x-genai-project-id" not in _headers(request)
+        assert "x-genai-conversation-id" not in _headers(request)
+
+    def test_names_the_conversation_it_comes_from(self, wire, monkeypatch):
+        """CONVERSATION_ID is set by the sandbox in every shell: the root OpenCode
+        session id of the conversation running the command."""
+        monkeypatch.setenv("PROJECT_ID", "proj-1")
+        monkeypatch.setenv("CONVERSATION_ID", "ses_2f1c9a7b3ffeK0abc")
+
+        wire._call("GET", "/v1/artifacts/an-id/files/index.md")
+
+        [request] = wire.requests
+        assert _headers(request)["x-genai-conversation-id"] == "ses_2f1c9a7b3ffeK0abc"
 
 
 class TestForbidden:

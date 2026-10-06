@@ -1,6 +1,6 @@
 ---
 name: artifacts
-description: Create, find, read and edit Stratio artifacts — standalone Markdown or HTML documents that live outside the conversation, keep their own page in GenAI UI and can be shared with people, groups or anyone with the link. Use when someone asks for a document, report, page, guide or deliverable they will keep, share or come back to, rather than a throwaway answer in the chat — and whenever they refer to an existing artifact by pasting its link, giving its id or naming it. It also sets how an HTML artifact is built and designed (the sandbox it runs in, theming, layout, content), so load it before writing one.
+description: Create, find, read and edit Stratio artifacts — standalone Markdown or HTML documents that live outside the conversation, keep their own page in GenAI UI and can be shared with people, groups or anyone with the link. Use when someone asks for a document, report, page, guide or deliverable they will keep, share or come back to, rather than a throwaway answer in the chat — and whenever they refer to an existing artifact by pasting its link, giving its id, naming it or alluding to one worked on before. It also sets how an HTML artifact is built and designed (the sandbox it runs in, theming, layout, content), so load it before writing one.
 license: Stratio proprietary
 compatibility: genai-api >= 0.9
 metadata:
@@ -85,6 +85,14 @@ then `files` and `read` the one it answers.
 `resolve` always prints a list. A link or an id gives one entry. A name gives every
 match: if there is more than one, show the titles and ask which one they mean — do not
 guess. If nothing matches, say so; do not create a new artifact in its place.
+
+When they allude to one instead of naming it — "el informe de ayer", "lo que hicimos
+la semana pasada", "the page we were editing" — run `recent` first. It lists what this
+project read, edited or created, in this conversation or any earlier one, last touched
+first, with `last_access`, `last_accessed_at` and `last_conversation_id` — the
+conversation it was last touched in, which is this one when it matches
+`$CONVERSATION_ID`; most of the time the one they mean is at the top. If it is not obvious which, show the first few titles and ask. Only then
+fall back to `resolve` with the words they used.
 
 ## Editing, not re-creating
 
@@ -319,6 +327,8 @@ you are in this skill's directory; from anywhere else, give the full path.
 # The person referred to an artifact: a link, an id or a name. Always first.
 python3 scripts/artifact.py resolve "https://…/artifacts/<artifact_id>"
 python3 scripts/artifact.py resolve "informe de ventas"
+# They alluded to one ("el de ayer"): what this project touched, last first
+python3 scripts/artifact.py recent --page-size 10
 
 # Create, from files on disk, with 3-5 lowercase topic tags. --base is what keeps
 # the directories: without it every file lands flat at the root of the artifact.
@@ -354,7 +364,7 @@ python3 scripts/artifact.py members <artifact_id>             # who has it, and 
 
 # Only when the person asks for a list. --tags needs all of them; --search also
 # matches tags.
-python3 scripts/artifact.py list --scope shared --type html --tags ventas,q3 --pinned
+python3 scripts/artifact.py list --scope shared --type html --tags ventas,q3 --favorite
 
 # Everything the API knows about one artifact, and the link on its own
 python3 scripts/artifact.py get <artifact_id>
@@ -366,7 +376,9 @@ python3 scripts/artifact.py delete <artifact_id>
 
 Every command prints JSON on stdout, except `read`, which prints the file's text raw so
 you can edit it and write it back, and `url`, which prints the link. On failure it
-prints one line on stderr and exits non-zero.
+prints one line on stderr and exits non-zero. `list` and `recent` print one page; when
+more follow, a line on stderr says how many there are and which `--page` comes next —
+fetch it only if what you are looking for is not on this one.
 
 ## Roles
 
