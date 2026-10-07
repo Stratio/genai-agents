@@ -106,12 +106,19 @@ def _call(method: str, path: str, payload=None, raw: bytes = None, content_type=
         return content.decode("utf-8", "replace")
 
 
-# The images a page may show, stored next to it. The API checks the bytes as well.
-_IMAGE_EXTENSIONS = (".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg")
+# The binary files a page uses, stored next to it: images, fonts, audio and video.
+# They go up through /upload; pages, stylesheets, scripts and subtitles are text and
+# go in the JSON. The API checks the bytes as well.
+_BINARY_EXTENSIONS = (
+    ".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg",
+    ".woff2", ".woff", ".ttf", ".otf",
+    ".mp4", ".webm", ".mp3", ".m4a", ".ogg", ".wav",
+)  # fmt: skip
+_PAGE_EXTENSIONS = (".html", ".htm", ".md", ".markdown")
 
 
-def _is_image(file_path: str) -> bool:
-    return file_path.lower().endswith(_IMAGE_EXTENSIONS)
+def _is_binary(file_path: str) -> bool:
+    return file_path.lower().endswith(_BINARY_EXTENSIONS)
 
 
 def _multipart(filename: str, content: bytes) -> tuple[bytes, str]:
@@ -253,17 +260,20 @@ def cmd_create(args):
     paths = args.file or []
     if args.rename and len(paths) != 1:
         _die("--rename renames one file; pass exactly one --file with it.")
-    files, images = [], []
+    files, binaries = [], []
     for path in paths:
         name = args.rename or _stored_path(path, args.base or os.curdir)
-        if _is_image(name):
-            # Binary: it goes up once the artifact exists, through /upload.
-            images.append((name, path))
+        if _is_binary(name):
+            # It goes up once the artifact exists, through /upload.
+            binaries.append((name, path))
             continue
         with open(path, "r", encoding="utf-8") as handle:
             files.append({"file_path": name, "content": handle.read()})
-    if images and not files:
-        _die("An artifact is a page: pass its .html or .md file along with the images.")
+    if paths and not any(f["file_path"].lower().endswith(_PAGE_EXTENSIONS) for f in files):
+        _die(
+            "An artifact is a page: pass its .html or .md file along with the files "
+            "it uses."
+        )
     payload = {
         "title": args.title,
         "type": args.type,
@@ -286,15 +296,15 @@ def cmd_create(args):
     if conversation:
         payload["origin_conversation_id"] = conversation
     created = _call("POST", "/v1/artifacts", payload)
-    if not images:
+    if not binaries:
         _emit(created)
         return
-    for name, path in images:
+    for name, path in binaries:
         try:
             _upload(created["id"], name, path)
         except SystemExit:
             print(
-                f"Artifact {created['id']} was created without {name} and any image "
+                f"Artifact {created['id']} was created without {name} and any file "
                 "after it: upload them with `upload`.",
                 file=sys.stderr,
             )
@@ -332,11 +342,13 @@ def cmd_write(args):
 
 
 def cmd_upload(args):
-    """Add or replace one of the images a page shows (png, jpg, gif, webp, svg)."""
-    if not _is_image(args.path):
+    """Add or replace one of the binary files a page uses: an image, a font, audio
+    or video."""
+    if not _is_binary(args.path):
         _die(
-            f"{args.path} is not an image. `upload` carries the images a page shows "
-            "(" + ", ".join(_IMAGE_EXTENSIONS) + "); write a page with `write`."
+            f"{args.path} is not an image, a font, audio or video. `upload` carries "
+            "those (" + ", ".join(_BINARY_EXTENSIONS) + "); write a page, a "
+            "stylesheet, a script or subtitles with `write`."
         )
     _emit(_upload(args.artifact_id, args.path, args.from_file))
 
@@ -516,7 +528,9 @@ def _parser() -> argparse.ArgumentParser:
 
     p = sub.add_parser("upload")
     p.add_argument("artifact_id")
-    p.add_argument("path", help="Where the image goes in the artifact, e.g. img/logo.png")
+    p.add_argument(
+        "path", help="Where the file goes in the artifact, e.g. img/logo.png or media/demo.mp4"
+    )
     p.add_argument("--from-file", dest="from_file", required=True)
     p.set_defaults(func=cmd_upload)
 

@@ -196,6 +196,76 @@ class TestCreate:
         assert call["payload"]["tags"] == ["ventas", "q3"]
 
 
+class TestFilesAPageUses:
+    def test_text_goes_in_the_json_and_binaries_go_up_after(
+        self, cli, tmp_path, monkeypatch
+    ):
+        """Stylesheets, scripts and subtitles are text, like the page; images, fonts
+        and clips are binary and go up through /upload once the artifact exists."""
+        for name, content in {
+            "index.html": "<p>x</p>",
+            "css/site.css": "p { color: red }",
+            "js/app.js": "1;",
+            "media/demo.vtt": "WEBVTT\n",
+        }.items():
+            (tmp_path / name).parent.mkdir(parents=True, exist_ok=True)
+            (tmp_path / name).write_text(content)
+        for name in ("img/logo.png", "fonts/a.woff2", "media/demo.mp4"):
+            (tmp_path / name).parent.mkdir(parents=True, exist_ok=True)
+            (tmp_path / name).write_bytes(b"\x00binary")
+        monkeypatch.chdir(tmp_path)
+
+        cli.main(
+            ["create", "--title", "T", "--type", "html", "--base", "."]
+            + [
+                arg
+                for f in (
+                    "index.html",
+                    "css/site.css",
+                    "js/app.js",
+                    "media/demo.vtt",
+                    "img/logo.png",
+                    "fonts/a.woff2",
+                    "media/demo.mp4",
+                )
+                for arg in ("--file", f)
+            ]
+        )
+
+        create, *uploads, final = cli.calls
+        assert [f["file_path"] for f in create["payload"]["files"]] == [
+            "index.html",
+            "css/site.css",
+            "js/app.js",
+            "media/demo.vtt",
+        ]
+        assert [u["path"] for u in uploads] == [
+            f"/v1/artifacts/{_ID}/upload/img/logo.png",
+            f"/v1/artifacts/{_ID}/upload/fonts/a.woff2",
+            f"/v1/artifacts/{_ID}/upload/media/demo.mp4",
+        ]
+        assert all(b"\x00binary" in u["raw"] for u in uploads)
+        assert (final["method"], final["path"]) == ("GET", f"/v1/artifacts/{_ID}")
+
+    def test_an_artifact_needs_a_page(self, cli, tmp_path, monkeypatch):
+        (tmp_path / "site.css").write_text("p{}")
+        monkeypatch.chdir(tmp_path)
+
+        with pytest.raises(SystemExit):
+            cli.main(["create", "--title", "T", "--file", "site.css"])
+        assert cli.calls == []
+
+    def test_upload_carries_binaries_and_write_the_text(self, cli, tmp_path):
+        clip = tmp_path / "demo.mp4"
+        clip.write_bytes(b"\x00")
+
+        cli.main(["upload", _ID, "media/demo.mp4", "--from-file", str(clip)])
+        assert cli.calls[-1]["path"] == f"/v1/artifacts/{_ID}/upload/media/demo.mp4"
+
+        with pytest.raises(SystemExit):
+            cli.main(["upload", _ID, "css/site.css", "--from-file", str(clip)])
+
+
 class TestShare:
     def test_merges_instead_of_replacing(self, cli):
         """PUT /members replaces the whole list, so sharing with one more person
@@ -683,12 +753,13 @@ class TestSkillRules:
         cli.main(["create", "--title", "T"])
         assert cli.calls[-1]["payload"]["type"] == "html"
 
-    def test_only_pages_and_the_images_they_show(self):
+    def test_only_pages_and_the_files_they_use(self):
+        text = self._skill()
         assert (
-            "**Every file inside an artifact is a page (`.html`/`.htm`, `.md`/`.markdown`) or an\n"
-            "  image a page shows (`.png`, `.jpg`/`.jpeg`, `.gif`, `.webp`, `.svg`).**"
-            in self._skill()
-        )
+            "**Every file inside an artifact is a page (`.html`/`.htm`, `.md`/`.markdown`) or a\n"
+            "  file a page uses:**"
+        ) in text
+        assert "No `.pptx`, `.docx`, `.xlsx`, `.pdf`, CSV,\n  JSON, archives" in text
 
     def test_permissions_only_for_owners(self):
         text = self._skill()
@@ -784,8 +855,12 @@ class TestImages:
             cli.main(["create", "--title", "T", "--file", "logo.png"])
         assert cli.calls == []
 
-    def test_the_skill_says_how_a_page_names_its_images(self):
+    def test_the_skill_says_what_goes_inside_the_page_and_what_does_not(self):
         text = (_SKILL / "SKILL.md").read_text(encoding="utf-8")
-        assert "**Images.**" in text
-        assert '<img src="img/logo.png">' in text
-        assert "A URL a script builds\nat run time is not one of them" in text
+        assert "**What the viewer puts inside the page.**" in text
+        assert '`<link rel="stylesheet" href="css/site.css">`' in text
+        assert "Nothing a script asks for at run time loads" in text
+        assert '`<script type="application/json" id="data">…</script>`' in text
+        assert "**Several pages.**" in text
+        assert "**Separate files are possible, never required.**" in text
+        assert "If the person says\nhow they want it, do that." in text

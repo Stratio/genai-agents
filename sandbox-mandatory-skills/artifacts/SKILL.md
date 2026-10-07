@@ -48,16 +48,18 @@ pass any other `--type`, and never smuggle another format in under these two:
 - No PDF, Word, Excel, PowerPoint, audio, video, archives, JSON/CSV/YAML
   "documents" or any other file format as an artifact — not as the type, not as the
   entry file, not base64-encoded inside Markdown or HTML, not as an `<embed>`,
-  `<object>` or data URL standing in for the real content. An image is not an
-  artifact either: it is something a page shows (next point).
-- **Every file inside an artifact is a page (`.html`/`.htm`, `.md`/`.markdown`) or an
-  image a page shows (`.png`, `.jpg`/`.jpeg`, `.gif`, `.webp`, `.svg`).** No `.pptx`,
-  `.docx`, `.xlsx`, `.pdf`, CSV, JSON, archives or anything else next to the page —
-  not "as an attachment", not "just the source data". A table goes in the page as an
-  HTML table; a chart is drawn in the page (inline SVG or `<canvas>` with inline
-  script); a picture is an image file next to the page (see [Multi-file](#multi-file)).
-  The API refuses any other file, and an image whose bytes are not the image its name
-  says, so do not try.
+  `<object>` or data URL standing in for the real content. An image, a clip or a
+  stylesheet is not an artifact either: it is something a page uses (next point).
+- **Every file inside an artifact is a page (`.html`/`.htm`, `.md`/`.markdown`) or a
+  file a page uses:** images (`.png`, `.jpg`/`.jpeg`, `.gif`, `.webp`, `.svg`) and,
+  for an HTML page, stylesheets (`.css`), scripts (`.js`), fonts (`.woff2`, `.woff`,
+  `.ttf`, `.otf`), short audio and video (`.mp4`, `.webm`, `.mp3`, `.m4a`, `.ogg`,
+  `.wav`) and their subtitles (`.vtt`). No `.pptx`, `.docx`, `.xlsx`, `.pdf`, CSV,
+  JSON, archives or anything else next to the page — not "as an attachment", not
+  "just the source data". A table goes in the page as an HTML table; data a script
+  needs goes in the page too (see [Multi-file](#multi-file)); a chart is drawn in the
+  page (inline SVG or `<canvas>` with script). The API refuses any other file, and a
+  file whose bytes are not what its name says, so do not try.
 
 If someone asks for another format (a PowerPoint, a Word document, a PDF, an Excel),
 say plainly that artifacts are only HTML or Markdown, and offer the HTML version: a
@@ -123,14 +125,15 @@ is what makes it safe to open, and it is not negotiable. In practice:
 - **Write a full document.** The file is served as it is; nothing wraps it. Start with
   `<!doctype html>`, `<html lang="…">`, `<meta charset="utf-8">`,
   `<meta name="viewport" content="width=device-width, initial-scale=1">` and `<title>`,
-  then one `<style>` block in `<head>`. The JavaScript goes in `<script>` blocks.
+  then the CSS in `<head>` and the JavaScript in `<script>` blocks, written in the page
+  or in files next to it (see [Multi-file](#multi-file)).
 - **Libraries and fonts from the public CDNs only.** Scripts, stylesheets, fonts and
   fetched data can come from `cdnjs.cloudflare.com`, `cdn.jsdelivr.net`, `unpkg.com`,
   `cdn.plot.ly`, `cdn.tailwindcss.com`, `code.jquery.com`, `fonts.googleapis.com` and
   `fonts.gstatic.com`, over `https://`, and from nowhere else: anything else fails
-  silently and the person sees a broken page. Pin the version in every CDN URL. Images
-  are the artifact's own image files or `data:` URIs (see [Multi-file](#multi-file)),
-  and there is no `<iframe>` of another page.
+  silently and the person sees a broken page. Pin the version in every CDN URL. The
+  page's own files are the artifact's (see [Multi-file](#multi-file)), and there is no
+  `<iframe>` of another page.
 - **No storage.** The page runs in an opaque origin, so `localStorage`,
   `sessionStorage`, IndexedDB and cookies throw. Keep state in memory, where it resets
   on reload, and wrap any storage access in `try/catch` so the page still renders.
@@ -140,15 +143,18 @@ is what makes it safe to open, and it is not negotiable. In practice:
   `<button type="button">` and read the inputs in script. `<a download>` and Blob
   downloads are blocked. `target="_blank"` and `window.open` do nothing, and a link to
   another site usually fails to load inside the frame, so write external URLs as
-  visible text the reader can copy. Links to anchors in the same page (`#section`) work.
+  visible text the reader can copy. Links to anchors in the same page (`#section`) and
+  to the artifact's other pages work.
   GenAI UI addresses are the exception: never write one into an artifact (see
   [The link](#the-link)).
 - **No `alert`, `confirm` or `prompt`.** They run, but use inline UI instead. Never
   build a page that asks the viewer for a password, a token or personal data.
   `window.print()` works; add a `@media print` block if the page is meant to be printed.
-- **Size.** By default a file can be up to 16 MB, `data:` URIs included: the API
-  refuses a bigger one, and the viewer shows anything up to that size. Downscale and
-  compress embedded images, and inline only what the page uses.
+- **Size.** By default a file can be up to 16 MB and an artifact 64 MB: the API
+  refuses more. The viewer shows a page up to 16 MB counting every file it puts
+  inside it, and base64 makes each one a third bigger, so a page carries about 12 MB
+  of images, fonts and clips; one that does not fit stays out and shows broken.
+  Downscale and compress images, keep clips short, and use only what the page needs.
 
 ## Designing an HTML page
 
@@ -294,25 +300,49 @@ on the page they have seen, and are edited in place.
 
 ## Multi-file
 
-An artifact can hold several files, with directories, but **only pages and the images
-they show** (see above): chapters of a long document next to its index, the logo and
-screenshots a guide shows. Pass `--base` on `create` so the directories survive. The entry file (`entry_path`) is
-what a viewer renders — `index.html` or `index.md` by default — and it has to be of
-the artifact's type.
+An artifact can hold several files, with directories, but **only pages and the files
+they use** (see above): chapters of a long document next to its index, the logo and
+screenshots a guide shows, its stylesheet and its script. Pass `--base` on `create`
+so the directories survive. The entry file (`entry_path`) is what a viewer opens
+first — `index.html` or `index.md` by default — and it has to be of the artifact's
+type.
 
-**Images.** Keep them next to the pages (`img/logo.png`) and name them with a path
-relative to the page: `<img src="img/logo.png">`, `srcset`, a CSS `url(img/bg.webp)`
-in a `<style>` block or a `style` attribute, `![Logo](img/logo.png)` in Markdown. The
-viewer cannot fetch them from inside its sandbox, so when it serves an HTML page it
-puts every image the markup and the CSS name inside the page. A URL a script builds
-at run time is not one of them: give a script its image as a `data:` URI. Pass the
-images to `create` in `--file` along with the page, or add or replace one later with
+**Separate files are possible, never required.** The viewer shows a page the same
+whether its CSS, JavaScript and images are written inside it or kept in files next to
+it, so decide by what makes sense. A page on its own, with its `<style>` and its
+`<script>` inside, is fine and often the simplest. Reach for files when they help: a
+stylesheet or a script several pages share, a long one that makes the page hard to
+edit, images, fonts and clips (binary, and heavy as `data:` URIs). If the person says
+how they want it, do that.
+
+**What the viewer puts inside the page.** It cannot fetch the page's files from inside
+its sandbox, so when it serves an HTML page it puts inside it every file the markup
+and the CSS name with a path relative to where they are written:
+
+- `<link rel="stylesheet" href="css/site.css">`, with the stylesheet's own `url()`s
+  (relative to the stylesheet) and its `@import "other.css";`.
+- `<script src="js/app.js">`, with `defer`, `async` or `type="module"` as written.
+- `<img src>`, `srcset`, `<video poster>`, a CSS `url(img/bg.webp)` in a `<style>`
+  block or a `style` attribute, and `<link rel="icon">`.
+- `@font-face { src: url(fonts/Body.woff2) }`.
+- `<video src>`, `<audio src>`, `<source src>` and `<track src="media/demo.vtt">`.
+- In Markdown, only images: `![Logo](img/logo.png)`.
+
+Nothing a script asks for at run time loads: `fetch()`, `import()` of a relative
+file, a Worker, WebAssembly or a URL a script builds. Put the data a script needs in
+the page, as `<script type="application/json" id="data">…</script>` that the script
+reads, and give a script an image as a `data:` URI. A module that imports another
+relative file breaks too: use classic scripts, or one module with no relative import.
+
+**Several pages.** Link them with a relative `<a href="chapters/two.html">`; the
+viewer follows it, and `#section` after the page works too. Only pages of the
+artifact's type are pages.
+
+Pass every file to `create` in `--file` along with the page: text (pages, `.css`,
+`.js`, `.vtt`) goes in with the artifact, and images, fonts and clips go up right
+after it. Later, change a text file with `write`, and add or replace a binary one with
 `upload`. Prefer a file to a `data:` URI for anything but a small icon: the page stays
 readable and quick to edit.
-
-One exception, for now: do not split an HTML artifact into sibling `.css`/`.js` files.
-They will not load: the page's own CSS and JavaScript stay inline in the entry file
-(libraries can still come from the CDNs above).
 
 ## How to use it
 
@@ -330,7 +360,7 @@ python3 scripts/artifact.py recent --page-size 10
 # the directories: without it every file lands flat at the root of the artifact.
 python3 scripts/artifact.py create --title "Q3 report" --type html \
     --tags ventas,q3,informe --base . --file index.html --file anexos/detalle.html \
-    --file img/logo.png
+    --file css/site.css --file img/logo.png
 
 # Read before editing. Always. A large file goes to disk, not into the conversation.
 python3 scripts/artifact.py files <artifact_id>
@@ -340,7 +370,7 @@ python3 scripts/artifact.py read <artifact_id> index.html > /tmp/index.html
 # Edit in place
 python3 scripts/artifact.py write <artifact_id> index.html --from-file /tmp/edited.html
 python3 scripts/artifact.py rm <artifact_id> anexos/old.html
-# Add or replace an image a page shows (png, jpg, gif, webp, svg)
+# Add or replace an image, a font or a clip a page uses (a stylesheet or a script: write)
 python3 scripts/artifact.py upload <artifact_id> img/logo.png --from-file /tmp/logo.png
 python3 scripts/artifact.py rename <artifact_id> "Q3 sales report"
 python3 scripts/artifact.py tag <artifact_id> --set ventas,q3,informe   # replaces all
