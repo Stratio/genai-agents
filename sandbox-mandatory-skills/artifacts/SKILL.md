@@ -141,6 +141,8 @@ is what makes it safe to open, and it is not negotiable. In practice:
   downloads are blocked. `target="_blank"` and `window.open` do nothing, and a link to
   another site usually fails to load inside the frame, so write external URLs as
   visible text the reader can copy. Links to anchors in the same page (`#section`) work.
+  GenAI UI addresses are the exception: never write one into an artifact (see
+  [The link](#the-link)).
 - **No `alert`, `confirm` or `prompt`.** They run, but use inline UI instead. Never
   build a page that asks the viewer for a password, a token or personal data.
   `window.print()` works; add a `@media print` block if the page is meant to be printed.
@@ -439,3 +441,8 @@ and never give out a GenAI API or genai-proxy address (anything with
 `/v1/artifacts/` in it): those do not open for the person. If `public_url` is `null`,
 say that no link is available for it in this installation, and give the title and id
 instead.
+
+**Never write a GenAI UI address into an artifact**, not another artifact's
+`public_url` nor any other page: links do not open from inside the viewer, and the
+address changes when the installation moves. To point a page at another artifact,
+write its title and its id; `resolve` takes the id.

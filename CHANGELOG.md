@@ -3,7 +3,7 @@
 ## 0.4.0 (upcoming)
 
 * [ROCK-15363] Sandbox mandatory skills: `sandbox-mandatory-skills/<name>/` holds the skills genai-agents-sandbox bakes into every sandbox, never uploaded to GenAI UI. `pack_sandbox_mandatory_skills.sh` packs them into `sandbox-mandatory-skills-{v}.zip` as part of `make package`
-* [ROCK-15363] First sandbox mandatory skill: `artifacts`, to create, find, edit and share Stratio artifacts from the chat, with HTML pages designed on brand-kit's themes. Its `recent` command lists what the project read, edited or created across its conversations, for when the user alludes to an artifact instead of naming it
+* [ROCK-15363] First sandbox mandatory skill: `artifacts`, to create, find, edit and share Stratio artifacts from the chat, with HTML pages designed on brand-kit's themes. Its `recent` command lists what the project read, edited or created across its conversations, for when the user alludes to an artifact instead of naming it. A page never carries a GenAI UI address: another artifact is cited by title and id, so nothing goes stale when the installation moves
 
 ## Previous development
 
