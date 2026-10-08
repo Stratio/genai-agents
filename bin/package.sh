@@ -132,6 +132,15 @@ for lang in "${LANGUAGES[@]}"; do
   fi
 done
 
+# --- Sandbox mandatory skills (once, English only) ---
+# The skills genai-agents-sandbox bakes into its image for every project. One image
+# serves every user, so there is no per-language copy.
+echo ""
+echo "==> Sandbox mandatory skills..."
+bash "$REPO_ROOT/pack_sandbox_mandatory_skills.sh" --output-dir "$DIST_DIR"
+mv "$DIST_DIR/sandbox-mandatory-skills.zip" "$DIST_DIR/sandbox-mandatory-skills-${VERSION}.zip"
+echo "    -> dist/sandbox-mandatory-skills-${VERSION}.zip"
+
 # --- Summary ---
 echo ""
 echo "=== Packaging completed ==="
