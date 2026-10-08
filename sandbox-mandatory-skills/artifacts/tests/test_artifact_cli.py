@@ -768,6 +768,16 @@ class TestSkillRules:
         # resolve/list/recent/create/copy already carry the role: no extra request for it
         assert "do not `get` the artifact again just\nfor that" in text
 
+    def test_files_live_in_the_working_folder(self):
+        """Drafts and the files read to edit go where the person sees them, in the file
+        browser's project folder, never in /tmp."""
+        text = self._skill()
+        assert "## Working folder" in text
+        assert "`$USER_WORKSPACE/project/.artifact/`, never in `/tmp`" in text
+        assert "One folder per artifact, named after its title" in text
+        assert "/tmp/" not in text
+        assert ".artifact/<artifact_id>" not in text
+
     def test_no_genai_ui_address_inside_an_artifact(self):
         """public_url follows the installation's current GenAI UI address; a copy written
         into a page does not, and goes stale the day it moves."""

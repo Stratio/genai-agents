@@ -105,9 +105,9 @@ the tags: change them with `rename` and `tag`, never by creating a new artifact.
 
 **Read a large file into a file, not into the conversation.** `read` prints the whole
 file, and a page with inlined scripts, data or `data:` images runs to hundreds of
-thousands of tokens. Past about 100 KB, redirect it to disk, look only at the part you
-change (`grep -n`, a ranged read), edit it there and `write` it back with
-`--from-file`. When a script generated the page, change the script and run it again
+thousands of tokens. Past about 100 KB, save it to the artifact's working folder (see
+[Working folder](#working-folder)), look only at the part you change (`grep -n`, a
+ranged read), edit it there and `write` it back with `--from-file`. When a script generated the page, change the script and run it again
 instead of editing its output.
 
 If they genuinely want a separate document, say so and confirm before creating one.
@@ -344,6 +344,23 @@ after it. Later, change a text file with `write`, and add or replace a binary on
 `upload`. Prefer a file to a `data:` URI for anything but a small icon: the page stays
 readable and quick to edit.
 
+## Working folder
+
+Every file you write for an artifact goes in `.artifact/` in the project folder,
+`$USER_WORKSPACE/project/.artifact/`, never in `/tmp`: the pages you draft before
+`create`, the file you `read` to edit, the image or font you are about to `upload`.
+The person sees it in the file browser, and it outlives the session.
+
+One folder per artifact, named after its title in lowercase with dashes, and its
+files at their own paths inside it: `.artifact/q3-sales-report/index.html`,
+`.artifact/q3-sales-report/img/logo.png`. The same rule for a new artifact and an
+existing one: a new one is created from its folder (its `--base`), and after a
+`rename` the next files go in the new name's folder. The API holds the real content:
+`read` a file again before editing it, even when a copy is already there.
+Write the full path: the commands run from this skill's directory, where a bare
+`.artifact/` would land inside the skill. A shell variable lasts one command, so set
+it in the command that uses it.
+
 ## How to use it
 
 The script lives beside this file, at `scripts/artifact.py`. The examples below assume
@@ -356,22 +373,28 @@ python3 scripts/artifact.py resolve "informe de ventas"
 # They alluded to one ("el de ayer"): what this project touched, last first
 python3 scripts/artifact.py recent --page-size 10
 
-# Create, from files on disk, with 3-5 lowercase topic tags. --base is what keeps
-# the directories: without it every file lands flat at the root of the artifact.
-python3 scripts/artifact.py create --title "Q3 report" --type html \
-    --tags ventas,q3,informe --base . --file index.html --file anexos/detalle.html \
-    --file css/site.css --file img/logo.png
+# Create, from the files drafted in its working folder, with 3-5 lowercase topic
+# tags. --base is what keeps the directories: without it every file lands flat at the
+# root of the artifact.
+W="$USER_WORKSPACE/project/.artifact/q3-sales-report"; python3 scripts/artifact.py create \
+    --title "Q3 sales report" --type html --tags ventas,q3,informe --base "$W" \
+    --file "$W/index.html" --file "$W/anexos/detalle.html" --file "$W/css/site.css" \
+    --file "$W/img/logo.png"
 
-# Read before editing. Always. A large file goes to disk, not into the conversation.
+# Read before editing. Always. A large file goes to its working folder, not into the
+# conversation.
 python3 scripts/artifact.py files <artifact_id>
 python3 scripts/artifact.py read <artifact_id> index.html
-python3 scripts/artifact.py read <artifact_id> index.html > /tmp/index.html
+W="$USER_WORKSPACE/project/.artifact/q3-sales-report"; mkdir -p "$W" && \
+    python3 scripts/artifact.py read <artifact_id> index.html > "$W/index.html"
 
-# Edit in place
-python3 scripts/artifact.py write <artifact_id> index.html --from-file /tmp/edited.html
+# Edit in place: change the file in the working folder, then write it back
+W="$USER_WORKSPACE/project/.artifact/q3-sales-report"; \
+    python3 scripts/artifact.py write <artifact_id> index.html --from-file "$W/index.html"
 python3 scripts/artifact.py rm <artifact_id> anexos/old.html
 # Add or replace an image, a font or a clip a page uses (a stylesheet or a script: write)
-python3 scripts/artifact.py upload <artifact_id> img/logo.png --from-file /tmp/logo.png
+W="$USER_WORKSPACE/project/.artifact/q3-sales-report"; \
+    python3 scripts/artifact.py upload <artifact_id> img/logo.png --from-file "$W/img/logo.png"
 python3 scripts/artifact.py rename <artifact_id> "Q3 sales report"
 python3 scripts/artifact.py tag <artifact_id> --set ventas,q3,informe   # replaces all
 python3 scripts/artifact.py tag <artifact_id> --clear
