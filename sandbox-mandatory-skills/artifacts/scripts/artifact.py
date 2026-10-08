@@ -423,6 +423,11 @@ def cmd_share(args):
     _emit(_call("PUT", f"/v1/artifacts/{args.artifact_id}/members", body))
 
 
+def cmd_policy(args):
+    """What the viewer lets an artifact load in this installation, and the limits."""
+    _emit(_call("GET", "/v1/artifacts/policy"))
+
+
 def cmd_url(args):
     artifact = _call("GET", f"/v1/artifacts/{args.artifact_id}")
     if not artifact.get("public_url"):
@@ -578,6 +583,9 @@ def _parser() -> argparse.ArgumentParser:
         help="Take the given --user/--group ids off the share list",
     )
     p.set_defaults(func=cmd_share)
+
+    p = sub.add_parser("policy")
+    p.set_defaults(func=cmd_policy)
 
     p = sub.add_parser("url")
     p.add_argument("artifact_id")
