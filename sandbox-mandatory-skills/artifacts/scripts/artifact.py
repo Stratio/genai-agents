@@ -22,11 +22,13 @@ script.
 """
 
 import argparse
+import html
 import json
 import os
 import re
 import ssl
 import sys
+import unicodedata
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -201,6 +203,221 @@ def _page(result, args, extra: tuple = ()) -> list:
 
 
 # ---------------------------------------------------------------------------
+# Working folder
+# ---------------------------------------------------------------------------
+
+
+def _workdir_root() -> str:
+    """Where every artifact's working folder lives: ARTIFACT_WORKDIR, which the sandbox
+    sets to $USER_WORKSPACE/project/.artifact. An older sandbox does not set it, so the
+    same path is built here. Always under project/: the folder the person sees in the
+    file browser, and the one OpenCode writes to without a permission prompt."""
+    root = os.environ.get("ARTIFACT_WORKDIR")
+    if not root:
+        workspace = os.environ.get("USER_WORKSPACE") or "/root"
+        root = os.path.join(workspace, "project", ".artifact")
+    return os.path.abspath(root)
+
+
+def _slug(name: str) -> str:
+    """'Informe de ventas Q3' -> 'informe-de-ventas-q3'."""
+    folded = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode()
+    slug = re.sub(r"[^a-z0-9]+", "-", folded.lower()).strip("-")
+    return slug[:60].strip("-") or "artifact"
+
+
+# ---------------------------------------------------------------------------
+# Page checks
+#
+# What the viewer's sandbox breaks silently, and the slips that cost most in a review of
+# real runs, caught before a page is stored. Heuristics over the text, not a browser:
+# each finding says what to change, and a page can keep one when the person asked for it.
+# ---------------------------------------------------------------------------
+
+_CDN_HOSTS = (
+    "cdnjs.cloudflare.com", "cdn.jsdelivr.net", "unpkg.com", "cdn.plot.ly",
+    "cdn.tailwindcss.com", "code.jquery.com", "fonts.googleapis.com", "fonts.gstatic.com",
+)  # fmt: skip
+_FONT_HOSTS = ("fonts.googleapis.com", "fonts.gstatic.com")
+_COLOR = re.compile(
+    r"#[0-9a-fA-F]{8}\b|#[0-9a-fA-F]{6}\b|#[0-9a-fA-F]{3,4}\b|\b(?:rgba?|hsla?|oklch|oklab)\("
+)
+_NAMED_COLOR = re.compile(
+    r"\b(?:color|background(?:-color)?|fill|stroke|border(?:-color)?)\s*:\s*(?:white|black)\b", re.I
+)
+_ROOT_BLOCK = re.compile(r":root\b[^{]*\{[^{}]*\}")
+_EMOJI = re.compile("[\U0001F300-\U0001FAFF\U0001F000-\U0001F2FF✀-➿]")
+_TITLE_SEPARATOR = re.compile(r"\s[-–—|·]\s|[:|—–]")
+_VERSIONED = re.compile(r"@v?\d+\.\d+\.\d+|/v?\d+\.\d+\.\d+(?:/|$)|[-.]v?\d+\.\d+\.\d+")
+
+
+def _without_minmax(tracks: str) -> str:
+    """A grid track list without its minmax(…) tracks, nested min()/calc() included:
+    what is left are the tracks whose minimum is the content's own width."""
+    previous = None
+    while previous != tracks:
+        previous = tracks
+        tracks = re.sub(r"\b(?:min|max|clamp|calc)\([^()]*\)", "0", tracks)
+    return re.sub(r"minmax\([^()]*\)", "", tracks)
+
+
+def _strip_comments(text: str) -> str:
+    return re.sub(r"(?s)/\*.*?\*/", "", re.sub(r"(?s)<!--.*?-->", "", text))
+
+
+def _blocks(markup: str, tag: str) -> str:
+    return "\n".join(re.findall(rf"(?is)<{tag}\b(?![^>]*\bsrc=)[^>]*>(.*?)</{tag}>", markup))
+
+
+def _local_assets(markup: str, base_dir: str) -> tuple[str, str]:
+    """The stylesheets and scripts the page names by relative path, as the viewer would
+    put them inside it."""
+    css, js = [], []
+    for pattern, sink in (
+        (r'(?i)<link\b[^>]*rel=["\']?stylesheet[^>]*href=["\']([^"\']+)', css),
+        (r'(?i)<script\b[^>]*\bsrc=["\']([^"\']+)', js),
+    ):
+        for ref in re.findall(pattern, markup):
+            if re.match(r"(?i)^(?:[a-z][a-z0-9+.-]*:|//)", ref):
+                continue
+            path = os.path.join(base_dir, ref.split("?")[0].split("#")[0])
+            if os.path.isfile(path):
+                with open(path, encoding="utf-8", errors="replace") as handle:
+                    sink.append(handle.read())
+    return "\n".join(css), "\n".join(js)
+
+
+def _loaded_urls(markup: str, css: str) -> list:
+    """Absolute URLs the page loads (not the links a reader may follow)."""
+    no_anchors = re.sub(r"(?is)<a\b[^>]*>", "<a>", markup)
+    urls = re.findall(r'(?i)<(?:script|link|img|source|video|audio|track|iframe)\b[^>]*?\s(?:src|href)=["\'](https?://[^"\']+)', no_anchors)
+    urls += re.findall(r"(?i)url\(\s*['\"]?(https?://[^'\")\s]+)", css)
+    urls += re.findall(r"(?i)@import\s+(?:url\()?\s*['\"]?(https?://[^'\")\s;]+)", css)
+    urls += re.findall(r"(?i)\b(?:fetch|import)\(\s*['\"](https?://[^'\"]+)", markup)
+    return list(dict.fromkeys(urls))
+
+
+def _url_exists(url: str):
+    """True or False when the CDN answered; None when it could not be asked."""
+    request = urllib.request.Request(url, method="HEAD", headers={"User-Agent": "stratio-artifacts-check"})
+    try:
+        with urllib.request.urlopen(request, timeout=10) as response:
+            return response.status < 400
+    except urllib.error.HTTPError as e:
+        return e.code < 400 if e.code != 405 else None
+    except (urllib.error.URLError, OSError, ValueError):
+        return None
+
+
+def _page_findings(text, base_dir=".", title=None, sources=None, verify=False) -> list:
+    """Findings for one HTML page: [{"rule", "message"}]. `sources` are the hosts the
+    installation lets a page load from (None: do not check hosts); `verify` asks each
+    CDN whether the library URL exists."""
+    findings = []
+
+    def add(rule, message):
+        findings.append({"rule": rule, "message": message})
+
+    markup = _strip_comments(text)
+    linked_css, linked_js = _local_assets(markup, base_dir)
+    css = _blocks(markup, "style") + "\n" + _strip_comments(linked_css)
+    scripts = _blocks(markup, "script") + "\n" + linked_js
+
+    if not re.match(r"(?is)\s*<!doctype html", text):
+        add("document", "Start with <!doctype html>: the file is served as it is.")
+    for rule, pattern, what in (
+        ("document", r"(?i)<meta[^>]+charset", '<meta charset="utf-8">'),
+        ("document", r'(?i)<meta[^>]+name=["\']viewport', "the viewport <meta>"),
+    ):
+        if not re.search(pattern, markup):
+            add(rule, f"Missing {what}.")
+    found = re.search(r"(?is)<title[^>]*>(.*?)</title>", markup)
+    page_title = re.sub(r"\s+", " ", html.unescape(found.group(1))).strip() if found else ""
+    if not page_title:
+        add("title", "Missing <title>: write it first and pass the same string as --title.")
+    elif title is not None and page_title != title.strip():
+        add("title", f"<title> is {page_title!r} but --title is {title!r}: use one string for both.")
+    for name in {page_title, (title or "").strip()} - {""}:
+        if _TITLE_SEPARATOR.search(name):
+            add("title", f"{name!r} has a separator: a title is a 2-4 word name, the rest goes in --description.")
+        if len(name.split()) > 4:
+            add("title", f"{name!r} has {len(name.split())} words: a title is 2-4.")
+
+    if not re.search(r"prefers-color-scheme\s*:\s*dark", css):
+        add("dark-mode", "No @media (prefers-color-scheme: dark) block redefining the tokens.")
+    outside = _ROOT_BLOCK.sub("", css)
+    styles = " ".join(re.findall(r'(?i)\sstyle=["\']([^"\']*)', markup))
+    svg_attrs = " ".join(re.findall(r'(?i)\s(?:fill|stroke|stop-color|color)=["\'](#[0-9a-f]{3,8})', markup))
+    script_colors = re.findall(r"['\"](#[0-9a-fA-F]{3,8}|(?:rgba?|hsla?)\([^'\"]*\))['\"]", scripts)
+    colors = (
+        _COLOR.findall(outside) + _NAMED_COLOR.findall(outside) + _COLOR.findall(styles)
+        + _NAMED_COLOR.findall(styles) + _COLOR.findall(svg_attrs) + script_colors
+    )
+    if colors:
+        sample = ", ".join(dict.fromkeys(c.strip() for c in colors))
+        add("colors", f"{len(colors)} colors outside the token block ({sample[:120]}): use var(--…) in "
+            "CSS, style attributes and SVG, --on-primary/--on-accent for text on fills, and in a chart "
+            "script read the tokens with getComputedStyle(document.documentElement).")
+
+    if re.search(r"(?i)<form\b|type=[\"']?submit\b", markup):
+        add("form", "The viewer blocks form submission before the submit event, so a submit handler "
+            "never runs, not even with preventDefault(). Put the fields in a <div> and use "
+            '<button type="button">.')
+    if re.search(r"(?i)target=[\"']?_blank|window\.open\(", markup):
+        add("new-tab", "target=_blank and window.open do nothing in the viewer: write external URLs as visible text.")
+    if re.search(r"(?:\bwindow\.|(?<![\w.$]))(?:alert|confirm|prompt)\s*\(", scripts):
+        add("dialog", "alert/confirm/prompt: use inline UI instead.")
+    if re.search(r"(?i)<a\b[^>]*\sdownload\b|\.download\s*=", markup):
+        add("download", "Downloads are blocked in the viewer.")
+    if re.search(r"(?i)<iframe\b", markup):
+        add("iframe", "No <iframe> of another page.")
+    if re.search(r"\b(?:localStorage|sessionStorage|indexedDB)\b|document\.cookie", scripts) and not re.search(r"\btry\s*\{", scripts):
+        add("storage", "Storage throws in the viewer's opaque origin: keep state in memory, and wrap any storage access in try/catch.")
+    if re.search(r"(?i)<table\b[^>]*class=[\"'][^\"']*\bscroll-x\b", markup):
+        add("responsive", 'The .scroll-x class goes on a wrapper, not on the table: <div class="scroll-x"><table>…</table></div>.')
+    if re.search(r"(?i)<pre\b", markup):
+        # A bare 1fr track is minmax(auto, 1fr): a <pre> inside it widens the column.
+        bare = [v.strip() for v in re.findall(r"grid-template-columns\s*:\s*([^;}{]+)", css)
+                if re.search(r"\d*\.?\d+fr\b", _without_minmax(v))]
+        if bare:
+            add("responsive", f"grid-template-columns: {bare[0]} can widen past a 400 px pane when a cell "
+                "holds code or a table: use minmax(0, 1fr) tracks and min-width: 0 on those children.")
+    if re.search(r"(?:min-)?height\s*:\s*100d?vh", css):
+        add("hero", "A 100vh block: the header fits its content.")
+    if re.search(r"opacity\s*:\s*0\s*[;}]", css) and "IntersectionObserver" in scripts:
+        add("reveal", "Content waits at opacity: 0 for a scroll: everything meant to be read is visible on load.")
+    if re.search(r"(?i)genai-ui[\w-]*/artifacts/|/v1/artifacts/", markup):
+        add("link", "A GenAI UI or API address inside the page: write the other artifact's title and id instead.")
+    for heading in re.findall(r"(?is)<h[1-6]\b[^>]*>(.*?)</h[1-6]>", markup):
+        if _EMOJI.search(heading):
+            add("emoji", "Emojis as section markers read as machine-made.")
+            break
+
+    urls = _loaded_urls(markup, css)
+    if sources is not None:
+        allowed = {urllib.parse.urlsplit(s).hostname for s in sources if urllib.parse.urlsplit(s).hostname}
+        for url in urls:
+            host = urllib.parse.urlsplit(url).hostname
+            if host not in allowed:
+                where = "nothing outside the artifact" if not allowed else ", ".join(sorted(allowed))
+                add("host", f"{url}: this installation lets a page load from {where}.")
+    for url in urls:
+        host = urllib.parse.urlsplit(url).hostname or ""
+        if host in _CDN_HOSTS and host not in _FONT_HOSTS:
+            path = urllib.parse.urlsplit(url).path
+            if host != "cdn.tailwindcss.com" and not _VERSIONED.search(path):
+                add("pin", f"{url}: pin the exact version.")
+            elif verify and _url_exists(url) is False:
+                add("cdn", f"{url} does not exist on that CDN: copy the URL from the library table in SKILL.md.")
+    return findings
+
+
+def _report_findings(label: str, findings: list) -> None:
+    for finding in findings:
+        print(f"check: {label}: [{finding['rule']}] {finding['message']}", file=sys.stderr)
+
+
+# ---------------------------------------------------------------------------
 # Commands
 # ---------------------------------------------------------------------------
 
@@ -260,7 +477,7 @@ def cmd_create(args):
     paths = args.file or []
     if args.rename and len(paths) != 1:
         _die("--rename renames one file; pass exactly one --file with it.")
-    files, binaries = [], []
+    files, binaries, local = [], [], {}
     for path in paths:
         name = args.rename or _stored_path(path, args.base or os.curdir)
         if _is_binary(name):
@@ -269,6 +486,7 @@ def cmd_create(args):
             continue
         with open(path, "r", encoding="utf-8") as handle:
             files.append({"file_path": name, "content": handle.read()})
+        local[name] = path
     if paths and not any(f["file_path"].lower().endswith(_PAGE_EXTENSIONS) for f in files):
         _die(
             "An artifact is a page: pass its .html or .md file along with the files "
@@ -286,6 +504,19 @@ def cmd_create(args):
         payload["entry_path"] = args.entry_path
     elif files:
         payload["entry_path"] = files[0]["file_path"]
+    # Warnings, never a refusal: the person may have asked for what a check flags.
+    if not args.description:
+        print("check: no --description: pass one sentence that says what it is.", file=sys.stderr)
+    tags = payload.get("tags") or []
+    if not 3 <= len(tags) <= 5 or any(t != t.lower() for t in tags):
+        print("check: --tags: 3 to 5 short lowercase topic tags find it later.", file=sys.stderr)
+    for f in files:
+        if f["file_path"].lower().endswith((".html", ".htm")):
+            title = args.title if f["file_path"] == payload.get("entry_path") else None
+            _report_findings(
+                f["file_path"],
+                _page_findings(f["content"], os.path.dirname(local[f["file_path"]]) or ".", title),
+            )
     # Provenance. The agent is the only thing that knows the conversation, so if it
     # does not send it the column is dead and so is the listing filter over it. The
     # sandbox sets CONVERSATION_ID in every shell to the conversation's root OpenCode
@@ -332,6 +563,9 @@ def cmd_write(args):
             content = handle.read()
     else:
         content = sys.stdin.read()
+    if args.path.lower().endswith((".html", ".htm")):
+        base_dir = os.path.dirname(args.from_file) if args.from_file else "."
+        _report_findings(args.path, _page_findings(content, base_dir or "."))
     _emit(
         _call(
             "PUT",
@@ -421,6 +655,39 @@ def cmd_share(args):
     if args.link:
         body["link_access"] = "reader" if args.link == "on" else "none"
     _emit(_call("PUT", f"/v1/artifacts/{args.artifact_id}/members", body))
+
+
+def cmd_workdir(args):
+    """Create the artifact's working folder, named after its title, and print it."""
+    path = os.path.join(_workdir_root(), _slug(args.name))
+    os.makedirs(path, exist_ok=True)
+    print(path)
+
+
+def cmd_check(args):
+    """Check pages before `create` or `write`: what the viewer breaks, and the rules
+    SKILL.md asks for. The first page is the entry: it is the one --title applies to.
+    Hosts are checked against the public CDNs the viewer allows, and each library URL
+    is asked for on its CDN when there is a network to ask over."""
+    sources = [f"https://{host}" for host in _CDN_HOSTS]
+    report = []
+    for index, path in enumerate(args.files):
+        if not os.path.isfile(path):
+            _die(f"{path} does not exist.")
+        if not path.lower().endswith((".html", ".htm")):
+            report.append({"file": path, "findings": []})
+            continue
+        with open(path, encoding="utf-8", errors="replace") as handle:
+            content = handle.read()
+        findings = _page_findings(
+            content,
+            os.path.dirname(path) or ".",
+            title=args.title if index == 0 else None,
+            sources=sources,
+            verify=True,
+        )
+        report.append({"file": path, "findings": findings})
+    _emit(report)
 
 
 def cmd_url(args):
@@ -578,6 +845,15 @@ def _parser() -> argparse.ArgumentParser:
         help="Take the given --user/--group ids off the share list",
     )
     p.set_defaults(func=cmd_share)
+
+    p = sub.add_parser("workdir")
+    p.add_argument("name", help="The artifact's title; its folder is named after it")
+    p.set_defaults(func=cmd_workdir)
+
+    p = sub.add_parser("check")
+    p.add_argument("files", nargs="+", help="The entry page first, then any other page")
+    p.add_argument("--title", help="The --title it gets: the entry's <title> must match")
+    p.set_defaults(func=cmd_check)
 
     p = sub.add_parser("url")
     p.add_argument("artifact_id")
