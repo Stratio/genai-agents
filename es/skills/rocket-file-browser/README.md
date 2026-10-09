@@ -1,9 +1,10 @@
 # rocket-file-browser
 
-Skill compartida que mueve ficheros entre el sandbox de Stratio y el **File Browser
-HDFS de Rocket** (`/fileBrowser/*`), para que un agente pueda traerse un
-dataset/documento de Rocket al workspace o empujar un fichero generado de vuelta a
-HDFS — sin el roundtrip manual por la UI web de Rocket.
+Skill compartida que mueve ficheros entre el sandbox de Stratio y el **File Browser de
+Rocket** (`/fileBrowser/*`) — en cualquier filesystem que exponga: su HDFS y los buckets
+S3 configurados en él — para que un agente pueda traerse un dataset/documento de Rocket
+al workspace o empujar de vuelta un fichero generado — sin el roundtrip manual por la UI
+web de Rocket.
 
 Diseñada como **router** (igual que `cowork-api`): un `SKILL.md` mínimo indexa las
 capacidades y apunta a un fichero autocontenido bajo `tasks/` por capacidad. Un único
@@ -11,11 +12,15 @@ cliente Python, `scripts/rocket_file_browser.py`, hace el trabajo HTTP.
 
 ## Qué hace
 
+- **filesystems** — `GET /fileBrowser/getFilesystems`, más el procedimiento para elegir
+  o cambiar el filesystem destino (`tasks/filesystems.md`). Ver
+  [Varios filesystems](#varios-filesystems).
+
 - **download** — `POST /fileBrowser/download`, streaming de los bytes a una ruta local.
 - **upload** — una sola petición: `POST /fileBrowser/upload?path=<dir>` (multipart
   `binary`), autorizada antes de aceptar un solo byte y con los bytes en streaming
   directo al filesystem; un nombre ya ocupado se rechaza. Repliega al flujo antiguo de
-  dos peticiones (`uploadLocalFile` + `putLocalFileToHdfs`, con reintento del HTTP 420)
+  dos peticiones (`uploadLocalFile` + `putLocalFileToHadoopFs`, con reintento del HTTP 420)
   en un Rocket que no lo sirva, o con `--legacy`.
 - **ls** — `POST /fileBrowser/findByPath` (listado de directorio / stat de fichero).
 - **cp** / **mv** — `PUT /fileBrowser/copy` / `PUT /fileBrowser/update`.
@@ -27,7 +32,27 @@ cliente Python, `scripts/rocket_file_browser.py`, hace el trabajo HTTP.
   detecta por contenido, no por extensión; el destino es obligatorio y el script lo pone
   por defecto al directorio del propio archivo). Ambos hacen streaming en el servidor
   sin tocar el disco del pod.
-- **filesystems** (ayudante) — `GET /fileBrowser/getFilesystems` para descubrir `id`/`type`.
+
+## Varios filesystems
+
+El File Browser de un Rocket puede acceder a varios filesystems a la vez: el interno de
+metadatos (el `fs.defaultFS` de Hadoop de Rocket — `HDFS`, `S3` o `HadoopFs`; oculto con
+`fileBrowser.internalMetadataFilesystemEnabled=false`) más cada bucket S3 que haya
+configurado un administrador (`type` `S3`, `id` = nombre del bucket). Disponible en
+Rocket 3.6 y 4.x.
+
+- Rocket no guarda un filesystem actual: cada petición lleva su propio
+  `targetFilesystem` (parámetros de query `filesystemId`/`filesystemType` en `upload`).
+  Sin él Rocket usa en silencio el interno, así que el script **lo envía siempre**.
+- `--fs <id>:<type>` se valida contra el listado (type sin distinguir mayúsculas). Si se
+  omite, solo se resuelve cuando hay exactamente un filesystem; con varios el script se
+  detiene y los lista, y el agente pregunta al usuario. La elección se mantiene durante
+  la conversación.
+- Las rutas son relativas a la raíz del filesystem (el bucket, en S3), y las operaciones
+  nunca cruzan filesystems: mover datos entre ellos es descarga + subida por el sandbox.
+- En S3, Gosec autoriza `/<bucket><ruta>` y `mv` es copia + borrado.
+- Cada línea de éxito termina en `[<id>:<type>]`, así el agente siempre informa de dónde
+  actuó.
 
 ## Autenticación e identidad
 
@@ -76,7 +101,8 @@ el search domain del pod): `https://<rocket-instance>.<rocket-namespace>:7777`
 - Las rutas relativas se rechazan en cliente: el `ProvidedPath.fromApi` de Rocket las
   rechaza en el cuerpo y, desde ROCK #5384, también en los parámetros de query.
 - Las raíces reservadas (`/extensions`, `/mockData`, `/backups`, `/mlProjectModelArtifacts`,
-  `/mlProjectExecutionsArtifacts`) se rechazan en cliente antes de cualquier llamada.
+  `/mlProjectExecutionsArtifacts`) se rechazan en cliente antes de cualquier llamada, en
+  todos los filesystems (Rocket también las aplica en S3).
 - `download` usa la variante POST. El gemelo GET ahora también acepta `filesystemId` /
   `filesystemType` (y sigue aceptando el antiguo `pathHdfs`) y autoriza igual — existe
   para que un navegador pueda guardar un fichero navegando a él.

@@ -1,6 +1,8 @@
-# Task: copy within HDFS
+# Task: copy within a filesystem
 
-Copy an HDFS file/directory to a new path (both within the same filesystem).
+Copy a file/directory to a new path **in the same filesystem** (HDFS or an S3 bucket).
+Rocket has no cross-filesystem copy: to copy from one filesystem to another, follow
+`tasks/filesystems.md` §Moving data between filesystems (download + upload).
 
 ## Endpoint (handled by the script)
 
@@ -14,10 +16,10 @@ Copy an HDFS file/directory to a new path (both within the same filesystem).
 ## Procedure
 
 1. **Pre-check** — see `SKILL.md`.
-2. **Run** (`--fs` optional when only one filesystem exists):
+2. **Run** (`--fs` = the filesystem settled with `tasks/filesystems.md`):
 
    ```bash
-   python3 scripts/rocket_file_browser.py cp "<src>" "<dst>" [--fs <id>:<type>]
+   python3 scripts/rocket_file_browser.py cp "<src>" "<dst>" --fs <id>:<type>
    ```
 
 ## Errors

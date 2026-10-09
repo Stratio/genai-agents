@@ -1,4 +1,4 @@
-# Task: compress HDFS files into an archive
+# Task: compress files into an archive
 
 ## Endpoint (handled by the script)
 
@@ -33,10 +33,10 @@ before calling.
 ## Procedure
 
 1. **Pre-check** — see `SKILL.md`.
-2. **Run** (`--fs` optional when only one filesystem exists):
+2. **Run** (`--fs` = the filesystem settled with `tasks/filesystems.md`). Sources and archive live in that same filesystem:
 
    ```bash
-   python3 scripts/rocket_file_browser.py compress "<archive>" "<src1>" ["<src2>" ...] [--codec Zip] [--fs <id>:<type>]
+   python3 scripts/rocket_file_browser.py compress "<archive>" "<src1>" ["<src2>" ...] [--codec Zip] --fs <id>:<type>
    ```
 
 ## Errors

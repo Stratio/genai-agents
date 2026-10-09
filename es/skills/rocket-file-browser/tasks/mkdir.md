@@ -1,4 +1,4 @@
-# Tarea: crear un directorio en HDFS
+# Tarea: crear un directorio
 
 ## Endpoint (lo gestiona el script)
 
@@ -12,13 +12,15 @@
 ## Procedimiento
 
 1. **Pre-check** — ver `SKILL.md`.
-2. **Ejecuta** (`--fs` opcional si solo hay un filesystem):
+2. **Ejecuta** (`--fs` = el filesystem fijado con `tasks/filesystems.md`):
 
    ```bash
-   python3 scripts/rocket_file_browser.py mkdir "<ruta_hdfs>" [--fs <id>:<type>]
+   python3 scripts/rocket_file_browser.py mkdir "<ruta>" --fs <id>:<type>
    ```
 
 ## Errores
 
 - `401/403` — no autorizado (Gosec). Raíces restringidas rechazadas en cliente.
+- En S3 un directorio es un prefijo de clave: el "directorio" existe como marcador vacío
+  hasta que se escribe un fichero dentro.
 - Muestra código HTTP + cuerpo verbatim en error.

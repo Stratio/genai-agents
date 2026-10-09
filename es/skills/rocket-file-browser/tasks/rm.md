@@ -1,6 +1,7 @@
-# Tarea: borrar ficheros/directorios HDFS
+# Tarea: borrar ficheros/directorios
 
-Borra una o varias rutas en el HDFS de Rocket. **Destructivo — confirma con el usuario antes.**
+Borra una o varias rutas en un filesystem de Rocket (HDFS o un bucket S3). **Destructivo —
+confirma con el usuario antes.**
 
 ## Endpoint (lo gestiona el script)
 
@@ -14,11 +15,12 @@ Borra una o varias rutas en el HDFS de Rocket. **Destructivo — confirma con el
 ## Procedimiento
 
 1. **Pre-check** — ver `SKILL.md`.
-2. **Confirma** las rutas exactas con el usuario — no se puede deshacer.
-3. **Ejecuta** (`--fs` opcional si solo hay un filesystem):
+2. **Confirma** las rutas exactas **y el filesystem** con el usuario — no se puede
+   deshacer, y la misma ruta puede existir en otro filesystem.
+3. **Ejecuta** (`--fs` = el filesystem fijado con `tasks/filesystems.md`):
 
    ```bash
-   python3 scripts/rocket_file_browser.py rm "<ruta_hdfs>" ["<ruta_hdfs2>" ...] [--fs <id>:<type>]
+   python3 scripts/rocket_file_browser.py rm "<ruta>" ["<ruta2>" ...] --fs <id>:<type>
    ```
 
 ## Errores
