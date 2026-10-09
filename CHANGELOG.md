@@ -2,7 +2,7 @@
 
 ## 0.4.0 (upcoming)
 
-* Pending changelog
+* **Individual skill ZIPs keep their subfolders on import**: `pack_skills.sh --skill <name>` now nests the skill under `<name>/` in the ZIP, like the bulk mode and the Stratio Cowork sub-bundle already did. With `SKILL.md` at the ZIP root, genai-api's skill importer kept only the root-level files, so a skill's `tasks/`, `scripts/` or `fonts/` silently went missing in Cowork. The packer now also fails if anything is left at the ZIP root.
 
 ## Previous development
 
