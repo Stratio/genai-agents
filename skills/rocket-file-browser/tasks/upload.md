@@ -40,6 +40,8 @@ compatibility. The script falls back to it automatically when the server answers
 
    - `<local_src>`: existing local file in the sandbox.
    - `<hdfs_dir>`: target HDFS **directory** (absolute); the file keeps its basename.
+     If it does not exist, Rocket creates it, intermediate directories included —
+     no prior `mkdir` needed, but a typo in the path silently creates a new tree.
 
 ## Expected output
 
@@ -54,7 +56,7 @@ With the legacy fallback, a `Phase 1 OK: staged at /tmp/uploads/...` line preced
 - Max upload size is the server's `file-browser.max-content-length` (default 5 GB);
   very large files may still hit timeouts — surface the body verbatim if so.
 - `Target <path> already exists` — the destination name is taken; the upload is refused
-  before the transfer.
+  before the transfer. Rocket returns it as HTTP 500, not 409.
 - A relative `<hdfs_dir>` is refused (Rocket only accepts absolute File Browser paths).
 - A file name HDFS or S3 cannot hold (a colon, braces) is refused before the transfer.
 - `401/403` — not authorized for that target directory (Gosec).

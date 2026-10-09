@@ -40,6 +40,8 @@ por compatibilidad. El script repliega a él automáticamente si el servidor res
 
    - `<origen_local>`: fichero local existente en el sandbox.
    - `<dir_hdfs>`: **directorio** HDFS destino (absoluto); el fichero conserva su nombre.
+     Si no existe, Rocket lo crea, directorios intermedios incluidos — no hace falta
+     `mkdir` previo, pero una errata en la ruta crea en silencio un árbol nuevo.
 
 ## Salida esperada
 
@@ -55,7 +57,7 @@ Con el repliegue antiguo, antes aparece una línea `Phase 1 OK: staged at /tmp/u
   (por defecto 5 GB); los ficheros muy grandes pueden dar timeout — muestra el cuerpo
   verbatim si pasa.
 - `Target <ruta> already exists` — el nombre destino ya está ocupado; la subida se
-  rechaza antes de la transferencia.
+  rechaza antes de la transferencia. Rocket lo devuelve como HTTP 500, no 409.
 - Un `<dir_hdfs>` relativo se rechaza (Rocket solo acepta rutas absolutas en el File
   Browser).
 - Un nombre de fichero que HDFS o S3 no admiten (dos puntos, llaves) se rechaza antes de
