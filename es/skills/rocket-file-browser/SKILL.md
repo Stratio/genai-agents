@@ -1,19 +1,36 @@
 ---
 name: rocket-file-browser
-description: "Gestiona ficheros en el File Browser HDFS de Rocket desde el sandbox de Stratio: descargar, subir, listar, copiar, mover/renombrar, borrar, mkdir, comprimir y extraer. Úsala cuando el usuario quiera operar sobre el HDFS de Rocket — frases como 'baja este fichero de Rocket', 'sube este archivo al HDFS', 'lista la carpeta', 'borra/copia/mueve en HDFS', 'comprime estos ficheros', 'descarga del file browser', 'sube a Rocket'. Llama a la API mutual-TLS de Rocket (/fileBrowser/*) con el certificado cliente del sandbox, así que opera con los permisos propios del usuario en Rocket."
+description: "Gestiona ficheros en el File Browser de Rocket desde el sandbox de Stratio, en cualquier filesystem que exponga Rocket — su HDFS y los buckets S3 configurados en él: descargar, subir, listar, copiar, mover/renombrar, borrar, mkdir, comprimir, extraer y elegir o cambiar de filesystem. Úsala cuando el usuario quiera operar sobre el HDFS o el S3 de Rocket — frases como 'baja este fichero de Rocket', 'sube este archivo al HDFS', 'súbelo al bucket', 'lista la carpeta de S3', 'borra/copia/mueve en HDFS', 'comprime estos ficheros', 'cambia al otro filesystem', 'descarga del file browser', 'sube a Rocket'. Llama a la API mutual-TLS de Rocket (/fileBrowser/*) con el certificado cliente del sandbox, así que opera con los permisos propios del usuario en Rocket."
 argument-hint: "[download|upload|ls|cp|mv|rm|mkdir|compress|extract] [rutas...]"
 ---
 
-# Skill: Rocket File Browser (subir/bajar de HDFS)
+# Skill: Rocket File Browser (HDFS y S3)
 
 Skill router. Cada capacidad vive en su propio fichero bajo `tasks/`. **Este fichero es
 deliberadamente mínimo** — al ejecutar una tarea, carga y sigue el sub-fichero
 correspondiente entero. No improvises la petición desde este índice.
 
 Todas las operaciones las sirve un único cliente Python, `scripts/rocket_file_browser.py`,
-que gestiona el mTLS, la subida en una sola petición (`POST /fileBrowser/upload`) y su
-repliegue al flujo antiguo de dos peticiones con reintento del HTTP 420 en versiones de
-Rocket anteriores.
+que gestiona el mTLS, el filesystem destino, la subida en una sola petición
+(`POST /fileBrowser/upload`) y su repliegue al flujo antiguo de dos peticiones con
+reintento del HTTP 420 en versiones de Rocket anteriores.
+
+## Varios filesystems — leer antes de cualquier operación
+
+Un Rocket puede navegar **varios filesystems**: el interno (HDFS, o S3 si Rocket corre
+sobre S3) más cada **bucket S3** que haya configurado un administrador. Rocket no guarda
+un filesystem actual — cada llamada nombra el suyo — y una ruta designa un fichero
+distinto en cada filesystem. Por tanto:
+
+- Fija el filesystem **antes de la primera operación** con `tasks/filesystems.md`:
+  lístalos, usa el único o **pregunta al usuario** cuando haya varios y la petición no
+  nombre uno. Nunca adivines.
+- Pasa el elegido como `--fs <id>:<type>` en **todas** las llamadas de la conversación,
+  y cámbialo solo cuando el usuario lo pida (dilo en una línea).
+- Nombra el filesystem siempre que informes de una ruta o pidas una confirmación
+  ("`/landing/a.csv` en el bucket `sales-landing`"), no solo la ruta.
+- Las operaciones nunca cruzan filesystems: copiar/mover entre ellos = descarga + subida
+  (`tasks/filesystems.md` §Mover datos entre filesystems).
 
 ## Prerrequisitos — leer primero
 
@@ -42,27 +59,26 @@ mensaje genérico.
 
 | Capacidad | Cuándo usarla | Sub-fichero a cargar |
 |---|---|---|
-| Descargar un fichero | Traer un fichero del HDFS de Rocket al workspace del sandbox. | `tasks/download.md` |
-| Subir un fichero | Empujar un fichero local del sandbox a un directorio HDFS de Rocket. | `tasks/upload.md` |
-| Listar una ruta | Mostrar el contenido de un directorio HDFS. | `tasks/ls.md` |
-| Copiar | Copiar un fichero/directorio HDFS a una ruta nueva. | `tasks/cp.md` |
-| Mover / renombrar | Mover o renombrar un fichero/directorio HDFS (confirma antes). | `tasks/mv.md` |
-| Borrar | Eliminar ficheros/directorios HDFS (destructivo — confirma antes). | `tasks/rm.md` |
-| Crear directorio | Crear un directorio HDFS. | `tasks/mkdir.md` |
-| Comprimir | Comprimir ficheros HDFS en un archivo. | `tasks/compress.md` |
-| Extraer | Extraer un archivo HDFS. | `tasks/extract.md` |
-
-Ayudante (sin sub-fichero): lista los filesystems con
-`python3 scripts/rocket_file_browser.py filesystems` para descubrir el `id`/`type`
-que pasar en `--fs`. El script auto-resuelve el filesystem cuando solo hay uno.
+| Elegir / cambiar filesystem | Primera operación de la conversación, varios filesystems, el usuario nombra un bucket o "el otro filesystem", o hay que llevar datos de un filesystem a otro. | `tasks/filesystems.md` |
+| Descargar un fichero | Traer un fichero de Rocket (HDFS o S3) al workspace del sandbox. | `tasks/download.md` |
+| Subir un fichero | Empujar un fichero local del sandbox a un directorio de Rocket (HDFS o S3). | `tasks/upload.md` |
+| Listar una ruta | Mostrar el contenido de un directorio. | `tasks/ls.md` |
+| Copiar | Copiar un fichero/directorio a una ruta nueva en el mismo filesystem. | `tasks/cp.md` |
+| Mover / renombrar | Mover o renombrar un fichero/directorio en el mismo filesystem (confirma antes). | `tasks/mv.md` |
+| Borrar | Eliminar ficheros/directorios (destructivo — confirma antes). | `tasks/rm.md` |
+| Crear directorio | Crear un directorio. | `tasks/mkdir.md` |
+| Comprimir | Comprimir ficheros en un archivo. | `tasks/compress.md` |
+| Extraer | Extraer un archivo. | `tasks/extract.md` |
 
 ## Reglas de enrutado
 
 1. Identifica la capacidad por la intención del usuario. Si no encaja en ninguna entrada
    del índice (p.ej. publicar vistas, consultar datos), esta skill no puede ayudar — dilo.
 2. Ejecuta el pre-check de arriba. Si falla, para y repórtalo.
-3. Carga el sub-fichero correspondiente y síguelo de principio a fin.
-4. Tras la llamada, muestra el resultado (o el código HTTP + cuerpo verbatim si falla)
+3. Si el filesystem de esta conversación aún no está fijado, sigue antes
+   `tasks/filesystems.md`.
+4. Carga el sub-fichero correspondiente y síguelo de principio a fin.
+5. Tras la llamada, muestra el resultado (o el código HTTP + cuerpo verbatim si falla)
    al usuario, según `guides/external-api-calls.md` §5.
 
 ## Uso de esta skill dentro del flujo de un agente
@@ -70,14 +86,15 @@ que pasar en `--fs`. El script auto-resuelve el filesystem cuando solo hay uno.
 - **Las descargas van a la carpeta de trabajo de la tarea actual.** Si el agente mantiene
   una carpeta por tarea (de análisis o de informe), descarga ahí — no en la raíz del
   workspace — para que el fichero quede junto al trabajo que lo usa.
-- **Nunca publiques por iniciativa propia.** Sube, copia o mueve a HDFS solo cuando el
+- **Nunca publiques por iniciativa propia.** Sube, copia o mueve a Rocket solo cuando el
   usuario lo pida. Generar un entregable en local no implica subirlo.
-- **Confirma el destino antes de subir.** Indica el directorio HDFS y el nombre final del
-  fichero; la subida se rechaza si ese nombre ya existe, así que compruébalo con `ls` y
+- **Confirma el destino antes de subir.** Indica el filesystem, el directorio y el nombre
+  final del fichero; la subida se rechaza si ese nombre ya existe, así que compruébalo con `ls` y
   pregunta al usuario cómo seguir (renombrar, o borrar el antiguo con `rm`) en lugar de
   borrar por tu cuenta.
 - **Las operaciones destructivas siempre requieren confirmación explícita** — `rm` y `mv`
-  (mover o renombrar rompe toda ruta que apuntaba al original), enumerando las rutas exactas.
+  (mover o renombrar rompe toda ruta que apuntaba al original), enumerando las rutas
+  exactas y el filesystem en que están.
 
 ## Añadir una nueva capacidad
 

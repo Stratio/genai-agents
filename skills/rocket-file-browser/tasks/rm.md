@@ -1,6 +1,7 @@
-# Task: delete HDFS files/directories
+# Task: delete files/directories
 
-Delete one or more paths in Rocket's HDFS. **Destructive — confirm with the user first.**
+Delete one or more paths in one Rocket filesystem (HDFS or an S3 bucket). **Destructive —
+confirm with the user first.**
 
 ## Endpoint (handled by the script)
 
@@ -14,11 +15,12 @@ Delete one or more paths in Rocket's HDFS. **Destructive — confirm with the us
 ## Procedure
 
 1. **Pre-check** — see `SKILL.md`.
-2. **Confirm** the exact paths with the user — this cannot be undone.
-3. **Run** (`--fs` optional when only one filesystem exists):
+2. **Confirm** the exact paths **and the filesystem** with the user — this cannot be
+   undone, and the same path may exist on another filesystem.
+3. **Run** (`--fs` = the filesystem settled with `tasks/filesystems.md`):
 
    ```bash
-   python3 scripts/rocket_file_browser.py rm "<hdfs_path>" ["<hdfs_path2>" ...] [--fs <id>:<type>]
+   python3 scripts/rocket_file_browser.py rm "<path>" ["<path2>" ...] --fs <id>:<type>
    ```
 
 ## Errors

@@ -1,4 +1,4 @@
-# Task: extract an HDFS archive
+# Task: extract an archive
 
 ## Endpoint (handled by the script)
 
@@ -29,10 +29,11 @@ disk on the Rocket pod. What that changes for the caller:
 ## Procedure
 
 1. **Pre-check** — see `SKILL.md`.
-2. **Run** (`--dest` and `--fs` optional):
+2. **Run** (`--dest` optional; `--fs` = the filesystem settled with
+   `tasks/filesystems.md`). The destination is in that same filesystem:
 
    ```bash
-   python3 scripts/rocket_file_browser.py extract "<archive>" [--dest "<hdfs_dir>"] [--fs <id>:<type>]
+   python3 scripts/rocket_file_browser.py extract "<archive>" [--dest "<dir>"] --fs <id>:<type>
    ```
 
 ## Errors

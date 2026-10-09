@@ -1,4 +1,4 @@
-# Tarea: comprimir ficheros HDFS en un archivo
+# Tarea: comprimir ficheros en un archivo
 
 ## Endpoint (lo gestiona el script)
 
@@ -33,10 +33,10 @@ flujo antes de llamar.
 ## Procedimiento
 
 1. **Pre-check** — ver `SKILL.md`.
-2. **Ejecuta** (`--fs` opcional si solo hay un filesystem):
+2. **Ejecuta** (`--fs` = el filesystem fijado con `tasks/filesystems.md`). Orígenes y archivo viven en ese mismo filesystem:
 
    ```bash
-   python3 scripts/rocket_file_browser.py compress "<archivo>" "<src1>" ["<src2>" ...] [--codec Zip] [--fs <id>:<type>]
+   python3 scripts/rocket_file_browser.py compress "<archivo>" "<src1>" ["<src2>" ...] [--codec Zip] --fs <id>:<type>
    ```
 
 ## Errores

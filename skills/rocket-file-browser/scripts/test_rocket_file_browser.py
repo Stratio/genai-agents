@@ -47,6 +47,20 @@ def _recorder(monkeypatch, resp=None):
     return calls
 
 
+# The filesystems a Rocket typically lists: the internal metadata one first, then the
+# configured S3 buckets.
+FILESYSTEMS = [
+    {"id": "hdfs1", "type": "HDFS", "defaultPath": "/"},
+    {"id": "bucket-a", "type": "S3", "defaultPath": "/landing"},
+]
+
+
+@pytest.fixture(autouse=True)
+def listed_filesystems(monkeypatch):
+    """Every command resolves --fs against the listing; serve a fixed one."""
+    monkeypatch.setattr(rfb, "list_filesystems", lambda: list(FILESYSTEMS))
+
+
 # --- parse_fs / resolve_target_fs ------------------------------------------
 
 
@@ -55,9 +69,14 @@ def test_parse_fs():
     assert rfb.parse_fs(None) is None
 
 
-def test_parse_fs_invalid_exits():
+def test_parse_fs_splits_on_the_last_colon():
+    assert rfb.parse_fs("host:8020:HDFS") == {"id": "host:8020", "type": "HDFS"}
+
+
+@pytest.mark.parametrize("bad", ["no-colon", "bucket:", ":S3"])
+def test_parse_fs_invalid_exits(bad):
     with pytest.raises(SystemExit):
-        rfb.parse_fs("no-colon")
+        rfb.parse_fs(bad)
 
 
 def test_resolve_fs_auto_single(monkeypatch):
@@ -65,13 +84,32 @@ def test_resolve_fs_auto_single(monkeypatch):
     assert rfb.resolve_target_fs(None) == {"id": "x", "type": "HDFS"}
 
 
-def test_resolve_fs_multiple_requires_explicit(monkeypatch):
-    monkeypatch.setattr(
-        rfb, "list_filesystems",
-        lambda: [{"id": "a", "type": "HDFS"}, {"id": "b", "type": "S3"}],
-    )
+def test_resolve_fs_multiple_requires_explicit(capsys):
     with pytest.raises(SystemExit):
         rfb.resolve_target_fs(None)
+    err = capsys.readouterr().err
+    assert "hdfs1:HDFS" in err and "bucket-a:S3" in err
+
+
+def test_resolve_fs_none_listed_exits(monkeypatch):
+    monkeypatch.setattr(rfb, "list_filesystems", lambda: [])
+    with pytest.raises(SystemExit):
+        rfb.resolve_target_fs(None)
+
+
+def test_resolve_fs_explicit_picks_a_listed_one():
+    assert rfb.resolve_target_fs("bucket-a:S3") == {"id": "bucket-a", "type": "S3"}
+
+
+def test_resolve_fs_explicit_type_is_normalized_to_rockets_spelling():
+    assert rfb.resolve_target_fs("bucket-a:s3") == {"id": "bucket-a", "type": "S3"}
+
+
+@pytest.mark.parametrize("unknown", ["bucket-b:S3", "bucket-a:HDFS", "Bucket-A:S3"])
+def test_resolve_fs_explicit_unknown_exits_with_the_options(unknown, capsys):
+    with pytest.raises(SystemExit):
+        rfb.resolve_target_fs(unknown)
+    assert "bucket-a:S3" in capsys.readouterr().err
 
 
 # --- restricted-path guard --------------------------------------------------
@@ -110,6 +148,28 @@ def test_ls_payload(monkeypatch):
         "pathHdfs": "/data/x",
         "targetFilesystem": {"id": "hdfs1", "type": "HDFS"},
     }
+
+
+def test_ls_payload_on_an_s3_bucket(monkeypatch):
+    calls = _recorder(monkeypatch, FakeResp(json_data=[]))
+    rfb.cmd_ls(ns(hdfs_path="/landing", fs="bucket-a:S3"))
+    _, _, kwargs = calls[0]
+    assert kwargs["json"]["targetFilesystem"] == {"id": "bucket-a", "type": "S3"}
+
+
+def test_single_filesystem_is_still_sent_explicitly(monkeypatch):
+    """Never leave targetFilesystem out: Rocket would fall back to the internal FS."""
+    monkeypatch.setattr(rfb, "list_filesystems", lambda: [FILESYSTEMS[1]])
+    calls = _recorder(monkeypatch, FakeResp(json_data=[]))
+    rfb.cmd_ls(ns(hdfs_path="/landing", fs=None))
+    _, _, kwargs = calls[0]
+    assert kwargs["json"]["targetFilesystem"] == {"id": "bucket-a", "type": "S3"}
+
+
+def test_success_message_names_the_filesystem(monkeypatch, capsys):
+    _recorder(monkeypatch)
+    rfb.cmd_cp(ns(src="/a", dst="/b", fs="bucket-a:S3"))
+    assert "[bucket-a:S3]" in capsys.readouterr().out
 
 
 def test_mkdir_payload(monkeypatch):
@@ -226,6 +286,21 @@ def test_upload_single_request(monkeypatch, tmp_path):
         "filesystemType": "HDFS",
     }
     assert "binary" in kwargs["files"]
+
+
+def test_upload_to_an_s3_bucket(monkeypatch, tmp_path):
+    src = tmp_path / "f.txt"
+    src.write_text("hi")
+    calls = _recorder(monkeypatch, FakeResp(json_data="/landing/f.txt"))
+
+    rfb.cmd_upload(ns(local_src=str(src), hdfs_dir="/landing", fs="bucket-a:S3", legacy=False))
+
+    _, _, kwargs = calls[0]
+    assert kwargs["params"] == {
+        "path": "/landing",
+        "filesystemId": "bucket-a",
+        "filesystemType": "S3",
+    }
 
 
 def test_upload_falls_back_to_the_legacy_flow(monkeypatch, tmp_path):

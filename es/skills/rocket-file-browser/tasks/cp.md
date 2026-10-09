@@ -1,6 +1,8 @@
-# Tarea: copiar dentro de HDFS
+# Tarea: copiar dentro de un filesystem
 
-Copia un fichero/directorio HDFS a una ruta nueva (ambas en el mismo filesystem).
+Copia un fichero/directorio a una ruta nueva **en el mismo filesystem** (HDFS o un bucket
+S3). Rocket no tiene copia entre filesystems: para copiar de un filesystem a otro, sigue
+`tasks/filesystems.md` §Mover datos entre filesystems (descarga + subida).
 
 ## Endpoint (lo gestiona el script)
 
@@ -14,10 +16,10 @@ Copia un fichero/directorio HDFS a una ruta nueva (ambas en el mismo filesystem)
 ## Procedimiento
 
 1. **Pre-check** — ver `SKILL.md`.
-2. **Ejecuta** (`--fs` opcional si solo hay un filesystem):
+2. **Ejecuta** (`--fs` = el filesystem fijado con `tasks/filesystems.md`):
 
    ```bash
-   python3 scripts/rocket_file_browser.py cp "<src>" "<dst>" [--fs <id>:<type>]
+   python3 scripts/rocket_file_browser.py cp "<src>" "<dst>" --fs <id>:<type>
    ```
 
 ## Errores

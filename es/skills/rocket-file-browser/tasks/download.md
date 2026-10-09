@@ -1,6 +1,7 @@
-# Tarea: descargar un fichero del HDFS de Rocket
+# Tarea: descargar un fichero de Rocket
 
-Trae un fichero del File Browser HDFS de Rocket al workspace del sandbox.
+Trae un fichero del File Browser de Rocket — su HDFS o un bucket S3 configurado — al
+workspace del sandbox.
 
 ## Endpoint (lo gestiona el script)
 
@@ -23,36 +24,32 @@ Trae un fichero del File Browser HDFS de Rocket al workspace del sandbox.
 1. **Pre-check** — `ROCKET_API_URL` definida y el cert cliente presente (ver
    prerrequisitos en `SKILL.md`). Si falta, para y di cuál.
 
-2. **Resuelve el filesystem** si no lo conoces:
-
-   ```bash
-   python3 scripts/rocket_file_browser.py filesystems
-   # p.ej. [{"id":"hdfs1.s000001-datastores","type":"HDFS","defaultPath":"/user/..."}]
-   ```
-
-   Cuando solo hay un filesystem el script lo elige solo, así que `--fs` es opcional.
-   Pasa `--fs <id>:<type>` solo si hay varios.
+2. **Filesystem** — usa el fijado para esta conversación; si aún no hay ninguno, sigue
+   `tasks/filesystems.md` (listar, usar el único o preguntar al usuario). El fichero se
+   busca solo en ese filesystem.
 
 3. **Descarga**:
 
    ```bash
    python3 scripts/rocket_file_browser.py download \
-     "<ruta_hdfs>" "<destino_local>" [--fs <id>:<type>]
+     "<ruta>" "<destino_local>" --fs <id>:<type>
    ```
 
-   - `<ruta_hdfs>`: ruta absoluta en HDFS, p.ej. `/data/kk/report.json`. Un directorio
-     se descarga como zip construido al vuelo (sujeto al límite de tamaño del servidor).
-   - `<destino_local>`: ruta de fichero local, o un directorio (se conserva el nombre).
+   - `<ruta>`: ruta absoluta en ese filesystem, p.ej. `/data/kk/report.json` (en S3,
+     relativa a la raíz del bucket: `/landing/a.csv`). Un directorio se descarga como zip construido al vuelo (sujeto al límite de tamaño del servidor).
+   - `<destino_local>`: ruta de fichero local, o un directorio (se conserva el nombre remoto).
 
 ## Salida esperada
 
 ```
-Downloaded /data/kk/report.json -> /root/project/report.json (6521 bytes)
+Downloaded /data/kk/report.json [hdfs1.s000001-datastores:HDFS] -> /root/project/report.json (6521 bytes)
 ```
 
 ## Errores
 
-- `401/403` — la identidad del certificado no está autorizada para esa ruta (Gosec).
+- `401/403` — la identidad del certificado no está autorizada para esa ruta (Gosec; en
+  S3 se comprueba contra `/<bucket><ruta>`).
+- No encontrado — revisa el filesystem antes que la ruta: el fichero puede estar en otro.
 - `404`/`500` — ruta no encontrada o error de filesystem. Muestra el código HTTP + cuerpo verbatim.
 - Raíces restringidas (`/extensions`, `/mockData`, `/backups`, `/mlProjectModelArtifacts`,
   `/mlProjectExecutionsArtifacts`) se rechazan en cliente antes de la llamada.

@@ -1,6 +1,7 @@
-# Task: download a file from Rocket's HDFS
+# Task: download a file from Rocket
 
-Bring a file from Rocket's HDFS File Browser into the sandbox workspace.
+Bring a file from Rocket's File Browser — its HDFS or a configured S3 bucket — into the
+sandbox workspace.
 
 ## Endpoint (handled by the script)
 
@@ -22,36 +23,33 @@ Bring a file from Rocket's HDFS File Browser into the sandbox workspace.
 1. **Pre-check** — `ROCKET_API_URL` set and the client cert present (see `SKILL.md`
    prerequisites). If missing, stop and report which one.
 
-2. **Resolve the filesystem** if you don't know it:
-
-   ```bash
-   python3 scripts/rocket_file_browser.py filesystems
-   # e.g. [{"id":"hdfs1.s000001-datastores","type":"HDFS","defaultPath":"/user/..."}]
-   ```
-
-   When exactly one filesystem exists the script picks it automatically, so `--fs`
-   is optional. Pass `--fs <id>:<type>` only when several exist.
+2. **Filesystem** — use the one settled for this conversation; if none is yet, follow
+   `tasks/filesystems.md` (list, use the only one or ask the user). The file is looked
+   up in that filesystem only.
 
 3. **Download**:
 
    ```bash
    python3 scripts/rocket_file_browser.py download \
-     "<hdfs_path>" "<local_dest>" [--fs <id>:<type>]
+     "<path>" "<local_dest>" --fs <id>:<type>
    ```
 
-   - `<hdfs_path>`: absolute path in HDFS, e.g. `/data/kk/report.json`. A directory is
+   - `<path>`: absolute path in that filesystem, e.g. `/data/kk/report.json` (on S3,
+     relative to the bucket root: `/landing/a.csv`). A directory is
      downloaded as a zip built on the fly (subject to the server size limit).
-   - `<local_dest>`: a local file path, or a directory (the HDFS basename is kept).
+   - `<local_dest>`: a local file path, or a directory (the remote basename is kept).
 
 ## Expected output
 
 ```
-Downloaded /data/kk/report.json -> /root/project/report.json (6521 bytes)
+Downloaded /data/kk/report.json [hdfs1.s000001-datastores:HDFS] -> /root/project/report.json (6521 bytes)
 ```
 
 ## Errors
 
-- `401/403` — the user's certificate identity is not authorized for that path (Gosec).
+- `401/403` — the user's certificate identity is not authorized for that path (Gosec;
+  on S3 the check is against `/<bucket><path>`).
+- Not found — check the filesystem before the path: the file may live on another one.
 - `404`/`500` — path not found or filesystem error. Surface the HTTP code + body verbatim.
 - Restricted roots (`/extensions`, `/mockData`, `/backups`, `/mlProjectModelArtifacts`,
   `/mlProjectExecutionsArtifacts`) are refused client-side before the call.

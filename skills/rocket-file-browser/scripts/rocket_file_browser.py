@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-rocket_file_browser.py — Move files between the Stratio sandbox and Rocket's HDFS
-File Browser, authenticating with the sandbox client certificate over mTLS.
+rocket_file_browser.py — Move files between the Stratio sandbox and Rocket's File
+Browser (HDFS and S3 filesystems), authenticating with the sandbox client
+certificate over mTLS.
 
 The sandbox already mounts a client X.509 certificate whose CN is the operating
 user (e.g. ``s000001-user``); Rocket runs in ``Oauth2Mutual`` mode and exposes a
@@ -24,13 +25,26 @@ ENVIRONMENT
 
 USAGE
     python3 rocket_file_browser.py filesystems
-    python3 rocket_file_browser.py download <hdfs_path> <local_dest> [--fs id:type]
-    python3 rocket_file_browser.py upload   <local_src> <hdfs_dir>   [--fs id:type]
-                                                                     [--legacy]
+    python3 rocket_file_browser.py download <path> <local_dest> [--fs id:type]
+    python3 rocket_file_browser.py upload   <local_src> <dir>   [--fs id:type]
+                                                                [--legacy]
 
-    --fs is "<id>:<type>" (e.g. hdfs1.s000001-datastores:HDFS). When omitted, the
-    target filesystem is auto-resolved via the ``filesystems`` endpoint: if exactly
-    one exists it is used; if several exist you must pass --fs explicitly.
+FILESYSTEMS
+    One Rocket can browse several filesystems at once: the internal metadata one
+    (the Hadoop ``fs.defaultFS``: type HDFS, S3 or HadoopFs) plus any number of S3
+    buckets configured in Rocket (type S3, id = bucket name). Rocket keeps no
+    "current" filesystem: every request names its own ``targetFilesystem``, so
+    switching filesystem means passing another --fs. Paths are relative to the
+    root of the chosen filesystem (for S3, the bucket), so the same path in two
+    filesystems names two different files.
+
+    --fs is "<id>:<type>" (e.g. hdfs1.s000001-datastores:HDFS or my-bucket:S3) and
+    must match an entry of the ``filesystems`` listing (the type is matched
+    case-insensitively and sent as Rocket spells it). When omitted, it is
+    auto-resolved only if exactly one filesystem exists; with several, the call
+    is refused and the options are listed — the script never picks one for you.
+    Operations act inside one filesystem: copying or moving across filesystems is
+    a download followed by an upload.
 
 UPLOAD
     Since Rocket 4.x (ROCK #5384) the File Browser takes an upload in a single
@@ -147,9 +161,10 @@ def show_http_error(resp: requests.Response) -> "None":
 def parse_fs(spec: "str | None") -> "dict | None":
     if not spec:
         return None
-    if ":" not in spec:
+    # The type never holds a colon, so split on the last one.
+    fs_id, sep, fs_type = spec.rpartition(":")
+    if not sep or not fs_id or not fs_type:
         fail(f"--fs must be '<id>:<type>', got {spec!r}")
-    fs_id, fs_type = spec.split(":", 1)
     return {"id": fs_id, "type": fs_type}
 
 
@@ -160,34 +175,62 @@ def list_filesystems() -> list:
     return resp.json()
 
 
-def resolve_target_fs(spec: "str | None") -> "dict | None":
-    """Explicit --fs wins; otherwise auto-resolve when exactly one FS exists."""
+def fs_label(fs: dict) -> str:
+    return f"{fs['id']}:{fs['type']}"
+
+
+def describe_filesystems(systems: list) -> str:
+    return "; ".join(
+        f"{fs_label(fs)} (defaultPath {fs.get('defaultPath') or '/'})" for fs in systems
+    )
+
+
+def resolve_target_fs(spec: "str | None") -> dict:
+    """The filesystem every request is sent to, always explicit in the payload.
+
+    An explicit --fs must be one Rocket lists — checked here so a typo fails with the
+    valid options instead of Rocket's bare "not found". Without --fs, only a single
+    listed filesystem is picked; with several the choice is the user's, never ours.
+    Omitting targetFilesystem is never an option: Rocket would silently fall back to
+    the internal metadata filesystem, which may not be the one the user means.
+    """
     explicit = parse_fs(spec)
-    if explicit is not None:
-        return explicit
     systems = list_filesystems()
+    if explicit is not None:
+        for fs in systems:
+            if fs["id"] == explicit["id"] and fs["type"].lower() == explicit["type"].lower():
+                return {"id": fs["id"], "type": fs["type"]}
+        options = describe_filesystems(systems) or "none"
+        fail(f"Filesystem {spec} is not available in Rocket's File Browser. Options: {options}")
+    if not systems:
+        fail(
+            "Rocket's File Browser lists no filesystem: the internal one is disabled "
+            "(fileBrowser.internalMetadataFilesystemEnabled) and no S3 bucket is configured."
+        )
     if len(systems) == 1:
         fs = systems[0]
-        log(f"Using filesystem {fs['id']} ({fs['type']})")
+        log(f"Using filesystem {fs_label(fs)} (the only one available)")
         return {"id": fs["id"], "type": fs["type"]}
-    ids = ", ".join(f"{fs['id']}:{fs['type']}" for fs in systems)
-    fail(f"Several filesystems available — pass --fs explicitly. Options: {ids}")
-    return None  # unreachable
+    fail(
+        "Several filesystems available — ask the user which one and pass it as --fs "
+        f"<id>:<type>. Options: {describe_filesystems(systems)}"
+    )
+    return {}  # unreachable
 
 
-def guard_path(hdfs_path: str) -> None:
+def guard_path(path: str) -> None:
     # Rocket builds every File Browser path through ProvidedPath.fromApi, which refuses
     # a relative one — in the body and, since ROCK #5384, in a query parameter too.
-    if not hdfs_path.startswith("/"):
-        fail(f"Path {hdfs_path!r} is not absolute; Rocket refuses relative File Browser paths.")
+    if not path.startswith("/"):
+        fail(f"Path {path!r} is not absolute; Rocket refuses relative File Browser paths.")
     # normpath collapses "..", "." and repeated slashes before the prefix check —
     # a raw string comparison would let e.g. "/data/../backups/x" slip through.
     # lstrip first: normpath keeps a *double* leading slash verbatim per POSIX, so
     # blindly prepending "/" to an already-absolute path (-> "//...") would dodge it.
-    norm = posixpath.normpath("/" + hdfs_path.lstrip("/"))
+    norm = posixpath.normpath("/" + path.lstrip("/"))
     for prefix in RESTRICTED_PREFIXES:
         if norm == prefix or norm.startswith(prefix + "/"):
-            fail(f"Path {hdfs_path} is under a Rocket-restricted root ({prefix}); refused.")
+            fail(f"Path {path} is under a Rocket-restricted root ({prefix}); refused.")
 
 
 def cmd_filesystems(_args: argparse.Namespace) -> None:
@@ -197,9 +240,7 @@ def cmd_filesystems(_args: argparse.Namespace) -> None:
 def cmd_download(args: argparse.Namespace) -> None:
     guard_path(args.hdfs_path)
     target_fs = resolve_target_fs(args.fs)
-    payload: dict = {"pathHdfs": args.hdfs_path}
-    if target_fs is not None:
-        payload["targetFilesystem"] = target_fs
+    payload = _with_fs({"pathHdfs": args.hdfs_path}, target_fs)
 
     dest = Path(args.local_dest)
     if dest.is_dir():
@@ -219,7 +260,7 @@ def cmd_download(args: argparse.Namespace) -> None:
             if chunk:
                 fh.write(chunk)
                 written += len(chunk)
-    print(f"Downloaded {args.hdfs_path} -> {dest} ({written} bytes)")
+    print(f"Downloaded {args.hdfs_path} [{fs_label(target_fs)}] -> {dest} ({written} bytes)")
 
 
 def cmd_upload(args: argparse.Namespace) -> None:
@@ -235,10 +276,11 @@ def cmd_upload(args: argparse.Namespace) -> None:
 
     # One request: the destination is authorized before a byte is accepted and the
     # bytes are streamed into the filesystem, never onto the Rocket pod's disk.
-    params = {"path": args.hdfs_dir}
-    if target_fs is not None:
-        params["filesystemId"] = target_fs["id"]
-        params["filesystemType"] = target_fs["type"]
+    params = {
+        "path": args.hdfs_dir,
+        "filesystemId": target_fs["id"],
+        "filesystemType": target_fs["type"],
+    }
 
     with open(src, "rb") as fh:
         resp = request(
@@ -257,7 +299,7 @@ def cmd_upload(args: argparse.Namespace) -> None:
     if not resp.ok:
         show_http_error(resp)
     stored = response_text(resp) or f"{args.hdfs_dir}/{src.name}"
-    print(f"Uploaded {src} -> {stored}")
+    print(f"Uploaded {src} -> {stored} [{fs_label(target_fs)}]")
 
 
 def response_text(resp: requests.Response) -> str:
@@ -272,7 +314,7 @@ def response_text(resp: requests.Response) -> str:
     return resp.text.strip().strip('"')
 
 
-def upload_two_phase(src: Path, hdfs_dir: str, target_fs: "dict | None") -> None:
+def upload_two_phase(src: Path, hdfs_dir: str, target_fs: dict) -> None:
     """Legacy flow, kept for Rocket versions without /fileBrowser/upload."""
     # Phase 1 — push the bytes to a temp path on the Rocket pod.
     with open(src, "rb") as fh:
@@ -286,10 +328,8 @@ def upload_two_phase(src: Path, hdfs_dir: str, target_fs: "dict | None") -> None
     docker_path = response_text(resp)
     log(f"Phase 1 OK: staged at {docker_path}")
 
-    # Phase 2 — commit the staged file into HDFS. Retries on HTTP 420.
-    payload = {"pathHdfs": hdfs_dir, "dockerPath": docker_path}
-    if target_fs is not None:
-        payload["targetFilesystem"] = target_fs
+    # Phase 2 — commit the staged file into the filesystem. Retries on HTTP 420.
+    payload = _with_fs({"pathHdfs": hdfs_dir, "dockerPath": docker_path}, target_fs)
 
     for attempt in range(1, UPLOAD_COMMIT_RETRIES + 1):
         resp = request(
@@ -304,14 +344,13 @@ def upload_two_phase(src: Path, hdfs_dir: str, target_fs: "dict | None") -> None
             continue
         if not resp.ok:
             show_http_error(resp)
-        print(f"Uploaded {src} -> {hdfs_dir}/{src.name}")
+        print(f"Uploaded {src} -> {hdfs_dir}/{src.name} [{fs_label(target_fs)}]")
         return
     fail(f"Upload commit kept returning HTTP 420 after {UPLOAD_COMMIT_RETRIES} attempts.")
 
 
-def _with_fs(payload: dict, target_fs: "dict | None") -> dict:
-    if target_fs is not None:
-        payload["targetFilesystem"] = target_fs
+def _with_fs(payload: dict, target_fs: dict) -> dict:
+    payload["targetFilesystem"] = target_fs
     return payload
 
 
@@ -326,6 +365,7 @@ def _post_boolean(method: str, path: str, payload: dict, success_msg: str) -> No
 def cmd_ls(args: argparse.Namespace) -> None:
     guard_path(args.hdfs_path)
     target_fs = resolve_target_fs(args.fs)
+    log(f"Listing {args.hdfs_path} [{fs_label(target_fs)}]")
     resp = request(
         "POST", "/fileBrowser/findByPath",
         headers={"Content-Type": "application/json", "Accept": "application/json"},
@@ -342,7 +382,7 @@ def cmd_mkdir(args: argparse.Namespace) -> None:
     _post_boolean(
         "POST", "/fileBrowser/createDir",
         _with_fs({"pathHdfs": args.hdfs_path}, target_fs),
-        f"Created directory {args.hdfs_path}",
+        f"Created directory {args.hdfs_path} [{fs_label(target_fs)}]",
     )
 
 
@@ -353,7 +393,7 @@ def cmd_rm(args: argparse.Namespace) -> None:
     _post_boolean(
         "DELETE", "/fileBrowser/delete",
         _with_fs({"files": [{"path": p} for p in args.hdfs_paths]}, target_fs),
-        f"Deleted: {', '.join(args.hdfs_paths)}",
+        f"Deleted: {', '.join(args.hdfs_paths)} [{fs_label(target_fs)}]",
     )
 
 
@@ -364,7 +404,7 @@ def cmd_cp(args: argparse.Namespace) -> None:
     _post_boolean(
         "PUT", "/fileBrowser/copy",
         _with_fs({"files": [{"path": args.src, "newPath": args.dst}]}, target_fs),
-        f"Copied {args.src} -> {args.dst}",
+        f"Copied {args.src} -> {args.dst} [{fs_label(target_fs)}]",
     )
 
 
@@ -375,7 +415,7 @@ def cmd_mv(args: argparse.Namespace) -> None:
     _post_boolean(
         "PUT", "/fileBrowser/update",
         _with_fs({"files": [{"path": args.src, "newPath": args.dst}]}, target_fs),
-        f"Moved {args.src} -> {args.dst}",
+        f"Moved {args.src} -> {args.dst} [{fs_label(target_fs)}]",
     )
 
 
@@ -405,7 +445,8 @@ def cmd_compress(args: argparse.Namespace) -> None:
             },
             target_fs,
         ),
-        f"Compressed {len(args.sources)} item(s) -> {args.archive}{extension} ({args.codec})",
+        f"Compressed {len(args.sources)} item(s) -> {args.archive}{extension} ({args.codec}) "
+        f"[{fs_label(target_fs)}]",
     )
 
 
@@ -422,55 +463,64 @@ def cmd_extract(args: argparse.Namespace) -> None:
     _post_boolean(
         "PUT", "/fileBrowser/extract",
         _with_fs({"files": [entry]}, target_fs),
-        f"Extracted {args.archive} -> {dest}",
+        f"Extracted {args.archive} -> {dest} [{fs_label(target_fs)}]",
     )
+
+
+FS_HELP = (
+    "Target filesystem as '<id>:<type>', from the 'filesystems' listing. "
+    "Optional only when Rocket lists exactly one filesystem."
+)
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Rocket File Browser client (mTLS).")
     sub = parser.add_subparsers(dest="command", required=True)
 
-    sub.add_parser("filesystems", help="List available filesystems (id/type/defaultPath).")
-
-    p_dl = sub.add_parser("download", help="Download an HDFS file to the local workspace.")
-    p_dl.add_argument("hdfs_path")
-    p_dl.add_argument("local_dest", help="Local file path or directory.")
-    p_dl.add_argument("--fs", help="Target filesystem as '<id>:<type>'.")
-
-    p_up = sub.add_parser("upload", help="Upload a local file into an HDFS directory.")
-    p_up.add_argument("local_src")
-    p_up.add_argument("hdfs_dir", help="Target HDFS directory.")
-    p_up.add_argument("--fs", help="Target filesystem as '<id>:<type>'.")
-    p_up.add_argument(
-        "--legacy", action="store_true",
-        help="Force the legacy two-request upload (uploadLocalFile + putLocalFileToHdfs).",
+    sub.add_parser(
+        "filesystems",
+        help="List the filesystems Rocket's File Browser can reach (id/type/defaultPath).",
     )
 
-    p_ls = sub.add_parser("ls", help="List the contents of an HDFS path.")
-    p_ls.add_argument("hdfs_path")
-    p_ls.add_argument("--fs", help="Target filesystem as '<id>:<type>'.")
+    p_dl = sub.add_parser("download", help="Download a File Browser file to the local workspace.")
+    p_dl.add_argument("hdfs_path", metavar="path")
+    p_dl.add_argument("local_dest", help="Local file path or directory.")
+    p_dl.add_argument("--fs", help=FS_HELP)
 
-    p_mkdir = sub.add_parser("mkdir", help="Create a directory in HDFS.")
-    p_mkdir.add_argument("hdfs_path")
-    p_mkdir.add_argument("--fs", help="Target filesystem as '<id>:<type>'.")
+    p_up = sub.add_parser("upload", help="Upload a local file into a File Browser directory.")
+    p_up.add_argument("local_src")
+    p_up.add_argument("hdfs_dir", metavar="dir", help="Target directory (absolute, in the chosen filesystem).")
+    p_up.add_argument("--fs", help=FS_HELP)
+    p_up.add_argument(
+        "--legacy", action="store_true",
+        help="Force the legacy two-request upload (uploadLocalFile + putLocalFileToHadoopFs).",
+    )
 
-    p_rm = sub.add_parser("rm", help="Delete one or more HDFS files/directories.")
-    p_rm.add_argument("hdfs_paths", nargs="+", help="One or more HDFS paths.")
-    p_rm.add_argument("--fs", help="Target filesystem as '<id>:<type>'.")
+    p_ls = sub.add_parser("ls", help="List the contents of a File Browser path.")
+    p_ls.add_argument("hdfs_path", metavar="path")
+    p_ls.add_argument("--fs", help=FS_HELP)
 
-    p_cp = sub.add_parser("cp", help="Copy an HDFS file/directory to a new path.")
+    p_mkdir = sub.add_parser("mkdir", help="Create a directory.")
+    p_mkdir.add_argument("hdfs_path", metavar="path")
+    p_mkdir.add_argument("--fs", help=FS_HELP)
+
+    p_rm = sub.add_parser("rm", help="Delete one or more files/directories.")
+    p_rm.add_argument("hdfs_paths", metavar="path", nargs="+", help="One or more absolute paths.")
+    p_rm.add_argument("--fs", help=FS_HELP)
+
+    p_cp = sub.add_parser("cp", help="Copy a file/directory to a new path in the same filesystem.")
     p_cp.add_argument("src")
     p_cp.add_argument("dst")
-    p_cp.add_argument("--fs", help="Target filesystem as '<id>:<type>'.")
+    p_cp.add_argument("--fs", help=FS_HELP)
 
-    p_mv = sub.add_parser("mv", help="Move/rename an HDFS file/directory.")
+    p_mv = sub.add_parser("mv", help="Move/rename a file/directory in the same filesystem.")
     p_mv.add_argument("src")
     p_mv.add_argument("dst")
-    p_mv.add_argument("--fs", help="Target filesystem as '<id>:<type>'.")
+    p_mv.add_argument("--fs", help=FS_HELP)
 
-    p_cmp = sub.add_parser("compress", help="Compress HDFS files into a new archive.")
-    p_cmp.add_argument("archive", help="Target compressed file path in HDFS.")
-    p_cmp.add_argument("sources", nargs="+", help="One or more HDFS paths to compress.")
+    p_cmp = sub.add_parser("compress", help="Compress files into a new archive.")
+    p_cmp.add_argument("archive", help="Target compressed file path.")
+    p_cmp.add_argument("sources", nargs="+", help="One or more paths to compress.")
     p_cmp.add_argument(
         "--codec",
         default="Zip",
@@ -480,15 +530,15 @@ def build_parser() -> argparse.ArgumentParser:
             f"{', '.join(ARCHIVE_CODECS)}."
         ),
     )
-    p_cmp.add_argument("--fs", help="Target filesystem as '<id>:<type>'.")
+    p_cmp.add_argument("--fs", help=FS_HELP)
 
-    p_ext = sub.add_parser("extract", help="Extract an HDFS archive.")
-    p_ext.add_argument("archive", help="HDFS archive path to extract.")
+    p_ext = sub.add_parser("extract", help="Extract an archive.")
+    p_ext.add_argument("archive", help="Archive path to extract.")
     p_ext.add_argument(
         "--dest",
-        help="Target HDFS directory (created if missing). Defaults to the archive's directory.",
+        help="Target directory (created if missing). Defaults to the archive's directory.",
     )
-    p_ext.add_argument("--fs", help="Target filesystem as '<id>:<type>'.")
+    p_ext.add_argument("--fs", help=FS_HELP)
     return parser
 
 

@@ -1,7 +1,12 @@
-# Tarea: mover/renombrar dentro de HDFS
+# Tarea: mover/renombrar dentro de un filesystem
 
-Mueve o renombra un fichero/directorio HDFS (semántica de move). **Confirma con el usuario
-antes** — toda ruta que apuntaba al original deja de resolverse.
+Mueve o renombra un fichero/directorio **en el mismo filesystem** (semántica de move).
+**Confirma con el usuario antes** — toda ruta que apuntaba al original deja de resolverse.
+
+Rocket no tiene movimiento entre filesystems: mover de un filesystem a otro es descarga +
+subida + `rm` del origen, según `tasks/filesystems.md` §Mover datos entre filesystems.
+En S3 un move es copia + borrado, no un renombrado atómico: lento en árboles grandes, y un
+movimiento interrumpido puede dejar ambas copias — dilo al confirmar un directorio grande.
 
 ## Endpoint (lo gestiona el script)
 
@@ -15,11 +20,11 @@ antes** — toda ruta que apuntaba al original deja de resolverse.
 ## Procedimiento
 
 1. **Pre-check** — ver `SKILL.md`.
-2. **Confirma** el origen y el destino exactos con el usuario.
-3. **Ejecuta** (`--fs` opcional si solo hay un filesystem):
+2. **Confirma** el origen, el destino y el filesystem exactos con el usuario.
+3. **Ejecuta** (`--fs` = el filesystem fijado con `tasks/filesystems.md`):
 
    ```bash
-   python3 scripts/rocket_file_browser.py mv "<src>" "<dst>" [--fs <id>:<type>]
+   python3 scripts/rocket_file_browser.py mv "<src>" "<dst>" --fs <id>:<type>
    ```
 
 ## Errores

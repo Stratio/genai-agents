@@ -1,9 +1,10 @@
 # rocket-file-browser
 
-Shared skill that moves files between the Stratio sandbox and **Rocket's HDFS File
-Browser** (`/fileBrowser/*`), so an agent can pull a dataset/document out of
-Rocket into the workspace or push a generated file back into HDFS — without the manual
-roundtrip through the Rocket web UI.
+Shared skill that moves files between the Stratio sandbox and **Rocket's File
+Browser** (`/fileBrowser/*`) — on any filesystem it exposes: its HDFS and the S3 buckets
+configured in it — so an agent can pull a dataset/document out of Rocket into the
+workspace or push a generated file back — without the manual roundtrip through the
+Rocket web UI.
 
 Designed as a **router** (like `cowork-api`): a minimal `SKILL.md` indexes the
 capabilities and points to one self-contained file under `tasks/` per capability. A
@@ -11,11 +12,15 @@ single Python client, `scripts/rocket_file_browser.py`, does the HTTP work.
 
 ## What it does
 
+- **filesystems** — `GET /fileBrowser/getFilesystems`, plus the procedure to pick or
+  switch the target filesystem (`tasks/filesystems.md`). See
+  [Several filesystems](#several-filesystems).
+
 - **download** — `POST /fileBrowser/download`, streaming the raw bytes to a local path.
 - **upload** — one request: `POST /fileBrowser/upload?path=<dir>` (multipart `binary`),
   authorized before any byte is accepted and streamed straight into the filesystem; an
   existing name is refused. Falls back to the legacy two-request flow
-  (`uploadLocalFile` + `putLocalFileToHdfs`, retrying HTTP 420) on a Rocket that does
+  (`uploadLocalFile` + `putLocalFileToHadoopFs`, retrying HTTP 420) on a Rocket that does
   not serve it, or with `--legacy`.
 - **ls** — `POST /fileBrowser/findByPath` (directory listing / file stat).
 - **cp** / **mv** — `PUT /fileBrowser/copy` / `PUT /fileBrowser/update`.
@@ -26,7 +31,24 @@ single Python client, `scripts/rocket_file_browser.py`, does the HTTP work.
   a single file) / `PUT /fileBrowser/extract` (archive kind detected by content, not by
   extension; destination mandatory, defaulted by the script to the archive's directory).
   Both stream through the server without touching the pod's disk.
-- **filesystems** helper — `GET /fileBrowser/getFilesystems` to discover `id`/`type`.
+
+## Several filesystems
+
+A Rocket's File Browser can reach several filesystems at once: the internal metadata one
+(Rocket's Hadoop `fs.defaultFS` — `HDFS`, `S3` or `HadoopFs`; hidden when
+`fileBrowser.internalMetadataFilesystemEnabled=false`) plus every S3 bucket an admin
+configured (`type` `S3`, `id` = bucket name). Available in Rocket 3.6 and 4.x.
+
+- Rocket keeps no current filesystem: every request carries its own `targetFilesystem`
+  (`filesystemId`/`filesystemType` query parameters on `upload`). Without it Rocket
+  silently uses the internal one, so the script **always sends it**.
+- `--fs <id>:<type>` is validated against the listing (type case-insensitive). Omitted,
+  it is resolved only when exactly one filesystem exists; with several the script stops
+  and lists them, and the agent asks the user. The choice is kept for the conversation.
+- Paths are relative to the filesystem root (the bucket, on S3), and operations never
+  cross filesystems: moving data between them is download + upload through the sandbox.
+- On S3, Gosec authorizes `/<bucket><path>` and `mv` is copy + delete.
+- Every success line ends in `[<id>:<type>]`, so the agent always reports where it acted.
 
 ## Authentication & identity
 
@@ -75,7 +97,8 @@ pod search domain): `https://<rocket-instance>.<rocket-namespace>:7777`
 - Relative paths are refused client-side: Rocket's `ProvidedPath.fromApi` rejects them
   in the body and, since ROCK #5384, in query parameters too.
 - Reserved roots (`/extensions`, `/mockData`, `/backups`, `/mlProjectModelArtifacts`,
-  `/mlProjectExecutionsArtifacts`) are refused client-side before any call.
+  `/mlProjectExecutionsArtifacts`) are refused client-side before any call, on every
+  filesystem (Rocket applies them to S3 too).
 - `download` uses the POST variant. The GET twin now also takes `filesystemId` /
   `filesystemType` (and still the legacy `pathHdfs`) and authorizes identically — it
   exists so a browser can save a file by navigating to it.
