@@ -53,9 +53,27 @@ paired with a sturdy book serif for the body.
 
 - **Motion budget**: `restrained` (slow reveals, never jumpy)
 - **Border radius**: `1px`
-- **Dark mode variant**: not shipped (luxury themes rarely go dark —
-  the cream-page warmth is the point)
+- **Dark mode variant**: see [Dark mode](#dark-mode) (luxury themes rarely go dark)
 - **Chart sequential**: base color `#8b6f47`
+
+## Dark mode
+
+| Token | Hex |
+|---|---|
+| bg | #161311 |
+| bg_alt | #231e1b |
+| ink | #e9e8e7 |
+| muted | #938d85 |
+| rule | #37312d |
+| primary | #9e826d |
+| accent | #a28254 |
+| state_ok | #5f9748 |
+| state_warn | #a9822d |
+| state_danger | #cd6767 |
+| on_primary | #161311 |
+| on_accent | #161311 |
+
+Chart categorical: `#765f4d`, `#8b6f47`, `#4d7c3a`, `#6e5981`, `#a17c2a`, `#7a6f63`
 
 ## Tone family
 

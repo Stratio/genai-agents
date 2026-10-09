@@ -54,7 +54,7 @@ referencias.
 
 - **Motion budget**: `minimal`
 - **Border radius**: `0px`
-- **Dark mode variant**: no incluido
+- **Dark mode variant**: ver [Dark mode](#dark-mode)
 - **Chart sequential**: color base `#312e81`
 
 ## Print variant (para pdf-writer)
@@ -70,6 +70,25 @@ papel cálido en vez de blanco puro:
 | accent | #312e81 | sin cambios — índigo profundo imprime bien como marca contenida |
 
 Los márgenes en ediciones impresas deberían ser generosos (≥ 2,5 cm).
+
+## Dark mode
+
+| Token | Hex |
+|---|---|
+| bg | #0f0e18 |
+| bg_alt | #181626 |
+| ink | #e6e6ea |
+| muted | #868a92 |
+| rule | #29273c |
+| primary | #7d7ac9 |
+| accent | #7d7ac9 |
+| state_ok | #24944f |
+| state_warn | #d2601b |
+| state_danger | #d95656 |
+| on_primary | #0f0e18 |
+| on_accent | #0f0e18 |
+
+Chart categorical: `#5854bc`, `#616161`, `#0e7490`, `#9f4610`, `#862dcf`, `#19713b`
 
 ## Tone family
 

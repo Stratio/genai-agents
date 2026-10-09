@@ -46,8 +46,27 @@ para storytelling, comunicaciones y contenido de marketing.
 - **Motion budget**: `expressive` (el tono de revista invita a
   movimiento considerado: reveals deliberados, no fundidos mecánicos)
 - **Border radius**: `0px` (la geometría editorial tiene bordes duros)
-- **Dark mode variant**: no incluido
+- **Dark mode variant**: ver [Dark mode](#dark-mode)
 - **Chart sequential**: color base `#8a3324`
+
+## Dark mode
+
+| Token | Hex |
+|---|---|
+| bg | #18100e |
+| bg_alt | #261a16 |
+| ink | #eae7e6 |
+| muted | #908c89 |
+| rule | #3c2b27 |
+| primary | #cc6957 |
+| accent | #d97706 |
+| state_ok | #1b994a |
+| state_warn | #d8650e |
+| state_danger | #da5a5a |
+| on_primary | #18100e |
+| on_accent | #18100e |
+
+Chart categorical: `#a8402e`, `#d97706`, `#047857`, `#2e56d7`, `#aa401c`, `#6b7280`
 
 ## Tone family
 

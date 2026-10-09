@@ -46,8 +46,27 @@ communications and marketing content.
 - **Motion budget**: `expressive` (the magazine tone invites considered
   motion: deliberate reveals, not mechanical fades)
 - **Border radius**: `0px` (editorial geometry is hard-edged)
-- **Dark mode variant**: not shipped
+- **Dark mode variant**: see [Dark mode](#dark-mode)
 - **Chart sequential**: base color `#8a3324`
+
+## Dark mode
+
+| Token | Hex |
+|---|---|
+| bg | #18100e |
+| bg_alt | #261a16 |
+| ink | #eae7e6 |
+| muted | #908c89 |
+| rule | #3c2b27 |
+| primary | #cc6957 |
+| accent | #d97706 |
+| state_ok | #1b994a |
+| state_warn | #d8650e |
+| state_danger | #da5a5a |
+| on_primary | #18100e |
+| on_accent | #18100e |
+
+Chart categorical: `#a8402e`, `#d97706`, `#047857`, `#2e56d7`, `#aa401c`, `#6b7280`
 
 ## Tone family
 

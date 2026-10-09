@@ -52,7 +52,7 @@ italic of the same family carries the role of captions and references.
 
 - **Motion budget**: `minimal`
 - **Border radius**: `0px`
-- **Dark mode variant**: not shipped
+- **Dark mode variant**: see [Dark mode](#dark-mode)
 - **Chart sequential**: base color `#312e81`
 
 ## Print variant (for pdf-writer)
@@ -68,6 +68,25 @@ instead of pure white:
 | accent | #312e81 | unchanged — deep indigo prints well as a restrained mark |
 
 Margins in print editions should be on the generous side (≥ 2.5 cm).
+
+## Dark mode
+
+| Token | Hex |
+|---|---|
+| bg | #0f0e18 |
+| bg_alt | #181626 |
+| ink | #e6e6ea |
+| muted | #868a92 |
+| rule | #29273c |
+| primary | #7d7ac9 |
+| accent | #7d7ac9 |
+| state_ok | #24944f |
+| state_warn | #d2601b |
+| state_danger | #d95656 |
+| on_primary | #0f0e18 |
+| on_accent | #0f0e18 |
+
+Chart categorical: `#5854bc`, `#616161`, `#0e7490`, `#9f4610`, `#862dcf`, `#19713b`
 
 ## Tone family
 

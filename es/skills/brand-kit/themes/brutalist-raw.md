@@ -56,9 +56,27 @@ la firma tipográfica del tema.
 
 - **Motion budget**: `minimal` (el brutalismo no anima)
 - **Border radius**: `0px` (bordes duros, siempre)
-- **Dark mode variant**: `bg` = `#111111`, `ink` = `#fafafa`,
-  mantener `primary` y `accent`
+- **Dark mode variant**: ver [Dark mode](#dark-mode)
 - **Chart sequential**: color base `#111111`
+
+## Dark mode
+
+| Token | Hex |
+|---|---|
+| bg | #111111 |
+| bg_alt | #1c1c1c |
+| ink | #fafafa |
+| muted | #8c8c8c |
+| rule | #303030 |
+| primary | #848484 |
+| accent | #ff3d00 |
+| state_ok | #16a34a |
+| state_warn | #ff8c00 |
+| state_danger | #e05555 |
+| on_primary | #111111 |
+| on_accent | #111111 |
+
+Chart categorical: `#606060`, `#ff3d00`, `#616161`, `#16a34a`, `#ff8c00`, `#737373`
 
 ## Tone family
 

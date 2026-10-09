@@ -116,10 +116,11 @@ conversation with the rest of the artifact.
 - `motion_budget` — `"minimal"` / `"restrained"` / `"expressive"`. Used
   by web-craft for transitions and pptx animations.
 - `radius` — border-radius in pixels. Used by web-craft.
-- `dark_mode` — subset providing dark-mode `primary` / `ink` / `bg` /
-  `accent`. Used by web-craft when a dark variant is requested. If the
-  theme omits `dark_mode` and a dark variant is needed, derive it by
-  inverting `bg` ↔ `ink` while keeping `primary` / `accent`.
+- `dark_mode` — the color tokens again for dark mode, plus `on_primary` /
+  `on_accent` (text on those fills) and a dark chart palette, in the
+  theme's `## Dark mode` section. Text reaches 4.5:1 on `bg` and
+  `bg_alt`, chart colors 3:1. A custom theme without one lightens
+  `primary`, `accent` and the states (same hue) until they reach that.
 - `chart_sequential` — base color for sequential / heatmap scales.
 - `print` — subset of tokens tuned for printed PDF delivery (`paper`,
   `ink`, `rule`, optionally `accent`). Used by `pdf-writer`. Declare it

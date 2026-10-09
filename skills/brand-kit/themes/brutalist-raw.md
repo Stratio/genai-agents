@@ -55,9 +55,27 @@ typographic signature.
 
 - **Motion budget**: `minimal` (brutalism does not animate)
 - **Border radius**: `0px` (hard edges, always)
-- **Dark mode variant**: `bg` = `#111111`, `ink` = `#fafafa`, keep
-  `primary` and `accent`
+- **Dark mode variant**: see [Dark mode](#dark-mode)
 - **Chart sequential**: base color `#111111`
+
+## Dark mode
+
+| Token | Hex |
+|---|---|
+| bg | #111111 |
+| bg_alt | #1c1c1c |
+| ink | #fafafa |
+| muted | #8c8c8c |
+| rule | #303030 |
+| primary | #848484 |
+| accent | #ff3d00 |
+| state_ok | #16a34a |
+| state_warn | #ff8c00 |
+| state_danger | #e05555 |
+| on_primary | #111111 |
+| on_accent | #111111 |
+
+Chart categorical: `#606060`, `#ff3d00`, `#616161`, `#16a34a`, `#ff8c00`, `#737373`
 
 ## Tone family
 
