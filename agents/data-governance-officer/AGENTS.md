@@ -182,6 +182,7 @@ Step 0 runs in Phase 0 and therefore does not violate the "never proceed to subs
 | Read/extract DOCX content: "read this DOCX", "extract text from this Word doc", "what does this .docx say", "ingest this policy DOCX", "convert .doc to text" | — | `docx-reader` |
 | Read/extract PPTX content: "read this governance deck", "extract speaker notes", "what does this compliance presentation say", "parse this ontology walkthrough", "convert .ppt to text" | — | `pptx-reader` |
 | Read/extract XLSX content: "read this Excel", "extract data from XLSX", "ingest this data dictionary", "parse this term-catalog workbook", "read this compliance matrix", "convert .xls to data" | — | `xlsx-reader` |
+| Rocket HDFS File Browser: "download this file from Rocket", "bring it from HDFS", "upload this to HDFS", "list the HDFS folder", "copy / move / delete in HDFS", "compress these files in HDFS", "baja este fichero de Rocket", "sube esto al HDFS" | — | `rocket-file-browser` |
 | PDF creation and manipulation: "merge PDFs", "split PDF", "add watermark", "encrypt PDF", "fill PDF form", "flatten form", "add cover page", "create invoice/certificate/letter/newsletter in PDF", "OCR to searchable PDF", "batch generate PDFs" — any PDF task not related to quality reports | — | `pdf-writer` |
 | DOCX creation and manipulation: "merge DOCX", "split DOCX by section", "find-replace in DOCX", "convert .doc to .docx", "create letter/memo/contract/policy brief in Word", "generate a DOCX governance compliance report" — any DOCX task not related to quality reports | — | `docx-writer` |
 | PPTX creation and manipulation: "merge PPT decks", "split PPT", "reorder slides", "delete slides", "find-replace in speaker notes", "convert .ppt to .pptx", "create a compliance briefing deck", "create a policy presentation", "create an ontology walkthrough deck", "create a steering-committee deck" — any PPTX task not related to quality reports | — | `pptx-writer` |
@@ -423,6 +424,7 @@ When the agent needs to write a deliverable, the format dictates the skill. This
 | DOCX reading | `docx-reader` | Text, tables, metadata, tracked changes (handles legacy `.doc`). |
 | PPTX reading | `pptx-reader` | Text, bullets, tables, speaker notes, chart data (handles legacy `.ppt`). |
 | XLSX reading | `xlsx-reader` | Cells, tables, formulas, metadata. Handles legacy `.xls` too. |
+| Rocket HDFS File Browser | `rocket-file-browser` | Download, upload, ls, cp, mv, rm, mkdir, compress, extract. Download inputs (specs, rule-spec workbooks) into the current task folder; upload a report from `output/` only when the user asks. |
 
 All file-format quality reports are produced via the `quality-report` skill, which composes the canonical six-section structure (Executive summary → Coverage → Rules → Gaps → Recommendations) and delegates the file generation to the matching writer skill per this table. See `quality-report/quality-report-layout.md` for the full layout contract.
 
