@@ -99,8 +99,9 @@ _pack_one_skill() {
 }
 
 if [[ -n "$SKILL_FILTER" ]]; then
-  # Individual mode: files directly at the staging root
-  _pack_one_skill "$MONOREPO_ROOT/skills/$SKILL_FILTER" "$STAGING"
+  # Individual mode: the skill in its own subfolder too. genai-api's importer keeps only
+  # the root-level files of a SKILL.md at the ZIP root, so a flat ZIP loses tasks/, scripts/…
+  _pack_one_skill "$MONOREPO_ROOT/skills/$SKILL_FILTER" "$STAGING/$SKILL_FILTER"
 else
   # Bulk mode: each skill in its own subfolder
   for skill_dir in "$MONOREPO_ROOT/skills"/*/; do
@@ -150,20 +151,20 @@ if [[ "$REFS" -gt 0 ]]; then
   ERRORS=$((ERRORS + 1))
 fi
 
-# Verify SKILL.md — in bulk mode, check subfolders; in individual mode, check root
-if [[ -n "$SKILL_FILTER" ]]; then
-  if [[ ! -f "$STAGING/SKILL.md" ]]; then
-    echo "    ERROR: SKILL.md not found in the output" >&2
+# Verify SKILL.md in every skill subfolder (both modes nest each skill in its own folder)
+for skill_dir in "$STAGING"/*/; do
+  [[ -d "$skill_dir" ]] || continue
+  if [[ ! -f "$skill_dir/SKILL.md" ]]; then
+    echo "    ERROR: $(basename "$skill_dir") does not have SKILL.md" >&2
     ERRORS=$((ERRORS + 1))
   fi
-else
-  for skill_dir in "$STAGING"/*/; do
-    [[ -d "$skill_dir" ]] || continue
-    if [[ ! -f "$skill_dir/SKILL.md" ]]; then
-      echo "    ERROR: $(basename "$skill_dir") does not have SKILL.md" >&2
-      ERRORS=$((ERRORS + 1))
-    fi
-  done
+done
+
+# Nothing may sit at the ZIP root: a root SKILL.md makes genai-api drop the subfolders
+ROOT_FILES=$(find "$STAGING" -mindepth 1 -maxdepth 1 -type f 2>/dev/null | wc -l) || true
+if [[ "$ROOT_FILES" -gt 0 ]]; then
+  echo "    ERROR: $ROOT_FILES file(s) at the ZIP root (each skill must be in its own folder)" >&2
+  ERRORS=$((ERRORS + 1))
 fi
 
 # No `guides` manifest file should remain in skill subfolders
