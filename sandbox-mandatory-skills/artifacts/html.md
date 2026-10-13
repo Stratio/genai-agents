@@ -17,11 +17,15 @@ is what makes it safe to open, and it is not negotiable. In practice:
   `<meta name="viewport" content="width=device-width, initial-scale=1">` and `<title>`,
   then the CSS in `<head>` and the JavaScript in `<script>` blocks, written in the page
   or in files next to it (see [Multi-file](#multi-file)).
-- **Libraries and fonts from the public CDNs only.** Scripts, stylesheets and fonts
+- **Libraries and fonts from the installation's CDNs only.** Scripts, stylesheets and fonts
   can come from `cdnjs.cloudflare.com`, `cdn.jsdelivr.net`, `unpkg.com`,
   `cdn.plot.ly`, `cdn.tailwindcss.com`, `code.jquery.com`, `fonts.googleapis.com` and
   `fonts.gstatic.com`, over `https://`, and from nowhere else: anything else fails
-  silently and the person sees a broken page. Pin the version in every CDN URL. The
+  silently and the person sees a broken page. That is the default: when
+  `$ARTIFACT_CDN_SOURCES` is set, its origins replace the list. Set but empty, a page
+  loads nothing from outside the artifact: draw charts as inline SVG written by
+  `build.py`, use the theme's fallback font stack with no `<link>`, and leave the URL
+  table aside. Pin the version in every CDN URL. The
   page's own files are the artifact's (see [Multi-file](#multi-file)), and there is no
   `<iframe>` of another page. Data the page needs goes in the page, written there by
   `build.py`: never `fetch()` or `d3.json()` at run time. `build.py` reads files in the

@@ -86,7 +86,9 @@ an HTML page, `rendered`: whether a headless Chrome laid it out (`$ARTIFACT_CHRO
 rule: the viewer's limits (`form`, `new-tab`, `dialog`, `storage`, `download`,
 `iframe`, `host`, `pin`, `cdn`, `fetch`), the document (`document`, `title`,
 `dark-mode`, `colors`, `contrast`), the layout (`responsive`, `hero`, `reveal`, `svg`),
-content (`emoji`, `link`) and what the browser saw (`render`). For a Markdown entry only the title rule applies.
+content (`emoji`, `link`) and what the browser saw (`render`). `host` checks against
+`$ARTIFACT_CDN_SOURCES`, the CDNs this installation lets a page load from (set by the
+platform; empty means none), or the public CDNs of `html.md` where it is unset. For a Markdown entry only the title rule applies.
 
 `create` and `write` print the same findings on stderr as `check: …` lines, as warnings.
 On failure a command prints one line on stderr and exits non-zero. `list` and `recent`

@@ -528,6 +528,15 @@ def _loaded_urls(markup: str, css: str) -> list:
     return list(dict.fromkeys(urls))
 
 
+def _cdn_sources() -> list:
+    """The origins the viewer lets a page load from: $ARTIFACT_CDN_SOURCES, which genai-api
+    hands the sandbox (empty: none), or the public CDNs where it is unset."""
+    configured = os.environ.get("ARTIFACT_CDN_SOURCES")
+    if configured is None:
+        return [f"https://{host}" for host in _CDN_HOSTS]
+    return [source for source in configured.split() if source != "'none'"]
+
+
 _cdn_unreachable = False
 
 
@@ -1019,10 +1028,10 @@ def cmd_workdir(args):
 def cmd_check(args):
     """Check pages before `create` or `write`: what the viewer breaks, and the rules
     SKILL.md asks for. The first page is the entry: it is the one --title applies to.
-    Hosts are checked against the public CDNs the viewer allows, each library URL off
+    Hosts are checked against the CDNs the viewer allows, each library URL off
     the html.md table is asked for on its CDN when the sandbox can reach it, and when the
     sandbox has a headless Chrome each page is also rendered in a 400 px pane."""
-    sources = [f"https://{host}" for host in _CDN_HOSTS]
+    sources = _cdn_sources()
     chrome = None if args.no_render else _chrome()
     report = []
     for index, path in enumerate(args.files):
