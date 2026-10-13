@@ -496,6 +496,7 @@ class TestRecent:
                 last_access="edit",
                 last_accessed_at="2026-10-06T09:00:00",
                 last_conversation_id="ses_2f1c9a7b3ffeK0abc",
+                last_edit_conversation_id="ses_0a9b8c7d6e5fK1xyz",
             )
         ]
 
@@ -505,6 +506,7 @@ class TestRecent:
         assert printed["last_access"] == "edit"
         assert printed["last_accessed_at"] == "2026-10-06T09:00:00"
         assert printed["last_conversation_id"] == "ses_2f1c9a7b3ffeK0abc"
+        assert printed["last_edit_conversation_id"] == "ses_0a9b8c7d6e5fK1xyz"
         assert printed["public_url"] == _PUBLIC_URL
 
     def test_outside_a_project_says_so(self, cli, capsys, monkeypatch):

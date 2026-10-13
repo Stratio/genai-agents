@@ -764,7 +764,12 @@ def cmd_recent(args):
         _page(
             _call("GET", f"/v1/artifacts/accessed?{query}"),
             args,
-            extra=("last_access", "last_accessed_at", "last_conversation_id"),
+            extra=(
+                "last_access",
+                "last_accessed_at",
+                "last_conversation_id",
+                "last_edit_conversation_id",
+            ),
         )
     )
 

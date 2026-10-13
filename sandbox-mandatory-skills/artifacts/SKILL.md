@@ -147,7 +147,8 @@ guess. If nothing matches, say so; do not create a new artifact in its place.
 When they allude to one instead of naming it — "yesterday's report", "what we did
 last week", "the page we were editing" — run `recent` first: what this project read,
 edited or created in any conversation, last touched first (`last_conversation_id` is
-this one when it matches `$CONVERSATION_ID`). The one they mean is usually at the top;
+this one when it matches `$CONVERSATION_ID`; `last_edit_conversation_id` is where it was
+last edited or created, which a later read does not change). The one they mean is usually at the top;
 if not obvious, show the first few titles and ask. Only then `resolve` their words.
 
 ## Editing, not re-creating
