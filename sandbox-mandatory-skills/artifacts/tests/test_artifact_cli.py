@@ -6,7 +6,9 @@ import argparse
 import importlib.util
 import io
 import json
+import os
 import re
+import subprocess
 import urllib.error
 import urllib.parse
 from pathlib import Path
@@ -90,6 +92,7 @@ def cli(monkeypatch):
         return module.artifact
 
     monkeypatch.setattr(module, "_call", _fake_call)
+    monkeypatch.setattr(module, "_chrome", lambda: None)  # no render unless a test asks
     module.calls = calls
     return module
 
@@ -762,11 +765,9 @@ class TestSkillRules:
 
     def test_only_pages_and_the_files_they_use(self):
         text = self._skill()
-        assert (
-            "**Every file inside an artifact is a page (`.html`/`.htm`, `.md`/`.markdown`) or a\n"
-            "  file a page uses:**"
-        ) in text
-        assert "No `.pptx`, `.docx`, `.xlsx`, `.pdf`, CSV,\n  JSON, archives" in text
+        assert "**Every file inside an artifact is a page or a file a page uses**" in text
+        assert "**What an artifact can hold.** Pages (`.html`/`.htm`, `.md`/`.markdown`)" in text
+        assert "No `.pptx`, `.docx`, `.xlsx`, `.pdf`, CSV, JSON, archives" in text
 
     def test_permissions_only_for_owners(self):
         text = self._skill()
@@ -953,7 +954,7 @@ class TestCheck:
         assert _rules(cli._page_findings(_GOOD_PAGE, title="Informe Q3")) == ["title"]
         page = _GOOD_PAGE.replace("<title>Ventas Q3</title>", "<title>Brota — Landing</title>")
         assert _rules(cli._page_findings(page, title="Brota — Landing")) == ["title"]
-        page = _GOOD_PAGE.replace("<title>Ventas Q3</title>", "<title>Informe de ventas del tercer trimestre</title>")
+        page = _GOOD_PAGE.replace("<title>Ventas Q3</title>", "<title>Informe de ventas por tienda del tercer trimestre</title>")
         assert _rules(cli._page_findings(page)) == ["title"]
 
     @pytest.mark.parametrize(
@@ -1068,6 +1069,119 @@ class TestCheck:
         assert _put(cli)["payload"]["content"] == page.read_text()
 
 
+class TestCheckRoundTwo:
+    """What a second comparison found that the first check let through, and two false
+    positives."""
+
+    def _page(self, css="", body="", script=""):
+        page = _GOOD_PAGE.replace("</style>", css + "\n</style>").replace("<h1>Ventas", body + "<h1>Ventas")
+        return page.replace("</body>", f"<script>{script}</script></body>") if script else page
+
+    def test_false_positives_are_gone(self, cli):
+        assert cli._page_findings(self._page(css=".toc { max-height: 100vh; overflow: auto; }"), title="Ventas Q3") == []
+        page = self._page(script="// the user may confirm(it) later\nconst modalConfirm = 1;")
+        assert cli._page_findings(page, title="Ventas Q3") == []
+        assert _rules(cli._page_findings(self._page(css="header { min-height: 100svh; }"), title="Ventas Q3")) == ["hero"]
+
+    @pytest.mark.parametrize(
+        "kind",
+        [
+            {"body": '<svg viewBox="0 0 10 10"><rect fill="white"/></svg>'},
+            {"script": "new Chart(c, {options: {color: 'white'}});"},
+            {"css": ".card { border: 1px solid red; }"},
+        ],
+    )
+    def test_named_colors_are_colors(self, cli, kind):
+        assert _rules(cli._page_findings(self._page(**kind), title="Ventas Q3")) == ["colors"]
+
+    def test_data_is_never_fetched_at_run_time(self, cli):
+        for script in ('d3.json("https://cdn.jsdelivr.net/npm/es-atlas@0.6.0/es/provinces.json")', 'fetch("data.json")'):
+            assert _rules(cli._page_findings(self._page(script=script), title="Ventas Q3")) == ["fetch"], script
+
+    def test_emoji_in_a_diagram_label(self, cli):
+        page = self._page(body='<svg viewBox="0 0 40 20"><text font-size="14">📡 Sensor</text></svg>')
+        assert _rules(cli._page_findings(page, title="Ventas Q3")) == ["emoji"]
+
+    def test_svg_text_too_small(self, cli):
+        tiny = self._page(body='<svg viewBox="0 0 840 110"><text x="1" y="9" font-size="6.5">SENSOR</text></svg>')
+        [finding] = cli._page_findings(tiny, title="Ventas Q3")
+        assert finding["rule"] == "svg" and "6.5 px" in finding["message"]
+        css = ".org text.t { font-size: 13px; }"
+        wide = '<svg class="org" viewBox="0 0 700 300"><text class="t" x="1" y="20">Directora</text></svg>'
+        assert "400 px pane" in cli._page_findings(self._page(css=css, body=wide), title="Ventas Q3")[0]["message"]
+        fixed = self._page(css=css + " svg.org { min-width: 640px; }", body='<div class="scroll-x">' + wide + "</div>")
+        assert cli._page_findings(fixed, title="Ventas Q3") == []
+
+    def test_colored_text_and_control_outlines_reach_contrast(self, cli):
+        tokens = ":root { --state-ok: #22c55e; --rule: #e5e7eb; --state-warn: #d97706; }"
+        for css, needle in (
+            (".tag.ok { color: var(--state-ok); }", ".tag.ok (text --state-ok on --bg, light"),
+            (".badge { background: var(--state-warn); color: var(--on-primary); }", ".badge (text --on-primary on --state-warn"),
+            (".checklist .box { border: 1px solid var(--rule); }", ".checklist .box (outline --rule on --bg"),
+        ):
+            [finding] = cli._page_findings(self._page(css=tokens + css), title="Ventas Q3")
+            assert finding["rule"] == "contrast" and needle in finding["message"], css
+        # Text meant for a fill, on the fill an ancestor paints, is not this rule's business.
+        assert cli._page_findings(self._page(css="header p { color: var(--on-primary); }"), title="Ventas Q3") == []
+
+    def test_dark_tokens_come_from_the_dark_block(self, cli):
+        themes = cli._themes(_GOOD_PAGE)
+        assert themes["light"]["--ink"] == "#111111" and themes["dark"]["--ink"] == "#eeeeee"
+
+    def test_check_applies_the_title_rule_to_markdown(self, cli, tmp_path, capsys):
+        (tmp_path / "index.md").write_text("# Guía\n")
+        cli.main(["check", str(tmp_path / "index.md"), "--title", "Guía — de estilo"])
+        assert _rules(json.loads(capsys.readouterr().out)[0]["findings"]) == ["title"]
+
+
+class TestRender:
+    """When the sandbox has a headless Chrome, check also lays each page out in a 400 px pane."""
+
+    def test_check_renders_when_there_is_a_chrome(self, cli, tmp_path, monkeypatch, capsys):
+        (tmp_path / "index.html").write_text(_GOOD_PAGE)
+        monkeypatch.setattr(cli, "_url_exists", lambda url: True)
+        monkeypatch.setattr(cli, "_chrome", lambda: "/usr/bin/chromium")
+        rendered = []
+        monkeypatch.setattr(cli, "_render_findings", lambda path, chrome: rendered.append((path, chrome)) or [
+            {"rule": "render", "message": "In a 400 px pane the page scrolls sideways by 120 px"}])
+
+        cli.main(["check", str(tmp_path / "index.html"), "--title", "Ventas Q3"])
+
+        [report] = json.loads(capsys.readouterr().out)
+        assert rendered == [(str(tmp_path / "index.html"), "/usr/bin/chromium")]
+        assert report["rendered"] is True and _rules(report["findings"]) == ["render"]
+
+        rendered.clear()
+        cli.main(["check", str(tmp_path / "index.html"), "--title", "Ventas Q3", "--no-render"])
+        assert rendered == [] and json.loads(capsys.readouterr().out)[0]["rendered"] is False
+
+    def test_what_the_browser_saw_becomes_findings(self, cli, tmp_path, monkeypatch):
+        (tmp_path / "index.html").write_text(_GOOD_PAGE)
+        seen = {"errors": ["Uncaught ReferenceError: Chart is not defined"], "wide": ["div.grid (520 px)"],
+                "tall": ["canvas#c (340 × 1600 px)"], "small": ["«SENSOR» at 3.6 px"], "overflow": 120}
+
+        def _run(command, **kwargs):
+            probe = command[-1].removeprefix("file://")
+            assert os.path.exists(probe) and "__checkErrors" in open(probe).read()
+            assert "--window-size=400,900" in command
+            return subprocess.CompletedProcess(command, 0, f'<script type="application/json" id="__check">{json.dumps(seen)}</script>', "")
+
+        monkeypatch.setattr(cli.subprocess, "run", _run)
+        messages = " ".join(f["message"] for f in cli._render_findings(str(tmp_path / "index.html"), "chrome"))
+        for needle in ("sideways by 120 px", "div.grid", "1600 px", "«SENSOR» at 3.6 px", "Chart is not defined"):
+            assert needle in messages, needle
+        assert [p.name for p in tmp_path.iterdir()] == ["index.html"]  # the probe copy is gone
+
+    @pytest.mark.skipif(not _load()._chrome(), reason="no headless Chrome here")
+    def test_a_real_chrome_sees_overflow_and_errors(self, tmp_path):
+        cli = _load()
+        page = _GOOD_PAGE.replace("<h1>", '<div style="width: 900px">ancho</div><h1>').replace(
+            '<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>', "<script>noSuchFunction()</script>")
+        (tmp_path / "index.html").write_text(page)
+        messages = " ".join(f["message"] for f in cli._render_findings(str(tmp_path / "index.html"), cli._chrome()))
+        assert "scrolls sideways" in messages and "noSuchFunction" in messages
+
+
 class TestSkillRecommendations:
     """The rules a comparison of 20 sandbox runs against Claude's artifacts showed were
     missing, pinned so an edit to SKILL.md cannot quietly drop one."""
@@ -1105,7 +1219,12 @@ class TestSkillRecommendations:
         assert "Chart.js 4.4.4 is on jsdelivr, not on cdnjs" in text
 
     def test_another_format_is_made_as_a_file(self):
-        assert "make that file right away in the workspace, at `$USER_WORKSPACE/project/output/`" in self._skill()
+        core = (_SKILL / "SKILL.md").read_text(encoding="utf-8")
+        # The first decision, before anything about artifacts, and in the description.
+        assert core.index("## Asked for a file? Make the file") < core.index("## When to make one")
+        assert "right away at `$USER_WORKSPACE/project/output/`; no `create`" in core
+        assert "Excel, Word, PowerPoint or PDF file instead" in core.split("---")[1]
+        assert "totals are formulas" in core
 
 
 class TestLayout:

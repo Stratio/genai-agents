@@ -12,14 +12,16 @@ stands for the absolute path `workdir` printed, written out in full.
 ```bash
 # The person referred to an artifact: a link, an id or a name. Always first.
 python3 scripts/artifact.py resolve "https://…/artifacts/<artifact_id>"
-python3 scripts/artifact.py resolve "informe de ventas"
-# They alluded to one ("el de ayer"): what this project touched, last first
+python3 scripts/artifact.py resolve "sales report"
+# They alluded to one ("yesterday's one"): what this project touched, last first
 python3 scripts/artifact.py recent --page-size 10
 
 # The artifact's working folder, under $ARTIFACT_WORKDIR: created and printed
 python3 scripts/artifact.py workdir "Q3 sales report"
 
-# Check the pages before saving them: the entry first, with the title it will get
+# Check the pages before saving them: the entry first, with the title it will get.
+# With a headless Chrome in the sandbox it also renders each HTML page in a 400 px
+# pane; --no-render skips that.
 python3 scripts/artifact.py check <workdir>/index.html <workdir>/anexos/detalle.html \
     --title "Q3 sales report"
 
@@ -27,8 +29,8 @@ python3 scripts/artifact.py check <workdir>/index.html <workdir>/anexos/detalle.
 # 3-5 lowercase topic tags. --base is what keeps the directories: without it every
 # file lands flat at the root of the artifact.
 python3 scripts/artifact.py create --title "Q3 sales report" --type html \
-    --description "Ventas del tercer trimestre por tienda y categoría, con conclusiones." \
-    --tags ventas,q3,informe --base <workdir> --file <workdir>/index.html \
+    --description "Third-quarter sales by store and category, with conclusions." \
+    --tags sales,q3,report --base <workdir> --file <workdir>/index.html \
     --file <workdir>/anexos/detalle.html --file <workdir>/css/site.css \
     --file <workdir>/img/logo.png
 
@@ -44,7 +46,7 @@ python3 scripts/artifact.py rm <artifact_id> anexos/old.html
 # Add or replace an image, a font or a clip a page uses (a stylesheet or a script: write)
 python3 scripts/artifact.py upload <artifact_id> img/logo.png --from-file <workdir>/img/logo.png
 python3 scripts/artifact.py rename <artifact_id> "Q3 sales report"
-python3 scripts/artifact.py tag <artifact_id> --set ventas,q3,informe   # replaces all
+python3 scripts/artifact.py tag <artifact_id> --set sales,q3,report   # replaces all
 python3 scripts/artifact.py tag <artifact_id> --clear
 
 # A separate document from an existing one: the copy is the caller's, and private
@@ -61,7 +63,7 @@ python3 scripts/artifact.py members <artifact_id>             # who has it, and 
 
 # Only when the person asks for a list. --tags needs all of them; --search also
 # matches tags.
-python3 scripts/artifact.py list --scope shared --type html --tags ventas,q3 --favorite
+python3 scripts/artifact.py list --scope shared --type html --tags sales,q3 --favorite
 
 # Everything the API knows about one artifact, and the link on its own
 python3 scripts/artifact.py get <artifact_id>
@@ -73,7 +75,14 @@ python3 scripts/artifact.py delete <artifact_id>
 
 Every command prints JSON on stdout, except `read`, which prints the file's text raw so
 you can edit it and write it back, and `url` and `workdir`, which print the link and the
-folder. `check` prints one entry per file with its findings (an empty list is clean);
+folder. `check` prints one entry per file with its findings (an empty list is clean) and, for
+an HTML page, `rendered`: whether a headless Chrome laid it out (`$ARTIFACT_CHROME`, or
+`chrome-headless-shell`, `chromium` or `google-chrome` on the path). Findings name a
+rule: the viewer's limits (`form`, `new-tab`, `dialog`, `storage`, `download`,
+`iframe`, `host`, `pin`, `cdn`, `fetch`), the document (`document`, `title`,
+`dark-mode`, `colors`, `contrast`), the layout (`responsive`, `hero`, `reveal`, `svg`),
+content (`emoji`, `link`) and what the browser saw (`render`). For a Markdown entry only the title rule applies.
+
 `create` and `write` print the same findings on stderr as `check: …` lines, as warnings.
 On failure a command prints one line on stderr and exits non-zero. `list` and `recent`
 print one page; when more follow, a line on stderr says how many there are and which

@@ -23,11 +23,15 @@ script.
 
 import argparse
 import html
+import html.parser
 import json
 import os
 import re
+import shutil
 import ssl
+import subprocess
 import sys
+import tempfile
 import unicodedata
 import urllib.error
 import urllib.parse
@@ -220,7 +224,7 @@ def _workdir_root() -> str:
 
 
 def _slug(name: str) -> str:
-    """'Informe de ventas Q3' -> 'informe-de-ventas-q3'."""
+    """'Q3 sales report' -> 'q3-sales-report'."""
     folded = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode()
     slug = re.sub(r"[^a-z0-9]+", "-", folded.lower()).strip("-")
     return slug[:60].strip("-") or "artifact"
@@ -242,13 +246,21 @@ _FONT_HOSTS = ("fonts.googleapis.com", "fonts.gstatic.com")
 _COLOR = re.compile(
     r"#[0-9a-fA-F]{8}\b|#[0-9a-fA-F]{6}\b|#[0-9a-fA-F]{3,4}\b|\b(?:rgba?|hsla?|oklch|oklab)\("
 )
+_NAMES = (
+    r"(?:white|black|red|green|blue|yellow|orange|purple|pink|gr[ae]y|navy|teal|silver|gold|maroon"
+    r"|olive|lime|aqua|fuchsia|crimson|coral|tomato|salmon|indigo|violet|brown|beige|ivory|khaki"
+    r"|lavender|turquoise|cyan|magenta|whitesmoke|gainsboro|firebrick|(?:dark|light)(?:gr[ae]y|blue|green|red))"
+)
 _NAMED_COLOR = re.compile(
-    r"\b(?:color|background(?:-color)?|fill|stroke|border(?:-color)?)\s*:\s*(?:white|black)\b", re.I
+    rf"\b(?:color|background(?:-color)?|fill|stroke|border(?:-[a-z]+)*|outline(?:-color)?)\s*:"
+    rf"[^;{{}}()]*?(?<![-\w#])({_NAMES})\b(?![-(])", re.I
 )
 _ROOT_BLOCK = re.compile(r":root\b[^{]*\{[^{}]*\}")
 _EMOJI = re.compile("[\U0001F300-\U0001FAFF\U0001F000-\U0001F2FF✀-➿]")
 _TITLE_SEPARATOR = re.compile(r"\s[-–—|·]\s|[:|—–]")
 _VERSIONED = re.compile(r"@v?\d+\.\d+\.\d+|/v?\d+\.\d+\.\d+(?:/|$)|[-.]v?\d+\.\d+\.\d+")
+_PANE = 400 - 2 * 16  # the narrowest pane, less its gutters
+_COLUMN = 720  # a reading column on a desktop pane
 
 
 def _without_minmax(tracks: str) -> str:
@@ -263,6 +275,178 @@ def _without_minmax(tracks: str) -> str:
 
 def _strip_comments(text: str) -> str:
     return re.sub(r"(?s)/\*.*?\*/", "", re.sub(r"(?s)<!--.*?-->", "", text))
+
+
+def _strip_line_comments(script: str) -> str:
+    """JavaScript without its // comments (a URL's // follows a colon and stays)."""
+    return re.sub(r"(?m)(^|[\s;{}()])//[^\n]*", r"\1", script)
+
+
+def _css_rules(css: str) -> list:
+    """(selector, declarations) for every rule, those inside @media included."""
+    return [(s.strip(), b) for s, b in re.findall(r"([^{}@;]+)\{([^{}]*)\}", css) if not s.strip().startswith("@")]
+
+
+def _px(value: str):
+    """A CSS or SVG length in px (px, unitless, rem/em at 16 px); None otherwise."""
+    found = re.match(r"\s*(\d*\.?\d+)\s*(px|rem|em)?\s*$", value or "")
+    if not found:
+        return None
+    return float(found.group(1)) * (16 if found.group(2) in ("rem", "em") else 1)
+
+
+def _declared(body: str, prop: str):
+    found = re.findall(rf"(?<![-\w]){prop}\s*:\s*([^;]+)", body)
+    return found[-1].strip() if found else None
+
+
+def _hex_rgb(value):
+    found = re.fullmatch(r"#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})", (value or "").strip())
+    if not found:
+        return None
+    digits = found.group(1) if len(found.group(1)) == 6 else "".join(c * 2 for c in found.group(1))
+    return tuple(int(digits[i : i + 2], 16) / 255 for i in (0, 2, 4))
+
+
+def _contrast(one, other) -> float:
+    def luminance(rgb):
+        r, g, b = (c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4 for c in rgb)
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b
+
+    high, low = sorted((luminance(one), luminance(other)), reverse=True)
+    return (high + 0.05) / (low + 0.05)
+
+
+def _themes(css: str) -> dict:
+    """The token values of each mode, {"light": {...}, "dark": {...}}, from the :root
+    blocks: a block inside the dark media query, or whose selector names dark, is dark."""
+    dark_spans = []
+    for media in re.finditer(r"@media[^{]*prefers-color-scheme\s*:\s*dark[^{]*\{", css):
+        depth, end = 1, media.end()
+        while depth and end < len(css):
+            depth += {"{": 1, "}": -1}.get(css[end], 0)
+            end += 1
+        dark_spans.append((media.end(), end))
+    light, dark = {}, {}
+    for block in _ROOT_BLOCK.finditer(css):
+        values = {k: v.strip() for k, v in re.findall(r"(--[\w-]+)\s*:\s*([^;}]+)", block.group(0))}
+        selector = block.group(0).split("{", 1)[0]
+        is_dark = any(a <= block.start() < b for a, b in dark_spans) or "dark" in selector
+        (dark if is_dark else light).update(values)
+    return {"light": light, "dark": {**light, **dark}} if dark else {"light": light}
+
+
+def _token_rgb(tokens: dict, name: str, depth: int = 0):
+    value = tokens.get(name)
+    if value is None or depth > 5:
+        return None
+    alias = re.fullmatch(r"var\(\s*(--[\w-]+)\s*(?:,[^)]*)?\)", value)
+    return _token_rgb(tokens, alias.group(1), depth + 1) if alias else _hex_rgb(value)
+
+
+def _contrast_findings(css: str) -> list:
+    """Text, and the outline of a control, set in a token that does not stand out from the
+    surface behind it, in either mode."""
+    themes = _themes(css)
+    if not themes["light"]:
+        return []
+    low = []
+    for selector, body in _css_rules(css):
+        if selector.startswith(":root") or "::placeholder" in selector:
+            continue
+        selector = " ".join(selector.split())
+        background = re.search(r"background(?:-color)?\s*:\s*var\(\s*(--[\w-]+)", body)
+        surface = background.group(1) if background else "--bg"
+        pairs = []
+        text = re.search(r"(?<![-\w])color\s*:\s*var\(\s*(--[\w-]+)", body)
+        # Neutral text on the page's own ground is the theme's business, and text meant
+        # for a fill sits on a fill an ancestor paints: only colored text, or a rule that
+        # paints its own surface, is this page's choice.
+        if text and (background or not re.search(r"ink|fg|text|muted|on-|bg|surface", text.group(1))):
+            pairs.append((text.group(1), 4.5, "text"))
+        outline = re.search(r"(?<![-\w])border(?:-[a-z]+)?\s*:[^;]*var\(\s*(--[\w-]+)", body)
+        if outline and re.search(r"(?i)check|box|radio|toggle|switch|input", selector):
+            pairs.append((outline.group(1), 3.0, "outline"))
+        for token, minimum, what in pairs:
+            for mode, tokens in themes.items():
+                fg, bg = _token_rgb(tokens, token), _token_rgb(tokens, surface)
+                if fg and bg and round(_contrast(fg, bg), 1) < minimum:
+                    low.append(f"{selector} ({what} {token} on {surface}, {mode}: {_contrast(fg, bg):.1f}:1)")
+    if not low:
+        return []
+    return [{"rule": "contrast", "message": f"{len(low)} pairs below 4.5:1 for text or 3:1 for a control's "
+             f"outline: {'; '.join(low[:3])}. Keep the text --ink (the color goes in a marker or a border), "
+             "and outline controls with --muted, not --rule."}]
+
+
+class _SvgScan(html.parser.HTMLParser):
+    """Each inline <svg>: its viewBox width, whether CSS keeps it from shrinking, and the
+    sizes its text is set at."""
+
+    def __init__(self, rules):
+        super().__init__(convert_charrefs=True)
+        self.rules, self.svgs, self.depth = rules, [], 0
+
+    def _size(self, attrs):
+        size = _px(attrs.get("font-size", ""))
+        style = re.search(r"font-size\s*:\s*([^;]+)", attrs.get("style", ""))
+        if style:
+            size = _px(style.group(1)) or size
+        if size is None:
+            classes = attrs.get("class", "").split()
+            for selector, body in self.rules:
+                value = _declared(body, "font-size")
+                if value and (any(re.search(rf"\.{re.escape(c)}(?![\w-])", selector) for c in classes)
+                              or re.search(r"(?:^|[\s>,])text\s*(?:,|$)", selector)):
+                    size = _px(value) or size
+        return size
+
+    def handle_starttag(self, tag, attrs):
+        attrs = {k: v or "" for k, v in attrs}
+        if tag == "svg":
+            self.depth += 1
+            if self.depth == 1:
+                box = [float(x) for x in re.findall(r"-?\d*\.?\d+", attrs.get("viewbox", ""))]
+                classes = attrs.get("class", "").split()
+                fixed = "min-width" in attrs.get("style", "") or any(
+                    "min-width" in body and (re.search(r"(?:^|[\s>,])svg\b", s) or any(f".{c}" in s for c in classes))
+                    for s, body in self.rules)
+                self.svgs.append({"width": box[2] if len(box) == 4 else None, "fixed": fixed, "text": []})
+        elif self.depth and tag in ("text", "tspan"):
+            size = self._size(attrs)
+            if size:
+                self.svgs[-1]["text"].append(size)
+
+    def handle_endtag(self, tag):
+        if tag == "svg" and self.depth:
+            self.depth -= 1
+
+
+def _svg_findings(markup: str, css: str) -> list:
+    scan = _SvgScan(_css_rules(css))
+    try:
+        scan.feed(markup)
+    except Exception:  # a heuristic: a page it cannot read is not a finding
+        return []
+    findings = []
+    for svg in scan.svgs:
+        width = svg["width"]
+        if not width or width <= 64 or not svg["text"]:
+            continue
+        smallest = min(svg["text"])
+        at_column = smallest * min(1.0, _COLUMN / width)
+        at_pane = smallest * min(1.0, _PANE / width)
+        if at_column < 11:
+            findings.append(f"text set at {smallest:g} px in a viewBox {width:g} wide shows at {at_column:.0f} px "
+                            "in a reading column")
+        elif at_pane < 11 and not svg["fixed"]:
+            findings.append(f"text set at {smallest:g} px in a viewBox {width:g} wide shrinks to {at_pane:.0f} px "
+                            "in a 400 px pane")
+    if not findings:
+        return []
+    return [{"rule": "svg", "message": f"{'; '.join(dict.fromkeys(findings))}. Draw the diagram at the column's "
+             "width with text of at least 11 px; on a narrow pane give the <svg> a min-width inside a "
+             ".scroll-x wrapper or stack it vertically."}]
 
 
 def _blocks(markup: str, tag: str) -> str:
@@ -309,6 +493,16 @@ def _url_exists(url: str):
         return None
 
 
+def _title_findings(name: str) -> list:
+    findings = []
+    if _TITLE_SEPARATOR.search(name):
+        findings.append({"rule": "title", "message": f"{name!r} has a separator: a title is a 2-4 word name, "
+                         "the rest goes in --description."})
+    if len(name.split()) > 4:
+        findings.append({"rule": "title", "message": f"{name!r} has {len(name.split())} words: a title is 2-4."})
+    return findings
+
+
 def _page_findings(text, base_dir=".", title=None, sources=None, verify=False) -> list:
     """Findings for one HTML page: [{"rule", "message"}]. `sources` are the hosts the
     installation lets a page load from (None: do not check hosts); `verify` asks each
@@ -321,7 +515,7 @@ def _page_findings(text, base_dir=".", title=None, sources=None, verify=False) -
     markup = _strip_comments(text)
     linked_css, linked_js = _local_assets(markup, base_dir)
     css = _blocks(markup, "style") + "\n" + _strip_comments(linked_css)
-    scripts = _blocks(markup, "script") + "\n" + linked_js
+    scripts = _strip_line_comments(_blocks(markup, "script") + "\n" + linked_js)
 
     if not re.match(r"(?is)\s*<!doctype html", text):
         add("document", "Start with <!doctype html>: the file is served as it is.")
@@ -338,20 +532,19 @@ def _page_findings(text, base_dir=".", title=None, sources=None, verify=False) -
     elif title is not None and page_title != title.strip():
         add("title", f"<title> is {page_title!r} but --title is {title!r}: use one string for both.")
     for name in {page_title, (title or "").strip()} - {""}:
-        if _TITLE_SEPARATOR.search(name):
-            add("title", f"{name!r} has a separator: a title is a 2-4 word name, the rest goes in --description.")
-        if len(name.split()) > 4:
-            add("title", f"{name!r} has {len(name.split())} words: a title is 2-4.")
+        findings.extend(_title_findings(name))
 
     if not re.search(r"prefers-color-scheme\s*:\s*dark", css):
         add("dark-mode", "No @media (prefers-color-scheme: dark) block redefining the tokens.")
     outside = _ROOT_BLOCK.sub("", css)
     styles = " ".join(re.findall(r'(?i)\sstyle=["\']([^"\']*)', markup))
-    svg_attrs = " ".join(re.findall(r'(?i)\s(?:fill|stroke|stop-color|color)=["\'](#[0-9a-f]{3,8})', markup))
+    svg_attrs = " ".join(re.findall(rf'(?i)\s(?:fill|stroke|stop-color|color)=["\'](#[0-9a-f]{{3,8}}|{_NAMES})["\']', markup))
     script_colors = re.findall(r"['\"](#[0-9a-fA-F]{3,8}|(?:rgba?|hsla?)\([^'\"]*\))['\"]", scripts)
+    script_colors += re.findall(
+        rf"(?i)(?:color|fill|stroke|background\w*|border\w*|fillStyle|strokeStyle)\s*[:=]\s*['\"]({_NAMES})['\"]", scripts)
     colors = (
         _COLOR.findall(outside) + _NAMED_COLOR.findall(outside) + _COLOR.findall(styles)
-        + _NAMED_COLOR.findall(styles) + _COLOR.findall(svg_attrs) + script_colors
+        + _NAMED_COLOR.findall(styles) + re.findall(rf"(?i)#[0-9a-f]{{3,8}}|\b{_NAMES}\b", svg_attrs) + script_colors
     )
     if colors:
         sample = ", ".join(dict.fromkeys(c.strip() for c in colors))
@@ -382,16 +575,23 @@ def _page_findings(text, base_dir=".", title=None, sources=None, verify=False) -
         if bare:
             add("responsive", f"grid-template-columns: {bare[0]} can widen past a 400 px pane when a cell "
                 "holds code or a table: use minmax(0, 1fr) tracks and min-width: 0 on those children.")
-    if re.search(r"(?:min-)?height\s*:\s*100d?vh", css):
+    if re.search(r"(?<![-\w])(?:min-)?height\s*:\s*100[dsl]?vh", css):
         add("hero", "A 100vh block: the header fits its content.")
     if re.search(r"opacity\s*:\s*0\s*[;}]", css) and "IntersectionObserver" in scripts:
         add("reveal", "Content waits at opacity: 0 for a scroll: everything meant to be read is visible on load.")
     if re.search(r"(?i)genai-ui[\w-]*/artifacts/|/v1/artifacts/", markup):
         add("link", "A GenAI UI or API address inside the page: write the other artifact's title and id instead.")
-    for heading in re.findall(r"(?is)<h[1-6]\b[^>]*>(.*?)</h[1-6]>", markup):
-        if _EMOJI.search(heading):
-            add("emoji", "Emojis as section markers read as machine-made.")
+    for heading in re.findall(r"(?is)<h[1-6]\b[^>]*>(.*?)</h[1-6]>|<text\b[^>]*>(.*?)</text>", markup):
+        if _EMOJI.search("".join(heading)):
+            add("emoji", "Emojis as section markers or diagram labels read as machine-made: use a word, "
+                "a number or a small inline SVG icon.")
             break
+    if re.search(r"\b(?:fetch|d3\.(?:json|csv|tsv|text|xml)|XMLHttpRequest)\s*\(", scripts):
+        add("fetch", "Data asked for at run time: a relative file never loads in the viewer, and a remote one "
+            "makes the page depend on the network. Download it in build.py and put it in the page as "
+            '<script type="application/json" id="data">.')
+    findings.extend(_svg_findings(markup, css))
+    findings.extend(_contrast_findings(css))
 
     urls = _loaded_urls(markup, css)
     if sources is not None:
@@ -408,7 +608,81 @@ def _page_findings(text, base_dir=".", title=None, sources=None, verify=False) -
             if host != "cdn.tailwindcss.com" and not _VERSIONED.search(path):
                 add("pin", f"{url}: pin the exact version.")
             elif verify and _url_exists(url) is False:
-                add("cdn", f"{url} does not exist on that CDN: copy the URL from the library table in SKILL.md.")
+                add("cdn", f"{url} does not exist on that CDN: copy the URL from the library table in html.md.")
+    return findings
+
+
+# What only a browser sees: a headless Chrome lays the page out in a 400 px pane and
+# reports what overflows, what runs taller than any chart should, the text an SVG shrinks
+# below reading size, and the errors its scripts throw. It runs when the sandbox has one.
+_CHROMES = ("chrome-headless-shell", "headless_shell", "chromium", "chromium-browser", "google-chrome",
+            "google-chrome-stable", "chrome")  # fmt: skip
+_RENDER_ERRORS = """<script>(function(){var E=window.__checkErrors=[];
+addEventListener("error",function(e){E.push(e.message||("failed to load "+((e.target&&(e.target.src||e.target.href))||"a resource")))},true);
+addEventListener("unhandledrejection",function(e){E.push(String(e.reason))});
+var ce=console.error;console.error=function(){E.push([].join.call(arguments," "));ce.apply(console,arguments)};})();</script>"""
+_RENDER_PROBE = """<script>addEventListener("load",function(){setTimeout(function(){
+var W=innerWidth,r={errors:window.__checkErrors||[],wide:[],tall:[],small:[]};
+function scrolls(el){for(var p=el.parentElement;p&&p!==document.body;p=p.parentElement){var o=getComputedStyle(p).overflowX;if(o==="auto"||o==="scroll"||o==="hidden")return true}return false}
+function name(el){return el.tagName.toLowerCase()+(el.id?"#"+el.id:"")+(typeof el.className==="string"&&el.className?"."+el.className.trim().split(/\\s+/).join("."):"")}
+r.overflow=Math.max(document.documentElement.scrollWidth,document.body.scrollWidth)-W;
+document.querySelectorAll("body *").forEach(function(el){var b=el.getBoundingClientRect();
+if(b.width&&b.right>W+1&&!scrolls(el)&&r.wide.length<3&&getComputedStyle(el).position!=="fixed")r.wide.push(name(el)+" ("+Math.round(b.right)+" px)");
+if(r.tall.length<3&&(el.tagName==="CANVAS"?b.height>Math.max(600,1.5*b.width):/^(svg|img)$/i.test(el.tagName)&&b.height>2000))r.tall.push(name(el)+" ("+Math.round(b.width)+" \\u00d7 "+Math.round(b.height)+" px)")});
+document.querySelectorAll("svg text").forEach(function(t){var m=t.getScreenCTM();if(!m||!t.textContent.trim())return;
+var px=parseFloat(getComputedStyle(t).fontSize)*Math.hypot(m.a,m.b);if(px<10.5&&r.small.length<3)r.small.push("\u00ab"+t.textContent.trim().slice(0,30)+"\u00bb at "+px.toFixed(1)+" px")});
+var o=document.createElement("script");o.type="application/json";o.id="__check";o.textContent=JSON.stringify(r);document.body.appendChild(o)},1500)});</script>"""
+
+
+def _chrome():
+    """A headless Chrome to render pages with, if the sandbox has one: $ARTIFACT_CHROME, or
+    the first of the usual names on PATH."""
+    candidates = [os.environ.get("ARTIFACT_CHROME", "")] + [shutil.which(n) or "" for n in _CHROMES]
+    return next((c for c in candidates if c and os.access(c, os.X_OK)), None)
+
+
+def _render_findings(path: str, chrome: str) -> list:
+    """Load the page in a 400 px pane, as the viewer's narrowest pane shows it."""
+    with open(path, encoding="utf-8", errors="replace") as handle:
+        page = handle.read()
+    head = re.search(r"(?i)<head\b[^>]*>", page)
+    page = page[: head.end()] + _RENDER_ERRORS + page[head.end() :] if head else _RENDER_ERRORS + page
+    page = re.sub(r"(?i)</body>", lambda _: _RENDER_PROBE + "</body>", page, count=1) if re.search(r"(?i)</body>", page) else page + _RENDER_PROBE
+    probe = os.path.join(os.path.dirname(os.path.abspath(path)), f".check-{os.getpid()}.html")
+    profile = tempfile.mkdtemp(prefix="artifact-check-")
+    try:
+        with open(probe, "w", encoding="utf-8") as handle:
+            handle.write(page)
+        command = [chrome, "--headless", "--no-sandbox", "--disable-gpu", "--hide-scrollbars", "--no-first-run",
+                   f"--user-data-dir={profile}", "--window-size=400,900", "--virtual-time-budget=10000",
+                   "--dump-dom", "file://" + probe]
+        try:
+            done = subprocess.run(command, capture_output=True, text=True, timeout=60)
+        except (OSError, subprocess.TimeoutExpired):
+            return []
+    finally:
+        os.remove(probe)
+        shutil.rmtree(profile, ignore_errors=True)
+    found = re.search(r'(?s)<script type="application/json" id="__check">(.*?)</script>', done.stdout)
+    if not found:
+        return []
+    try:
+        seen = json.loads(html.unescape(found.group(1)))
+    except ValueError:
+        return []
+    findings = []
+    if seen.get("overflow", 0) > 1:
+        findings.append({"rule": "render", "message": f"In a 400 px pane the page scrolls sideways by {seen['overflow']} px: "
+                         f"{', '.join(seen['wide']) or 'an element'} runs past the edge. Wrap it in .scroll-x or let it shrink."})
+    if seen.get("tall"):
+        findings.append({"rule": "render", "message": f"In a 400 px pane: {', '.join(seen['tall'])}. A chart taller "
+                         "than wide usually keeps growing: give it a wrapper of fixed height."})
+    if seen.get("small"):
+        findings.append({"rule": "render", "message": f"SVG text below 11 px in a 400 px pane: {'; '.join(seen['small'])}."})
+    errors = list(dict.fromkeys(e for e in seen.get("errors", []) if e))
+    if errors:
+        findings.append({"rule": "render", "message": f"The page's scripts report errors: {'; '.join(e[:160] for e in errors[:3])}. "
+                         "Fix them, or guard the code that depends on a library."})
     return findings
 
 
@@ -667,26 +941,26 @@ def cmd_workdir(args):
 def cmd_check(args):
     """Check pages before `create` or `write`: what the viewer breaks, and the rules
     SKILL.md asks for. The first page is the entry: it is the one --title applies to.
-    Hosts are checked against the public CDNs the viewer allows, and each library URL
-    is asked for on its CDN when there is a network to ask over."""
+    Hosts are checked against the public CDNs the viewer allows, each library URL is
+    asked for on its CDN when there is a network to ask over, and when the sandbox has a
+    headless Chrome each page is also rendered in a 400 px pane."""
     sources = [f"https://{host}" for host in _CDN_HOSTS]
+    chrome = None if args.no_render else _chrome()
     report = []
     for index, path in enumerate(args.files):
         if not os.path.isfile(path):
             _die(f"{path} does not exist.")
+        title = args.title if index == 0 else None
         if not path.lower().endswith((".html", ".htm")):
-            report.append({"file": path, "findings": []})
+            findings = _title_findings(title.strip()) if title else []
+            report.append({"file": path, "findings": findings})
             continue
         with open(path, encoding="utf-8", errors="replace") as handle:
             content = handle.read()
-        findings = _page_findings(
-            content,
-            os.path.dirname(path) or ".",
-            title=args.title if index == 0 else None,
-            sources=sources,
-            verify=True,
-        )
-        report.append({"file": path, "findings": findings})
+        findings = _page_findings(content, os.path.dirname(path) or ".", title=title, sources=sources, verify=True)
+        if chrome:
+            findings += _render_findings(path, chrome)
+        report.append({"file": path, "findings": findings, "rendered": bool(chrome)})
     _emit(report)
 
 
@@ -756,7 +1030,7 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--title", required=True)
     p.add_argument("--type", choices=("markdown", "html"), default="html")
     p.add_argument("--description")
-    p.add_argument("--tags", help="Comma-separated, e.g. ventas,q3,informe")
+    p.add_argument("--tags", help="Comma-separated, e.g. sales,q3,report")
     p.add_argument("--entry-path", dest="entry_path")
     p.add_argument("--rename", help="Store a single --file under this path instead")
     p.add_argument(
@@ -853,6 +1127,8 @@ def _parser() -> argparse.ArgumentParser:
     p = sub.add_parser("check")
     p.add_argument("files", nargs="+", help="The entry page first, then any other page")
     p.add_argument("--title", help="The --title it gets: the entry's <title> must match")
+    p.add_argument("--no-render", dest="no_render", action="store_true",
+                   help="Skip the headless Chrome render even when there is one")
     p.set_defaults(func=cmd_check)
 
     p = sub.add_parser("url")
