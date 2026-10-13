@@ -92,10 +92,11 @@ Markdown or HTML, these hold for every artifact.
   when there is one. A named metric keeps its standard definition. Workspace material
   counts only when it is about the same subject; other artifacts' working folders
   (`.artifact*/`) are not sources.
-- **Facts are looked up, not recalled.** Official data (public holidays, tax rates,
-  legal limits, prices) comes from a source you opened in this session, cited next to
-  the figure it gave. What you cannot check is marked on the page as unverified. Never
-  name a source for a figure you invented.
+- **Facts are looked up, not recalled.** Official data (holidays, tax rates, legal
+  limits, prices) comes from a source opened in this session (an MCP tool, a file in
+  the workspace, the web when the sandbox reaches it), cited next to its figure. What
+  you cannot check is marked on the page as unverified. Never name a source for a
+  figure you invented.
 - **Invented means labeled, on the page.** Everything you made up because the person
   gave none — figures, people, teams, channels, tools, customers, testimonials,
   ratings, volumes, statuses, dates — is sample content. Say so on the page itself, in

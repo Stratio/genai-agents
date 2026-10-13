@@ -278,6 +278,18 @@ _CDN_HOSTS = (
     "cdn.tailwindcss.com", "code.jquery.com", "fonts.googleapis.com", "fonts.gstatic.com",
 )  # fmt: skip
 _FONT_HOSTS = ("fonts.googleapis.com", "fonts.gstatic.com")
+# The URLs of the library table in html.md: they exist, so `check` asks no CDN about
+# them, and a sandbox with no route out checks a page that uses only these at once.
+_LIBRARY_URLS = frozenset((
+    "https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js",
+    "https://cdn.plot.ly/plotly-2.35.2.min.js",
+    "https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js",
+    "https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js",
+    "https://cdn.jsdelivr.net/npm/d3-composite-projections@1.4.0/d3-composite-projections.min.js",
+    "https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js",
+    "https://cdn.jsdelivr.net/npm/es-atlas@0.6.0/es/autonomous_regions.json",
+    "https://cdn.jsdelivr.net/npm/es-atlas@0.6.0/es/provinces.json",
+))  # fmt: skip
 _COLOR = re.compile(
     r"#[0-9a-fA-F]{8}\b|#[0-9a-fA-F]{6}\b|#[0-9a-fA-F]{3,4}\b|\b(?:rgba?|hsla?|oklch|oklab)\("
 )
@@ -516,15 +528,24 @@ def _loaded_urls(markup: str, css: str) -> list:
     return list(dict.fromkeys(urls))
 
 
+_cdn_unreachable = False
+
+
 def _url_exists(url: str):
-    """True or False when the CDN answered; None when it could not be asked."""
+    """True or False when the CDN answered; None when it could not be asked. Once a CDN
+    could not be asked the rest of the run asks none: where the sandbox has no route out
+    every URL would otherwise wait for its timeout."""
+    global _cdn_unreachable
+    if _cdn_unreachable:
+        return None
     request = urllib.request.Request(url, method="HEAD", headers={"User-Agent": "stratio-artifacts-check"})
     try:
-        with urllib.request.urlopen(request, timeout=10) as response:
+        with urllib.request.urlopen(request, timeout=3) as response:
             return response.status < 400
     except urllib.error.HTTPError as e:
         return e.code < 400 if e.code != 405 else None
     except (urllib.error.URLError, OSError, ValueError):
+        _cdn_unreachable = True
         return None
 
 
@@ -541,7 +562,7 @@ def _title_findings(name: str) -> list:
 def _page_findings(text, base_dir=".", title=None, sources=None, verify=False) -> list:
     """Findings for one HTML page: [{"rule", "message"}]. `sources` are the hosts the
     installation lets a page load from (None: do not check hosts); `verify` asks each
-    CDN whether the library URL exists."""
+    CDN whether a library URL off the html.md table exists."""
     findings = []
 
     def add(rule, message):
@@ -623,7 +644,7 @@ def _page_findings(text, base_dir=".", title=None, sources=None, verify=False) -
             break
     if re.search(r"\b(?:fetch|d3\.(?:json|csv|tsv|text|xml)|XMLHttpRequest)\s*\(", scripts):
         add("fetch", "Data asked for at run time: a relative file never loads in the viewer, and a remote one "
-            "makes the page depend on the network. Download it in build.py and put it in the page as "
+            "makes the page depend on the network. Have build.py write it into the page as "
             '<script type="application/json" id="data">.')
     findings.extend(_svg_findings(markup, css))
     findings.extend(_contrast_findings(css))
@@ -642,7 +663,7 @@ def _page_findings(text, base_dir=".", title=None, sources=None, verify=False) -
             path = urllib.parse.urlsplit(url).path
             if host != "cdn.tailwindcss.com" and not _VERSIONED.search(path):
                 add("pin", f"{url}: pin the exact version.")
-            elif verify and _url_exists(url) is False:
+            elif verify and url not in _LIBRARY_URLS and _url_exists(url) is False:
                 add("cdn", f"{url} does not exist on that CDN: copy the URL from the library table in html.md.")
     return findings
 
@@ -998,9 +1019,9 @@ def cmd_workdir(args):
 def cmd_check(args):
     """Check pages before `create` or `write`: what the viewer breaks, and the rules
     SKILL.md asks for. The first page is the entry: it is the one --title applies to.
-    Hosts are checked against the public CDNs the viewer allows, each library URL is
-    asked for on its CDN when there is a network to ask over, and when the sandbox has a
-    headless Chrome each page is also rendered in a 400 px pane."""
+    Hosts are checked against the public CDNs the viewer allows, each library URL off
+    the html.md table is asked for on its CDN when the sandbox can reach it, and when the
+    sandbox has a headless Chrome each page is also rendered in a 400 px pane."""
     sources = [f"https://{host}" for host in _CDN_HOSTS]
     chrome = None if args.no_render else _chrome()
     report = []

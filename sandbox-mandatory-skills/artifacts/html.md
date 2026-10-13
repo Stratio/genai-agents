@@ -23,12 +23,13 @@ is what makes it safe to open, and it is not negotiable. In practice:
   `fonts.gstatic.com`, over `https://`, and from nowhere else: anything else fails
   silently and the person sees a broken page. Pin the version in every CDN URL. The
   page's own files are the artifact's (see [Multi-file](#multi-file)), and there is no
-  `<iframe>` of another page. Data the page needs, a map's geometry included, is
-  downloaded in `build.py` and goes in the page: never `fetch()` or `d3.json()` at run
-  time.
+  `<iframe>` of another page. Data the page needs goes in the page, written there by
+  `build.py`: never `fetch()` or `d3.json()` at run time. `build.py` reads files in the
+  workspace, what your tools saved there included, and calls no external API: the
+  sandbox may have no route out.
 - **Library URLs from this table, as written.** A version you remember may not exist
   on that CDN (Chart.js 4.4.4 is on jsdelivr, not on cdnjs), and the page then shows an
-  empty box. `check` asks the CDN.
+  empty box. `check` knows these and asks the CDN about any other URL.
 
   | Library | URL |
   |---|---|
@@ -235,6 +236,10 @@ body { margin: 0; background: var(--bg); color: var(--ink); }
   `d3.geoConicConformalSpain()` (it puts Canarias in an inset). Download the es-atlas
   geometry (by community or by province) in `build.py` and put it in the page as JSON
   (see the working folder in `SKILL.md`); do not draw regions by hand or fetch them.
+  It is the one thing `build.py` downloads, and the sandbox may have no route out:
+  when the download fails there is no map. Show the rate as a sorted bar chart or a
+  table by community or province instead, and tell the person that a map needs the
+  sandbox to reach `cdn.jsdelivr.net`.
   Color a rate, not a raw total, which mostly mirrors population: `build.py` computes
   it with its unit, the table shows it next to the total, and the legend names its
   breaks.

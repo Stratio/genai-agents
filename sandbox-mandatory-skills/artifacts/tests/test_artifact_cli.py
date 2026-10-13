@@ -1097,6 +1097,9 @@ class TestWorkdir:
         assert capsys.readouterr().out.strip() == str(tmp_path / "project" / ".artifact" / "roadmap-2027")
 
 
+_TABLE_CHART_JS = "https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"
+# Pinned, but not in html.md's table: check has to ask the CDN about it (and it is not there).
+_OFF_TABLE_CHART_JS = "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"
 _GOOD_PAGE = """<!doctype html>
 <html lang="es"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -1191,11 +1194,37 @@ class TestCheck:
     def test_cdn_urls_are_pinned_and_exist(self, cli, monkeypatch):
         unpinned = _GOOD_PAGE.replace("chart.js@4.4.1", "chart.js")
         assert _rules(cli._page_findings(unpinned, title="Ventas Q3")) == ["pin"]
+        off_table = _GOOD_PAGE.replace(_TABLE_CHART_JS, _OFF_TABLE_CHART_JS)
         monkeypatch.setattr(cli, "_url_exists", lambda url: False)
-        assert _rules(cli._page_findings(_GOOD_PAGE, title="Ventas Q3")) == []  # not asked
-        assert _rules(cli._page_findings(_GOOD_PAGE, title="Ventas Q3", verify=True)) == ["cdn"]
+        assert _rules(cli._page_findings(off_table, title="Ventas Q3")) == []  # not asked
+        assert _rules(cli._page_findings(off_table, title="Ventas Q3", verify=True)) == ["cdn"]
         monkeypatch.setattr(cli, "_url_exists", lambda url: None)  # could not ask
+        assert cli._page_findings(off_table, title="Ventas Q3", verify=True) == []
+
+    def test_the_table_urls_are_never_asked(self, cli, monkeypatch):
+        """They exist, and a sandbox with no route out would wait on each one."""
+        monkeypatch.setattr(cli, "_url_exists", lambda url: pytest.fail(f"asked for {url}"))
         assert cli._page_findings(_GOOD_PAGE, title="Ventas Q3", verify=True) == []
+
+    def test_the_known_urls_are_the_skill_table(self, cli):
+        urls = re.findall(r"\| `(https://[^`]+)` \|", _skill_text())
+        assert sorted(cli._LIBRARY_URLS) == sorted(urls)
+
+    def test_with_no_route_out_the_cdn_is_asked_once(self, cli, monkeypatch):
+        """Where the sandbox has no egress the first HEAD fails fast and the rest are not
+        made: the check finishes at once, with nothing to report about the CDN."""
+        opened = []
+
+        def no_route(request, timeout):
+            opened.append((request.full_url, timeout))
+            raise urllib.error.URLError("no route to host")
+
+        monkeypatch.setattr(cli.urllib.request, "urlopen", no_route)
+        page = _GOOD_PAGE.replace(_TABLE_CHART_JS, _OFF_TABLE_CHART_JS).replace(
+            "</body>", '<script src="https://unpkg.com/lodash@4.17.21/lodash.min.js"></script></body>')
+        assert cli._page_findings(page, title="Ventas Q3", verify=True) == []
+        assert cli._page_findings(page, title="Ventas Q3", verify=True) == []
+        assert opened == [(_OFF_TABLE_CHART_JS, 3)]
 
     def test_every_url_in_the_skill_table_counts_as_pinned(self, cli):
         text = _skill_text()
@@ -1224,13 +1253,13 @@ class TestCheck:
         assert "example.org" in report["findings"][0]["message"]
 
     def test_check_command_asks_the_cdn_for_each_library(self, cli, tmp_path, monkeypatch, capsys):
-        (tmp_path / "index.html").write_text(_GOOD_PAGE)
+        (tmp_path / "index.html").write_text(_GOOD_PAGE.replace(_TABLE_CHART_JS, _OFF_TABLE_CHART_JS))
         asked = []
         monkeypatch.setattr(cli, "_url_exists", lambda url: asked.append(url) or False)
 
         cli.main(["check", str(tmp_path / "index.html"), "--title", "Ventas Q3"])
 
-        assert asked == ["https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"]
+        assert asked == [_OFF_TABLE_CHART_JS]
         assert _rules(json.loads(capsys.readouterr().out)[0]["findings"]) == ["cdn"]
 
     def test_create_warns_and_still_creates(self, cli, tmp_path, monkeypatch, capsys):
