@@ -37,7 +37,8 @@ sandbox workspace.
    - `<path>`: absolute path in that filesystem, e.g. `/data/kk/report.json` (on S3,
      relative to the bucket root: `/landing/a.csv`). A directory is
      downloaded as a zip built on the fly (subject to the server size limit).
-   - `<local_dest>`: a local file path, or a directory (the remote basename is kept).
+   - `<local_dest>`: a local file path, or a directory (the remote basename is kept) —
+     in the current task folder (or the workspace), not in `/tmp`.
 
 ## Expected output
 

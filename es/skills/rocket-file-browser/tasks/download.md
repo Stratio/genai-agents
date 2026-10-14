@@ -37,7 +37,8 @@ workspace del sandbox.
 
    - `<ruta>`: ruta absoluta en ese filesystem, p.ej. `/data/kk/report.json` (en S3,
      relativa a la raíz del bucket: `/landing/a.csv`). Un directorio se descarga como zip construido al vuelo (sujeto al límite de tamaño del servidor).
-   - `<destino_local>`: ruta de fichero local, o un directorio (se conserva el nombre remoto).
+   - `<destino_local>`: ruta de fichero local, o un directorio (se conserva el nombre
+     remoto) — en la carpeta de la tarea actual (o en el workspace), no en `/tmp`.
 
 ## Salida esperada
 
