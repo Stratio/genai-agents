@@ -32,14 +32,24 @@ compatibility. The script falls back to it automatically when the server answers
    upload to the wrong bucket is a publication in the wrong place. Include the
    filesystem in the destination you confirm with the user.
 
-3. **Upload**:
+3. **Destination — ask, then confirm. Do not run the upload before the user says yes.**
+   - If the user did not name the target directory, **ask for it**. Never pick one on
+     your own — not the filesystem's `defaultPath`, not a directory you listed earlier.
+   - Then state the filesystem, the directory and the final file name, and **wait for
+     an explicit confirmation** — even when the request said "upload it". An upload
+     publishes the file where other people and processes read it.
+   - If that name already exists there (`ls` the directory), say so and ask how to
+     proceed (another name, or delete the old one with `rm`); never delete on your own.
+
+4. **Upload**:
 
    ```bash
    python3 scripts/rocket_file_browser.py upload \
      "<local_src>" "<dir>" --fs <id>:<type> [--legacy]
    ```
 
-   - `<local_src>`: existing local file in the sandbox.
+   - `<local_src>`: existing local file in the sandbox. A file you create in order to
+     upload it goes in the current task folder (or the workspace), not in `/tmp`.
    - `<dir>`: target **directory** (absolute, in that filesystem; on S3 relative to the
      bucket root); the file keeps its basename.
      If it does not exist, Rocket creates it, intermediate directories included —
