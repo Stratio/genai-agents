@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.1 (upcoming)
+
+* **New shared skill `rocket-file-browser`**: manages files in Rocket's File Browser from the sandbox — download, upload, ls, cp, mv, rm, mkdir, compress and extract — over Rocket's mutual-TLS listener (port 7777) with the sandbox client certificate, so every call runs with the user's own Gosec permissions. Supports every filesystem Rocket exposes (its internal HDFS plus the configured S3 buckets): the target filesystem is always sent explicitly, the agent asks the user when several exist, and moving data across filesystems goes through download + upload. Requires `ROCKET_API_URL` in the project pod. Imported by `data-analytics-officer`, `data-quality`, `data-governance-officer` and (read-only) `semantic-layer`. EN + ES.
+
 ## 0.3.0 (2026-08-06)
 
 * **MCP data-retrieval discipline** ([ROCK-15011] + context-flooding fix): `stratio-data-tools.md` §3 now states the query engine is Spark SQL (no `LIMIT N OFFSET M` — use the tool's `limit` parameter, never inline `LIMIT`/`OFFSET`) and enforces a 3-level hierarchy for statistical markers and data retrieval — aggregate via the MCP first, fall back to `profile_data` for EDA, and only pull row-level detail (read from disk, never pasted into context) when a real statistical test or clustering needs it. `data-analytics-officer` also forbids hand-written `execute_sql` that bypasses `generate_sql`. EN + ES.

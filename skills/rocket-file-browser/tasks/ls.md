@@ -26,4 +26,9 @@ bucket).
 
 - `401/403` — not authorized for that path (Gosec). On S3 the check is against
   `/<bucket><path>`. Restricted roots are refused client-side.
+- **Path not found** — Rocket answers **HTTP 500, not 404**, with `errorCode` `1463`
+  ("Error obtaining HDFS content of provided path", on S3 too). The `exception` shows
+  where it looked — `No such file or directory: s3a://<bucket>/<path>` on S3,
+  `File <path> does not exist.` on HDFS — so check the filesystem before the path: the
+  file may live on another one.
 - Surface HTTP code + body verbatim on failure (`guides/external-api-calls.md` §5).
