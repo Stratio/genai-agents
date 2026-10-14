@@ -27,7 +27,7 @@ USAGE
     python3 rocket_file_browser.py filesystems
     python3 rocket_file_browser.py download <path> <local_dest> [--fs id:type]
     python3 rocket_file_browser.py upload   <local_src> <dir>   [--fs id:type]
-                                                                [--legacy]
+                                                                [--name N] [--legacy]
 
 FILESYSTEMS
     One Rocket can browse several filesystems at once: the internal metadata one
@@ -268,10 +268,15 @@ def cmd_upload(args: argparse.Namespace) -> None:
     if not src.is_file():
         fail(f"Local source not found: {src}")
     guard_path(args.hdfs_dir)
+    # Rocket stores the upload under the name the multipart part carries, so --name sets
+    # the remote name without copying the local file first.
+    name = args.name or src.name
+    if "/" in name or name in ("", ".", ".."):
+        fail(f"--name must be a plain file name, got {name!r}")
     target_fs = resolve_target_fs(args.fs)
 
     if args.legacy:
-        upload_two_phase(src, args.hdfs_dir, target_fs)
+        upload_two_phase(src, name, args.hdfs_dir, target_fs)
         return
 
     # One request: the destination is authorized before a byte is accepted and the
@@ -287,18 +292,18 @@ def cmd_upload(args: argparse.Namespace) -> None:
             "POST", "/fileBrowser/upload",
             params=params,
             headers={"Accept": "application/json"},
-            files={"binary": (src.name, fh)},
+            files={"binary": (name, fh)},
         )
     if resp.status_code in (404, 405):
         log(
             "This Rocket does not serve /fileBrowser/upload "
             f"(HTTP {resp.status_code}); falling back to the legacy two-request upload."
         )
-        upload_two_phase(src, args.hdfs_dir, target_fs)
+        upload_two_phase(src, name, args.hdfs_dir, target_fs)
         return
     if not resp.ok:
         show_http_error(resp)
-    stored = response_text(resp) or f"{args.hdfs_dir}/{src.name}"
+    stored = response_text(resp) or f"{args.hdfs_dir}/{name}"
     print(f"Uploaded {src} -> {stored} [{fs_label(target_fs)}]")
 
 
@@ -314,14 +319,14 @@ def response_text(resp: requests.Response) -> str:
     return resp.text.strip().strip('"')
 
 
-def upload_two_phase(src: Path, hdfs_dir: str, target_fs: dict) -> None:
+def upload_two_phase(src: Path, name: str, hdfs_dir: str, target_fs: dict) -> None:
     """Legacy flow, kept for Rocket versions without /fileBrowser/upload."""
     # Phase 1 — push the bytes to a temp path on the Rocket pod.
     with open(src, "rb") as fh:
         resp = request(
             "POST", "/fileBrowser/uploadLocalFile",
             headers={"Accept": "application/json"},
-            files={"binary": (src.name, fh)},
+            files={"binary": (name, fh)},
         )
     if not resp.ok:
         show_http_error(resp)
@@ -344,7 +349,7 @@ def upload_two_phase(src: Path, hdfs_dir: str, target_fs: dict) -> None:
             continue
         if not resp.ok:
             show_http_error(resp)
-        print(f"Uploaded {src} -> {hdfs_dir}/{src.name} [{fs_label(target_fs)}]")
+        print(f"Uploaded {src} -> {hdfs_dir}/{name} [{fs_label(target_fs)}]")
         return
     fail(f"Upload commit kept returning HTTP 420 after {UPLOAD_COMMIT_RETRIES} attempts.")
 
@@ -491,6 +496,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_up.add_argument("local_src")
     p_up.add_argument("hdfs_dir", metavar="dir", help="Target directory (absolute, in the chosen filesystem).")
     p_up.add_argument("--fs", help=FS_HELP)
+    p_up.add_argument("--name", help="Remote file name (default: the local file's name).")
     p_up.add_argument(
         "--legacy", action="store_true",
         help="Force the legacy two-request upload (uploadLocalFile + putLocalFileToHadoopFs).",

@@ -32,30 +32,34 @@ por compatibilidad. El script repliega a él automáticamente si el servidor res
    bucket equivocado es publicar en el sitio equivocado. Incluye el filesystem en el
    destino que confirmas con el usuario.
 
-3. **Destino — pregunta y luego confirma. No ejecutes la subida antes de que el usuario
-   diga que sí.**
-   - Si el usuario no nombró el directorio destino, **pregúntaselo**. Nunca elijas uno
-     por tu cuenta — ni el `defaultPath` del filesystem ni un directorio que listaste
-     antes.
-   - Después indica el filesystem, el directorio y el nombre final del fichero, y
-     **espera una confirmación explícita** — aunque la petición dijera "súbelo". Una
-     subida publica el fichero donde otras personas y procesos lo leen.
-   - Si ese nombre ya existe allí (`ls` del directorio), dilo y pregunta cómo seguir
-     (otro nombre, o borrar el antiguo con `rm`); nunca borres por tu cuenta.
+3. **Destino — nunca lo adivines.** Una subida publica el fichero donde otras personas y
+   procesos lo leen.
+   - **El usuario nombró el directorio** → esa es la confirmación: indica el filesystem,
+     el directorio y el nombre final en una línea y sigue.
+   - **El usuario no lo nombró** → **pregúntaselo**. Nunca elijas uno por tu cuenta — ni
+     el `defaultPath` del filesystem ni un directorio que listaste antes. Si propones uno
+     (p.ej. un directorio recién creado en esta conversación), indica el filesystem, el
+     directorio y el nombre final y **espera un sí explícito** antes de subir.
+   - **El nombre está ocupado** (haz `ls` del directorio antes) → dilo y pregunta cómo
+     seguir: otro nombre, o borrar el antiguo con `rm` (que necesita su propia
+     confirmación); nunca borres por tu cuenta. Si el usuario pide "otro nombre" sin
+     darlo, elige uno libre, pásalo con `--name` y di cuál has usado.
 
 4. **Sube**:
 
    ```bash
    python3 scripts/rocket_file_browser.py upload \
-     "<origen_local>" "<dir>" --fs <id>:<type> [--legacy]
+     "<origen_local>" "<dir>" --fs <id>:<type> [--name <nombre_remoto>] [--legacy]
    ```
 
    - `<origen_local>`: fichero local existente en el sandbox. Un fichero que crees para
      subirlo va en la carpeta de la tarea actual (o en el workspace), no en `/tmp`.
    - `<dir>`: **directorio** destino (absoluto, en ese filesystem; en S3 relativo a la
-     raíz del bucket); el fichero conserva su nombre.
+     raíz del bucket); el fichero conserva su nombre salvo que se pase `--name`.
      Si no existe, Rocket lo crea, directorios intermedios incluidos — no hace falta
      `mkdir` previo, pero una errata en la ruta crea en silencio un árbol nuevo.
+   - `--name`: nombre del fichero remoto. Úsalo para subir con otro nombre en vez de
+     copiar o renombrar el fichero local.
 
 ## Salida esperada
 

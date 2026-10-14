@@ -275,7 +275,7 @@ def test_upload_single_request(monkeypatch, tmp_path):
     src.write_text("hi")
     calls = _recorder(monkeypatch, FakeResp(json_data="/data/f.txt"))
 
-    rfb.cmd_upload(ns(local_src=str(src), hdfs_dir="/data", fs="hdfs1:HDFS", legacy=False))
+    rfb.cmd_upload(ns(local_src=str(src), hdfs_dir="/data", fs="hdfs1:HDFS", legacy=False, name=None))
 
     assert len(calls) == 1
     method, path, kwargs = calls[0]
@@ -293,7 +293,7 @@ def test_upload_to_an_s3_bucket(monkeypatch, tmp_path):
     src.write_text("hi")
     calls = _recorder(monkeypatch, FakeResp(json_data="/landing/f.txt"))
 
-    rfb.cmd_upload(ns(local_src=str(src), hdfs_dir="/landing", fs="bucket-a:S3", legacy=False))
+    rfb.cmd_upload(ns(local_src=str(src), hdfs_dir="/landing", fs="bucket-a:S3", legacy=False, name=None))
 
     _, _, kwargs = calls[0]
     assert kwargs["params"] == {
@@ -319,7 +319,7 @@ def test_upload_falls_back_to_the_legacy_flow(monkeypatch, tmp_path):
         return seq.pop(0)
 
     monkeypatch.setattr(rfb, "request", fr)
-    rfb.cmd_upload(ns(local_src=str(src), hdfs_dir="/data", fs="hdfs1:HDFS", legacy=False))
+    rfb.cmd_upload(ns(local_src=str(src), hdfs_dir="/data", fs="hdfs1:HDFS", legacy=False, name=None))
 
     assert [c[1] for c in calls] == [
         "/fileBrowser/upload",
@@ -339,7 +339,7 @@ def test_upload_legacy_flag_skips_the_one_shot_route(monkeypatch, tmp_path):
         return seq.pop(0)
 
     monkeypatch.setattr(rfb, "request", fr)
-    rfb.cmd_upload(ns(local_src=str(src), hdfs_dir="/data", fs="hdfs1:HDFS", legacy=True))
+    rfb.cmd_upload(ns(local_src=str(src), hdfs_dir="/data", fs="hdfs1:HDFS", legacy=True, name=None))
 
     assert [c[1] for c in calls] == [
         "/fileBrowser/uploadLocalFile",
@@ -364,10 +364,40 @@ def test_upload_retries_on_420(monkeypatch, tmp_path):
     monkeypatch.setattr(rfb, "request", fr)
     monkeypatch.setattr(rfb.time, "sleep", lambda _s: None)
 
-    rfb.cmd_upload(ns(local_src=str(src), hdfs_dir="/data", fs="hdfs1:HDFS", legacy=True))
+    rfb.cmd_upload(ns(local_src=str(src), hdfs_dir="/data", fs="hdfs1:HDFS", legacy=True, name=None))
 
     assert len(calls) == 3
     assert calls[0][1] == "/fileBrowser/uploadLocalFile"
     assert calls[1][1] == "/fileBrowser/putLocalFileToHadoopFs"
     assert calls[2][1] == "/fileBrowser/putLocalFileToHadoopFs"
     assert calls[2][2]["json"]["dockerPath"] == "/tmp/uploads/u/f.txt"
+
+
+def test_upload_name_sets_the_remote_name(monkeypatch, tmp_path, capsys):
+    src = tmp_path / "local.txt"
+    src.write_text("hi")
+    calls = _recorder(monkeypatch, FakeResp(json_data="/data/remote.txt"))
+
+    rfb.cmd_upload(ns(local_src=str(src), hdfs_dir="/data", fs="hdfs1:HDFS", legacy=False, name="remote.txt"))
+
+    _, _, kwargs = calls[0]
+    assert kwargs["files"]["binary"][0] == "remote.txt"
+    assert "/data/remote.txt" in capsys.readouterr().out
+
+
+def test_upload_name_also_applies_to_the_legacy_flow(monkeypatch, tmp_path):
+    src = tmp_path / "local.txt"
+    src.write_text("hi")
+    calls = _recorder(monkeypatch, FakeResp(text="/tmp/uploads/x/remote.txt", headers={"content-type": "text/plain"}))
+
+    rfb.cmd_upload(ns(local_src=str(src), hdfs_dir="/data", fs="hdfs1:HDFS", legacy=True, name="remote.txt"))
+
+    assert calls[0][2]["files"]["binary"][0] == "remote.txt"
+
+
+@pytest.mark.parametrize("bad", ["a/b.txt", "..", "."])
+def test_upload_name_must_be_a_plain_file_name(tmp_path, bad):
+    src = tmp_path / "local.txt"
+    src.write_text("hi")
+    with pytest.raises(SystemExit):
+        rfb.cmd_upload(ns(local_src=str(src), hdfs_dir="/data", fs="hdfs1:HDFS", legacy=False, name=bad))

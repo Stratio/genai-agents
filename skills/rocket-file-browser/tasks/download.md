@@ -50,8 +50,8 @@ Downloaded /data/kk/report.json [hdfs1.s000001-datastores:HDFS] -> /root/project
 
 - `401/403` — the user's certificate identity is not authorized for that path (Gosec;
   on S3 the check is against `/<bucket><path>`).
-- Path not found or filesystem error — expect HTTP 500 rather than 404 (Rocket reports a
-  missing path as 500; see `tasks/ls.md`). Check the filesystem before the path: the
+- Path not found or filesystem error — expect HTTP 500 rather than 404: a missing file
+  comes back as `errorCode` `1469` with `File does not exist: <path>` in `exception`. Check the filesystem before the path: the
   file may live on another one. Surface the HTTP code + body verbatim.
 - Restricted roots (`/extensions`, `/mockData`, `/backups`, `/mlProjectModelArtifacts`,
   `/mlProjectExecutionsArtifacts`) are refused client-side before the call.

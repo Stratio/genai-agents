@@ -88,10 +88,12 @@ mensaje genérico.
   workspace — para que el fichero quede junto al trabajo que lo usa.
 - **Nunca publiques por iniciativa propia.** Sube, copia o mueve a Rocket solo cuando el
   usuario lo pida. Generar un entregable en local no implica subirlo.
-- **Confirma el destino antes de subir.** Indica el filesystem, el directorio y el nombre
-  final del fichero; la subida se rechaza si ese nombre ya existe, así que compruébalo con `ls` y
-  pregunta al usuario cómo seguir (renombrar, o borrar el antiguo con `rm`) en lugar de
-  borrar por tu cuenta.
+- **Nunca adivines el destino de una subida.** Si el usuario no nombró el directorio,
+  pregúntaselo (nunca uses el `defaultPath` por defecto); si lo propusiste tú, espera un
+  sí explícito. Indica siempre el filesystem, el directorio y el nombre final. La subida
+  se rechaza si ese nombre ya existe, así que compruébalo con `ls` y pregunta al usuario
+  cómo seguir (otro nombre con `--name`, o borrar el antiguo con `rm`) en lugar de
+  borrar por tu cuenta — `tasks/upload.md` paso 3.
 - **Las operaciones destructivas siempre requieren confirmación explícita** — `rm` y `mv`
   (mover o renombrar rompe toda ruta que apuntaba al original), enumerando las rutas
   exactas y el filesystem en que están.

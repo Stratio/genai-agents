@@ -19,7 +19,8 @@ cliente Python, `scripts/rocket_file_browser.py`, hace el trabajo HTTP.
 - **download** — `POST /fileBrowser/download`, streaming de los bytes a una ruta local.
 - **upload** — una sola petición: `POST /fileBrowser/upload?path=<dir>` (multipart
   `binary`), autorizada antes de aceptar un solo byte y con los bytes en streaming
-  directo al filesystem; un nombre ya ocupado se rechaza. Repliega al flujo antiguo de
+  directo al filesystem; un nombre ya ocupado se rechaza, y `--name` sube con otro nombre
+  remoto. Repliega al flujo antiguo de
   dos peticiones (`uploadLocalFile` + `putLocalFileToHadoopFs`, con reintento del HTTP 420)
   en un Rocket que no lo sirva, o con `--legacy`.
 - **ls** — `POST /fileBrowser/findByPath` (listado de directorio / stat de fichero).

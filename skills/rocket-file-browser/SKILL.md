@@ -88,10 +88,12 @@ with a generic message.
   workspace root — so the file sits next to the work that uses it.
 - **Never publish on your own initiative.** Upload, copy or move into Rocket only when
   the user asks for it. Producing a deliverable locally does not imply uploading it.
-- **Confirm the destination before an upload.** State the filesystem, the directory and
-  the final file name; the upload is refused if that name already exists, so check with `ls` and
-  ask the user how to proceed (rename, or delete the old one with `rm`) instead of
-  deleting on your own.
+- **Never guess an upload destination.** If the user did not name the directory, ask
+  for it (never default to `defaultPath`); if you proposed it, wait for an explicit yes.
+  Always state the filesystem, directory and final name. The upload is refused if that
+  name already exists, so check with `ls` and ask the user how to proceed (another name
+  via `--name`, or delete the old one with `rm`) instead of deleting on your own —
+  `tasks/upload.md` step 3.
 - **Destructive operations always need explicit confirmation** — `rm` and `mv` (a move
   or rename breaks every path that pointed at the original), listing the exact paths
   and the filesystem they live in.
