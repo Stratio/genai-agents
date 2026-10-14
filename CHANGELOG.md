@@ -2,7 +2,7 @@
 
 ## 0.3.1 (upcoming)
 
-* **New shared skill `rocket-file-browser`**: manages files in Rocket's File Browser from the sandbox — download, upload, ls, cp, mv, rm, mkdir, compress and extract — over Rocket's mutual-TLS listener (port 7777) with the sandbox client certificate, so every call runs with the user's own Gosec permissions. Supports every filesystem Rocket exposes (its internal HDFS plus the configured S3 buckets): the target filesystem is always sent explicitly, the agent asks the user when several exist, and moving data across filesystems goes through download + upload. Requires `ROCKET_API_URL` in the project pod. Imported by `data-analytics-officer`, `data-quality`, `data-governance-officer` and (read-only) `semantic-layer`. EN + ES.
+* **New shared skill `rocket-file-browser`**: manages files in Rocket's File Browser from the sandbox — download, upload, ls, cp, mv, rm, mkdir, compress and extract — over Rocket's mutual-TLS listener (port 7777) with the sandbox client certificate, so every call runs with the user's own Gosec permissions. Supports every filesystem Rocket exposes (its internal HDFS plus the configured S3 buckets): the target filesystem is always sent explicitly, the agent asks the user when several exist, and moving data across filesystems goes through download + upload. Requires `ROCKET_API_URL` in the project pod. Imported by `data-analytics-officer`, `data-quality`, `data-governance-officer` and `semantic-layer`. EN + ES.
 
 ## 0.3.0 (2026-08-06)
 

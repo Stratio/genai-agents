@@ -50,8 +50,8 @@ Downloaded /data/kk/report.json [hdfs1.s000001-datastores:HDFS] -> /root/project
 
 - `401/403` — la identidad del certificado no está autorizada para esa ruta (Gosec; en
   S3 se comprueba contra `/<bucket><ruta>`).
-- Ruta no encontrada o error de filesystem — espera HTTP 500 más que 404 (Rocket informa
-  de una ruta inexistente como 500; ver `tasks/ls.md`). Revisa el filesystem antes que la
+- Ruta no encontrada o error de filesystem — espera HTTP 500 más que 404: un fichero
+  inexistente llega con `errorCode` `1469` y `File does not exist: <ruta>` en `exception`. Revisa el filesystem antes que la
   ruta: el fichero puede estar en otro. Muestra el código HTTP + cuerpo verbatim.
 - Raíces restringidas (`/extensions`, `/mockData`, `/backups`, `/mlProjectModelArtifacts`,
   `/mlProjectExecutionsArtifacts`) se rechazan en cliente antes de la llamada.

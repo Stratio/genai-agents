@@ -19,7 +19,7 @@ single Python client, `scripts/rocket_file_browser.py`, does the HTTP work.
 - **download** — `POST /fileBrowser/download`, streaming the raw bytes to a local path.
 - **upload** — one request: `POST /fileBrowser/upload?path=<dir>` (multipart `binary`),
   authorized before any byte is accepted and streamed straight into the filesystem; an
-  existing name is refused. Falls back to the legacy two-request flow
+  existing name is refused, and `--name` uploads under another remote name. Falls back to the legacy two-request flow
   (`uploadLocalFile` + `putLocalFileToHadoopFs`, retrying HTTP 420) on a Rocket that does
   not serve it, or with `--legacy`.
 - **ls** — `POST /fileBrowser/findByPath` (directory listing / file stat).

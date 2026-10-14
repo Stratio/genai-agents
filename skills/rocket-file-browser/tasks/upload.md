@@ -32,28 +32,34 @@ compatibility. The script falls back to it automatically when the server answers
    upload to the wrong bucket is a publication in the wrong place. Include the
    filesystem in the destination you confirm with the user.
 
-3. **Destination — ask, then confirm. Do not run the upload before the user says yes.**
-   - If the user did not name the target directory, **ask for it**. Never pick one on
-     your own — not the filesystem's `defaultPath`, not a directory you listed earlier.
-   - Then state the filesystem, the directory and the final file name, and **wait for
-     an explicit confirmation** — even when the request said "upload it". An upload
-     publishes the file where other people and processes read it.
-   - If that name already exists there (`ls` the directory), say so and ask how to
-     proceed (another name, or delete the old one with `rm`); never delete on your own.
+3. **Destination — never guess it.** An upload publishes the file where other people
+   and processes read it.
+   - **The user named the directory** → that is the confirmation: state the filesystem,
+     directory and final name in one line and go on.
+   - **The user did not name it** → **ask for it**. Never pick one on your own — not the
+     filesystem's `defaultPath`, not a directory you listed earlier. When you propose one
+     (e.g. a directory just created in this conversation), state the filesystem,
+     directory and final name and **wait for an explicit yes** before uploading.
+   - **The name is taken** (`ls` the directory first) → say so and ask how to proceed:
+     another name, or delete the old one with `rm` (that needs its own confirmation);
+     never delete on your own. If the user asks for "another name" without giving one,
+     pick one that is free, pass it with `--name` and say which one you used.
 
 4. **Upload**:
 
    ```bash
    python3 scripts/rocket_file_browser.py upload \
-     "<local_src>" "<dir>" --fs <id>:<type> [--legacy]
+     "<local_src>" "<dir>" --fs <id>:<type> [--name <remote_name>] [--legacy]
    ```
 
    - `<local_src>`: existing local file in the sandbox. A file you create in order to
      upload it goes in the current task folder (or the workspace), not in `/tmp`.
    - `<dir>`: target **directory** (absolute, in that filesystem; on S3 relative to the
-     bucket root); the file keeps its basename.
+     bucket root); the file keeps its basename unless `--name` is given.
      If it does not exist, Rocket creates it, intermediate directories included —
      no prior `mkdir` needed, but a typo in the path silently creates a new tree.
+   - `--name`: remote file name. Use it to upload under another name instead of copying
+     or renaming the local file.
 
 ## Expected output
 
