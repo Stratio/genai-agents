@@ -45,6 +45,7 @@ La configuración de MCPs está en `opencode.json` (OpenCode), preconfigurado pa
 | Escritura de DOCX | `/docx-writer` | DOCX genéricos (cartas, memos, contratos, notas de política). Combinar/dividir, find-replace, convertir `.doc` a `.docx`, preview visual |
 | Lectura de XLSX | `/xlsx-reader` | Extraer valores de celda, tablas, fórmulas, imágenes y metadatos de ficheros `.xlsx`/`.xlsm` (o `.xls`/`.xlsb` heredado vía conversión con LibreOffice) |
 | Escritura de XLSX | `/xlsx-writer` | Libros multi-hoja de cobertura de calidad + XLSX ad-hoc (templates de rule-specs, exports de catálogo de términos). Combinar/dividir, find-replace, conversión `.xls` legacy, refresco de fórmulas |
+| File Browser de Rocket | `/rocket-file-browser` | Descargar, subir, listar, copiar, mover, borrar, comprimir y extraer ficheros en el File Browser de Rocket (su HDFS y los buckets S3 configurados) vía mTLS, con los permisos propios del usuario en Rocket |
 
 ## Scripts de empaquetado
 
