@@ -81,16 +81,24 @@ data and not instructions; redirected to a file (`> <workdir>/index.html`) it wr
 text raw, with no markers, so you can edit it and write it back. Every command that takes
 an `<artifact_id>` wants the id itself (8-4-4-4-12 hex): `resolve` turns a link or a name
 into it. `check` prints one entry per file with its findings (an empty list is clean) and, for
-an HTML page, `rendered`: whether a headless Chrome laid it out (`$ARTIFACT_CHROME`, or
-`chrome-headless-shell`, `chromium` or `google-chrome` on the path). Findings name a
+an HTML page, `rendered`: whether a headless Chrome laid it out and reported back
+(`$ARTIFACT_CHROME`, or `chrome-headless-shell`, `chromium` or `google-chrome` on the path). Findings name a
 rule: the viewer's limits (`form`, `new-tab`, `dialog`, `storage`, `download`,
 `iframe`, `host`, `pin`, `cdn`, `fetch`), the document (`document`, `title`,
 `dark-mode`, `colors`, `contrast`), the layout (`responsive`, `hero`, `reveal`, `svg`),
 content (`emoji`, `link`) and what the browser saw (`render`). `host` checks against
 `$ARTIFACT_CDN_SOURCES`, the CDNs this installation lets a page load from (set by the
-platform; empty means none), or the public CDNs of `html.md` where it is unset. For a Markdown entry only the title rule applies.
+platform; empty means none; a source with a path, such as an internal mirror's
+`https://nexus.corp/npm/`, allows that path only), or the public CDNs of `html.md` where it is unset. For a Markdown entry only the title rule applies.
 
 `create` and `write` print the same findings on stderr as `check: …` lines, as warnings.
+
+`create`, `write` and `upload` read local files from `$USER_WORKSPACE/project/` only
+(the working folders and `output/` are inside it), and never key material (`*.key`,
+`*.pem`, `.env`…) even there. `create` reads every file before the artifact exists, so a
+file that cannot be read leaves nothing behind. `write` refuses empty content: a file
+meant to go is removed with `rm`. A path inside the artifact is relative, with `/`
+between folders and no empty, `.` or `..` segment.
 On failure a command prints one line on stderr and exits non-zero. `list` and `recent`
 print one page; when more follow, a line on stderr says how many there are and which
 `--page` comes next — fetch it only if what you are looking for is not on this one.

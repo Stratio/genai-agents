@@ -63,6 +63,7 @@ def cli(monkeypatch):
     module = _load()
     monkeypatch.setenv("GENAI_API_URL", "https://genai-api:8080")
     monkeypatch.delenv("ARTIFACT_CDN_SOURCES", raising=False)  # the public CDNs unless a test sets them
+    monkeypatch.delenv("USER_WORKSPACE", raising=False)  # no project folder unless a test sets one
     calls = []
     module.members = {
         "users": [{"id": "existing", "role": "reader"}],
@@ -1484,3 +1485,323 @@ class TestLayout:
         for name in _SKILL_FILES[1:]:
             text = (_SKILL / name).read_text(encoding="utf-8")
             assert not text.startswith("---"), name  # no frontmatter: not a skill of its own
+
+
+class TestProjectFolder:
+    """Inside a sandbox an artifact only takes files from $USER_WORKSPACE/project. Next to
+    it the workspace keeps OpenCode's sessions, every conversation of the project with
+    its tool output: an allowlist closes them, and whatever lands there later."""
+
+    @pytest.fixture
+    def workspace(self, cli, tmp_path, monkeypatch):
+        monkeypatch.setenv("USER_WORKSPACE", str(tmp_path))
+        (tmp_path / "project" / "output").mkdir(parents=True)
+        (tmp_path / "project" / "output" / "report.html").write_text("<p>report</p>")
+        sessions = tmp_path / ".opencode_sessions_data" / "opencode" / "storage"
+        sessions.mkdir(parents=True)
+        (sessions / "msg.json").write_text('{"role": "tool", "output": "rows"}')
+        (sessions / "page.html").write_text("<p>a conversation</p>")
+        return tmp_path
+
+    def test_a_file_in_the_project_goes_up(self, cli, workspace):
+        cli.main(["create", "--title", "T", "--file", str(workspace / "project" / "output" / "report.html")])
+
+        assert cli.calls[-1]["payload"]["files"][0]["content"] == "<p>report</p>"
+
+    def test_the_sessions_next_to_it_never_do(self, cli, workspace, capsys):
+        page = workspace / ".opencode_sessions_data" / "opencode" / "storage" / "page.html"
+        for argv in (
+            ["create", "--title", "T", "--file", str(page)],
+            ["write", _ID, "index.html", "--from-file", str(page)],
+            ["upload", _ID, "img/logo.png", "--from-file", str(page)],
+        ):
+            with pytest.raises(SystemExit):
+                cli.main(argv)
+            assert "outside the project folder" in capsys.readouterr().err
+
+        assert cli.calls == []
+
+    def test_a_link_from_the_project_to_them_is_what_it_points_to(self, cli, workspace):
+        link = workspace / "project" / "index.html"
+        link.symlink_to(workspace / ".opencode_sessions_data" / "opencode" / "storage" / "page.html")
+
+        with pytest.raises(SystemExit):
+            cli.main(["create", "--title", "T", "--file", str(link)])
+        assert cli.calls == []
+
+    def test_key_material_inside_the_project_is_still_refused(self, cli, workspace):
+        (workspace / "project" / ".env").write_text("TOKEN=x")
+
+        with pytest.raises(SystemExit):
+            cli.main(["create", "--title", "T", "--rename", "x.html", "--file", str(workspace / "project" / ".env")])
+        assert cli.calls == []
+
+    def test_the_page_check_reads_no_stylesheet_outside_it(self, cli, workspace):
+        outside = workspace / "leak.css"
+        outside.write_text("p { color: #123456 }")
+
+        css, _ = cli._local_assets(f'<link rel="stylesheet" href="{outside}">', str(workspace / "project"))
+
+        assert "#123456" not in css
+
+    def test_outside_a_sandbox_there_is_no_project_folder(self, cli, tmp_path, monkeypatch):
+        monkeypatch.delenv("USER_WORKSPACE", raising=False)
+        assert cli._project_root() is None
+        assert not cli._outside_project(str(tmp_path / "anything.html"))
+
+
+class TestCreateReadsFirst:
+    """Every file is read before the artifact exists: a file that cannot be read stops
+    the call, instead of leaving an artifact without it."""
+
+    def test_a_missing_image_stops_before_the_artifact_exists(self, cli, tmp_path, monkeypatch, capsys):
+        (tmp_path / "index.html").write_text("<p>x</p>")
+        monkeypatch.chdir(tmp_path)
+
+        with pytest.raises(SystemExit):
+            cli.main(["create", "--title", "T", "--file", "index.html", "--file", "missing.png"])
+
+        assert cli.calls == []
+        assert "missing.png does not exist" in capsys.readouterr().err
+
+    def test_text_that_is_not_utf8_says_so(self, cli, tmp_path, monkeypatch, capsys):
+        (tmp_path / "index.html").write_text("<p>x</p>")
+        (tmp_path / "app.js").write_bytes("const año = 1;".encode("latin-1"))
+        monkeypatch.chdir(tmp_path)
+
+        with pytest.raises(SystemExit):
+            cli.main(["create", "--title", "T", "--file", "index.html", "--file", "app.js"])
+
+        assert cli.calls == []
+        assert "app.js is not UTF-8 text" in capsys.readouterr().err
+
+    def test_the_entry_is_the_first_page_whatever_the_order(self, cli, tmp_path, monkeypatch):
+        (tmp_path / "site.css").write_text("p{}")
+        (tmp_path / "index.html").write_text("<p>x</p>")
+        monkeypatch.chdir(tmp_path)
+
+        cli.main(["create", "--title", "T", "--file", "site.css", "--file", "index.html"])
+
+        assert cli.calls[-1]["payload"]["entry_path"] == "index.html"
+
+    def test_two_files_stored_under_one_name_are_refused(self, cli, tmp_path, monkeypatch, capsys):
+        for folder in ("a", "b"):
+            (tmp_path / folder).mkdir()
+            (tmp_path / folder / "index.html").write_text("<p>x</p>")
+        monkeypatch.chdir(tmp_path / "a")
+
+        with pytest.raises(SystemExit):
+            cli.main(["create", "--title", "T", "--file", "index.html", "--file", "../b/index.html"])
+
+        assert cli.calls == []
+        assert "would both be stored as index.html" in capsys.readouterr().err
+
+    def test_a_name_that_starts_with_dots_is_still_under_base(self, cli, tmp_path):
+        assert cli._stored_path(str(tmp_path / "..notes.md"), str(tmp_path)) == "..notes.md"
+
+
+class TestWriteNeverErases:
+    """`write` is not one of the commands the sandbox asks the person to confirm, so it
+    must not do what `rm` does: an empty write is refused."""
+
+    @pytest.mark.parametrize("stdin", ["", "  \n"])
+    def test_an_empty_stdin_is_refused(self, cli, monkeypatch, capsys, stdin):
+        monkeypatch.setattr("sys.stdin", io.StringIO(stdin))
+
+        with pytest.raises(SystemExit):
+            cli.main(["write", _ID, "index.html"])
+
+        assert cli.calls == []
+        assert "use `rm`" in capsys.readouterr().err
+
+    def test_a_terminal_is_not_waited_on(self, cli, monkeypatch, capsys):
+        class _Terminal(io.StringIO):
+            def isatty(self):
+                return True
+
+        monkeypatch.setattr("sys.stdin", _Terminal())
+
+        with pytest.raises(SystemExit):
+            cli.main(["write", _ID, "index.html"])
+        assert cli.calls == []
+        assert "--from-file" in capsys.readouterr().err
+
+    def test_an_empty_file_is_refused(self, cli, tmp_path):
+        (tmp_path / "index.html").write_text("")
+
+        with pytest.raises(SystemExit):
+            cli.main(["write", _ID, "index.html", "--from-file", str(tmp_path / "index.html")])
+        assert cli.calls == []
+
+    def test_content_through_stdin_still_goes(self, cli, monkeypatch):
+        monkeypatch.setattr("sys.stdin", io.StringIO("# Notes\n"))
+
+        cli.main(["write", _ID, "notes.md"])
+
+        assert _put(cli)["payload"]["content"] == "# Notes\n"
+
+
+class TestFilePaths:
+    """A path inside the artifact goes into the request path too: refused before any
+    request when a proxy could read it as another endpoint."""
+
+    @pytest.mark.parametrize(
+        "argv",
+        [
+            ["read", _ID, "{}"], ["rm", _ID, "{}"], ["write", _ID, "{}"],
+            ["create", "--title", "T", "--rename", "{}", "--file", "index.html"],
+            ["create", "--title", "T", "--entry-path", "{}"],
+        ],
+        ids=lambda argv: argv[0] if argv[0] != "create" else "create" + argv[3],
+    )
+    @pytest.mark.parametrize("bad", [f"../../{_ID}", "a/../b.html", "/etc/passwd", "a//b.html", "./a.html",
+                                     "a\\b.html", "", "a.html\r\nX: y"])
+    def test_anything_but_a_relative_path_is_refused(self, cli, argv, bad):
+        with pytest.raises(SystemExit):
+            cli.main([a.replace("{}", bad) for a in argv])
+        assert cli.calls == []
+
+    @pytest.mark.parametrize("bad", [f"../../{_ID}.png", "img/../logo.png", "/etc/logo.png", "img//logo.png",
+                                     "./logo.png", "img\\logo.png"])
+    def test_an_upload_to_anything_but_a_relative_path_is_refused(self, cli, tmp_path, bad):
+        (tmp_path / "logo.png").write_bytes(PNG)
+
+        with pytest.raises(SystemExit):
+            cli.main(["upload", _ID, bad, "--from-file", str(tmp_path / "logo.png")])
+        assert cli.calls == []
+
+    def test_a_nested_path_passes(self, cli):
+        cli.main(["rm", _ID, "anexos/old page.html"])
+
+        assert cli.calls[-1]["path"] == f"/v1/artifacts/{_ID}/files/anexos/old%20page.html"
+
+    def test_a_line_break_never_reaches_the_upload_header(self, cli):
+        body, _ = cli._multipart('lo"go\r\nX-Injected: 1.png', b"x")
+
+        assert b'filename="logoX-Injected: 1.png"' in body
+
+
+class TestPagingBounds:
+    @pytest.mark.parametrize("argv", [["list", "--page", "0"], ["list", "--page-size", "201"],
+                                      ["recent", "--page-size", "0"], ["list", "--page", "two"]])
+    def test_out_of_the_api_bounds_is_refused_before_a_request(self, cli, monkeypatch, argv):
+        monkeypatch.setenv("PROJECT_ID", "proj-1")
+        with pytest.raises(SystemExit):
+            cli.main(argv)
+        assert cli.calls == []
+
+
+class TestFailuresAreMessages:
+    """Every failure is one line on stderr and a non-zero exit, never a traceback."""
+
+    def test_no_certificate(self, wire, monkeypatch, capsys):
+        def missing():
+            raise FileNotFoundError(2, "No such file or directory")
+
+        monkeypatch.setattr(wire, "_context", missing)
+
+        with pytest.raises(SystemExit):
+            wire._call("GET", "/v1/artifacts/an-id")
+        assert "certificate could not be loaded" in capsys.readouterr().err
+
+    @pytest.mark.parametrize("error", [TimeoutError("timed out"), ConnectionResetError("reset")])
+    def test_an_answer_cut_short(self, wire, capsys, error):
+        wire.error = error
+
+        with pytest.raises(SystemExit):
+            wire._call("GET", "/v1/artifacts/an-id")
+        assert "no complete answer" in capsys.readouterr().err
+
+    @pytest.mark.parametrize("command", [["url", _ID], ["copy", _ID], ["resolve", _ID], ["read", _ID, "index.html"]])
+    def test_an_answer_that_is_not_json(self, cli, capsys, command):
+        cli.artifact = "<html>502 Bad Gateway</html>"
+
+        with pytest.raises(SystemExit):
+            cli.main(command)
+        assert "Unexpected response" in capsys.readouterr().err
+
+
+class TestConfirmedCommands:
+    """genai-agents-sandbox asks the person before `share`, `delete` and `rm`
+    (ARTIFACT_BASH_CONFIRM in bootstrap/opencode.py), matching the command line. A new
+    command must be placed here; one that shares or destroys must be added there as
+    well, or it runs with nobody confirming it."""
+
+    CONFIRMED_IN_THE_SANDBOX = {"share", "delete", "rm"}
+    UNCONFIRMED = {"list", "recent", "resolve", "create", "get", "files", "members", "read", "write", "upload",
+                   "rename", "tag", "copy", "workdir", "check", "url"}
+
+    def test_every_command_is_placed(self, cli):
+        commands = set(cli._parser()._subparsers._group_actions[0].choices)
+
+        assert commands == self.CONFIRMED_IN_THE_SANDBOX | self.UNCONFIRMED, (
+            "A command was added or renamed: place it above, and if it shares or destroys, "
+            "add it to ARTIFACT_BASH_CONFIRM in genai-agents-sandbox."
+        )
+
+
+class TestCheckRoundThree:
+    """What the review against genai-api found."""
+
+    def test_an_id_selector_is_not_a_color(self, cli):
+        page = _GOOD_PAGE.replace(".band {", "#feed, #cafe .x { margin: 0; } .band {")
+        assert cli._page_findings(page, title="Ventas Q3") == []
+
+    @pytest.mark.parametrize(
+        "source, url, allowed",
+        [
+            ("https://nexus.corp/npm/", "https://nexus.corp/npm/chart.js@4.4.1/x.js", True),
+            ("https://nexus.corp/npm/", "https://nexus.corp/other/x.js", False),
+            ("https://nexus.corp/npm/lib.js", "https://nexus.corp/npm/lib.js", True),
+            ("https://nexus.corp/npm/lib.js", "https://nexus.corp/npm/lib.js.map", False),
+            ("https://cdn.jsdelivr.net", "https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js", True),
+            ("https://nexus.corp:8443", "https://nexus.corp/x.js", False),
+            ("https://cdn.jsdelivr.net", "http://cdn.jsdelivr.net/x.js", False),
+        ],
+    )
+    def test_a_source_with_a_path_allows_that_path_only(self, cli, source, url, allowed):
+        """genai-api puts the sources in the page's CSP as they are, and CSP reads a path."""
+        assert cli._source_allows(source, url) is allowed
+
+    @pytest.mark.parametrize("code, exists", [(404, False), (410, False), (429, None), (503, None), (405, None)])
+    def test_only_a_missing_file_is_a_missing_file(self, cli, monkeypatch, code, exists):
+        def answer(request, timeout):
+            raise urllib.error.HTTPError(request.full_url, code, "x", {}, None)
+
+        monkeypatch.setattr(cli.urllib.request, "urlopen", answer)
+        assert cli._url_exists(_OFF_TABLE_CHART_JS) is exists
+
+
+class TestRenderReportsWhatItDid:
+    def test_no_report_from_chrome_is_not_rendered(self, cli, tmp_path, monkeypatch, capsys):
+        (tmp_path / "index.html").write_text(_GOOD_PAGE)
+        monkeypatch.setattr(cli, "_url_exists", lambda url: True)
+        monkeypatch.setattr(cli, "_chrome", lambda: "/usr/bin/chromium")
+        monkeypatch.setattr(cli.subprocess, "run", lambda command, **kw: subprocess.CompletedProcess(command, 1, "", "crash"))
+
+        cli.main(["check", str(tmp_path / "index.html"), "--title", "Ventas Q3"])
+
+        [report] = json.loads(capsys.readouterr().out)
+        assert report["rendered"] is False and report["findings"] == []
+
+    def test_a_probe_it_cannot_write_is_not_a_crash(self, cli, tmp_path, monkeypatch):
+        (tmp_path / "index.html").write_text(_GOOD_PAGE)
+        monkeypatch.setattr(cli.os, "getpid", lambda: "no-such-dir/x")  # the probe's folder does not exist
+
+        assert cli._render_findings(str(tmp_path / "index.html"), "chrome") is None
+
+    def test_the_page_is_opened_by_a_well_formed_url(self, cli, tmp_path, monkeypatch):
+        folder = tmp_path / "Q3 #1 report"
+        folder.mkdir()
+        (folder / "index.html").write_text(_GOOD_PAGE)
+        opened = []
+
+        def _run(command, **kwargs):
+            opened.append(command[-1])
+            return subprocess.CompletedProcess(command, 0, "", "")
+
+        monkeypatch.setattr(cli.subprocess, "run", _run)
+        cli._render_findings(str(folder / "index.html"), "chrome")
+
+        [url] = opened
+        assert url.startswith("file:///") and " " not in url and "#" not in url

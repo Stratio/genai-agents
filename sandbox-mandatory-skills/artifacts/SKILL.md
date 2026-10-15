@@ -182,7 +182,7 @@ you write to without a permission prompt. Never `/tmp`, never `$USER_WORKSPACE/.
 is there to give it), and never a bare `.artifact/` (the commands run from this
 skill's directory). That is the pages you draft before `create`, the file you `read`
 to edit, the image or font you are about to `upload`, and the scripts and data that
-build a page or a file.
+build a page or a file. `create`, `write` and `upload` take no file outside `project/`.
 
 Get the folder from `workdir`: it creates it, named after the title in lowercase with
 dashes, and prints its absolute path. Write that path out in full in every later

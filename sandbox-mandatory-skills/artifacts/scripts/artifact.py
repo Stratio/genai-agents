@@ -22,9 +22,11 @@ script.
 """
 
 import argparse
+import contextlib
 import fnmatch
 import html
 import html.parser
+import http.client
 import json
 import os
 import re
@@ -40,6 +42,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 import uuid
+from pathlib import Path
 from typing import NoReturn
 
 DEFAULT_CERT = "/vault/secrets/cert.crt"
@@ -81,7 +84,13 @@ def _die(message: str) -> NoReturn:
     raise SystemExit(1)
 
 
-def _call(method: str, path: str, payload=None, raw: bytes = None, content_type=None):
+def _call(
+    method: str,
+    path: str,
+    payload: dict | None = None,
+    raw: bytes | None = None,
+    content_type: str | None = None,
+):
     url = f"{_base()}{path}"
     headers = {"Accept": "application/json"}
     if os.environ.get("PROJECT_ID"):
@@ -96,9 +105,11 @@ def _call(method: str, path: str, payload=None, raw: bytes = None, content_type=
         headers["Content-Type"] = content_type
     request = urllib.request.Request(url, data=body, headers=headers, method=method)
     try:
-        with urllib.request.urlopen(
-            request, context=_context(), timeout=60
-        ) as response:
+        context = _context()
+    except OSError as e:  # ssl.SSLError included
+        _die(f"The pod's certificate could not be loaded ({e}): this script only runs inside a sandbox.")
+    try:
+        with urllib.request.urlopen(request, context=context, timeout=60) as response:
             content = response.read()
     except urllib.error.HTTPError as e:
         detail = e.read().decode("utf-8", "replace")
@@ -107,6 +118,8 @@ def _call(method: str, path: str, payload=None, raw: bytes = None, content_type=
         _die(f"{method} {path} failed with {e.code}: {detail}")
     except urllib.error.URLError as e:
         _die(f"{method} {path} could not reach the API: {e.reason}")
+    except (OSError, http.client.HTTPException) as e:  # a timeout or a dropped connection
+        _die(f"{method} {path} got no complete answer from the API: {e}")
     if not content:
         return None
     try:
@@ -151,6 +164,26 @@ def _is_secret(local_path: str) -> bool:
     return any(fnmatch.fnmatchcase(n, p) for n in names for p in _SECRET_NAMES)
 
 
+def _project_root() -> str | None:
+    """The only folder an artifact's files are read from: $USER_WORKSPACE/project, which
+    the person sees in the file browser and which holds every working folder. Outside a
+    sandbox (no USER_WORKSPACE) there is no such folder, and no limit."""
+    workspace = os.environ.get("USER_WORKSPACE")
+    return os.path.realpath(os.path.join(workspace, "project")) if workspace else None
+
+
+def _outside_project(local_path: str) -> bool:
+    """Whether a local file resolves outside the project folder. An allowlist, where
+    _is_secret is a denylist: next to project/ the workspace keeps OpenCode's sessions
+    (every conversation of the project, tool output included), and whatever else lands
+    there later is closed too without naming it."""
+    root = _project_root()
+    if root is None:
+        return False
+    real = os.path.realpath(local_path)
+    return real != root and not real.startswith(root.rstrip(os.sep) + os.sep)
+
+
 def _source(local_path: str) -> str:
     """A local file the command may read to put in an artifact, as it was given."""
     if _is_secret(local_path):
@@ -159,15 +192,64 @@ def _source(local_path: str) -> str:
             f"({os.path.realpath(local_path)}): it is never uploaded to an artifact. "
             "Pass the files in the artifact's working folder."
         )
+    if _outside_project(local_path):
+        _die(
+            f"{local_path} is outside the project folder ({os.path.realpath(local_path)}): "
+            f"an artifact only takes files under {_project_root()}. Write it in the "
+            "artifact's working folder (`workdir`)."
+        )
+    if not os.path.isfile(local_path):
+        _die(f"{local_path} does not exist or is not a file.")
     return local_path
+
+
+def _read_text(local_path: str) -> str:
+    try:
+        with open(local_path, encoding="utf-8") as handle:
+            return handle.read()
+    except UnicodeDecodeError:
+        _die(
+            f"{local_path} is not UTF-8 text. Pages, stylesheets, scripts and subtitles "
+            "are UTF-8; images, fonts, audio and video go up as they are ("
+            + ", ".join(_BINARY_EXTENSIONS) + ")."
+        )
+    except OSError as e:
+        _die(f"{local_path} could not be read: {e.strerror}.")
+
+
+def _read_bytes(local_path: str) -> bytes:
+    try:
+        with open(local_path, "rb") as handle:
+            return handle.read()
+    except OSError as e:
+        _die(f"{local_path} could not be read: {e.strerror}.")
+
+
+def _file_path(value: str) -> str:
+    """A path inside the artifact as a command takes it: relative, with no empty, `.` or
+    `..` segment. It goes into the request path, so it is checked here as the API checks
+    it, before a request whose path a proxy could reshape."""
+    if (
+        not value
+        or value.startswith("/")
+        or any(c in value for c in "\\\x00\r\n")
+        or any(segment in ("", ".", "..") for segment in value.split("/"))
+    ):
+        raise argparse.ArgumentTypeError(
+            f"{value!r} is not a path inside the artifact: relative, '/' between "
+            "folders, no empty, '.' or '..' segment (e.g. index.html, img/logo.png)."
+        )
+    return value
 
 
 def _multipart(filename: str, content: bytes) -> tuple[bytes, str]:
     """A one-file multipart/form-data body, as /upload expects it."""
     boundary = f"----stratio-artifact-{uuid.uuid4().hex}"
+    # A quote or a line break in the name would end the header it sits in.
+    safe_name = re.sub(r'["\r\n]', "", filename)
     head = (
         f"--{boundary}\r\n"
-        f'Content-Disposition: form-data; name="file"; filename="{filename.replace(chr(34), "")}"\r\n'
+        f'Content-Disposition: form-data; name="file"; filename="{safe_name}"\r\n'
         "Content-Type: application/octet-stream\r\n\r\n"
     ).encode("utf-8")
     return head + content + f"\r\n--{boundary}--\r\n".encode("utf-8"), (
@@ -175,9 +257,8 @@ def _multipart(filename: str, content: bytes) -> tuple[bytes, str]:
     )
 
 
-def _upload(artifact_id: str, stored_path: str, local_path: str):
-    with open(local_path, "rb") as handle:
-        body, content_type = _multipart(os.path.basename(stored_path), handle.read())
+def _upload(artifact_id: str, stored_path: str, content: bytes):
+    body, content_type = _multipart(os.path.basename(stored_path), content)
     return _call(
         "POST",
         f"/v1/artifacts/{artifact_id}/upload/{_quote(stored_path)}",
@@ -219,6 +300,14 @@ def _summary(artifact: dict, extra: tuple = ()) -> dict:
             *extra,
         )
     }
+
+
+def _record(result) -> dict:
+    """A JSON object the API answered; anything else (an HTML error page from something
+    in between, say) is a failure, not a value to index into."""
+    if not isinstance(result, dict):
+        _die(f"Unexpected response from the artifacts API: {result!r:.300}")
+    return result
 
 
 def _listing(result, extra: tuple = ()) -> list:
@@ -512,7 +601,7 @@ def _local_assets(markup: str, base_dir: str) -> tuple[str, str]:
             if re.match(r"(?i)^(?:[a-z][a-z0-9+.-]*:|//)", ref):
                 continue
             path = os.path.join(base_dir, ref.split("?")[0].split("#")[0])
-            if os.path.isfile(path) and not _is_secret(path):
+            if os.path.isfile(path) and not _is_secret(path) and not _outside_project(path):
                 with open(path, encoding="utf-8", errors="replace") as handle:
                     sink.append(handle.read())
     return "\n".join(css), "\n".join(js)
@@ -537,6 +626,20 @@ def _cdn_sources() -> list:
     return [source for source in configured.split() if source != "'none'"]
 
 
+def _source_allows(source: str, url: str) -> bool:
+    """Whether a CSP source such as `https://cdn.jsdelivr.net` or an internal mirror's
+    `https://nexus.corp/npm/` lets the page load `url`: the same origin and, when the
+    source names a path, that path (a prefix when it ends in '/', as CSP reads it)."""
+    allowed, wanted = urllib.parse.urlsplit(source), urllib.parse.urlsplit(url)
+    if (allowed.scheme, allowed.hostname, allowed.port) != (wanted.scheme, wanted.hostname, wanted.port):
+        return False
+    if allowed.path in ("", "/"):
+        return True
+    if allowed.path.endswith("/"):
+        return wanted.path.startswith(allowed.path)
+    return wanted.path == allowed.path
+
+
 _cdn_unreachable = False
 
 
@@ -552,7 +655,9 @@ def _url_exists(url: str):
         with urllib.request.urlopen(request, timeout=3) as response:
             return response.status < 400
     except urllib.error.HTTPError as e:
-        return e.code < 400 if e.code != 405 else None
+        # Only a CDN saying the file is not there is an answer; a 429, a 5xx or a refused
+        # HEAD says nothing about the URL.
+        return False if e.code in (404, 410) else None
     except (urllib.error.URLError, OSError, ValueError):
         _cdn_unreachable = True
         return None
@@ -601,7 +706,8 @@ def _page_findings(text, base_dir=".", title=None, sources=None, verify=False) -
 
     if not re.search(r"prefers-color-scheme\s*:\s*dark", css):
         add("dark-mode", "No @media (prefers-color-scheme: dark) block redefining the tokens.")
-    outside = _ROOT_BLOCK.sub("", css)
+    # Only the declarations: a selector such as #feed or #cafe is an id, not a color.
+    outside = " ".join(body for _, body in _css_rules(_ROOT_BLOCK.sub("", css)))
     styles = " ".join(re.findall(r'(?i)\sstyle=["\']([^"\']*)', markup))
     svg_attrs = " ".join(re.findall(rf'(?i)\s(?:fill|stroke|stop-color|color)=["\'](#[0-9a-f]{{3,8}}|{_NAMES})["\']', markup))
     script_colors = re.findall(r"['\"](#[0-9a-fA-F]{3,8}|(?:rgba?|hsla?)\([^'\"]*\))['\"]", scripts)
@@ -660,11 +766,9 @@ def _page_findings(text, base_dir=".", title=None, sources=None, verify=False) -
 
     urls = _loaded_urls(markup, css)
     if sources is not None:
-        allowed = {urllib.parse.urlsplit(s).hostname for s in sources if urllib.parse.urlsplit(s).hostname}
         for url in urls:
-            host = urllib.parse.urlsplit(url).hostname
-            if host not in allowed:
-                where = "nothing outside the artifact" if not allowed else ", ".join(sorted(allowed))
+            if not any(_source_allows(source, url) for source in sources):
+                where = "nothing outside the artifact" if not sources else ", ".join(sources)
                 add("host", f"{url}: this installation lets a page load from {where}.")
     for url in urls:
         host = urllib.parse.urlsplit(url).hostname or ""
@@ -706,35 +810,39 @@ def _chrome():
     return next((c for c in candidates if c and os.access(c, os.X_OK)), None)
 
 
-def _render_findings(path: str, chrome: str) -> list:
-    """Load the page in a 400 px pane, as the viewer's narrowest pane shows it."""
+def _render_findings(path: str, chrome: str) -> list | None:
+    """Load the page in a 400 px pane, as the viewer's narrowest pane shows it. None
+    when Chrome could not render it: no report is not a clean report."""
     with open(path, encoding="utf-8", errors="replace") as handle:
         page = handle.read()
     head = re.search(r"(?i)<head\b[^>]*>", page)
     page = page[: head.end()] + _RENDER_ERRORS + page[head.end() :] if head else _RENDER_ERRORS + page
     page = re.sub(r"(?i)</body>", lambda _: _RENDER_PROBE + "</body>", page, count=1) if re.search(r"(?i)</body>", page) else page + _RENDER_PROBE
+    # Next to the page, so its relative stylesheets, scripts and images load as they will.
     probe = os.path.join(os.path.dirname(os.path.abspath(path)), f".check-{os.getpid()}.html")
     profile = tempfile.mkdtemp(prefix="artifact-check-")
     try:
         with open(probe, "w", encoding="utf-8") as handle:
             handle.write(page)
+        # --no-sandbox: Chrome's own sandbox needs privileges a container does not give,
+        # and the page is the agent's own, rendered inside the pod's sandbox.
         command = [chrome, "--headless", "--no-sandbox", "--disable-gpu", "--hide-scrollbars", "--no-first-run",
                    f"--user-data-dir={profile}", "--window-size=400,900", "--virtual-time-budget=10000",
-                   "--dump-dom", "file://" + probe]
-        try:
-            done = subprocess.run(command, capture_output=True, text=True, timeout=60)
-        except (OSError, subprocess.TimeoutExpired):
-            return []
+                   "--dump-dom", Path(probe).as_uri()]
+        done = subprocess.run(command, capture_output=True, text=True, timeout=60)
+    except (OSError, subprocess.TimeoutExpired):
+        return None
     finally:
-        os.remove(probe)
+        with contextlib.suppress(OSError):
+            os.remove(probe)
         shutil.rmtree(profile, ignore_errors=True)
     found = re.search(r'(?s)<script type="application/json" id="__check">(.*?)</script>', done.stdout)
     if not found:
-        return []
+        return None
     try:
         seen = json.loads(html.unescape(found.group(1)))
     except ValueError:
-        return []
+        return None
     findings = []
     if seen.get("overflow", 0) > 1:
         findings.append({"rule": "render", "message": f"In a 400 px pane the page scrolls sideways by {seen['overflow']} px: "
@@ -812,7 +920,7 @@ def _stored_path(local_path: str, base: str) -> str:
     only way an artifact created in one call is multi-file in any structured sense.
     """
     relative = os.path.relpath(os.path.abspath(local_path), os.path.abspath(base))
-    if relative.startswith(".."):
+    if relative == os.pardir or relative.startswith(os.pardir + os.sep):
         return os.path.basename(local_path)
     return relative.replace(os.sep, "/")
 
@@ -822,16 +930,23 @@ def cmd_create(args):
     if args.rename and len(paths) != 1:
         _die("--rename renames one file; pass exactly one --file with it.")
     files, binaries, local = [], [], {}
+    # Every file is read before the artifact exists: one that cannot be read must stop
+    # the call, not leave an artifact behind without it.
     for path in map(_source, paths):
         name = args.rename or _stored_path(path, args.base or os.curdir)
+        if name in local:
+            _die(
+                f"{local[name]} and {path} would both be stored as {name}: pass --base "
+                "with the folder that holds them, so each keeps its directory."
+            )
+        local[name] = path
         if _is_binary(name):
             # It goes up once the artifact exists, through /upload.
-            binaries.append((name, path))
-            continue
-        with open(path, "r", encoding="utf-8") as handle:
-            files.append({"file_path": name, "content": handle.read()})
-        local[name] = path
-    if paths and not any(f["file_path"].lower().endswith(_PAGE_EXTENSIONS) for f in files):
+            binaries.append((name, _read_bytes(path)))
+        else:
+            files.append({"file_path": name, "content": _read_text(path)})
+    pages = [f["file_path"] for f in files if f["file_path"].lower().endswith(_PAGE_EXTENSIONS)]
+    if paths and not pages:
         _die(
             "An artifact is a page: pass its .html or .md file along with the files "
             "it uses."
@@ -846,8 +961,9 @@ def cmd_create(args):
         payload["tags"] = _tags(args.tags)
     if args.entry_path:
         payload["entry_path"] = args.entry_path
-    elif files:
-        payload["entry_path"] = files[0]["file_path"]
+    elif pages:
+        # The first page, whatever order the files came in: a stylesheet is never the entry.
+        payload["entry_path"] = pages[0]
     # Warnings, never a refusal: the person may have asked for what a check flags.
     if not args.description:
         print("check: no --description: pass one sentence that says what it is.", file=sys.stderr)
@@ -870,13 +986,13 @@ def cmd_create(args):
     conversation = args.conversation or os.environ.get("CONVERSATION_ID")
     if conversation:
         payload["origin_conversation_id"] = conversation
-    created = _call("POST", "/v1/artifacts", payload)
+    created = _record(_call("POST", "/v1/artifacts", payload))
     if not binaries:
         _emit(created)
         return
-    for name, path in binaries:
+    for name, content in binaries:
         try:
-            _upload(created["id"], name, path)
+            _upload(created["id"], name, content)
         except SystemExit:
             print(
                 f"Artifact {created['id']} was created without {name} and any file "
@@ -904,8 +1020,10 @@ def _to_file() -> bool:
 
 
 def cmd_read(args):
-    result = _call("GET", f"/v1/artifacts/{args.artifact_id}/files/{_quote(args.path)}")
-    content = result["content"]
+    result = _record(_call("GET", f"/v1/artifacts/{args.artifact_id}/files/{_quote(args.path)}"))
+    content = result.get("content")
+    if not isinstance(content, str):
+        _die(f"{args.path} has no text content to read: `files` lists what the artifact holds.")
     # Raw, not JSON: this is what gets edited and written back. Into a file it goes as it
     # is; what the agent sees comes between markers that say it is data someone wrote.
     if _to_file():
@@ -920,10 +1038,19 @@ def cmd_read(args):
 
 def cmd_write(args):
     if args.from_file:
-        with open(_source(args.from_file), "r", encoding="utf-8") as handle:
-            content = handle.read()
+        content = _read_text(_source(args.from_file))
+    elif sys.stdin.isatty():
+        _die("Nothing to write: pass --from-file with the file in the working folder.")
     else:
         content = sys.stdin.read()
+    # An empty write is how a forgotten --from-file erases a page, and `write` is not a
+    # command the sandbox asks the person to confirm, as it does `rm`. A file meant to
+    # go is removed with `rm`.
+    if not content.strip():
+        _die(
+            f"Refusing to write an empty {args.path}: pass --from-file with its content. "
+            "To remove the file, use `rm`."
+        )
     if args.path.lower().endswith((".html", ".htm")):
         base_dir = os.path.dirname(args.from_file) if args.from_file else "."
         _report_findings(args.path, _page_findings(content, base_dir or "."))
@@ -945,7 +1072,7 @@ def cmd_upload(args):
             "those (" + ", ".join(_BINARY_EXTENSIONS) + "); write a page, a "
             "stylesheet, a script or subtitles with `write`."
         )
-    _emit(_upload(args.artifact_id, args.path, _source(args.from_file)))
+    _emit(_upload(args.artifact_id, args.path, _read_bytes(_source(args.from_file))))
 
 
 def cmd_rm(args):
@@ -969,7 +1096,7 @@ def cmd_tag(args):
 
 def cmd_copy(args):
     payload = {"title": args.title} if args.title else {}
-    _emit(_summary(_call("POST", f"/v1/artifacts/{args.artifact_id}/copy", payload)))
+    _emit(_summary(_record(_call("POST", f"/v1/artifacts/{args.artifact_id}/copy", payload))))
 
 
 def cmd_members(args):
@@ -1007,7 +1134,7 @@ def cmd_share(args):
     current = (
         {}
         if args.replace
-        else _call("GET", f"/v1/artifacts/{args.artifact_id}/members")
+        else _record(_call("GET", f"/v1/artifacts/{args.artifact_id}/members"))
     )
     body = {
         kind: _members(current.get(kind, []), ids[kind], args.role, args.remove)
@@ -1045,14 +1172,14 @@ def cmd_check(args):
         with open(path, encoding="utf-8", errors="replace") as handle:
             content = handle.read()
         findings = _page_findings(content, os.path.dirname(path) or ".", title=title, sources=sources, verify=True)
-        if chrome:
-            findings += _render_findings(path, chrome)
-        report.append({"file": path, "findings": findings, "rendered": bool(chrome)})
+        rendered = _render_findings(path, chrome) if chrome else None
+        findings += rendered or []
+        report.append({"file": path, "findings": findings, "rendered": rendered is not None})
     _emit(report)
 
 
 def cmd_url(args):
-    artifact = _call("GET", f"/v1/artifacts/{args.artifact_id}")
+    artifact = _record(_call("GET", f"/v1/artifacts/{args.artifact_id}"))
     if not artifact.get("public_url"):
         _die("No link available: the API returned no public_url for this artifact.")
     print(artifact["public_url"])
@@ -1086,7 +1213,7 @@ def cmd_resolve(args):
     """
     artifact_id = _artifact_id(args.ref)
     if artifact_id:
-        _emit([_summary(_call("GET", f"/v1/artifacts/{artifact_id}"))])
+        _emit([_summary(_record(_call("GET", f"/v1/artifacts/{artifact_id}")))])
         return
     if re.match(r"^[a-z][a-z0-9+.-]*://", args.ref.strip(), re.IGNORECASE):
         _die(f"{args.ref} is not a link to an artifact: it names no artifact id.")
@@ -1097,6 +1224,24 @@ def cmd_resolve(args):
     if not candidates:
         _die(f"No artifact you can see matches {args.ref!r}.")
     _emit(candidates)
+
+
+def _bounded_int(low: int, high: int):
+    def parse(value: str) -> int:
+        try:
+            number = int(value)
+        except ValueError:
+            number = None
+        if number is None or not low <= number <= high:
+            raise argparse.ArgumentTypeError(f"{value!r} is not a whole number from {low} to {high}")
+        return number
+
+    return parse
+
+
+# The bounds the API's listings take (page >= 1, page_size 1-200): out of them it answers 422.
+_page_number = _bounded_int(1, 1_000_000)
+_page_size = _bounded_int(1, 200)
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -1111,13 +1256,13 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument(
         "--favorite", action="store_true", help="Only the user's favorite artifacts"
     )
-    p.add_argument("--page", type=int, default=1)
-    p.add_argument("--page-size", dest="page_size", type=int, default=50)
+    p.add_argument("--page", type=_page_number, default=1)
+    p.add_argument("--page-size", dest="page_size", type=_page_size, default=50)
     p.set_defaults(func=cmd_list)
 
     p = sub.add_parser("recent")
-    p.add_argument("--page", type=int, default=1)
-    p.add_argument("--page-size", dest="page_size", type=int, default=20)
+    p.add_argument("--page", type=_page_number, default=1)
+    p.add_argument("--page-size", dest="page_size", type=_page_size, default=20)
     p.set_defaults(func=cmd_recent)
 
     p = sub.add_parser("resolve")
@@ -1129,8 +1274,8 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--type", choices=("markdown", "html"), default="html")
     p.add_argument("--description")
     p.add_argument("--tags", help="Comma-separated, e.g. sales,q3,report")
-    p.add_argument("--entry-path", dest="entry_path")
-    p.add_argument("--rename", help="Store a single --file under this path instead")
+    p.add_argument("--entry-path", dest="entry_path", type=_file_path)
+    p.add_argument("--rename", type=_file_path, help="Store a single --file under this path instead")
     p.add_argument(
         "--base",
         help="Directory the --file paths are stored relative to (default: cwd)",
@@ -1156,19 +1301,21 @@ def _parser() -> argparse.ArgumentParser:
     for name, func in (("read", cmd_read), ("rm", cmd_rm)):
         p = sub.add_parser(name)
         p.add_argument("artifact_id", type=_uuid)
-        p.add_argument("path")
+        p.add_argument("path", type=_file_path)
         p.set_defaults(func=func)
 
     p = sub.add_parser("write")
     p.add_argument("artifact_id", type=_uuid)
-    p.add_argument("path")
+    p.add_argument("path", type=_file_path)
     p.add_argument("--from-file", dest="from_file")
     p.set_defaults(func=cmd_write)
 
     p = sub.add_parser("upload")
     p.add_argument("artifact_id", type=_uuid)
     p.add_argument(
-        "path", help="Where the file goes in the artifact, e.g. img/logo.png or media/demo.mp4"
+        "path",
+        type=_file_path,
+        help="Where the file goes in the artifact, e.g. img/logo.png or media/demo.mp4",
     )
     p.add_argument("--from-file", dest="from_file", required=True)
     p.set_defaults(func=cmd_upload)
