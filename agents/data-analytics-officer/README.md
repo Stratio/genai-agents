@@ -59,6 +59,7 @@ Pack scripts are only needed to distribute the agent outside the repository.
 | Visual artifact | `/canvas-craft` | **shared** | Single-page composition-dominated visuals: posters, infographics, covers, one-pagers (PDF or PNG) |
 | Web artifact | `/web-craft` | **shared** | Standalone interactive HTML: dashboards, UI components, landing pages |
 | Brand tokens | `/brand-kit` | **shared** | Centralized catalog of visual identity themes (colors, typography, chart palettes). Invoked before any visual deliverable. See AGENTS.md §8.3 for the decision cascade |
+| Rocket File Browser | `/rocket-file-browser` | **shared** | Download, upload, list, copy, move, delete, compress and extract files in Rocket's File Browser (its HDFS and the configured S3 buckets) over mTLS, with the user's own Rocket permissions |
 
 Skills marked as **shared** live in `skills/` at the monorepo root and are shared with other agents. Local skills live in this agent's `skills/`.
 

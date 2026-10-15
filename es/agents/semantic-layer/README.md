@@ -50,6 +50,7 @@ Todos los scripts son no-interactivos (CI/CD-friendly). Si no se pasa `--name`, 
 | Términos semánticos | `/create-semantic-terms` | Generar términos semánticos de negocio para las vistas de un dominio |
 | Business Terms | `/manage-business-terms` | Crear Business Terms con relaciones a activos de datos |
 | Colección de datos | `/create-data-collection` | Buscar tablas en el diccionario y crear una nueva colección de datos |
+| File Browser de Rocket | `/rocket-file-browser` | Descargar, subir, listar, copiar, mover, borrar, comprimir y extraer ficheros en el File Browser de Rocket (su HDFS y los buckets S3 configurados) vía mTLS, con los permisos propios del usuario en Rocket |
 
 Todas las skills viven en `skills/` en la raíz del monorepo y se comparten con el agente data-governance-officer.
 
