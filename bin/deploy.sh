@@ -27,8 +27,7 @@ done
 
 echo "Starting artifact upload to Nexus..."
 
-# https: the upload carries the Nexus credentials, and consumers verify what they fetch.
-NEXUS_BASE_URL="https://qa.int.stratio.com/repository"
+NEXUS_BASE_URL="http://qa.int.stratio.com/repository"
 # Raw repositories by build type
 NEXUS_RAW_RELEASES="raw"
 NEXUS_RAW_SNAPSHOTS="raw-snapshots"
