@@ -12,7 +12,7 @@ _MONOREPO = _SKILL.parents[1]
 
 
 @pytest.fixture(scope="session")
-def packed_skill(tmp_path_factory) -> Path:
+def packed_zip(tmp_path_factory) -> Path:
     out = tmp_path_factory.mktemp("pack")
     subprocess.run(
         ["bash", str(_MONOREPO / "pack_sandbox_mandatory_skills.sh"), "--skill", _SKILL.name,
@@ -21,6 +21,11 @@ def packed_skill(tmp_path_factory) -> Path:
         capture_output=True,
         text=True,
     )
-    with zipfile.ZipFile(out / "sandbox-mandatory-skills.zip") as zf:
-        zf.extractall(out / "unpacked")
-    return out / "unpacked" / _SKILL.name
+    return out / "sandbox-mandatory-skills.zip"
+
+
+@pytest.fixture(scope="session")
+def packed_skill(packed_zip) -> Path:
+    with zipfile.ZipFile(packed_zip) as zf:
+        zf.extractall(packed_zip.parent / "unpacked")
+    return packed_zip.parent / "unpacked" / _SKILL.name

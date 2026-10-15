@@ -124,7 +124,11 @@ class TestShipped:
         command it never runs."""
         content = _skill_text()
         commands = cli._parser()._subparsers._group_actions[0].choices
-        missing = [c for c in commands if f"scripts/artifact.py {c} " not in content]
+        missing = [
+            c for c in commands
+            if f"{'scripts/artifact-manage' if c in cli._CONFIRMED else 'python3 scripts/artifact.py'} {c} "
+            not in content
+        ]
         assert missing == []
 
 
@@ -283,7 +287,7 @@ class TestShare:
     def test_merges_instead_of_replacing(self, cli):
         """PUT /members replaces the whole list, so sharing with one more person
         without merging first un-shares it from everybody else."""
-        cli.main(["share", _ID, "--user", "alice"])
+        cli.main(["share", _ID, "--user", "alice"], manage=True)
 
         put = _put(cli)
         assert put["path"] == f"/v1/artifacts/{_ID}/members"
@@ -300,7 +304,8 @@ class TestShare:
         current one, and only for the ids named now."""
         cli.main(
             ["share", _ID, "--user", "existing", "--user", "bob"]
-            + ["--group", "analysts", "--role", "editor"]
+            + ["--group", "analysts", "--role", "editor"],
+            manage=True,
         )
 
         put = _put(cli)
@@ -314,26 +319,26 @@ class TestShare:
         ]
 
     def test_role_defaults_to_reader(self, cli):
-        cli.main(["share", _ID, "--group", "existing_group"])
+        cli.main(["share", _ID, "--group", "existing_group"], manage=True)
 
         assert _put(cli)["payload"]["groups"] == [
             {"id": "existing_group", "role": "reader"}
         ]
 
     def test_a_member_can_be_made_owner(self, cli):
-        cli.main(["share", _ID, "--user", "carol", "--role", "owner"])
+        cli.main(["share", _ID, "--user", "carol", "--role", "owner"], manage=True)
 
         assert {"id": "carol", "role": "owner"} in _put(cli)["payload"]["users"]
 
     def test_no_role_beyond_owner(self, cli):
         with pytest.raises(SystemExit):
-            cli.main(["share", _ID, "--user", "carol", "--role", "admin"])
+            cli.main(["share", _ID, "--user", "carol", "--role", "admin"], manage=True)
 
     @pytest.mark.parametrize("link, access", [("on", "reader"), ("off", "none")])
     def test_link_alone_keeps_the_members(self, cli, link, access):
         """`--link on` names nobody, but the PUT still replaces users and groups: it
         must carry the current ones or it un-shares the artifact from all of them."""
-        cli.main(["share", _ID, "--link", link])
+        cli.main(["share", _ID, "--link", link], manage=True)
 
         put = _put(cli)
         assert put["payload"] == {
@@ -343,7 +348,7 @@ class TestShare:
         }
 
     def test_replace_overwrites(self, cli):
-        cli.main(["share", _ID, "--user", "alice", "--replace", "--role", "editor"])
+        cli.main(["share", _ID, "--user", "alice", "--replace", "--role", "editor"], manage=True)
 
         put = _put(cli)
         assert put["payload"] == {
@@ -353,7 +358,7 @@ class TestShare:
         assert not any(c["method"] == "GET" for c in cli.calls)
 
     def test_remove_takes_only_the_named_ids_off(self, cli):
-        cli.main(["share", _ID, "--remove", "--user", "existing"])
+        cli.main(["share", _ID, "--remove", "--user", "existing"], manage=True)
 
         put = _put(cli)
         assert put["payload"]["users"] == []
@@ -364,7 +369,7 @@ class TestShare:
     )
     def test_refuses_a_call_that_changes_nothing(self, cli, argv):
         with pytest.raises(SystemExit):
-            cli.main(argv)
+            cli.main(argv, manage=True)
         assert cli.calls == []
 
 
@@ -1671,7 +1676,7 @@ class TestFilePaths:
         assert cli.calls == []
 
     def test_a_nested_path_passes(self, cli):
-        cli.main(["rm", _ID, "anexos/old page.html"])
+        cli.main(["rm", _ID, "anexos/old page.html"], manage=True)
 
         assert cli.calls[-1]["path"] == f"/v1/artifacts/{_ID}/files/anexos/old%20page.html"
 
@@ -1722,22 +1727,53 @@ class TestFailuresAreMessages:
 
 
 class TestConfirmedCommands:
-    """genai-agents-sandbox asks the person before `share`, `delete` and `rm`
-    (ARTIFACT_BASH_CONFIRM in bootstrap/opencode.py), matching the command line. A new
-    command must be placed here; one that shares or destroys must be added there as
-    well, or it runs with nobody confirming it."""
+    """genai-agents-sandbox asks the person before any command that names
+    scripts/artifact-manage (ARTIFACT_BASH_CONFIRM in bootstrap/opencode.py). Only the
+    commands that share or destroy run through it, and only through it."""
 
-    CONFIRMED_IN_THE_SANDBOX = {"share", "delete", "rm"}
     UNCONFIRMED = {"list", "recent", "resolve", "create", "get", "files", "members", "read", "write", "upload",
                    "rename", "tag", "copy", "workdir", "check", "url"}
 
     def test_every_command_is_placed(self, cli):
         commands = set(cli._parser()._subparsers._group_actions[0].choices)
 
-        assert commands == self.CONFIRMED_IN_THE_SANDBOX | self.UNCONFIRMED, (
+        assert set(cli._CONFIRMED) == {"share", "delete", "rm"}
+        assert commands == set(cli._CONFIRMED) | self.UNCONFIRMED, (
             "A command was added or renamed: place it above, and if it shares or destroys, "
-            "add it to ARTIFACT_BASH_CONFIRM in genai-agents-sandbox."
+            "add it to _CONFIRMED so it runs through scripts/artifact-manage."
         )
+
+    @pytest.mark.parametrize("argv", [["share", _ID, "--link", "on"], ["delete", _ID], ["rm", _ID, "index.html"]])
+    def test_artifact_py_sends_them_to_artifact_manage(self, cli, capsys, argv):
+        with pytest.raises(SystemExit):
+            cli.main(argv)
+
+        assert cli.calls == []
+        assert f"scripts/artifact-manage {argv[0]}" in capsys.readouterr().err
+
+    def test_artifact_manage_runs_nothing_else(self, cli, capsys):
+        with pytest.raises(SystemExit):
+            cli.main(["get", _ID], manage=True)
+
+        assert cli.calls == []
+        assert "python3 scripts/artifact.py get" in capsys.readouterr().err
+
+    def test_artifact_manage_is_an_executable_of_its_own(self):
+        """Run as it is, its own name is the first word of the command: an "always" answer
+        to the sandbox's question then covers it alone, not every `python3` command."""
+        manage = _SKILL / "scripts" / "artifact-manage"
+        assert os.access(manage, os.X_OK)
+        assert manage.read_text(encoding="utf-8").startswith("#!/usr/bin/env python3\n")
+
+        done = subprocess.run([str(manage), "get", _ID], capture_output=True, text=True,
+                              env={**os.environ, "GENAI_API_URL": "https://genai-api:8080"})
+        assert done.returncode != 0
+        assert "python3 scripts/artifact.py get" in done.stderr
+
+    def test_the_skill_never_runs_it_through_python(self):
+        text = _skill_text()
+        assert "scripts/artifact-manage" in text
+        assert "python3 scripts/artifact-manage" not in text
 
 
 class TestCheckRoundThree:

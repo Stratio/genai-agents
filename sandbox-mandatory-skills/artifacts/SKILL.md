@@ -239,11 +239,11 @@ python3 scripts/artifact.py read <artifact_id> index.html > <workdir>/index.html
 python3 scripts/artifact.py write <artifact_id> index.html --from-file <workdir>/index.html
 ```
 
-Every other command (`upload`, `rm`, `rename`, `tag`, `copy`, `share`, `members`,
-`list`, `get`, `url`, `delete`), what each prints and how sharing works are in
-`reference.md`. Every command prints JSON; `read` prints the file between two marker
-lines, or raw when redirected to a file. On failure one line goes to stderr and the exit
-code is non-zero.
+Every other command (`upload`, `rename`, `tag`, `copy`, `members`, `list`, `get`, `url`;
+`share`, `delete`, `rm` through `scripts/artifact-manage`), what each prints and how
+sharing works are in `reference.md`. Every command prints JSON; `read` prints the file
+between two marker lines, or raw when redirected to a file. On failure one line goes to
+stderr and the exit code is non-zero.
 
 ## Roles
 

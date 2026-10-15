@@ -14,6 +14,8 @@ project, its owner — so this script already *is* the user. Three rules follow:
 * never build an artifact link. The API answers `public_url`, the genai-ui page the
   user opens, from its own configuration.
 
+`share`, `delete` and `rm` run through scripts/artifact-manage instead (see _CONFIRMED).
+
 Inside a project every call also names it, in X-Genai-Project-Id, and the
 conversation, in X-Genai-Conversation-Id, so the API remembers which artifacts this
 project read, edited or created across all its conversations, and in which one each
@@ -1382,8 +1384,27 @@ def _parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main(argv=None) -> None:
+# The commands that hand an artifact to other people or destroy content. They run only
+# through scripts/artifact-manage, an executable of its own, so the sandbox can make a
+# person confirm them by the file's name (ARTIFACT_BASH_CONFIRM in genai-agents-sandbox):
+# a subcommand word is matched as the command line spells it, and two spaces or quotes
+# around it slip past; the file's name is in every way of running it. Its own name also
+# keeps an "always" answer to that one executable, not to every `python3` command.
+_CONFIRMED = ("share", "delete", "rm")
+
+
+def main(argv: list[str] | None = None, *, manage: bool = False) -> None:
     args = _parser().parse_args(argv)
+    if args.command in _CONFIRMED and not manage:
+        _die(
+            f"`{args.command}` runs through scripts/artifact-manage, which asks the person "
+            f"first: scripts/artifact-manage {args.command} … (run it as it is, not with python3)."
+        )
+    if manage and args.command not in _CONFIRMED:
+        _die(
+            f"scripts/artifact-manage runs {', '.join(_CONFIRMED)} only: "
+            f"use python3 scripts/artifact.py {args.command}."
+        )
     args.func(args)
 
 

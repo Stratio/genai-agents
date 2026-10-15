@@ -2,6 +2,7 @@
 # copied in, every reference resolving inside the skill, nothing that is not runtime.
 
 import re
+import zipfile
 
 
 def test_ships_the_guide_and_the_theme_catalog(packed_skill):
@@ -66,3 +67,10 @@ def test_every_theme_ships_a_dark_mode_that_reads(packed_skill):
             assert _contrast(dark[f"on_{fill}"], dark[fill]) >= 4.5, (theme.name, fill)
         chart = re.findall(r"`(#[0-9a-f]{6})`", section.split("Chart categorical", 1)[1].split("\n", 1)[0])
         assert chart and all(_contrast(c, dark["bg"]) >= 3 for c in chart), theme.name
+
+
+def test_artifact_manage_keeps_its_executable_bit(packed_zip):
+    """The sandbox runs scripts/artifact-manage as it is, so the ZIP must carry its mode."""
+    with zipfile.ZipFile(packed_zip) as zf:
+        mode = zf.getinfo("artifacts/scripts/artifact-manage").external_attr >> 16
+    assert mode & 0o111
