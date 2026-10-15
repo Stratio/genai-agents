@@ -72,6 +72,7 @@ These three skills cover every visual output of the monorepo. They share [`guide
 | Skill | Purpose | Used by |
 |---|---|---|
 | [cowork-api](cowork-api/) | Upload, import, deploy or register packaged agent/skill/plugin bundles to Stratio Cowork via `genai-api`. Calls `/v1/agents/bundle/import` and `/v1/agents/skills/bundle/import`; plugins dispatch to both. | agent-creator, skill-creator |
+| [rocket-file-browser](rocket-file-browser/) | Manage files in Rocket's File Browser (its HDFS and the configured S3 buckets) from the sandbox — download, upload, ls, cp, mv, rm, mkdir, compress, extract — over Rocket's mutual-TLS listener with the user's own permissions. Requires `ROCKET_API_URL`. | data-analytics-officer, data-governance-officer, data-quality, semantic-layer |
 | [skill-creator](skill-creator/) | Authoring guide for creating high-quality SKILL.md files. Anatomy, frontmatter, progressive disclosure, writing patterns, quality checklist. | agent-creator, skill-creator |
 
 ## Anatomy of a shared skill

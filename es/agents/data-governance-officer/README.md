@@ -63,6 +63,7 @@ La configuración MCP está en `opencode.json` (OpenCode), preconfigurado para l
 | Escritura de DOCX | `/docx-writer` | DOCX de gobernanza (notas de política, documentación de ontología, informes de cumplimiento). Combinar/dividir, find-replace, convertir `.doc` a `.docx` |
 | Lectura de XLSX | `/xlsx-reader` | Extraer valores de celda, tablas, fórmulas y metadatos de ficheros `.xlsx`/`.xlsm` (o `.xls`/`.xlsb` heredado vía LibreOffice) — diccionarios de datos, catálogos de términos, libros de rule-specs, matrices de compliance |
 | Escritura de XLSX | `/xlsx-writer` | XLSX de gobernanza (exports de ontología, catálogos de términos, matrices de compliance, libros checklist de política). Libros multi-hoja de cobertura de calidad. Combinar/dividir, find-replace, conversión `.xls` legacy, refresco de fórmulas |
+| File Browser de Rocket | `/rocket-file-browser` | Descargar, subir, listar, copiar, mover, borrar, comprimir y extraer ficheros en el File Browser de Rocket (su HDFS y los buckets S3 configurados) vía mTLS, con los permisos propios del usuario en Rocket |
 
 ## Scripts de empaquetado
 

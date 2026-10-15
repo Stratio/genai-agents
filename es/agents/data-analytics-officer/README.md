@@ -59,6 +59,7 @@ Los pack scripts solo son necesarios para distribuir el agente fuera del reposit
 | Artefacto visual | `/canvas-craft` | **shared** | Visuales de una sola página dominados por composición: pósteres, infografías, portadas, one-pagers (PDF o PNG) |
 | Artefacto web | `/web-craft` | **shared** | HTML interactivo standalone: dashboards, componentes UI, landing pages |
 | Tokens de marca | `/brand-kit` | **shared** | Catálogo centralizado de temas de identidad visual (colores, tipografía, paletas de gráficos). Se invoca antes de cualquier entregable visual. Ver AGENTS.md §8.3 para la cascada de decisión |
+| File Browser de Rocket | `/rocket-file-browser` | **shared** | Descargar, subir, listar, copiar, mover, borrar, comprimir y extraer ficheros en el File Browser de Rocket (su HDFS y los buckets S3 configurados) vía mTLS, con los permisos propios del usuario en Rocket |
 
 Las skills marcadas como **shared** viven en `skills/` en la raíz del monorepo y se comparten con otros agentes. Las locales viven en `skills/` de este agente.
 
