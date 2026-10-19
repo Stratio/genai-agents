@@ -1211,6 +1211,31 @@ class TestCheck:
         monkeypatch.setattr(cli, "_url_exists", lambda url: None)  # could not ask
         assert cli._page_findings(off_table, title="Ventas Q3", verify=True) == []
 
+    def test_tailwind_is_pinned_like_any_other_cdn(self, cli):
+        page = _GOOD_PAGE.replace("</head>", '<script src="https://cdn.tailwindcss.com"></script></head>')
+        assert "pin" in _rules(cli._page_findings(page, title="Ventas Q3"))
+        pinned = page.replace("cdn.tailwindcss.com", "cdn.tailwindcss.com/3.4.16")
+        assert "pin" not in _rules(cli._page_findings(pinned, title="Ventas Q3"))
+
+    @pytest.mark.parametrize(
+        "where, color",
+        [
+            ("svg", 'fill="rgb(10, 20, 30)"'),
+            ("svg", 'stroke="rebeccapurple"'),
+            ("script", "ctx.fillStyle = 'oklch(70% 0.1 200)';"),
+            ("script", "ctx.strokeStyle = 'darkslategray';"),
+            ("css", "color: peachpuff;"),
+        ],
+    )
+    def test_a_literal_color_is_one_everywhere(self, cli, where, color):
+        """Hex, a color function or any CSS color name: the same in CSS, SVG and scripts."""
+        page = {
+            "svg": _GOOD_PAGE.replace("</body>", f'<svg viewBox="0 0 10 10"><rect {color} width="1" height="1"/></svg></body>'),
+            "script": _GOOD_PAGE.replace("</body>", f"<script>{color}</script></body>"),
+            "css": _GOOD_PAGE.replace("</style>", f".x {{ {color} }}</style>"),
+        }[where]
+        assert "colors" in _rules(cli._page_findings(page, title="Ventas Q3"))
+
     def test_with_no_route_out_the_cdn_is_asked_once(self, cli, monkeypatch):
         """Where the sandbox has no egress the first HEAD fails fast and the rest are not
         made: the check finishes at once, with nothing to report about the CDN."""

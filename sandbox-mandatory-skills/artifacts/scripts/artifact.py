@@ -372,10 +372,26 @@ _FONT_HOSTS = ("fonts.googleapis.com", "fonts.gstatic.com")
 _COLOR = re.compile(
     r"#[0-9a-fA-F]{8}\b|#[0-9a-fA-F]{6}\b|#[0-9a-fA-F]{3,4}\b|\b(?:rgba?|hsla?|oklch|oklab)\("
 )
+# Every CSS named color, longest first so that `darkgray` is not read as `gray`.
 _NAMES = (
-    r"(?:white|black|red|green|blue|yellow|orange|purple|pink|gr[ae]y|navy|teal|silver|gold|maroon"
-    r"|olive|lime|aqua|fuchsia|crimson|coral|tomato|salmon|indigo|violet|brown|beige|ivory|khaki"
-    r"|lavender|turquoise|cyan|magenta|whitesmoke|gainsboro|firebrick|(?:dark|light)(?:gr[ae]y|blue|green|red))"
+    r"(?:lightgoldenrodyellow|mediumspringgreen|mediumaquamarine|mediumslateblue|mediumturquoise"
+    r"|mediumvioletred|blanchedalmond|cornflowerblue|darkolivegreen|lightslategray"
+    r"|lightslategrey|lightsteelblue|mediumseagreen|darkgoldenrod|darkslateblue|darkslategray"
+    r"|darkslategrey|darkturquoise|lavenderblush|lightseagreen|palegoldenrod|paleturquoise"
+    r"|palevioletred|rebeccapurple|antiquewhite|darkseagreen|lemonchiffon|lightskyblue"
+    r"|mediumorchid|mediumpurple|midnightblue|darkmagenta|deepskyblue|floralwhite|forestgreen"
+    r"|greenyellow|lightsalmon|lightyellow|navajowhite|saddlebrown|springgreen|yellowgreen"
+    r"|aquamarine|blueviolet|chartreuse|darkorange|darkorchid|darksalmon|darkviolet|dodgerblue"
+    r"|ghostwhite|lightcoral|lightgreen|mediumblue|papayawhip|powderblue|sandybrown|whitesmoke"
+    r"|aliceblue|burlywood|cadetblue|chocolate|darkgreen|darkkhaki|firebrick|gainsboro"
+    r"|goldenrod|indianred|lawngreen|lightblue|lightcyan|lightgray|lightgrey|lightpink"
+    r"|limegreen|mintcream|mistyrose|olivedrab|orangered|palegreen|peachpuff|rosybrown"
+    r"|royalblue|slateblue|slategray|slategrey|steelblue|turquoise|cornsilk|darkblue|darkcyan"
+    r"|darkgray|darkgrey|deeppink|honeydew|lavender|moccasin|seagreen|seashell|crimson|darkred"
+    r"|dimgray|dimgrey|fuchsia|hotpink|magenta|oldlace|skyblue|thistle|bisque|indigo|maroon"
+    r"|orange|orchid|purple|salmon|sienna|silver|tomato|violet|yellow|azure|beige|black|brown"
+    r"|coral|green|ivory|khaki|linen|olive|wheat|white|aqua|blue|cyan|gold|gray|grey|lime|navy"
+    r"|peru|pink|plum|snow|teal|red|tan)"
 )
 _NAMED_COLOR = re.compile(
     rf"\b(?:color|background(?:-color)?|fill|stroke|border(?:-[a-z]+)*|outline(?:-color)?)\s*:"
@@ -666,7 +682,7 @@ def _title_findings(name: str) -> list:
 def _page_findings(text, base_dir=".", title=None, sources=None, verify=False) -> list:
     """Findings for one HTML page: [{"rule", "message"}]. `sources` are the hosts the
     installation lets a page load from (None: do not check hosts); `verify` asks each
-    CDN whether a library URL off the html.md table exists."""
+    CDN whether a library URL exists."""
     findings = []
 
     def add(rule, message):
@@ -699,13 +715,16 @@ def _page_findings(text, base_dir=".", title=None, sources=None, verify=False) -
     # Only the declarations: a selector such as #feed or #cafe is an id, not a color.
     outside = " ".join(body for _, body in _css_rules(_ROOT_BLOCK.sub("", css)))
     styles = " ".join(re.findall(r'(?i)\sstyle=["\']([^"\']*)', markup))
-    svg_attrs = " ".join(re.findall(rf'(?i)\s(?:fill|stroke|stop-color|color)=["\'](#[0-9a-f]{{3,8}}|{_NAMES})["\']', markup))
-    script_colors = re.findall(r"['\"](#[0-9a-fA-F]{3,8}|(?:rgba?|hsla?)\([^'\"]*\))['\"]", scripts)
+    svg_attrs = " ".join(re.findall(
+        rf'(?i)\s(?:fill|stroke|stop-color|color)=["\']((?:#[0-9a-f]{{3,8}}|(?:rgba?|hsla?|oklch|oklab)\(|{_NAMES})[^"\']*)["\']',
+        markup))
+    script_colors = re.findall(r"['\"](#[0-9a-fA-F]{3,8}|(?:rgba?|hsla?|oklch|oklab)\([^'\"]*\))['\"]", scripts)
     script_colors += re.findall(
         rf"(?i)(?:color|fill|stroke|background\w*|border\w*|fillStyle|strokeStyle)\s*[:=]\s*['\"]({_NAMES})['\"]", scripts)
     colors = (
         _COLOR.findall(outside) + _NAMED_COLOR.findall(outside) + _COLOR.findall(styles)
-        + _NAMED_COLOR.findall(styles) + re.findall(rf"(?i)#[0-9a-f]{{3,8}}|\b{_NAMES}\b", svg_attrs) + script_colors
+        + _NAMED_COLOR.findall(styles) + _COLOR.findall(svg_attrs) + re.findall(rf"(?i)\b{_NAMES}\b", svg_attrs)
+        + script_colors
     )
     if colors:
         sample = ", ".join(dict.fromkeys(c.strip() for c in colors))
@@ -764,7 +783,7 @@ def _page_findings(text, base_dir=".", title=None, sources=None, verify=False) -
         host = urllib.parse.urlsplit(url).hostname or ""
         if host in _CDN_HOSTS and host not in _FONT_HOSTS:
             path = urllib.parse.urlsplit(url).path
-            if host != "cdn.tailwindcss.com" and not _VERSIONED.search(path):
+            if not _VERSIONED.search(path):
                 add("pin", f"{url}: pin the exact version.")
             elif verify and _url_exists(url) is False:
                 add("cdn", f"{url} does not exist on that CDN: check the version and the path.")
