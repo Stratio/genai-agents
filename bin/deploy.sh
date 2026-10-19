@@ -56,13 +56,6 @@ for zip in "$DIST_DIR"/*.zip; do
   curl --fail-with-body -u "${USERNAME}:${NEXUSPASS}" \
        --upload-file "$zip" \
        "${NEXUS_URL}/${ZIP_NAME}"
-
-  # Next to each ZIP, its SHA-256 (sha256sum format): genai-agents-sandbox checks the
-  # sandbox mandatory skills against it before baking them into the image.
-  (cd "$DIST_DIR" && sha256sum "$ZIP_NAME") > "$zip.sha256"
-  curl --fail-with-body -u "${USERNAME}:${NEXUSPASS}" \
-       --upload-file "$zip.sha256" \
-       "${NEXUS_URL}/${ZIP_NAME}.sha256"
 done
 
 echo "Deploy completed successfully."
