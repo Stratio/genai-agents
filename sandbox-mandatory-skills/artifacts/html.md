@@ -9,7 +9,7 @@ for every artifact (title, honest content, working folder) are in `SKILL.md`.
 An HTML artifact is someone else's page running in the viewer's browser, so the viewer
 isolates it. It loads the entry file into an iframe sandboxed to
 `allow-scripts allow-modals` and nothing else, in an opaque origin, under a policy that
-lets through inline code, `data:`/`blob:` resources and a fixed list of public CDNs. That
+lets through inline code, `data:`/`blob:` resources and the CDNs the installation allows. That
 is what makes it safe to open, and it is not negotiable. In practice:
 
 - **Write a full document.** The file is served as it is; nothing wraps it. Start with
@@ -28,8 +28,8 @@ is what makes it safe to open, and it is not negotiable. In practice:
   page's own files are the artifact's (see [Multi-file](#multi-file)), and there is no
   `<iframe>` of another page. Data the page needs goes in the page, written there by
   `build.py`: never `fetch()` or `d3.json()` at run time. `build.py` reads files in the
-  workspace, what your tools saved there included, and calls no external API: the
-  sandbox may have no route out.
+  workspace, what your tools saved there included, and downloads nothing but a map's
+  geometry (see [Content](#content)): the sandbox may have no route out.
 - **Any library, its exact version pinned.** Use whichever fits the page, with the
   exact version in the URL (`chart.js@4.4.1`, never `chart.js` or `@4`): an unpinned
   URL changes under a page that is opened months later. A version you remember may not
@@ -62,7 +62,7 @@ is what makes it safe to open, and it is not negotiable. In practice:
   GenAI UI addresses are the exception: never write one into an artifact (see
   The link, in `SKILL.md`).
 - **A survey, a poll or a sign-up page collects nothing.** Say so before you build
-  it, and build it as a preview: on submit it shows the respondent a summary of their
+  it, and build it as a preview: its button shows the respondent a summary of their
   own answers. Ask for no personal data (no name, no email).
 - **No `alert`, `confirm` or `prompt`.** They run, but use inline UI instead. Never
   build a page that asks the viewer for a password, a token or personal data.
@@ -77,7 +77,8 @@ is what makes it safe to open, and it is not negotiable. In practice:
 
 Read this before writing any HTML artifact, and read `guides/visual-craftsmanship.md`
 with it: the principles, anti-patterns, palette roles, type pairing and craftsmanship
-checklist every Stratio visual skill shares.
+checklist every Stratio visual skill shares. Its table of other visual skills does not
+apply here: an artifact is always built by this skill.
 
 ### Who decides
 
@@ -116,8 +117,9 @@ not.
 
 ### Theme
 
-Take the tokens from a theme instead of inventing a palette. `brand-kit.md` lists the
-Stratio catalog (ten themes, from `corporate-formal` to `technical-minimal`) and the
+Take the tokens from a theme instead of inventing a palette. From `brand-kit.md` use
+only the theme catalog and the token contract; its references to other skills do not
+apply here. It lists the Stratio catalog (ten themes, from `corporate-formal` to `technical-minimal`) and the
 token contract they all follow; each theme's values are in `themes/<name>.md`. Use the
 one the person names; otherwise pick the one whose "Best for" fits the request — not
 the same two for everything — say which one you used, and offer the catalog if they
@@ -155,17 +157,17 @@ palette for series.
   (`<li><span class="n">1</span><div>…</div></li>`).
 - **Light and dark.** The viewer does not pass its theme into the page, so the page
   follows the browser's `prefers-color-scheme`. Every color is a token on `:root`,
-  redefined for dark mode under `@media (prefers-color-scheme: dark)` with the
-  values in the theme's `## Dark mode` section (every catalog theme ships one,
-  contrast-checked, `--on-primary` and `--on-accent` included). A design system without
-  one: swap `bg` and `ink`, and keep the hue of `primary`, `accent` and each `state_*`
-  but lighten them until text in them reaches 4.5:1 on the dark `bg` (and darken their
-  tint backgrounds). `body` gets an explicit `background` and `color`: the frame behind it
-  is white. No color outside the token block: not in a `style=""` attribute, not in
-  SVG (`currentColor` or `var(--…)`), not in a chart library's options. A chart drawn
-  by script reads its colors from the tokens when it renders
-  (`getComputedStyle(document.documentElement).getPropertyValue("--chart-1")`) and
-  draws again when `matchMedia("(prefers-color-scheme: dark)")` changes.
+  redefined for dark mode under `@media (prefers-color-scheme: dark)` with the values in
+  the theme's `## Dark mode` section (every catalog theme ships one, contrast-checked,
+  `--on-primary` and `--on-accent` included). A design system without one: swap `bg` and
+  `ink`, and keep the hue of `primary`, `accent` and each `state_*` but lighten them
+  until text in them reaches 4.5:1 on the dark `bg` (and darken their tint backgrounds);
+  `check` reports the text that does not. `body` gets an explicit `background` and
+  `color`: the frame behind it is white. No color outside the token block: not in a
+  `style=""` attribute, not in SVG (`currentColor` or `var(--…)`), not in a chart
+  library's options. A chart drawn by script reads its colors from the tokens when it
+  renders (`getComputedStyle(document.documentElement).getPropertyValue("--chart-1")`)
+  and draws again when `matchMedia("(prefers-color-scheme: dark)")` changes.
 - **Fonts.** The theme's `display` (used sparingly), `body` and `mono` families, loaded
   from Google Fonts (a `<link>` to `fonts.googleapis.com`, with `display=swap`), each
   with its fallback stack.
@@ -210,11 +212,14 @@ body { margin: 0; background: var(--bg); color: var(--ink); }
   taking `100vh`. A tool opens already filled with sample data, its result already computed,
   and a visible line that says so.
 - **Structure carries meaning.** Number sections 01/02/03 only when they are a real
-  sequence. Keep cards for what needs to stand out, not around every block.
+  sequence. Keep cards for what needs to stand out, not around every block. No emojis
+  as section markers or diagram labels: a word, a number or a small inline SVG icon.
 - **Text:** about 65 characters per line (`max-width: 65ch` on prose) and a fixed type
   scale.
 - **Charts:** inline SVG, a `<canvas>`, or a chart library
-  (Plotly, Chart.js, D3; Mermaid for diagrams). Axes labeled with their units, series
+  (Plotly, Chart.js, D3). Mermaid suits a plain flowchart or sequence diagram where its
+  layout is enough; a diagram that is the point of the page is inline SVG (see the
+  Architecture row in [Pick the treatment first](#pick-the-treatment-first)). Axes labeled with their units, series
   colors from `--chart-n` and status from the state tokens, readable in both themes.
   Draw bars and lines with coordinates computed from the data, never with CSS heights
   in percent inside flex items (they collapse to the same size). Every chart's numbers
@@ -251,17 +256,6 @@ body { margin: 0; background: var(--bg); color: var(--ink); }
 
 Active voice and short, direct sentences, with no stock phrases.
 
-### Looks to avoid
-
-Unless the person or the theme asks for them, these read as machine-made:
-
-- a cream background with a serif and terracotta;
-- near-black with acid green;
-- a purple-to-blue gradient;
-- Inter, Space Grotesk or one neutral sans for everything, as the safe choice;
-- emojis as section markers;
-- everything centered, and large rounded corners on everything.
-
 ### Before you save it
 
 Run `check` on the pages with the title you will pass, fix every finding (or say in
@@ -278,21 +272,17 @@ executed once, not only read: keep it in pure functions and run them with `node`
 the same logic in Python in `build.py`) on the default inputs, at the extremes of each
 control, and through the main path to its end and back to the start.
 
-- [ ] `check` clean: full document, `<title>` equal to `--title`, a dark block, colors
-  only as tokens, no `<form>`, new tab, dialog or storage the page depends on, CDN URLs
-  pinned and existing, nothing loaded from outside the public CDNs.
+The essentials in `SKILL.md` and what `check` reports are not repeated here. On top
+of them:
+
 - [ ] `--description` in one sentence and 3–5 lowercase tags.
-- [ ] Theme (or the workspace's design system) named in the design plan.
-- [ ] Everything invented labeled on the page; a document the person handed you keeps
-  its substance; prose, tables and charts agree, every count in a heading matches the
-  rows below it, and one data point read back from each chart matches its label.
-- [ ] Text on fills uses `--on-*`; accent and state text reaches 4.5:1 in both themes.
-- [ ] No horizontal page scroll at 400 px; wide content scrolls in its own wrapper.
+- [ ] A document the person handed you keeps its substance; prose, tables and charts
+  agree, every count in a heading matches the rows below it, and one data point read
+  back from each chart matches its label.
 - [ ] Every chart's numbers are on the page, and library code is guarded.
-- [ ] An interactive page: its logic run as above, every control works by keyboard,
-  and a line says a reload restores the starting state.
-- [ ] Nothing hidden until a scroll or a click; no `100vh` hero.
-- [ ] None of the looks to avoid, unless asked for.
+- [ ] An interactive page: every control works by keyboard, and a line says a reload
+  restores the starting state.
+- [ ] None of the anti-patterns in `visual-craftsmanship.md`, unless asked for.
 
 ## Multi-file
 
