@@ -24,7 +24,6 @@ script.
 """
 
 import argparse
-import contextlib
 import fnmatch
 import html
 import html.parser
@@ -33,18 +32,14 @@ import json
 import os
 import re
 import secrets
-import shutil
 import ssl
 import stat
-import subprocess
 import sys
-import tempfile
 import unicodedata
 import urllib.error
 import urllib.parse
 import urllib.request
 import uuid
-from pathlib import Path
 from typing import NoReturn
 
 DEFAULT_CERT = "/vault/secrets/cert.crt"
@@ -790,84 +785,6 @@ def _page_findings(text, base_dir=".", title=None, sources=None, verify=False) -
     return findings
 
 
-# What only a browser sees: a headless Chrome lays the page out in a 400 px pane and
-# reports what overflows, what runs taller than any chart should, the text an SVG shrinks
-# below reading size, and the errors its scripts throw. It runs when the sandbox has one.
-_CHROMES = ("chrome-headless-shell", "headless_shell", "chromium", "chromium-browser", "google-chrome",
-            "google-chrome-stable", "chrome")  # fmt: skip
-_RENDER_ERRORS = """<script>(function(){var E=window.__checkErrors=[];
-addEventListener("error",function(e){E.push(e.message||("failed to load "+((e.target&&(e.target.src||e.target.href))||"a resource")))},true);
-addEventListener("unhandledrejection",function(e){E.push(String(e.reason))});
-var ce=console.error;console.error=function(){E.push([].join.call(arguments," "));ce.apply(console,arguments)};})();</script>"""
-_RENDER_PROBE = """<script>addEventListener("load",function(){setTimeout(function(){
-var W=innerWidth,r={errors:window.__checkErrors||[],wide:[],tall:[],small:[]};
-function scrolls(el){for(var p=el.parentElement;p&&p!==document.body;p=p.parentElement){var o=getComputedStyle(p).overflowX;if(o==="auto"||o==="scroll"||o==="hidden")return true}return false}
-function name(el){return el.tagName.toLowerCase()+(el.id?"#"+el.id:"")+(typeof el.className==="string"&&el.className?"."+el.className.trim().split(/\\s+/).join("."):"")}
-r.overflow=Math.max(document.documentElement.scrollWidth,document.body.scrollWidth)-W;
-document.querySelectorAll("body *").forEach(function(el){var b=el.getBoundingClientRect();
-if(b.width&&b.right>W+1&&!scrolls(el)&&r.wide.length<3&&getComputedStyle(el).position!=="fixed")r.wide.push(name(el)+" ("+Math.round(b.right)+" px)");
-if(r.tall.length<3&&(el.tagName==="CANVAS"?b.height>Math.max(600,1.5*b.width):/^(svg|img)$/i.test(el.tagName)&&b.height>2000))r.tall.push(name(el)+" ("+Math.round(b.width)+" \\u00d7 "+Math.round(b.height)+" px)")});
-document.querySelectorAll("svg text").forEach(function(t){var m=t.getScreenCTM();if(!m||!t.textContent.trim())return;
-var px=parseFloat(getComputedStyle(t).fontSize)*Math.hypot(m.a,m.b);if(px<10.5&&r.small.length<3)r.small.push("\u00ab"+t.textContent.trim().slice(0,30)+"\u00bb at "+px.toFixed(1)+" px")});
-var o=document.createElement("script");o.type="application/json";o.id="__check";o.textContent=JSON.stringify(r);document.body.appendChild(o)},1500)});</script>"""
-
-
-def _chrome():
-    """A headless Chrome to render pages with, if the sandbox has one: $ARTIFACT_CHROME, or
-    the first of the usual names on PATH."""
-    candidates = [os.environ.get("ARTIFACT_CHROME", "")] + [shutil.which(n) or "" for n in _CHROMES]
-    return next((c for c in candidates if c and os.access(c, os.X_OK)), None)
-
-
-def _render_findings(path: str, chrome: str) -> list | None:
-    """Load the page in a 400 px pane, as the viewer's narrowest pane shows it. None
-    when Chrome could not render it: no report is not a clean report."""
-    with open(path, encoding="utf-8", errors="replace") as handle:
-        page = handle.read()
-    head = re.search(r"(?i)<head\b[^>]*>", page)
-    page = page[: head.end()] + _RENDER_ERRORS + page[head.end() :] if head else _RENDER_ERRORS + page
-    page = re.sub(r"(?i)</body>", lambda _: _RENDER_PROBE + "</body>", page, count=1) if re.search(r"(?i)</body>", page) else page + _RENDER_PROBE
-    # Next to the page, so its relative stylesheets, scripts and images load as they will.
-    probe = os.path.join(os.path.dirname(os.path.abspath(path)), f".check-{os.getpid()}.html")
-    profile = tempfile.mkdtemp(prefix="artifact-check-")
-    try:
-        with open(probe, "w", encoding="utf-8") as handle:
-            handle.write(page)
-        # --no-sandbox: Chrome's own sandbox needs privileges a container does not give,
-        # and the page is the agent's own, rendered inside the pod's sandbox.
-        command = [chrome, "--headless", "--no-sandbox", "--disable-gpu", "--hide-scrollbars", "--no-first-run",
-                   f"--user-data-dir={profile}", "--window-size=400,900", "--virtual-time-budget=10000",
-                   "--dump-dom", Path(probe).as_uri()]
-        done = subprocess.run(command, capture_output=True, text=True, timeout=60)
-    except (OSError, subprocess.TimeoutExpired):
-        return None
-    finally:
-        with contextlib.suppress(OSError):
-            os.remove(probe)
-        shutil.rmtree(profile, ignore_errors=True)
-    found = re.search(r'(?s)<script type="application/json" id="__check">(.*?)</script>', done.stdout)
-    if not found:
-        return None
-    try:
-        seen = json.loads(html.unescape(found.group(1)))
-    except ValueError:
-        return None
-    findings = []
-    if seen.get("overflow", 0) > 1:
-        findings.append({"rule": "render", "message": f"In a 400 px pane the page scrolls sideways by {seen['overflow']} px: "
-                         f"{', '.join(seen['wide']) or 'an element'} runs past the edge. Wrap it in .scroll-x or let it shrink."})
-    if seen.get("tall"):
-        findings.append({"rule": "render", "message": f"In a 400 px pane: {', '.join(seen['tall'])}. A chart taller "
-                         "than wide usually keeps growing: give it a wrapper of fixed height."})
-    if seen.get("small"):
-        findings.append({"rule": "render", "message": f"SVG text below 11 px in a 400 px pane: {'; '.join(seen['small'])}."})
-    errors = list(dict.fromkeys(e for e in seen.get("errors", []) if e))
-    if errors:
-        findings.append({"rule": "render", "message": f"The page's scripts report errors: {'; '.join(e[:160] for e in errors[:3])}. "
-                         "Fix them, or guard the code that depends on a library."})
-    return findings
-
-
 def _report_findings(label: str, findings: list) -> None:
     for finding in findings:
         print(f"check: {label}: [{finding['rule']}] {finding['message']}", file=sys.stderr)
@@ -1165,10 +1082,8 @@ def cmd_check(args):
     """Check pages before `create` or `write`: what the viewer breaks, and the rules
     SKILL.md asks for. The first page is the entry: it is the one --title applies to.
     Hosts are checked against the CDNs the viewer allows, each library URL off
-    the html.md table is asked for on its CDN when the sandbox can reach it, and when the
-    sandbox has a headless Chrome each page is also rendered in a 400 px pane."""
+    the html.md table is asked for on its CDN when the sandbox can reach it."""
     sources = _cdn_sources()
-    chrome = None if args.no_render else _chrome()
     report = []
     for index, path in enumerate(args.files):
         if not os.path.isfile(path):
@@ -1181,9 +1096,7 @@ def cmd_check(args):
         with open(path, encoding="utf-8", errors="replace") as handle:
             content = handle.read()
         findings = _page_findings(content, os.path.dirname(path) or ".", title=title, sources=sources, verify=True)
-        rendered = _render_findings(path, chrome) if chrome else None
-        findings += rendered or []
-        report.append({"file": path, "findings": findings, "rendered": rendered is not None})
+        report.append({"file": path, "findings": findings})
     _emit(report)
 
 
@@ -1381,8 +1294,6 @@ def _parser() -> argparse.ArgumentParser:
     p = sub.add_parser("check")
     p.add_argument("files", nargs="+", help="The entry page first, then any other page")
     p.add_argument("--title", help="The --title it gets: the entry's <title> must match")
-    p.add_argument("--no-render", dest="no_render", action="store_true",
-                   help="Skip the headless Chrome render even when there is one")
     p.set_defaults(func=cmd_check)
 
     p = sub.add_parser("url")

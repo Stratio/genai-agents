@@ -95,7 +95,6 @@ def cli(monkeypatch):
         return module.artifact
 
     monkeypatch.setattr(module, "_call", _fake_call)
-    monkeypatch.setattr(module, "_chrome", lambda: None)  # no render unless a test asks
     module.calls = calls
     return module
 
@@ -1387,54 +1386,6 @@ class TestCheckRoundTwo:
         assert _rules(json.loads(capsys.readouterr().out)[0]["findings"]) == ["title"]
 
 
-class TestRender:
-    """When the sandbox has a headless Chrome, check also lays each page out in a 400 px pane."""
-
-    def test_check_renders_when_there_is_a_chrome(self, cli, tmp_path, monkeypatch, capsys):
-        (tmp_path / "index.html").write_text(_GOOD_PAGE)
-        monkeypatch.setattr(cli, "_url_exists", lambda url: True)
-        monkeypatch.setattr(cli, "_chrome", lambda: "/usr/bin/chromium")
-        rendered = []
-        monkeypatch.setattr(cli, "_render_findings", lambda path, chrome: rendered.append((path, chrome)) or [
-            {"rule": "render", "message": "In a 400 px pane the page scrolls sideways by 120 px"}])
-
-        cli.main(["check", str(tmp_path / "index.html"), "--title", "Ventas Q3"])
-
-        [report] = json.loads(capsys.readouterr().out)
-        assert rendered == [(str(tmp_path / "index.html"), "/usr/bin/chromium")]
-        assert report["rendered"] is True and _rules(report["findings"]) == ["render"]
-
-        rendered.clear()
-        cli.main(["check", str(tmp_path / "index.html"), "--title", "Ventas Q3", "--no-render"])
-        assert rendered == [] and json.loads(capsys.readouterr().out)[0]["rendered"] is False
-
-    def test_what_the_browser_saw_becomes_findings(self, cli, tmp_path, monkeypatch):
-        (tmp_path / "index.html").write_text(_GOOD_PAGE)
-        seen = {"errors": ["Uncaught ReferenceError: Chart is not defined"], "wide": ["div.grid (520 px)"],
-                "tall": ["canvas#c (340 × 1600 px)"], "small": ["«SENSOR» at 3.6 px"], "overflow": 120}
-
-        def _run(command, **kwargs):
-            probe = command[-1].removeprefix("file://")
-            assert os.path.exists(probe) and "__checkErrors" in open(probe).read()
-            assert "--window-size=400,900" in command
-            return subprocess.CompletedProcess(command, 0, f'<script type="application/json" id="__check">{json.dumps(seen)}</script>', "")
-
-        monkeypatch.setattr(cli.subprocess, "run", _run)
-        messages = " ".join(f["message"] for f in cli._render_findings(str(tmp_path / "index.html"), "chrome"))
-        for needle in ("sideways by 120 px", "div.grid", "1600 px", "«SENSOR» at 3.6 px", "Chart is not defined"):
-            assert needle in messages, needle
-        assert [p.name for p in tmp_path.iterdir()] == ["index.html"]  # the probe copy is gone
-
-    @pytest.mark.skipif(not _load()._chrome(), reason="no headless Chrome here")
-    def test_a_real_chrome_sees_overflow_and_errors(self, tmp_path):
-        cli = _load()
-        page = _GOOD_PAGE.replace("<h1>", '<div style="width: 900px">ancho</div><h1>').replace(
-            '<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>', "<script>noSuchFunction()</script>")
-        (tmp_path / "index.html").write_text(page)
-        messages = " ".join(f["message"] for f in cli._render_findings(str(tmp_path / "index.html"), cli._chrome()))
-        assert "scrolls sideways" in messages and "noSuchFunction" in messages
-
-
 class TestSkillRecommendations:
     """The rules a comparison of 20 sandbox runs against Claude's artifacts showed were
     missing, pinned so an edit to SKILL.md cannot quietly drop one."""
@@ -1814,38 +1765,3 @@ class TestCheckRoundThree:
 
         monkeypatch.setattr(cli.urllib.request, "urlopen", answer)
         assert cli._url_exists(_OFF_TABLE_CHART_JS) is exists
-
-
-class TestRenderReportsWhatItDid:
-    def test_no_report_from_chrome_is_not_rendered(self, cli, tmp_path, monkeypatch, capsys):
-        (tmp_path / "index.html").write_text(_GOOD_PAGE)
-        monkeypatch.setattr(cli, "_url_exists", lambda url: True)
-        monkeypatch.setattr(cli, "_chrome", lambda: "/usr/bin/chromium")
-        monkeypatch.setattr(cli.subprocess, "run", lambda command, **kw: subprocess.CompletedProcess(command, 1, "", "crash"))
-
-        cli.main(["check", str(tmp_path / "index.html"), "--title", "Ventas Q3"])
-
-        [report] = json.loads(capsys.readouterr().out)
-        assert report["rendered"] is False and report["findings"] == []
-
-    def test_a_probe_it_cannot_write_is_not_a_crash(self, cli, tmp_path, monkeypatch):
-        (tmp_path / "index.html").write_text(_GOOD_PAGE)
-        monkeypatch.setattr(cli.os, "getpid", lambda: "no-such-dir/x")  # the probe's folder does not exist
-
-        assert cli._render_findings(str(tmp_path / "index.html"), "chrome") is None
-
-    def test_the_page_is_opened_by_a_well_formed_url(self, cli, tmp_path, monkeypatch):
-        folder = tmp_path / "Q3 #1 report"
-        folder.mkdir()
-        (folder / "index.html").write_text(_GOOD_PAGE)
-        opened = []
-
-        def _run(command, **kwargs):
-            opened.append(command[-1])
-            return subprocess.CompletedProcess(command, 0, "", "")
-
-        monkeypatch.setattr(cli.subprocess, "run", _run)
-        cli._render_findings(str(folder / "index.html"), "chrome")
-
-        [url] = opened
-        assert url.startswith("file:///") and " " not in url and "#" not in url

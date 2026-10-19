@@ -221,8 +221,8 @@ repeat:
 5. Everything invented is labeled on the page, and every figure comes from the script
    (see [Every artifact](#every-artifact)).
 6. An interactive page has its logic run once before saving (see `html.md`).
-7. Run `check` on the pages (with a headless Chrome it also renders them in a 400 px
-   pane), fix what it reports, then `create` or `write`, and give the link.
+7. Run `check` on the pages, fix what it reports, then `create` or `write`, and give
+   the link.
 
 ## Commands you use most
 

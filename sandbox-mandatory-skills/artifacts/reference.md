@@ -23,8 +23,6 @@ python3 scripts/artifact.py recent --page-size 10
 python3 scripts/artifact.py workdir "Q3 sales report"
 
 # Check the pages before saving them: the entry first, with the title it will get.
-# With a headless Chrome in the sandbox it also renders each HTML page in a 400 px
-# pane; --no-render skips that.
 python3 scripts/artifact.py check <workdir>/index.html <workdir>/annex/detail.html \
     --title "Q3 sales report"
 
@@ -88,15 +86,13 @@ What the commands print and accept:
   and write it back.
 - **Ids.** Every command that takes an `<artifact_id>` wants the id itself
   (8-4-4-4-12 hex): `resolve` turns a link or a name into it.
-- **`check`** prints one entry per file with its findings (an empty list is clean) and,
-  for an HTML page, `rendered`: whether a headless Chrome laid it out and reported back
-  (`$ARTIFACT_CHROME`, or `chrome-headless-shell`, `chromium` or `google-chrome` on the
-  path). Each finding names a rule: the viewer's limits (`form`, `new-tab`, `dialog`,
+- **`check`** prints one entry per file with its findings (an empty list is clean).
+  Each finding names a rule: the viewer's limits (`form`, `new-tab`, `dialog`,
   `storage`, `download`, `iframe`, `host`, `pin`, `cdn`, `fetch`), the document
   (`document`, `title`, `dark-mode`, `colors`, `contrast`), the layout (`responsive`,
-  `hero`, `reveal`, `svg`), content (`emoji`, `link`) and what the browser saw
-  (`render`). For a Markdown entry only the title rule applies. `create` and `write`
-  print the same findings on stderr as `check: …` lines, as warnings.
+  `hero`, `reveal`, `svg`) and content (`emoji`, `link`). For a Markdown entry only the
+  title rule applies. `create` and `write` print the same findings on stderr as
+  `check: …` lines, as warnings.
 - **`host`** checks against `$ARTIFACT_CDN_SOURCES`, the CDNs this installation lets a
   page load from (set by the platform; empty means none; a source with a path, such as
   an internal mirror's `https://nexus.corp/npm/`, allows that path only), or the public

@@ -260,11 +260,9 @@ Active voice and short, direct sentences, with no stock phrases.
 
 Run `check` on the pages with the title you will pass, fix every finding (or say in
 the chat why one stays, when the person asked for it), review the file once against
-this list, then `create` or `write` it and give the link. When the sandbox has a
-headless Chrome, `check` also renders each page in a 400 px pane and reports what
-overflows, charts that keep growing, SVG text under 11 px and script errors; it never
-sees whether the logic is right, so run that yourself. `create` and `write` repeat the
-static checks as warnings. No open-ended verification loops: further changes come from
+this list, then `create` or `write` it and give the link. `check` never sees whether
+the logic is right, so run that yourself. `create` and `write` repeat the checks as
+warnings. No open-ended verification loops: further changes come from
 the person, on the page they have seen, and are edited in place.
 
 **Run the logic before saving.** A page that computes or keeps state has its logic
