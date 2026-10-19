@@ -1,0 +1,86 @@
+# Task: upload a file to Rocket
+
+Push a local sandbox file into a directory of one Rocket filesystem — its HDFS or a
+configured S3 bucket.
+
+Since Rocket 4.x (ROCK #5384) this is a **single request**, handled by the script:
+
+`POST /fileBrowser/upload?path=<dir>&filesystemId=<id>&filesystemType=<type>`
+with the file in the `binary` multipart part.
+
+- The write is **authorized before any byte is accepted**, so a caller without
+  permission over `path` is refused without having transferred the file.
+- The bytes are **streamed straight into the filesystem** — nothing is written to the
+  Rocket pod's disk any more.
+- The file is stored under `path` with the name the multipart part carries, and the
+  request is **refused when that name is already taken** (no overwrite). Delete or
+  rename first, or upload under a different name.
+- The response is `200` with the stored path.
+
+The legacy two-request flow (`POST /fileBrowser/uploadLocalFile` →
+`POST /fileBrowser/putLocalFileToHadoopFs`, with its HTTP 420 retry; it also carries the
+`targetFilesystem`) still exists for
+compatibility. The script falls back to it automatically when the server answers
+404/405 to the one-shot route, and `--legacy` forces it.
+
+## Procedure
+
+1. **Pre-check** — `ROCKET_API_URL` set and the client cert present (see `SKILL.md`).
+
+2. **Filesystem** — use the one settled for this conversation; if none is yet, follow
+   `tasks/filesystems.md`. When several exist and the user did not say where, ask: an
+   upload to the wrong bucket is a publication in the wrong place. Include the
+   filesystem in the destination you confirm with the user.
+
+3. **Destination — never guess it.** An upload publishes the file where other people
+   and processes read it.
+   - **The user named the directory** → that is the confirmation: state the filesystem,
+     directory and final name in one line and go on.
+   - **The user did not name it** → **ask for it**. Never pick one on your own — not the
+     filesystem's `defaultPath`, not a directory you listed earlier. When you propose one
+     (e.g. a directory just created in this conversation), state the filesystem,
+     directory and final name and **wait for an explicit yes** before uploading.
+   - **The name is taken** (`ls` the directory first) → say so and ask how to proceed:
+     another name, or delete the old one with `rm` (that needs its own confirmation);
+     never delete on your own. If the user asks for "another name" without giving one,
+     pick one that is free, pass it with `--name` and say which one you used.
+
+4. **Upload**:
+
+   ```bash
+   python3 scripts/rocket_file_browser.py upload \
+     "<local_src>" "<dir>" --fs <id>:<type> [--name <remote_name>] [--legacy]
+   ```
+
+   - `<local_src>`: existing local file in the sandbox. A file you create in order to
+     upload it goes in the current task folder (or the workspace), not in `/tmp`.
+   - `<dir>`: target **directory** (absolute, in that filesystem; on S3 relative to the
+     bucket root); the file keeps its basename unless `--name` is given.
+     If it does not exist, Rocket creates it, intermediate directories included —
+     no prior `mkdir` needed, but a typo in the path silently creates a new tree.
+   - `--name`: remote file name. Use it to upload under another name instead of copying
+     or renaming the local file.
+
+## Expected output
+
+```
+Uploaded /root/project/Screenshot.png -> /data/kk/LoadDocument/Screenshot.png [hdfs1.s000001-datastores:HDFS]
+```
+
+With the legacy fallback, a `Phase 1 OK: staged at /tmp/uploads/...` line precedes it.
+
+## Notes & errors
+
+- Max upload size is the server's `file-browser.max-content-length` (default 5 GB);
+  very large files may still hit timeouts — surface the body verbatim if so.
+- `Target <path> already exists` — the destination name is taken; the upload is refused
+  before the transfer. Rocket returns it as HTTP 500, not 409.
+- A relative `<dir>` is refused (Rocket only accepts absolute File Browser paths).
+- A file name HDFS or S3 cannot hold (a colon, braces) is refused before the transfer.
+- `401/403` — not authorized for that target directory (Gosec; on S3 the check is
+  against `/<bucket><dir>`).
+- `420` only appears in the legacy flow — a concurrent upload kept the slot busy; the
+  script retries with backoff and reports if it never clears.
+- Restricted roots are refused client-side before the call.
+
+See `guides/external-api-calls.md` §5 for reading common HTTP codes.
