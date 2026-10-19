@@ -1,6 +1,6 @@
 ---
 name: brand-kit
-description: "Seleccionar y aplicar un tema de identidad visual (colores, tipografía, tono, paleta de charts, tamaños) que cada writer skill (docx-writer, pptx-writer, pdf-writer, web-craft, canvas-craft, xlsx-writer) consume para producir entregables con branding coherente. Incluye diez temas curados y es extensible mediante nuevos ficheros markdown de tema. Usar siempre que el usuario pida una marca o tema específicos, mencione colores/identidad/tono corporativos, solicite un informe/deck/poster con branding, o antes de generar cualquier entregable visual para fijar los tokens de marca. No renderiza el fichero final — delega en las writer skills."
+description: "Seleccionar y aplicar un tema de identidad visual (colores, tipografía, tono, paleta de charts, tamaños) que cada writer skill (docx-writer, pptx-writer, pdf-writer, web-craft, canvas-craft, xlsx-writer) y la skill artifacts consumen para producir entregables con branding coherente. Incluye diez temas curados y es extensible mediante nuevos ficheros markdown de tema. Usar siempre que el usuario pida una marca o tema específicos, mencione colores/identidad/tono corporativos, solicite un informe/deck/poster con branding, o antes de generar cualquier entregable visual para fijar los tokens de marca. No renderiza el fichero final — delega en las writer skills."
 argument-hint: "[nombre del tema | 'personalizado' | 'scaffold']"
 ---
 
@@ -36,7 +36,7 @@ en que carga la skill, sin lectura adicional.
 ## Flujo (invoca este flujo ANTES de cualquier skill de output con dimensión visual)
 
 Siempre que el agente vaya a generar un entregable que tenga cualquier
-expresión visual (informe DOCX, deck PPTX, documento PDF, libro XLSX,
+expresión visual (artefacto, informe DOCX, deck PPTX, documento PDF, libro XLSX,
 landing HTML, PDF / PNG de una sola página), ejecuta este flujo primero para fijar
 los tokens de marca. Saltarse este paso produce artefactos
 inconsistentes — fuentes distintas, acentos distintos, sin paleta

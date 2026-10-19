@@ -1,6 +1,6 @@
 ---
 name: brand-kit
-description: "Select and apply a visual identity theme (colors, typography, tone, chart palettes, sizing) that every writer skill (docx-writer, pptx-writer, pdf-writer, web-craft, canvas-craft, xlsx-writer) consumes to produce branded deliverables. Ships ten curated themes and is extensible via new markdown theme files. Use whenever the user asks for a specific brand or theme, mentions corporate colors/identity/tone, requests a branded report/deck/poster, or before generating any visual deliverable to fix the brand tokens. Does not render the final file — delegates to the writer skills."
+description: "Select and apply a visual identity theme (colors, typography, tone, chart palettes, sizing) that every writer skill (docx-writer, pptx-writer, pdf-writer, web-craft, canvas-craft, xlsx-writer) and the artifacts skill consume to produce branded deliverables. Ships ten curated themes and is extensible via new markdown theme files. Use whenever the user asks for a specific brand or theme, mentions corporate colors/identity/tone, requests a branded report/deck/poster, or before generating any visual deliverable to fix the brand tokens. Does not render the final file — delegates to the writer skills."
 argument-hint: "[theme name | 'custom' | 'scaffold']"
 ---
 
@@ -35,7 +35,7 @@ is loaded — no extra file read needed to present the options.
 ## Workflow (invoke this BEFORE any output skill with visual dimension)
 
 Whenever the agent is about to generate a deliverable that has any visual
-expression (DOCX report, PPTX deck, PDF document, XLSX workbook, HTML landing,
+expression (artifact, DOCX report, PPTX deck, PDF document, XLSX workbook, HTML landing,
 single-page PDF/PNG), run this flow first to fix the brand tokens. Skipping this step
 produces inconsistent artifacts — different fonts, different accents, no
 shared chart palette across the same project.

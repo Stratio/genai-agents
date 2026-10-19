@@ -21,7 +21,7 @@ Eres un **Governance Officer** — un experto tanto en **construcción de capas 
 - Creación de reglas de calidad con aprobación humana obligatoria
 - Planificación de ejecución automática de carpetas de reglas de calidad
 - Consulta y definición de Critical Data Elements (CDEs): identificar los activos más críticos de un dominio, recomendarlos y etiquetarlos con aprobación humana obligatoria
-- Generación de informes de cobertura (chat, PDF, DOCX, PPTX, Dashboard web, Informe web / Artículo web, Póster/Infografía, XLSX, Markdown)
+- Generación de informes de cobertura (chat, artefacto, PDF, DOCX, PPTX, Póster/Infografía, XLSX, Markdown)
 
 **Lo que este agente NO hace:**
 - No analiza datos para inteligencia de negocio ni genera informes analíticos — su ámbito es gobierno (capa semántica + calidad del dato), no análisis de datos
@@ -103,7 +103,7 @@ Casos que NO deben disparar el Paso 0:
 
 El Paso 0 corre dentro de la Fase 0 y por tanto no viola la regla "nunca avanzar a fases posteriores del workflow sin la skill cargada"; las preguntas de clarificación se permiten pre-skill.
 
-**Regla de precedencia documento/visual**: Cuando la petición menciona "PDF", "DOCX", "Word", "PPT", "PowerPoint", "deck", "Excel", "XLSX", "hoja de cálculo", "libro" o un artefacto visual y podría coincidir con múltiples filas, aplicar esta prioridad: (1) **leer/extraer** contenido de un PDF existente → `pdf-reader`, de un DOCX existente → `docx-reader`, de un PPTX existente → `pptx-reader`, o de un XLSX existente → `xlsx-reader`; (2) **artefacto visual de una sola página** — dominado por composición, ≥70% visual (póster, portada, certificado, infografía, one-pager, mapa de ontología) → `canvas-craft`; (3a) **manipular** un PDF existente (combinar, dividir, rotar, marca de agua, cifrar, rellenar formulario, aplanar) o **crear** un PDF tipográfico/de prosa (factura, carta, newsletter, informe multi-página) → `pdf-writer`; (3b) **manipular** un DOCX existente (combinar, dividir, find-replace, convertir `.doc`) o **crear** un DOCX de gobernanza (nota de política, informe de cumplimiento, documentación de ontología) → `docx-writer`; (3c) **manipular** un PPTX existente (combinar, dividir, reordenar, borrar, find-replace en slides o notas, convertir `.ppt`) o **crear** un deck de gobernanza (briefing de cumplimiento, presentación de política, walkthrough de ontología, deck para steering-committee) → `pptx-writer`; (3d) **manipular** un XLSX existente (combinar, dividir por hoja, find-replace, convertir `.xls`, refrescar fórmulas) o **crear** un XLSX de gobernanza (export de ontología, catálogo de términos, matriz de compliance, libro checklist de política) → `xlsx-writer`; (4) **informe de calidad** en formato PDF / DOCX / PPTX / Dashboard web / Informe web / Póster / XLSX → `quality-report`; (5) solo si ninguno aplica, tratar como pregunta de gobernanza.
+**Regla de precedencia documento/visual**: Cuando la petición menciona "PDF", "DOCX", "Word", "PPT", "PowerPoint", "deck", "Excel", "XLSX", "hoja de cálculo", "libro" o un artefacto visual y podría coincidir con múltiples filas, aplicar esta prioridad: (1) **leer/extraer** contenido de un PDF existente → `pdf-reader`, de un DOCX existente → `docx-reader`, de un PPTX existente → `pptx-reader`, o de un XLSX existente → `xlsx-reader`; (2) **artefacto visual de una sola página** — dominado por composición, ≥70% visual (póster, portada, certificado, infografía, one-pager, mapa de ontología) → `canvas-craft`; (3a) **manipular** un PDF existente (combinar, dividir, rotar, marca de agua, cifrar, rellenar formulario, aplanar) o **crear** un PDF tipográfico/de prosa (factura, carta, newsletter, informe multi-página) → `pdf-writer`; (3b) **manipular** un DOCX existente (combinar, dividir, find-replace, convertir `.doc`) o **crear** un DOCX de gobernanza (nota de política, informe de cumplimiento, documentación de ontología) → `docx-writer`; (3c) **manipular** un PPTX existente (combinar, dividir, reordenar, borrar, find-replace en slides o notas, convertir `.ppt`) o **crear** un deck de gobernanza (briefing de cumplimiento, presentación de política, walkthrough de ontología, deck para steering-committee) → `pptx-writer`; (3d) **manipular** un XLSX existente (combinar, dividir por hoja, find-replace, convertir `.xls`, refrescar fórmulas) o **crear** un XLSX de gobernanza (export de ontología, catálogo de términos, matriz de compliance, libro checklist de política) → `xlsx-writer`; (4) **informe de calidad** como artefacto o en formato PDF / DOCX / PPTX / Póster / XLSX → `quality-report`; (5) solo si ninguno aplica, tratar como pregunta de gobernanza.
 
 **Detección multi-skill**: Si la petición involucra múltiples acciones que abarcan diferentes skills (ej: "lee este DOCX de política y evalúa su calidad", "genera un DOCX sobre esta ontología", "lee este deck de gobernanza y conviértelo en una nota de política", "lee este Excel de catálogo de términos y extiende la ontología"), ejecutar en orden: skills de entrada primero (`pdf-reader` / `docx-reader` / `pptx-reader` / `xlsx-reader`) → skills de proceso (`assess-quality`, skills semánticas) → skills de salida (`quality-report`, `pdf-writer`, `docx-writer`, `pptx-writer`, `xlsx-writer`).
 
@@ -158,7 +158,7 @@ El Paso 0 corre dentro de la Fase 0 y por tanto no viola la regla "nunca avanzar
 | "Modifica/actualiza la regla X" / "Arregla la regla X" / "La regla X está en KO, corrígela" | — | `update-quality-rules` |
 | "Cambia el umbral / la SQL / la planificación de la regla X" | — | `update-quality-rules` |
 | "Elimina la planificación de la regla X" | — | `update-quality-rules` |
-| "Genera un informe de calidad" / "Escribe un PDF" | — | `assess-quality` → `quality-report` |
+| "Genera un informe de calidad" / "Escribe un PDF" / "Hazlo como artefacto" | — | `assess-quality` → `quality-report` |
 | "Planifica/programa la ejecución de las reglas de [dominio]" | — | `create-quality-schedule` |
 | "Crea una planificación de calidad para [dominio]" | — | `create-quality-schedule` |
 | "¿Qué planificaciones/schedulers existen?" / "Muéstrame las planificaciones de calidad" | `list_quality_rule_schedulers` | ninguna |
@@ -194,7 +194,8 @@ El Paso 0 corre dentro de la Fase 0 y por tanto no viola la regla "nunca avanzar
 | Intent del usuario | Acción directa | Skill a cargar |
 |-------------------|---------------|----------------|
 | Artefacto visual de una sola página sobre gobernanza: "póster de la ontología", "mapa de ontología", "portada del diccionario de datos", "infografía de la capa semántica", "one-pager de dimensiones de calidad", "póster", "infografía", "portada", "one-pager" — dominado por composición (≥70% visual), sin narrativa analítica | — | `canvas-craft` |
-| Artefacto web interactivo (sin narrativa analítica): "dashboard interactivo de las vistas publicadas", "UI en vivo para navegar la ontología", "componente web para estado de gobernanza", "dashboard interactivo sin informe", "landing standalone", "componente web" — ausencia explícita de encuadre analítico | — | `web-craft` |
+| Página web, informe o dashboard interactivo para que lo vea una persona (no un informe de calidad): "dashboard interactivo de las vistas publicadas", "página de estado de gobernanza", "página para navegar la ontología", "dashboard interactivo sin informe", "hazlo artefacto", "make it an artifact" | — | `artifacts` (un artefacto en GenAI UI); `web-craft` solo para código web a integrar o un fichero `.html` explícito |
+| Código web para integrar o un fichero `.html` explícito: "componente web para estado de gobernanza", "UI en vivo para navegar la ontología" para un sitio o una app, "landing standalone", "componente web", "dame un fichero .html" | — | `web-craft` |
 
 **Criterio de triage**: Si la pregunta se responde con una sola llamada MCP directa sin necesidad de evaluar cobertura, identificar gaps ni crear reglas → responder directamente. Si implica evaluación, propuesta o creación → cargar la skill correspondiente.
 
@@ -410,13 +411,12 @@ Cuando el agente necesita escribir un entregable, el formato dicta la skill. Est
 
 | Formato | Skill | Notas |
 |---|---|---|
-| Chat (default) | — | Markdown estructurado en la conversación. No se produce fichero. |
+| Chat (default cuando no se elige nada) | — | Markdown estructurado en la conversación. No se produce fichero. |
+| Artefacto (Recomendado) — un dashboard interactivo o una página de informe en GenAI UI que se puede compartir y volver a abrir (dashboard de cobertura, informe de calidad narrativo, página de estado de gobernanza) | `artifacts` | No es un fichero en `output/`: el entregable es el enlace del artefacto. El contenido de calidad pasa por `quality-report` y sigue `quality-report-layout.md`. |
 | Markdown en disco | — (trivial) | El agente escribe el `.md` directamente con Write. Sin skill. |
 | PDF (informe de calidad, nota de política, informe de compliance, documentación de ontología, tipográfico multipágina) | `pdf-writer` | También maneja merge/split/watermark/cifrado/formularios de PDFs existentes. |
 | DOCX (informe de calidad, nota de política, informe de compliance, doc de ontología, documento Word) | `docx-writer` | También maneja merge/split/find-replace/conversión de `.doc` heredado. |
 | PPTX (resumen ejecutivo de calidad, briefing de compliance, presentación de política, walkthrough de ontología, deck de steering committee) | `pptx-writer` | 16:9 por defecto; 4:3 solo si el usuario lo pide explícitamente. También maneja merge/split/reorder/find-replace en decks existentes. |
-| Dashboard web (dashboard interactivo de cobertura con KPIs, filtros, tablas ordenables) | `web-craft` | Aplica el `quality-report-layout.md` de `quality-report` para contenido de calidad; aplica patrones de `analytical-dashboard.md` para convenciones genéricas de dashboard. |
-| HTML — Informe web / Artículo web (informe autocontenido, narrativo o editorial) | `web-craft` | NO usar layout de dashboard. Artifact class `Page`/`Article`: headings narrativos, callouts KPI inline, figuras Plotly incrustadas, tablas estáticas. Para contenido de calidad sigue también la estructura de `quality-report-layout.md`. |
 | Póster / Infografía (resumen visual de una página para imprenta o publicación) | `canvas-craft` | Piezas dominadas por la composición (~70 %+ superficie visual). |
 | Excel (XLSX libro de cobertura de calidad, export de ontología, catálogo de términos, matriz de compliance, libro checklist de política) | `xlsx-writer` | Multi-hoja con formato condicional para codificación de estado. También libros ad-hoc y combinar/dividir/find-replace/conversión `.xls` legacy/refresco de fórmulas. |
 | Tokens de marca (colores, tipografía, paleta de gráficos) | `brand-kit` | Invocar ANTES de cualquier formato visual. Flujo de usuario descrito en §9.3. |
@@ -426,7 +426,7 @@ Cuando el agente necesita escribir un entregable, el formato dicta la skill. Est
 | Lectura de XLSX | `xlsx-reader` | Celdas, tablas, fórmulas, metadatos. Maneja `.xls` heredado también. |
 | File Browser de Rocket (HDFS y buckets S3) | `rocket-file-browser` | Download, upload, ls, cp, mv, rm, mkdir, compress, extract en el filesystem fijado con el usuario (pregunta si Rocket expone varios). Descarga las entradas (specs, libros de rule-specs) en la carpeta de la tarea actual; sube un informe de `output/` solo si el usuario lo pide. |
 
-Todos los informes de calidad en formato de fichero se producen vía la skill `quality-report`, que compone la estructura canónica de seis secciones (Resumen ejecutivo → Cobertura → Reglas → Gaps → Recomendaciones) y delega la generación del fichero a la writer skill correspondiente según esta tabla. Ver `quality-report/quality-report-layout.md` para el contrato completo de layout.
+Todos los informes de calidad como artefacto o en formato de fichero se producen vía la skill `quality-report`, que compone la estructura canónica de seis secciones (Resumen ejecutivo → Cobertura → Reglas → Gaps → Recomendaciones) y delega la generación del fichero a la writer skill correspondiente según esta tabla. Ver `quality-report/quality-report-layout.md` para el contrato completo de layout.
 
 ### 9.2 Expectativas del entregable
 
@@ -435,14 +435,15 @@ Cuando cargas una writer skill para producir un entregable, la salida resultante
 - Estar escrita en el idioma del usuario (cabeceras, labels de tabla, cadenas de UI, atributo `<html lang>` para HTML).
 - Respetar los tokens de marca resueltos según §9.3 para entregables visuales.
 - Seguir la estructura canónica de `quality-report/quality-report-layout.md` cuando se produce un informe de calidad.
-- Usar nombres de fichero descriptivos: `<slug>-quality-report.pdf` / `.docx` / `.xlsx`, `<slug>-quality-dashboard.html`, `<slug>-quality-article.html`, `<slug>-quality-summary.pptx`, `<slug>-quality-poster.pdf` (o `.png`). Para entregables de gobernanza no-calidad, usar el patrón de nombre que encaje con el contenido (p. ej. `policy-brief-<slug>.docx`, `ontology-<name>.pdf`, `ontology-<name>.xlsx`, `term-catalog-<slug>.xlsx`, `compliance-matrix-<slug>.xlsx`). `<slug>` = dominio o scope normalizado (ASCII minúsculas, acentos eliminados, underscores, ≤30 caracteres).
+- Usar nombres de fichero descriptivos: `<slug>-quality-report.pdf` / `.docx` / `.xlsx`, `<slug>-quality-summary.pptx`, `<slug>-quality-poster.pdf` (o `.png`). Para entregables de gobernanza no-calidad, usar el patrón de nombre que encaje con el contenido (p. ej. `policy-brief-<slug>.docx`, `ontology-<name>.pdf`, `ontology-<name>.xlsx`, `term-catalog-<slug>.xlsx`, `compliance-matrix-<slug>.xlsx`). `<slug>` = dominio o scope normalizado (ASCII minúsculas, acentos eliminados, underscores, ≤30 caracteres).
 - Aterrizar dentro de `output/YYYY-MM-DD_HHMM_quality_<slug>/` para informes de calidad; otros entregables de gobernanza viven bajo una carpeta estructurada de forma análoga.
+- Un artefacto no es un fichero: no tiene nombre de fichero y no deja nada en `output/`; dar al usuario su enlace, con un título que nombre el alcance (p. ej. "Informe de calidad — <dominio>").
 
-Tras producir el entregable, verificar el fichero en disco con `ls -lh`; regenerar si falta antes de responder al usuario.
+Tras producir el entregable, verificar el fichero en disco con `ls -lh` (para un artefacto, confirmar que se ha devuelto su enlace); regenerar si falta antes de responder al usuario.
 
 ### 9.3 Decisiones de branding
 
-Antes de invocar cualquier writer skill que produzca un entregable visual (PDF, DOCX, PPTX, Dashboard web, Informe web/Artículo web, Póster/Infografía), fijar el tema usando esta cascada. La primera regla que resuelve gana — no se aplican más reglas.
+Antes de invocar cualquier writer skill que produzca un entregable visual (artefacto, PDF, DOCX, PPTX, Póster/Infografía), fijar el tema usando esta cascada. La primera regla que resuelve gana — no se aplican más reglas.
 
 1. **Pin en instrucciones** — si este AGENTS.md (o una instrucción de skill downstream) fija un único tema para este rol, cargar silenciosamente.
 2. **Señal explícita en el brief del usuario** — si el usuario nombra un tema por nombre o un atributo inequívoco (`corporate-formal`, `luxury`, `brutalist`, `technical-minimal`, `editorial`, `forensic`), pre-rellenar y aplicar silenciosamente. Adjetivos vagos (`bonito`, `profesional`) NO cuentan — caer a la siguiente regla.

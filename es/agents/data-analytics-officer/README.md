@@ -8,10 +8,10 @@ Agente completo de Business Intelligence y Business Analytics para OpenCode y St
 - Análisis avanzado con Python (pandas, numpy, scipy)
 - Segmentación y clustering (scikit-learn)
 - Visualizaciones profesionales (matplotlib, seaborn, plotly)
-- **Entregables analíticos** (multi-formato) — PDF, DOCX, dashboard web interactivo, informe web / artículo web, PowerPoint, póster/infografía, libro Excel/XLSX, generados por `/analyze` Fase 4 vía las skills writer (`pdf-writer`, `docx-writer`, `pptx-writer`, `web-craft`, `canvas-craft`, `xlsx-writer`) + `brand-kit` para los tokens de diseño
-- **Entregables visuales ligeros sin análisis** — pósteres / infografías / portadas de una sola página (`canvas-craft`), dashboards interactivos standalone (`web-craft`), PDFs ligeros con ≤3 KPIs o documentos tipográficos como facturas y cartas (`pdf-writer`), libros ad-hoc y exports de datos (`xlsx-writer`)
+- **Entregables analíticos** (multi-formato) — Chat (el análisis en esta conversación, sin entregable), Artefacto (dashboard interactivo o página de informe en GenAI UI que se puede compartir y volver a abrir; recomendado), PDF, DOCX, PowerPoint, póster/infografía, libro Excel/XLSX, generados por `/analyze` Fase 4 vía la skill `artifacts` y las skills writer (`pdf-writer`, `docx-writer`, `pptx-writer`, `canvas-craft`, `xlsx-writer`) + `brand-kit` para los tokens de diseño; un fichero .html pedido explícitamente va a `web-craft`
+- **Entregables visuales ligeros sin análisis** — pósteres / infografías / portadas de una sola página (`canvas-craft`), dashboards interactivos standalone (`artifacts`, o `web-craft` para un fichero .html), PDFs ligeros con ≤3 KPIs o documentos tipográficos como facturas y cartas (`pdf-writer`), libros ad-hoc y exports de datos (`xlsx-writer`)
 - **Lectura de PDF** — extraer texto, tablas, imágenes y datos de formulario de PDFs (`pdf-reader`); lectura de Excel — extraer celdas, tablas, fórmulas y metadatos de XLSX (`xlsx-reader`)
-- **Evaluación y reporte de cobertura de calidad de datos** (solo lectura) — evaluar reglas de calidad existentes, identificar gaps de cobertura, generar informes de calidad en Chat/PDF/DOCX/Markdown. La creación y planificación de reglas queda reservada a los agentes Data Quality / Governance Officer.
+- **Evaluación y reporte de cobertura de calidad de datos** (solo lectura) — evaluar reglas de calidad existentes, identificar gaps de cobertura, generar informes de calidad en Chat/Artefacto/PDF/DOCX/PPTX/Póster/XLSX/Markdown. La creación y planificación de reglas queda reservada a los agentes Data Quality / Governance Officer.
 - Documentación del razonamiento y validación de output
 
 ## Requisitos
@@ -43,10 +43,10 @@ Los pack scripts solo son necesarios para distribuir el agente fuera del reposit
 
 | Skill | Comando | Origen | Descripción |
 |-------|---------|--------|-------------|
-| Análisis | `/analyze` | local | Análisis completo de datos BI/BA: descubrimiento de dominio, EDA, planificación de KPIs, queries MCP, análisis Python, visualizaciones y entregables multi-formato (PDF, DOCX, dashboard web, informe web, PowerPoint, póster) — delega en las skills writer según el contrato formato→skill en `AGENTS.md §8` |
+| Análisis | `/analyze` | local | Análisis completo de datos BI/BA: descubrimiento de dominio, EDA, planificación de KPIs, queries MCP, análisis Python, visualizaciones y entregables multi-formato (Chat, Artefacto, PDF, DOCX, PowerPoint, póster, Excel) — delega en `artifacts` y las skills writer según el contrato formato→skill en `AGENTS.md §8` |
 | Exploración | `/explore-data` | **shared** | Exploración rápida de dominios, tablas, columnas y terminología de negocio |
 | Evaluación de calidad | `/assess-quality` | **shared** | Evaluación de cobertura de calidad para un dominio, tabla o columna; identifica dimensiones cubiertas, gaps y prioridades |
-| Informe de calidad | `/quality-report` | **shared** | Generar un informe formal de cobertura de calidad de datos (Chat / PDF / DOCX / Markdown) |
+| Informe de calidad | `/quality-report` | **shared** | Generar un informe formal de cobertura de calidad de datos (Chat / Artefacto / PDF / DOCX / PPTX / Póster / XLSX / Markdown) |
 | Conocimiento | `/propose-knowledge` | **shared** | Proponer términos de negocio descubiertos a Stratio Governance |
 | Lectura de PDF | `/pdf-reader` | **shared** | Extraer texto, tablas, imágenes y datos de formulario de archivos PDF |
 | Escritura de PDF | `/pdf-writer` | **shared** | PDFs multi-página o dominados por prosa (informes ligeros con ≤3 KPIs, facturas, cartas, newsletters, certificados). También combinar/dividir/rotar, marca de agua, cifrar, rellenar formularios |
@@ -57,7 +57,7 @@ Los pack scripts solo son necesarios para distribuir el agente fuera del reposit
 | Lectura de XLSX | `/xlsx-reader` | **shared** | Extraer valores de celda, tablas, fórmulas, imágenes y metadatos de ficheros `.xlsx`/`.xlsm` (o `.xls`/`.xlsb` legacy vía conversión con LibreOffice) |
 | Escritura de XLSX | `/xlsx-writer` | **shared** | Libros Excel diseñados (cover/KPI analítico + hojas de detalle, matrices pivot, exports tabulares, catálogos, modelos cuantitativos). También combinar/dividir, find-replace, conversión `.xls` legacy, refresco de fórmulas vía LibreOffice |
 | Artefacto visual | `/canvas-craft` | **shared** | Visuales de una sola página dominados por composición: pósteres, infografías, portadas, one-pagers (PDF o PNG) |
-| Artefacto web | `/web-craft` | **shared** | HTML interactivo standalone: dashboards, componentes UI, landing pages |
+| Artefacto web | `/web-craft` | **shared** | Ficheros HTML interactivos standalone: componentes UI, landing pages, y dashboards / artículos web cuando se pide explícitamente un fichero .html |
 | Tokens de marca | `/brand-kit` | **shared** | Catálogo centralizado de temas de identidad visual (colores, tipografía, paletas de gráficos). Se invoca antes de cualquier entregable visual. Ver AGENTS.md §8.3 para la cascada de decisión |
 | File Browser de Rocket | `/rocket-file-browser` | **shared** | Descargar, subir, listar, copiar, mover, borrar, comprimir y extraer ficheros en el File Browser de Rocket (su HDFS y los buckets S3 configurados) vía mTLS, con los permisos propios del usuario en Rocket |
 
@@ -65,4 +65,4 @@ Las skills marcadas como **shared** viven en `skills/` en la raíz del monorepo 
 
 ## Herramientas de generación
 
-Este agente delega la generación de deliverables en las skills writer (`pdf-writer`, `docx-writer`, `pptx-writer`, `web-craft`, `canvas-craft` + `brand-kit`) según el contrato formato→skill en `AGENTS.md §8`. La única utilidad local es `skills/analyze/chart_layout.py` (helpers anti-solapamiento para gráficas matplotlib y Plotly generadas durante el análisis — títulos, subtítulos, leyendas, márgenes, más conversión hex/RGB a `rgba()` compatible con Plotly).
+Este agente delega la generación de deliverables en la skill `artifacts` (entregables Artefacto) y las skills writer (`pdf-writer`, `docx-writer`, `pptx-writer`, `canvas-craft` + `brand-kit`; `web-craft` para ficheros .html pedidos explícitamente) según el contrato formato→skill en `AGENTS.md §8`. La única utilidad local es `skills/analyze/chart_layout.py` (helpers anti-solapamiento para gráficas matplotlib y Plotly generadas durante el análisis — títulos, subtítulos, leyendas, márgenes, más conversión hex/RGB a `rgba()` compatible con Plotly).

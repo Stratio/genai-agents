@@ -1,6 +1,6 @@
 ---
 name: web-craft
-description: "Build distinctive, production-grade interactive frontends (HTML/CSS/JS, React, Vue) with deliberate aesthetic direction. Use when the user asks for a component, page, landing, dashboard, interactive artifact, or any styled web UI. Produces working code that avoids generic defaults — typography, palette, motion and composition are chosen, not assumed."
+description: "Build distinctive, production-grade interactive frontends (HTML/CSS/JS, React, Vue) with deliberate aesthetic direction. Use when the user asks for a component, page, landing, dashboard, interactive artifact, or any styled web UI. Produces working code that avoids generic defaults — typography, palette, motion and composition are chosen, not assumed. A page, report or dashboard meant for a person to view is an artifact: load `artifacts` instead. This skill is for code the user will integrate (components, sites, apps) or an explicit .html file."
 argument-hint: "[component|page|dashboard|landing] [purpose or brief]"
 ---
 
@@ -10,7 +10,7 @@ Guide for building interactive web artifacts with real aesthetic intent. The del
 
 The user provides the brief: what to build, who uses it, what technical constraints apply. The scope may be a single component or a full landing page.
 
-**Scope**: this skill handles artifacts that live in a browser and respond to interaction. For single-page static artifacts (posters, covers, certificates, marketing one-pagers, infographics) the artifact is not interactive and belongs to a different tool. For multi-page typographic documents (reports, invoices, contracts, zines) the output is a document, not a web interface, and also belongs to a different tool. When uncertain, consult `guides/visual-craftsmanship.md` for the selection criterion.
+**Scope**: this skill handles artifacts that live in a browser and respond to interaction. For single-page static artifacts (posters, covers, certificates, marketing one-pagers, infographics) the artifact is not interactive and belongs to a different tool. For multi-page typographic documents (reports, invoices, contracts, zines) the output is a document, not a web interface, and also belongs to a different tool. A page, report or dashboard meant for a person to view is an artifact, built with `artifacts`, not a file from this skill; this skill covers code the user will integrate (components, sites, apps) and an explicit `.html` file. When uncertain, consult `guides/visual-craftsmanship.md` for the selection criterion.
 
 ## 1. Read the foundation
 

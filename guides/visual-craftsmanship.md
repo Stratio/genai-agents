@@ -88,11 +88,12 @@ Before delivering, take one last pass. The goal of this pass is restraint, not a
 
 ## Disambiguation between visual skills
 
-Three skills in this monorepo produce visual output and intentionally share this guide. They are complementary, not overlapping.
+Four skills produce visual output and intentionally share this guide: `artifacts` and three in this monorepo. They are complementary, not overlapping.
 
 | Skill | Medium | When to use |
 |---|---|---|
-| `web-craft` | Interactive frontend (HTML/CSS/JS, React, Vue) | Components, pages, landing sites, dashboards, interactive artifacts. The artifact is alive in a browser. |
+| `artifacts` | Page in GenAI UI (HTML), shared and opened again | Pages, reports and dashboards someone opens in GenAI UI. The default for a viewable deliverable. |
+| `web-craft` | Interactive frontend (HTML/CSS/JS, React, Vue) | Components, landing sites and apps to integrate as code, or an explicit `.html` file. The artifact is alive in a browser. |
 | `canvas-craft` | Static single-page artifact (PDF or PNG) | Posters, covers, certificates, marketing one-pagers, infographics. Visual composition dominates (roughly seventy per cent or more of the surface). Minimal text, typography as visual element. |
 | `pdf-writer` | Multi-page typographic document, or single-page document dominated by prose, tables, or data (PDF) | Analytical reports, financial statements, invoices, contracts, editorial zines, technical documentation. Type and rhythm dominate; arrangement serves reading. |
 
@@ -100,11 +101,11 @@ Three skills in this monorepo produce visual output and intentionally share this
 
 - **Executive one-pager, dense prose and KPIs** → `pdf-writer`. The artifact reads; it does not pose.
 - **Marketing one-pager, hero image and a claim** → `canvas-craft`. The artifact poses; it does not read.
-- **Interactive dashboard with KPIs** → `web-craft`. Interaction is the point.
+- **Interactive dashboard with KPIs** → an artifact (`artifacts`). Interaction is the point. `web-craft` only for code to integrate or an `.html` file.
 - **Report with a designed cover** → combined pipeline: `canvas-craft` produces the cover, `pdf-writer` assembles the body, final merge with `pypdf`.
 
 When none of these fits cleanly, the artifact probably needs more definition before tool selection. Return to the five decisions at the top of this guide and classify the artifact first.
 
 ## Note on standalone distribution
 
-If this guide is bundled into a single skill package for external distribution (without the other visual skills alongside), the disambiguation table above still serves as context. It signals that the skill is part of a three-skill family with distinct responsibilities. Consumers without the companion skills can still use the principles — the tone selection, anti-patterns, palette roles, and checklist are self-contained and do not depend on the other skills.
+If this guide is bundled into a single skill package for external distribution (without the other visual skills alongside), the disambiguation table above still serves as context. It signals that the skill is part of a family of visual skills with distinct responsibilities. Consumers without the companion skills can still use the principles — the tone selection, anti-patterns, palette roles, and checklist are self-contained and do not depend on the other skills.

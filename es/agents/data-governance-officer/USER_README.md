@@ -41,12 +41,11 @@ Para informes de cobertura de calidad y otros entregables multi-formato, puedes 
 
 | Formato | Ideal para |
 |---|---|
-| **Chat** | Revisión rápida dentro de la conversación, sin generar fichero |
+| **Chat** | Revisión rápida dentro de la conversación, sin generar fichero (la opción por defecto si no eliges nada) |
+| **Artefacto** (Recomendado) | Un dashboard interactivo o una página de informe en GenAI UI que se puede compartir y volver a abrir |
 | **PDF** | Documentos formales con narrativa en prosa, informes ejecutivos o de compliance |
 | **DOCX** | Documentos Word editables para policy briefs e informes de compliance |
 | **PPTX** | Decks de resumen ejecutivo, briefings a comités de dirección, walkthroughs de ontología |
-| **Dashboard web** | HTML interactivo con KPI cards, filtros y tablas ordenables |
-| **Informe web / Artículo web** | Página HTML editorial autocontenida con secciones narrativas, callouts KPI inline y gráficos incrustados |
 | **Póster / Infografía** | Resumen visual de una página para comunicación o exposición |
 | **XLSX** | Workbook multi-hoja de cobertura, export de ontología, catálogo de términos, matriz de compliance con conditional formatting |
 | **Markdown** | Formato de texto ligero para sistemas de documentación y wikis |
@@ -86,7 +85,7 @@ Cada formato visual aplica el tema que elijas al inicio del entregable (o el tem
 ### Informes y entregables
 - "Genera un informe PDF de cobertura del dominio de ventas"
 - "Crea un resumen ejecutivo PowerPoint de los hallazgos de calidad"
-- "Construye un dashboard web interactivo de calidad para el equipo de operaciones"
+- "Construye un artefacto con un dashboard interactivo de calidad para el equipo de operaciones"
 - "Genera una infografía de una página con la cobertura por dominio"
 - "Exporta el catálogo de reglas como un workbook Excel con conditional formatting"
 - "Usa el tema forensic-audit para el informe de compliance"
@@ -121,7 +120,7 @@ Cada formato visual aplica el tema que elijas al inicio del entregable (o el tem
 | `/create-quality-rules` | Diseñar y crear reglas de calidad con aprobación humana obligatoria |
 | `/create-quality-schedule` | Crear planificaciones de ejecución automática de reglas de calidad |
 | `/manage-critical-data-elements` | Consultar o definir Critical Data Elements (CDEs) para un dominio gobernado, con aprobación humana obligatoria antes de etiquetar |
-| `/quality-report` | Generar informe formal de cobertura en Chat, PDF, DOCX, PPTX, Dashboard web, Informe web / Artículo web, Póster/Infografía, XLSX o Markdown |
+| `/quality-report` | Generar informe formal de cobertura en Chat, como Artefacto, o en PDF, DOCX, PPTX, Póster/Infografía, XLSX o Markdown |
 
 ### Lectores de contenido
 | Comando | Descripción |
@@ -142,7 +141,7 @@ Cada formato visual aplica el tema que elijas al inicio del entregable (o el tem
 ### Visuales y branding
 | Comando | Descripción |
 |---------|-------------|
-| `/web-craft` | HTML interactivo standalone: dashboards, landing pages, componentes UI |
+| `/web-craft` | Código web a integrar y ficheros `.html` explícitos: landing pages, componentes UI, sitios y apps |
 | `/canvas-craft` | Visuales de una página dominados por composición: pósters, infografías, portadas |
 | `/brand-kit` | Catálogo centralizado de temas: 10 temas curados (corporate-formal, forensic-audit, luxury-refined, editorial-serious y más), extensible con temas propios del cliente |
 

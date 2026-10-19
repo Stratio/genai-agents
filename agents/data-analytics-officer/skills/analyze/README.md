@@ -2,7 +2,7 @@
 
 Local skill of the `data-analytics-officer` agent. Drives the full analytical workflow: intake, clarifying questions, plan, querying governed data via MCP, Python analysis, visualizations, optional testing, iteration, reasoning and validation documentation, and orchestration of deliverable generation via the writer skills declared in `AGENTS.md §8`.
 
-This is the single analytical engine of the agent. Deliverable generation is delegated to `pdf-writer`, `docx-writer`, `pptx-writer`, `web-craft`, `canvas-craft` + `brand-kit`.
+This is the single analytical engine of the agent. Deliverable generation is delegated to `artifacts`, `pdf-writer`, `docx-writer`, `pptx-writer`, `canvas-craft` + `brand-kit` (`web-craft` when the user explicitly asks for an .html file).
 
 ## What it does
 
@@ -39,7 +39,7 @@ None specific to `/analyze` itself. The writer skills declare their own system d
 ## Sub-guides
 
 - `visualization.md` — chart type selection, storytelling, anti-overlap principles
-- `analytical-dashboard.md` — composition patterns for analytical dashboards (loaded by `web-craft` when the format is Dashboard web)
+- `analytical-dashboard.md` — composition patterns for analytical dashboards (loaded for an Artifact dashboard, or by `web-craft` when an .html dashboard file is explicitly requested)
 - `reasoning-guide.md` — how and when to document reasoning
 - `validation-guide.md` — validation blocks and formats
 - `analytical-patterns.md` — operationalised patterns (Pareto, cohorts, funnel, RFM, etc.)
