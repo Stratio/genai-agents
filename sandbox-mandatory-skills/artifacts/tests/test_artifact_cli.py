@@ -1211,15 +1211,6 @@ class TestCheck:
         monkeypatch.setattr(cli, "_url_exists", lambda url: None)  # could not ask
         assert cli._page_findings(off_table, title="Ventas Q3", verify=True) == []
 
-    def test_the_table_urls_are_never_asked(self, cli, monkeypatch):
-        """They exist, and a sandbox with no route out would wait on each one."""
-        monkeypatch.setattr(cli, "_url_exists", lambda url: pytest.fail(f"asked for {url}"))
-        assert cli._page_findings(_GOOD_PAGE, title="Ventas Q3", verify=True) == []
-
-    def test_the_known_urls_are_the_skill_table(self, cli):
-        urls = re.findall(r"\| `(https://[^`]+)` \|", _skill_text())
-        assert sorted(cli._LIBRARY_URLS) == sorted(urls)
-
     def test_with_no_route_out_the_cdn_is_asked_once(self, cli, monkeypatch):
         """Where the sandbox has no egress the first HEAD fails fast and the rest are not
         made: the check finishes at once, with nothing to report about the CDN."""
@@ -1235,14 +1226,6 @@ class TestCheck:
         assert cli._page_findings(page, title="Ventas Q3", verify=True) == []
         assert cli._page_findings(page, title="Ventas Q3", verify=True) == []
         assert opened == [(_OFF_TABLE_CHART_JS, 3)]
-
-    def test_every_url_in_the_skill_table_counts_as_pinned(self, cli):
-        text = _skill_text()
-        urls = re.findall(r"\| `(https://[^`]+)` \|", text)
-        assert len(urls) >= 6
-        for url in urls:
-            page = _GOOD_PAGE.replace("https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js", url)
-            assert "pin" not in _rules(cli._page_findings(page, title="Ventas Q3")), url
 
     def test_linked_stylesheets_are_checked_too(self, cli, tmp_path):
         (tmp_path / "css").mkdir()

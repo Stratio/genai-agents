@@ -205,8 +205,8 @@ theme, the layout and dark-mode rules, pages with several files, and the checkli
 before saving. The essentials, which `check` also enforces:
 
 1. A full document (`<!doctype html>`, charset, viewport, `<title>`), its CSS and
-   JavaScript inside it or in files next to it; libraries only from the URL table in
-   `html.md`, version pinned.
+   JavaScript inside it or in files next to it; libraries only from the allowed CDNs
+   (`html.md`), version pinned.
 2. No `<form>`, storage, new tabs, downloads or `alert`: the viewer's sandbox breaks
    them, silently.
 3. Colors only as tokens from a catalog theme (`brand-kit.md`, `themes/<name>.md`),

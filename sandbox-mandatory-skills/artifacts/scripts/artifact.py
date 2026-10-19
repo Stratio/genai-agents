@@ -369,18 +369,6 @@ _CDN_HOSTS = (
     "cdn.tailwindcss.com", "code.jquery.com", "fonts.googleapis.com", "fonts.gstatic.com",
 )  # fmt: skip
 _FONT_HOSTS = ("fonts.googleapis.com", "fonts.gstatic.com")
-# The URLs of the library table in html.md: they exist, so `check` asks no CDN about
-# them, and a sandbox with no route out checks a page that uses only these at once.
-_LIBRARY_URLS = frozenset((
-    "https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js",
-    "https://cdn.plot.ly/plotly-2.35.2.min.js",
-    "https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js",
-    "https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js",
-    "https://cdn.jsdelivr.net/npm/d3-composite-projections@1.4.0/d3-composite-projections.min.js",
-    "https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js",
-    "https://cdn.jsdelivr.net/npm/es-atlas@0.6.0/es/autonomous_regions.json",
-    "https://cdn.jsdelivr.net/npm/es-atlas@0.6.0/es/provinces.json",
-))  # fmt: skip
 _COLOR = re.compile(
     r"#[0-9a-fA-F]{8}\b|#[0-9a-fA-F]{6}\b|#[0-9a-fA-F]{3,4}\b|\b(?:rgba?|hsla?|oklch|oklab)\("
 )
@@ -778,8 +766,8 @@ def _page_findings(text, base_dir=".", title=None, sources=None, verify=False) -
             path = urllib.parse.urlsplit(url).path
             if host != "cdn.tailwindcss.com" and not _VERSIONED.search(path):
                 add("pin", f"{url}: pin the exact version.")
-            elif verify and url not in _LIBRARY_URLS and _url_exists(url) is False:
-                add("cdn", f"{url} does not exist on that CDN: copy the URL from the library table in html.md.")
+            elif verify and _url_exists(url) is False:
+                add("cdn", f"{url} does not exist on that CDN: check the version and the path.")
     return findings
 
 

@@ -24,28 +24,18 @@ is what makes it safe to open, and it is not negotiable. In practice:
   silently and the person sees a broken page. That is the default: when
   `$ARTIFACT_CDN_SOURCES` is set, its origins replace the list. Set but empty, a page
   loads nothing from outside the artifact: draw charts as inline SVG written by
-  `build.py`, use the theme's fallback font stack with no `<link>`, and leave the URL
-  table aside. Pin the version in every CDN URL. The
+  `build.py` and use the theme's fallback font stack with no `<link>`. The
   page's own files are the artifact's (see [Multi-file](#multi-file)), and there is no
   `<iframe>` of another page. Data the page needs goes in the page, written there by
   `build.py`: never `fetch()` or `d3.json()` at run time. `build.py` reads files in the
   workspace, what your tools saved there included, and calls no external API: the
   sandbox may have no route out.
-- **Library URLs from this table, as written.** A version you remember may not exist
-  on that CDN (Chart.js 4.4.4 is on jsdelivr, not on cdnjs), and the page then shows an
-  empty box. `check` knows these and asks the CDN about any other URL.
-
-  | Library | URL |
-  |---|---|
-  | Chart.js 4.4.1 | `https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js` |
-  | Plotly 2.35.2 | `https://cdn.plot.ly/plotly-2.35.2.min.js` |
-  | D3 7.9.0 | `https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js` |
-  | topojson-client 3.1.0 | `https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js` |
-  | d3-composite-projections 1.4.0 | `https://cdn.jsdelivr.net/npm/d3-composite-projections@1.4.0/d3-composite-projections.min.js` |
-  | Mermaid 10.9.1 | `https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js` |
-  | es-atlas 0.6.0, Spain by autonomous community (TopoJSON; download it in `build.py`) | `https://cdn.jsdelivr.net/npm/es-atlas@0.6.0/es/autonomous_regions.json` |
-  | es-atlas 0.6.0, Spain by province (TopoJSON; download it in `build.py`) | `https://cdn.jsdelivr.net/npm/es-atlas@0.6.0/es/provinces.json` |
-
+- **Any library, its exact version pinned.** Use whichever fits the page, with the
+  exact version in the URL (`chart.js@4.4.1`, never `chart.js` or `@4`): an unpinned
+  URL changes under a page that is opened months later. A version you remember may not
+  exist on that CDN (Chart.js 4.4.4 is on jsdelivr, not on cdnjs), and the page then
+  shows an empty box: `check` asks the CDN about every URL and names the ones that do
+  not exist.
 - **A library that fails costs the chart, never the page.** Write the numbers, tables
   and text before any library call, and guard the call (`if (!window.Chart) { … }`)
   so that the chart's data shows as a table when the library did not load. Nothing
@@ -223,7 +213,7 @@ body { margin: 0; background: var(--bg); color: var(--ink); }
   sequence. Keep cards for what needs to stand out, not around every block.
 - **Text:** about 65 characters per line (`max-width: 65ch` on prose) and a fixed type
   scale.
-- **Charts:** inline SVG, a `<canvas>`, or a chart library from the table above
+- **Charts:** inline SVG, a `<canvas>`, or a chart library
   (Plotly, Chart.js, D3; Mermaid for diagrams). Axes labeled with their units, series
   colors from `--chart-n` and status from the state tokens, readable in both themes.
   Draw bars and lines with coordinates computed from the data, never with CSS heights
@@ -235,15 +225,12 @@ body { margin: 0; background: var(--bg); color: var(--ink); }
   `rgba()` built from a hex string. A lifecycle, a flow or an
   architecture that decides what the reader can do gets a diagram, not a list of
   pills or arrows in text.
-- **Maps:** for a choropleth of Spain, load D3, topojson-client and
-  d3-composite-projections from the table, and use
-  `d3.geoConicConformalSpain()` (it puts Canarias in an inset). Download the es-atlas
-  geometry (by community or by province) in `build.py` and put it in the page as JSON
-  (see the working folder in `SKILL.md`); do not draw regions by hand or fetch them.
-  It is the one thing `build.py` downloads, and the sandbox may have no route out:
-  when the download fails there is no map. Show the rate as a sorted bar chart or a
-  table by community or province instead, and tell the person that a map needs the
-  sandbox to reach `cdn.jsdelivr.net`.
+- **Maps:** download the geometry (a TopoJSON or GeoJSON from a published package,
+  version pinned) in `build.py` and put it in the page as JSON (see the working folder
+  in `SKILL.md`); do not draw regions by hand or fetch them. It is the one thing
+  `build.py` downloads, and the sandbox may have no route out: when the download fails
+  there is no map. Show the rate as a sorted bar chart or a table by region instead,
+  and tell the person that a map needs the sandbox to reach the CDN.
   Color a rate, not a raw total, which mostly mirrors population: `build.py` computes
   it with its unit, the table shows it next to the total, and the legend names its
   breaks.
