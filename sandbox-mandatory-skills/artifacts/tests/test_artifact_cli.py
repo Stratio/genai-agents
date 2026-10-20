@@ -1321,6 +1321,137 @@ class TestCheck:
         assert _put(cli)["payload"]["content"] == page.read_text()
 
 
+class TestCheckLevels:
+    """A normal request should not take several rounds of check: what breaks the page is
+    an error, the rest advice, and a literal that only stands in for a token is no color."""
+
+    def test_each_finding_has_a_level(self, cli):
+        page = _GOOD_PAGE.replace("<h1>", '<form></form><h1 style="color:#fff">')
+        levels = {f["rule"]: f["level"] for f in cli._page_findings(page, title="Ventas Q3")}
+        assert levels == {"form": "error", "colors": "advice"}
+
+    def test_stderr_marks_the_advice(self, cli, capsys):
+        cli._report_findings("index.html", cli._page_findings(
+            _GOOD_PAGE.replace("<h1>", '<form></form><h1 style="color:#fff">'), title="Ventas Q3"))
+        err = capsys.readouterr().err
+        assert "check: index.html: [form]" in err
+        assert "check: index.html: advice [colors]" in err
+
+    def test_the_check_command_levels_a_markdown_title(self, cli, tmp_path, capsys):
+        (tmp_path / "index.md").write_text("# Ventas")
+        cli.main(["check", str(tmp_path / "index.md"), "--title", "Ventas: Q3"])
+        [finding] = json.loads(capsys.readouterr().out)[0]["findings"]
+        assert (finding["rule"], finding["level"]) == ("title", "advice")
+
+    @pytest.mark.parametrize(
+        "change",
+        [
+            ("</style>", ".x { color: var(--accent, #3182ce); }</style>"),
+            ("</style>", ".x { box-shadow: 0 0 0 1px var(--rule, rgb(0 0 0 / 10%)); }</style>"),
+            ("<h1>", '<h1 style="color: var(--ink, #111)">'),
+            ('getPropertyValue("--primary");', 'getPropertyValue("--primary").trim() || "#1f4e8c";'),
+            ("const c", "const tok = (n) => n; const s = tok('--chart-1') ?? '#888'; const c"),
+        ],
+    )
+    def test_a_token_fallback_is_no_color(self, cli, change):
+        assert cli._page_findings(_GOOD_PAGE.replace(*change), title="Ventas Q3") == []
+
+    def test_a_literal_next_to_a_token_is_still_one(self, cli):
+        page = _GOOD_PAGE.replace("const c", 'const pair = [tok("--chart-1"), "#888888"]; const c')
+        assert _rules(cli._page_findings(page, title="Ventas Q3")) == ["colors"]
+
+
+_CATALOG = sorted(p.stem for p in (_SKILL.parents[1] / "skills" / "brand-kit" / "themes").glob("*.md"))
+
+
+def _token_page(printed: str) -> str:
+    """A page built on what `tokens` prints, using every token the way html.md says."""
+    head, rest = printed.split("\n\n", 1)
+    css, js = rest.split("\n\n// ", 1)
+    rules = " ".join(f".t-{n} {{ color: var(--{n}-text); }}" for n in ("primary", "accent", "state-ok", "state-warn", "state-danger"))
+    rules += " ".join(f".p-{n} {{ background: var(--{n}-bg); color: var(--{n}-text); }}"
+                      for n in ("accent", "state-ok", "state-warn", "state-danger"))
+    rules += (" .band { background: var(--primary); color: var(--on-primary); }"
+              " .btn { background: var(--accent); color: var(--on-accent); }"
+              " .alt { background: var(--bg-alt); color: var(--accent-text); }")
+    return (
+        '<!doctype html><html lang="es"><head><meta charset="utf-8">'
+        '<meta name="viewport" content="width=device-width, initial-scale=1"><title>Ventas Q3</title>'
+        f"{head}<style>{css}\n{rules}</style></head><body><h1>Ventas Q3</h1>"
+        f"<script>// {js}\nconst c = tok(\"--chart-1\") || \"#888888\";</script></body></html>"
+    )
+
+
+class TestTokens:
+    """A catalog theme printed as the page's tokens, so the page gets the colors right the
+    first time instead of after rounds of check."""
+
+    def test_the_catalog_is_there(self):
+        assert len(_CATALOG) >= 10
+
+    @pytest.mark.parametrize("theme", _CATALOG)
+    def test_a_page_on_the_printed_tokens_passes_check(self, cli, theme):
+        assert cli._page_findings(_token_page(cli._tokens_text(cli._theme(theme))), title="Ventas Q3") == []
+
+    @pytest.mark.parametrize("theme", _CATALOG)
+    def test_every_text_token_reads_in_both_modes(self, cli, theme):
+        printed = cli._theme(theme)
+        for mode in ("light", "dark"):
+            tokens = {k: cli._hex_rgb(v) for k, v in printed[mode].items()}
+            surfaces = [tokens["--bg"], tokens["--bg-alt"]]
+            for name in ("primary", "accent", "state-ok", "state-warn", "state-danger"):
+                for surface in surfaces + ([tokens[f"--{name}-bg"]] if name != "primary" else []):
+                    assert cli._contrast(tokens[f"--{name}-text"], surface) >= 4.5, (theme, mode, name)
+            for fill in ("primary", "accent"):
+                assert cli._contrast(tokens[f"--on-{fill}"], tokens[f"--{fill}"]) >= 4.5, (theme, mode, fill)
+
+    def test_keeps_the_themes_values_and_the_dark_ones(self, cli):
+        theme = cli._theme("corporate-formal")
+        assert theme["light"]["--accent"] == "#3182ce"
+        assert theme["dark"]["--bg"] == "#0e1218"
+        assert theme["dark"]["--on-primary"] == "#0e1218"  # the theme's own, not worked out
+        assert theme["light"]["--accent-text"] != "#3182ce"  # 4.0:1 on white: darkened
+
+    def test_system_fonts_get_no_link(self, cli):
+        assert '<link rel="stylesheet"' not in cli._tokens_text(cli._theme("corporate-formal"))
+        assert "fonts.googleapis.com/css2?family=Inter:wght@400;600;700" in cli._tokens_text(
+            cli._theme("industrial-utilitarian"))
+
+    def test_no_link_where_the_installation_loads_no_fonts(self, cli, monkeypatch):
+        monkeypatch.setenv("ARTIFACT_CDN_SOURCES", "https://nexus.corp/npm/")
+        printed = cli._tokens_text(cli._theme("industrial-utilitarian"))
+        assert "fonts.googleapis.com" not in printed
+        assert cli._page_findings(_token_page(printed), title="Ventas Q3", sources=cli._cdn_sources()) == []
+
+    def test_without_a_theme_it_lists_the_catalog(self, cli, capsys):
+        cli.main(["tokens"])
+        out = capsys.readouterr().out
+        assert all(theme in out for theme in _CATALOG)
+        assert "best for: dashboards, engineering docs, runbooks" in out
+
+    def test_the_skill_sends_the_agent_to_brand_kit_before_a_page(self):
+        """The theme is part of the first pass at a page, not a fix after check: the core
+        names brand-kit.md next to html.md, and html.md reads it before the first line."""
+        core = (_SKILL / "SKILL.md").read_text(encoding="utf-8")
+        assert "**Read `html.md` in full, and the theme catalog in `brand-kit.md`, before you write or\nedit an HTML page.**" in core
+        assert "Colors only as tokens of a `brand-kit.md` theme" in core
+        html_md = (_SKILL / "html.md").read_text(encoding="utf-8")
+        assert "The Stratio catalog is\n`brand-kit.md`" in html_md
+        assert "before the first line of the page" in html_md
+
+    def test_an_unknown_theme_lists_the_catalog(self, cli, capsys):
+        with pytest.raises(SystemExit):
+            cli.main(["tokens", "corporate"])
+        assert "corporate-formal" in capsys.readouterr().err
+
+    def test_the_command_prints_it(self, cli, capsys):
+        cli.main(["tokens", "themes/modern-product.md"])
+        out = capsys.readouterr().out
+        assert out.startswith("<!-- In <head>")
+        assert "@media (prefers-color-scheme: dark)" in out and "const tok =" in out
+        assert cli.calls == []
+
+
 class TestCheckRoundTwo:
     """What a second comparison found that the first check let through, and two false
     positives."""
@@ -1419,7 +1550,8 @@ class TestSkillRecommendations:
 
     def test_check_before_saving(self):
         text = self._skill()
-        assert "Run `check` on the pages with the title you will pass" in text
+        assert "Run `check` once on the pages, with the title you will pass" in text
+        assert "never run `check` again for advice alone" in text
         assert "Chart.js 4.4.4 is on jsdelivr, not on cdnjs" in text
 
     def test_another_format_is_made_as_a_file(self):
@@ -1438,7 +1570,7 @@ class TestLayout:
     def test_the_core_stays_small_and_points_to_the_detail(self):
         core = (_SKILL / "SKILL.md").read_text(encoding="utf-8")
         assert core.count("\n") < 300
-        assert "**Read `html.md` in full before you write or edit an HTML page.**" in core
+        assert "**Read `html.md` in full, and the theme catalog in `brand-kit.md`, before you write or\nedit an HTML page.**" in core
         assert "`reference.md`" in core
         # The rules that break a page silently stay in the core, even if html.md is skipped.
         for rule in ("No `<form>`, storage, new tabs", "@media (prefers-color-scheme: dark)",
@@ -1691,7 +1823,7 @@ class TestConfirmedCommands:
     commands that share or destroy run through it, and only through it."""
 
     UNCONFIRMED = {"list", "recent", "resolve", "create", "get", "files", "members", "read", "write", "upload",
-                   "rename", "tag", "copy", "workdir", "check", "url"}
+                   "rename", "tag", "copy", "workdir", "tokens", "check", "url"}
 
     def test_every_command_is_placed(self, cli):
         commands = set(cli._parser()._subparsers._group_actions[0].choices)

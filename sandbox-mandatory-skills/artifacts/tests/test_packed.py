@@ -2,6 +2,8 @@
 # copied in, every reference resolving inside the skill, nothing that is not runtime.
 
 import re
+import subprocess
+import sys
 import zipfile
 
 
@@ -74,3 +76,13 @@ def test_artifact_manage_keeps_its_executable_bit(packed_zip):
     with zipfile.ZipFile(packed_zip) as zf:
         mode = zf.getinfo("artifacts/scripts/artifact-manage").external_attr >> 16
     assert mode & 0o111
+
+
+def test_tokens_reads_the_catalog_it_ships_with(packed_skill):
+    """Packed, there is no monorepo around it: `tokens` finds themes/ next to SKILL.md."""
+    for theme in sorted((packed_skill / "themes").glob("*.md")):
+        printed = subprocess.run(
+            [sys.executable, str(packed_skill / "scripts" / "artifact.py"), "tokens", theme.stem],
+            check=True, capture_output=True, text=True,
+        ).stdout
+        assert f"Theme: {theme.stem}" in printed and "--accent-text" in printed

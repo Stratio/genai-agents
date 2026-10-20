@@ -22,6 +22,11 @@ python3 scripts/artifact.py recent --page-size 10
 # The artifact's working folder, under $ARTIFACT_WORKDIR: created and printed
 python3 scripts/artifact.py workdir "Q3 sales report"
 
+# The theme catalog, then one theme as the page's font <link>, token block (light and
+# dark) and script helper, to paste into the page as printed
+python3 scripts/artifact.py tokens
+python3 scripts/artifact.py tokens corporate-formal
+
 # Check the pages before saving them: the entry first, with the title it will get.
 python3 scripts/artifact.py check <workdir>/index.html <workdir>/annex/detail.html \
     --title "Q3 sales report"
@@ -62,8 +67,9 @@ scripts/artifact-manage share <artifact_id> --link on    # any Stratio user can 
 scripts/artifact-manage share <artifact_id> --remove --user alice
 python3 scripts/artifact.py members <artifact_id>             # who has it, and how
 
-# Only when the person asks for a list. --tags needs all of them; --search also
-# matches tags.
+# When the person asks for a list, or `recent` did not find the one they alluded to
+# (without filters: all they can open, last modified first). --tags needs all of
+# them; --search also matches tags.
 python3 scripts/artifact.py list --scope shared --type html --tags sales,q3 --favorite
 
 # Everything the API knows about one artifact, and the link on its own
@@ -86,13 +92,22 @@ What the commands print and accept:
   and write it back.
 - **Ids.** Every command that takes an `<artifact_id>` wants the id itself
   (8-4-4-4-12 hex): `resolve` turns a link or a name into it.
+- **`tokens`** with no theme lists the catalog, one theme per line with what it is
+  best for. With one it prints: the Google Fonts `<link>` (none when
+  the families are system fonts or `$ARTIFACT_CDN_SOURCES` leaves Google Fonts out), the
+  `:root` block and its dark-mode block, and a `tok()` helper for scripts. On top of the
+  theme's colors it adds `--on-primary` / `--on-accent` in both modes, a
+  `--primary-text`, `--accent-text` and `--state-*-text` that reach 4.5:1 on `--bg`,
+  `--bg-alt` and the tints, the `--accent-bg` / `--state-*-bg` tints, `--chart-n`, the
+  `--font-*` stacks and `--radius`. An unknown name prints the catalog.
 - **`check`** prints one entry per file with its findings (an empty list is clean).
-  Each finding names a rule: the viewer's limits (`form`, `new-tab`, `dialog`,
-  `storage`, `download`, `iframe`, `host`, `pin`, `cdn`, `fetch`), the document
-  (`document`, `title`, `dark-mode`, `colors`, `contrast`), the layout (`responsive`,
-  `hero`, `reveal`, `svg`) and content (`emoji`, `link`). For a Markdown entry only the
-  title rule applies. `create` and `write` print the same findings on stderr as
-  `check: …` lines, as warnings.
+  Each finding names a rule and a `level`. **`error`**, fix it: the viewer's limits
+  (`form`, `new-tab`, `storage`, `download`, `iframe`, `host`, `pin`, `cdn`, `fetch`),
+  `document` and `link`. **`advice`**, fix it if it is quick, and do not run `check`
+  again for it: `dialog`, `title`, `dark-mode`, `colors`, `contrast`, `responsive`,
+  `hero`, `reveal`, `svg` and `emoji`. For a Markdown entry only the title rule
+  applies. `create` and `write` print the same findings on stderr as `check: …` lines,
+  as warnings, with `advice` before the rule of an advice.
 - **`host`** checks against `$ARTIFACT_CDN_SOURCES`, the CDNs this installation lets a
   page load from (set by the platform; empty means none; a source with a path, such as
   an internal mirror's `https://nexus.corp/npm/`, allows that path only), or the public

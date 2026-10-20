@@ -92,7 +92,9 @@ apply here: an artifact is always built by this skill.
 4. Your own choices, only for what is left.
 
 When you edit an existing artifact, keep its design. The smallest-edit rule covers the
-styles too.
+styles too. When its design plan names a catalog theme, new rules use that theme's
+tokens (`tokens <theme>` prints them); when it has none, keep its own colors and do not
+re-theme it unless the person asks.
 
 ### Pick the treatment first
 
@@ -117,22 +119,33 @@ not.
 
 ### Theme
 
-Take the tokens from a theme instead of inventing a palette. From `brand-kit.md` use
-only the theme catalog and the token contract; its references to other skills do not
-apply here. It lists the Stratio catalog (ten themes, from `corporate-formal` to `technical-minimal`) and the
-token contract they all follow; each theme's values are in `themes/<name>.md`. Use the
-one the person names; otherwise pick the one whose "Best for" fits the request — not
-the same two for everything — say which one you used, and offer the catalog if they
-want another look. Map its tokens onto CSS custom properties: the colors `primary`,
-`ink`, `muted`, `rule`, `bg`, `bg_alt`, `accent`, `state_ok`, `state_warn`,
-`state_danger`; the typography `display`, `body` and `mono`; and the chart categorical
-palette for series.
+Take the tokens from a theme instead of inventing a palette. The Stratio catalog is
+`brand-kit.md`, which ships with this skill: read its catalog table (ten themes, from
+`corporate-formal` to `technical-minimal`, each with its tone and what it is best for)
+and its token contract before the first line of the page. Its workflow and its
+references to other skills do not apply here: this skill picks the theme and builds
+the page. Each theme's full values (palette, typography, dark mode, tone) are in
+`themes/<name>.md`; read the chosen one when its tone should shape the page.
+`python3 scripts/artifact.py tokens` prints the same catalog in one line per theme. Use
+the one the person names; otherwise pick the one whose "Best for" fits the request —
+not the same two for everything — say which one you used, and offer the catalog if
+they want another look.
 
-- **Text on a fill** uses its own token, `--on-primary` or `--on-accent`, defined in
-  both modes: never `#fff` or `white` on a colored band.
-- **Accent and state colors are for fills, rules and marks.** Text set in them must
-  reach 4.5:1 in both themes; otherwise the text stays `--ink` and the color goes in a
-  marker or a border.
+**Then run `python3 scripts/artifact.py tokens <theme>` and paste what it prints**: the
+font `<link>`, the `:root` block with its dark-mode block, and the script helper. Do not
+map the theme by hand: the printed block already has every value `check` looks for, and
+a page that uses only these tokens passes the color, dark-mode and contrast checks.
+
+- **Text on a fill** is `--on-primary` or `--on-accent`: never `#fff` or `white` on a
+  colored band.
+- **Colored text** is `--primary-text`, `--accent-text` or `--state-*-text`: the same
+  hue, darkened or lightened until it reads on `--bg` and `--bg-alt`. `--accent` and
+  `--state-*` are for fills, rules and marks; in most themes they do not reach 4.5:1 as
+  text.
+- **A status pill or a tinted callout** is `--state-*-bg` (or `--accent-bg`) with the
+  matching `--…-text`.
+- **A design system that is not a catalog theme** (see [Who decides](#who-decides))
+  is mapped by hand onto the same names.
 - **A theme family Google Fonts does not serve** (Calibri, Aptos, Consolas, Arial) is
   used as the theme's stack as written, with no `<link>` for it; link only families
   Google Fonts serves.
@@ -157,26 +170,27 @@ palette for series.
   (`<li><span class="n">1</span><div>…</div></li>`).
 - **Light and dark.** The viewer does not pass its theme into the page, so the page
   follows the browser's `prefers-color-scheme`. Every color is a token on `:root`,
-  redefined for dark mode under `@media (prefers-color-scheme: dark)` with the values in
-  the theme's `## Dark mode` section (every catalog theme ships one, contrast-checked,
-  `--on-primary` and `--on-accent` included). A design system without one: swap `bg` and
+  redefined for dark mode under `@media (prefers-color-scheme: dark)`: `tokens` prints
+  both. A design system without dark values: swap `bg` and
   `ink`, and keep the hue of `primary`, `accent` and each `state_*` but lighten them
   until text in them reaches 4.5:1 on the dark `bg` (and darken their tint backgrounds);
   `check` reports the text that does not. `body` gets an explicit `background` and
   `color`: the frame behind it is white. No color outside the token block: not in a
   `style=""` attribute, not in SVG (`currentColor` or `var(--…)`), not in a chart
   library's options. A chart drawn by script reads its colors from the tokens when it
-  renders (`getComputedStyle(document.documentElement).getPropertyValue("--chart-1")`)
-  and draws again when `matchMedia("(prefers-color-scheme: dark)")` changes.
+  renders, with the `tok()` helper `tokens` prints, and draws again when
+  `matchMedia("(prefers-color-scheme: dark)")` changes. A literal that only stands in
+  for a missing token (`var(--x, #888)`, `tok("--x") || "#888"`) is allowed.
 - **Fonts.** The theme's `display` (used sparingly), `body` and `mono` families, loaded
   from Google Fonts (a `<link>` to `fonts.googleapis.com`, with `display=swap`), each
   with its fallback stack.
 
-The skeleton of the `<style>` block, with the design plan as its first comment:
+What `tokens` prints opens the `<style>` block; the rest of the page builds on it. Its
+shape, for a design system you map by hand:
 
 ```css
 /* Design plan
-   Theme: corporate-formal (themes/corporate-formal.md)
+   Theme: <the design system's name>
    Colors: --primary, --ink, --muted, --rule, --bg, --bg-alt, --accent
            (+ --state-ok / --state-warn / --state-danger for status,
             --on-primary / --on-accent for text on fills, --chart-1… for series)
@@ -258,12 +272,21 @@ Active voice and short, direct sentences, with no stock phrases.
 
 ### Before you save it
 
-Run `check` on the pages with the title you will pass, fix every finding (or say in
-the chat why one stays, when the person asked for it), review the file once against
-this list, then `create` or `write` it and give the link. `check` never sees whether
-the logic is right, so run that yourself. `create` and `write` repeat the checks as
-warnings. No open-ended verification loops: further changes come from
-the person, on the page they have seen, and are edited in place.
+Run `check` once on the pages, with the title you will pass. Every finding has a
+`level`:
+
+- **`error`**: the viewer breaks it, or the page breaks a rule it may never break
+  (a form, a new tab, a host or library that does not load, run-time data, a GenAI UI
+  address). Fix every one; run `check` again only if you fixed errors.
+- **`advice`**: the page works, and could be better (a color outside the tokens,
+  contrast, a title, the layout, small text in a diagram). Fix in that same pass what
+  is quick, and leave the rest: never run `check` again for advice alone. Say in the
+  chat why one stays when the person asked for it.
+
+Then review the file once against this list, `create` or `write` it and give the link.
+`check` never sees whether the logic is right, so run that yourself. `create` and
+`write` repeat the checks as warnings. No open-ended verification loops: further
+changes come from the person, on the page they have seen, and are edited in place.
 
 **Run the logic before saving.** A page that computes or keeps state has its logic
 executed once, not only read: keep it in pure functions and run them with `node` (or

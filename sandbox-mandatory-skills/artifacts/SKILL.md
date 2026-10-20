@@ -26,8 +26,8 @@ a page with one section per slide, a spreadsheet an HTML table), built only if t
 accept.
 
 The file follows the rules in [Every artifact](#every-artifact): a theme from the
-catalog, named in your reply, and invented figures labeled as sample, or placeholders
-everywhere, never a mix. A spreadsheet keeps working: totals are formulas (`SUM`,
+catalog (`tokens` lists it and prints its colors), named in your reply, and invented
+figures labeled as sample, or placeholders everywhere, never a mix. A spreadsheet keeps working: totals are formulas (`SUM`,
 `SUMIFS`), percentages are fractions in a `0 %` format, and the sample line is a cell on
 the first sheet. Open the file once (`openpyxl`, or LibreOffice when there is one) to
 check what it shows. The scripts that build it go in its working folder (see
@@ -42,8 +42,8 @@ sense to someone who never read this conversation. That includes work that names
 format: compare products or options and recommend one, a decision matrix, a plan, an
 analysis for management. Research it as you would anyway, then make the artifact.
 
-Do not make one for a short answer, an explanation of something in the chat, a snippet
-the person wants to read right here, or a step in your own reasoning. If it only makes
+Do not make one for a short answer, a proposal or advice ("give me a modern style for
+HTML"), a snippet to read right here, or a step in your own reasoning. If it only makes
 sense as part of this conversation, it belongs in the conversation.
 
 When in doubt, ask. An unwanted artifact is clutter the person has to delete. When the
@@ -145,13 +145,13 @@ be turned into a page is not a reference to an artifact: create a new one, no
 match: if there is more than one, show the titles and ask which one they mean — do not
 guess. If nothing matches, say so; do not create a new artifact in its place.
 
-When they allude to one instead of naming it — "yesterday's report", "what we did last
-week", "the page we were editing" — run `recent` first: what this project read, edited
-or created in any conversation, last touched first (`last_conversation_id` is this one
-when it matches `$CONVERSATION_ID`; `last_edit_conversation_id` is where it was last
-edited or created, which a later read does not change). The one they mean is usually at
-the top; if not obvious, show the first few titles and ask. Only then `resolve` their
-words.
+When they allude to one instead of naming it — "yesterday's report", "the page we were
+editing" — run `recent`: what this project read, edited or created, last touched first
+(`last_conversation_id` is this one when it matches `$CONVERSATION_ID`;
+`last_edit_conversation_id` is where it was last edited or created). If it is not there,
+or `recent` fails or is empty, it may come from another project: `resolve` their words
+("the weather one" → `resolve "weather"`), then `list --page-size 20` (all they can open,
+last modified first). Several fit: show the titles and ask. None: ask for the link or id.
 
 ## Editing, not re-creating
 
@@ -202,27 +202,26 @@ change the page, fix `build.py` and run it again instead of writing a new script
 
 ## Creating or editing an HTML page
 
-**Read `html.md` in full before you write or edit an HTML page.** It holds what the
-viewer silently breaks, which libraries and CDNs a page can use, how to pick the treatment and the
-theme, the layout and dark-mode rules, pages with several files, and the checklist
-before saving. The essentials, which `check` also enforces and that checklist does not
-repeat:
+**Read `html.md` in full, and the theme catalog in `brand-kit.md`, before you write or
+edit an HTML page.** `html.md` holds what the viewer silently breaks, which libraries
+and CDNs a page can use, how to pick the treatment and the theme, the layout and
+dark-mode rules, pages with several files, and the checklist before saving. The
+essentials, which `check` also enforces and that checklist does not repeat:
 
 1. A full document (`<!doctype html>`, charset, viewport, `<title>`), its CSS and
    JavaScript inside it or in files next to it; libraries only from the allowed CDNs
    (`html.md`), version pinned.
 2. No `<form>`, storage, new tabs, downloads or `alert`: the viewer's sandbox breaks
    them, silently.
-3. Colors only as tokens from a catalog theme (`brand-kit.md`, `themes/<name>.md`),
-   with its `## Dark mode` values under `@media (prefers-color-scheme: dark)` and
-   `--on-primary` / `--on-accent` for text on fills; the theme named in a design-plan
-   comment.
+3. Colors only as tokens of a `brand-kit.md` theme: paste what `tokens <theme>` prints
+   (dark values under `@media (prefers-color-scheme: dark)`, `--on-*` for text on fills,
+   `--*-text` for colored text, `--state-*-bg` for pills); no color anywhere else.
 4. It works in a 400 px wide pane, with no horizontal page scroll.
 5. Everything invented is labeled on the page, and every figure comes from the script
    (see [Every artifact](#every-artifact)).
 6. An interactive page has its logic run once before saving (see `html.md`).
-7. Run `check` on the pages, fix what it reports, then `create` or `write`, and give
-   the link.
+7. Run `check` on the pages once, fix every `error` and the quick `advice` (never a
+   second round for advice alone), then `create` or `write`, and give the link.
 
 ## Commands you use most
 
@@ -232,6 +231,7 @@ written out in full.
 
 ```bash
 python3 scripts/artifact.py workdir "Q3 sales report"            # prints <workdir>
+python3 scripts/artifact.py tokens [corporate-formal]             # catalog / tokens
 python3 scripts/artifact.py check <workdir>/index.html --title "Q3 sales report"
 python3 scripts/artifact.py create --title "Q3 sales report" --type html \
     --description "Third-quarter sales by store and category." \

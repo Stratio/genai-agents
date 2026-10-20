@@ -396,6 +396,17 @@ _ROOT_BLOCK = re.compile(r":root\b[^{]*\{[^{}]*\}")
 _EMOJI = re.compile("[\U0001F300-\U0001FAFF\U0001F000-\U0001F2FF✀-➿]")
 _TITLE_SEPARATOR = re.compile(r"\s[-–—|·]\s|[:|—–]")
 _VERSIONED = re.compile(r"@v?\d+\.\d+\.\d+|/v?\d+\.\d+\.\d+(?:/|$)|[-.]v?\d+\.\d+\.\d+")
+# A literal that only stands in for a token: `var(--x, #fff)` in CSS, and in a script the
+# `|| "#fff"` (or `??`) after a call that names one (getPropertyValue("--x"), tok("--x")).
+_VAR_FALLBACK = re.compile(r"var\(\s*(--[\w-]+)\s*,(?:[^()]|\([^()]*\))*\)")
+_SCRIPT_FALLBACK = re.compile(
+    r"""(\([^()]*?['"`]--[\w-]+['"`][^()]*\)(?:\s*\.\s*trim\(\s*\))?\s*(?:\|\||\?\?)\s*)(['"])[^'"\n]*\2"""
+)
+# What breaks the page in the viewer, or a rule the page may never break: an error. The
+# rest is advice: the page works, and a cheap fix makes it better.
+_ERRORS = frozenset(
+    ("document", "form", "new-tab", "download", "iframe", "storage", "host", "pin", "cdn", "fetch", "link")
+)
 _PANE = 400 - 2 * 16  # the narrowest pane, less its gutters
 _COLUMN = 720  # a reading column on a desktop pane
 
@@ -708,14 +719,15 @@ def _page_findings(text, base_dir=".", title=None, sources=None, verify=False) -
     if not re.search(r"prefers-color-scheme\s*:\s*dark", css):
         add("dark-mode", "No @media (prefers-color-scheme: dark) block redefining the tokens.")
     # Only the declarations: a selector such as #feed or #cafe is an id, not a color.
-    outside = " ".join(body for _, body in _css_rules(_ROOT_BLOCK.sub("", css)))
-    styles = " ".join(re.findall(r'(?i)\sstyle=["\']([^"\']*)', markup))
+    outside = " ".join(body for _, body in _css_rules(_VAR_FALLBACK.sub(r"var(\1)", _ROOT_BLOCK.sub("", css))))
+    styles = _VAR_FALLBACK.sub(r"var(\1)", " ".join(re.findall(r'(?i)\sstyle=["\']([^"\']*)', markup)))
     svg_attrs = " ".join(re.findall(
         rf'(?i)\s(?:fill|stroke|stop-color|color)=["\']((?:#[0-9a-f]{{3,8}}|(?:rgba?|hsla?|oklch|oklab)\(|{_NAMES})[^"\']*)["\']',
         markup))
-    script_colors = re.findall(r"['\"](#[0-9a-fA-F]{3,8}|(?:rgba?|hsla?|oklch|oklab)\([^'\"]*\))['\"]", scripts)
+    token_scripts = _SCRIPT_FALLBACK.sub(r'\1""', _VAR_FALLBACK.sub(r"var(\1)", scripts))
+    script_colors = re.findall(r"['\"](#[0-9a-fA-F]{3,8}|(?:rgba?|hsla?|oklch|oklab)\([^'\"]*\))['\"]", token_scripts)
     script_colors += re.findall(
-        rf"(?i)(?:color|fill|stroke|background\w*|border\w*|fillStyle|strokeStyle)\s*[:=]\s*['\"]({_NAMES})['\"]", scripts)
+        rf"(?i)(?:color|fill|stroke|background\w*|border\w*|fillStyle|strokeStyle)\s*[:=]\s*['\"]({_NAMES})['\"]", token_scripts)
     colors = (
         _COLOR.findall(outside) + _NAMED_COLOR.findall(outside) + _COLOR.findall(styles)
         + _NAMED_COLOR.findall(styles) + _COLOR.findall(svg_attrs) + re.findall(rf"(?i)\b{_NAMES}\b", svg_attrs)
@@ -782,12 +794,224 @@ def _page_findings(text, base_dir=".", title=None, sources=None, verify=False) -
                 add("pin", f"{url}: pin the exact version.")
             elif verify and _url_exists(url) is False:
                 add("cdn", f"{url} does not exist on that CDN: check the version and the path.")
-    return findings
+    return _leveled(findings)
+
+
+def _leveled(findings: list) -> list:
+    """Each finding with its level: `error` (fix it) or `advice` (fix it if cheap, once)."""
+    return [{"rule": f["rule"], "level": "error" if f["rule"] in _ERRORS else "advice", "message": f["message"]}
+            for f in findings]
 
 
 def _report_findings(label: str, findings: list) -> None:
     for finding in findings:
-        print(f"check: {label}: [{finding['rule']}] {finding['message']}", file=sys.stderr)
+        level = "" if finding.get("level") == "error" else "advice "
+        print(f"check: {label}: {level}[{finding['rule']}] {finding['message']}", file=sys.stderr)
+
+
+# ---------------------------------------------------------------------------
+# Theme tokens
+#
+# A catalog theme turned into the page's token block, so that a page built on it passes
+# the color, dark-mode and contrast checks as written: the light and dark values, text
+# on a fill, a text-safe variant of every colored token and the status tints, worked out
+# here once instead of by hand on every page.
+# ---------------------------------------------------------------------------
+
+_SKILL_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# Packed, the catalog sits next to SKILL.md as brand-kit.md and themes/; in the monorepo
+# it is brand-kit's own.
+_BRAND_KIT = os.path.join(_SKILL_DIR, os.pardir, os.pardir, "skills", "brand-kit")
+_THEME_DIRS = (os.path.join(_SKILL_DIR, "themes"), os.path.join(_BRAND_KIT, "themes"))
+_CATALOG_FILES = (os.path.join(_SKILL_DIR, "brand-kit.md"), os.path.join(_BRAND_KIT, "SKILL.md"))
+_CATALOG_ROW = re.compile(r"^\|\s*\[([\w-]+)\]\(themes/[\w-]+\.md\)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|$", re.M)
+# Families of the catalog that Google Fonts does not serve: used as the stack, no <link>.
+_SYSTEM_FONTS = frozenset(("calibri", "aptos", "arial", "arial black", "consolas", "courier new", "georgia",
+                           "impact", "didot", "bodoni", "system-ui"))
+_HEX_ROW = re.compile(r"^\|\s*(\w+)\s*\|\s*(#[0-9a-fA-F]{6})\s*\|", re.M)
+_COLORED = ("primary", "accent", "state_ok", "state_warn", "state_danger")
+_TINTED = ("accent", "state_ok", "state_warn", "state_danger")
+_TINT = 0.14  # how much of a state color its pill background carries
+
+
+def _theme_dir():
+    return next((d for d in _THEME_DIRS if os.path.isdir(d)), None)
+
+
+def _section(text: str, heading: str) -> str:
+    parts = re.split(rf"(?m)^## {re.escape(heading)}[^\n]*\n", text, maxsplit=1)
+    return re.split(r"(?m)^## ", parts[1], maxsplit=1)[0] if len(parts) == 2 else ""
+
+
+def _rgb_hex(rgb) -> str:
+    return "#" + "".join(f"{round(max(0.0, min(1.0, c)) * 255):02x}" for c in rgb)
+
+
+def _mix(one, other, amount: float):
+    """`one` moved `amount` of the way to `other`, in sRGB as color-mix(in srgb) does."""
+    return tuple(a + (b - a) * amount for a, b in zip(one, other))
+
+
+def _readable(color, surfaces, toward):
+    """`color`, moved toward `toward` (the mode's ink) only as far as text in it needs to
+    reach 4.5:1 on every surface: the hue stays, the value darkens or lightens."""
+    for step in range(21):
+        candidate = _mix(color, toward, step / 20)
+        if all(_contrast(candidate, s) >= 4.55 for s in surfaces):
+            return candidate
+    return toward
+
+
+def _on_fill(fill, theme, extremes):
+    """Text on a fill: the theme's own bg or ink when one reads on it, else white or black."""
+    readable = [c for c in theme if _contrast(c, fill) >= 4.55]
+    return max(readable or extremes, key=lambda c: _contrast(c, fill))
+
+
+def _mode_tokens(palette: dict, chart: list, given: dict) -> dict:
+    """Every color token of one mode, as hex, CSS names: the theme's own values, then
+    what the page needs on top of them."""
+    rgb = {k: _hex_rgb(v) for k, v in palette.items()}
+    bg, bg_alt, ink = rgb["bg"], rgb.get("bg_alt", rgb["bg"]), rgb["ink"]
+    tokens = {f"--{k.replace('_', '-')}": v.lower() for k, v in palette.items() if not k.startswith("on_")}
+    for fill in ("primary", "accent"):
+        own = given.get(f"on_{fill}")
+        tokens[f"--on-{fill}"] = own.lower() if own else _rgb_hex(
+            _on_fill(rgb[fill], (bg, ink), ((1.0, 1.0, 1.0), (0.0, 0.0, 0.0))))
+    for name in _TINTED:
+        if name in rgb:
+            tokens[f"--{name.replace('_', '-')}-bg"] = _rgb_hex(_mix(bg, rgb[name], _TINT))
+    for name in _COLORED:
+        if name in rgb:
+            surfaces = [bg, bg_alt]
+            if name in _TINTED:
+                surfaces.append(_mix(bg, rgb[name], _TINT))
+            tokens[f"--{name.replace('_', '-')}-text"] = _rgb_hex(_readable(rgb[name], surfaces, ink))
+    for index, color in enumerate(chart, 1):
+        tokens[f"--chart-{index}"] = color.lower()
+    return tokens
+
+
+def _font_stack(family: str, fallback: str) -> str:
+    names = [family] + [f.strip() for f in fallback.split(",") if f.strip()]
+    generic = ("serif", "sans-serif", "monospace", "system-ui", "cursive")
+    return ", ".join(n if n in generic else f'"{n}"' for n in dict.fromkeys(names))
+
+
+def _catalog() -> list:
+    """[(theme, tone, best for)] for every theme shipped; tone and use come from the
+    catalog table, and are blank for a theme it does not list."""
+    folder = _theme_dir()
+    shipped = sorted(f[:-3] for f in os.listdir(folder) if f.endswith(".md")) if folder else []
+    described = {}
+    path = next((p for p in _CATALOG_FILES if os.path.isfile(p)), None)
+    if path:
+        with open(path, encoding="utf-8") as handle:
+            described = {name: (tone, use) for name, tone, use in _CATALOG_ROW.findall(handle.read())}
+    return [(name, *described.get(name, ("", ""))) for name in shipped]
+
+
+def _catalog_text() -> str:
+    rows = _catalog()
+    if not rows:
+        return "No theme catalog ships with this skill.\n"
+    width = max(len(name) for name, _, _ in rows)
+    lines = [f"{name:<{width}}  best for: {use}" if use else name for name, _, use in rows]
+    return "\n".join(["Themes (python3 scripts/artifact.py tokens <theme> prints one):", *lines]) + "\n"
+
+
+def _theme(name: str) -> dict:
+    folder = _theme_dir()
+    slug = os.path.basename(name).removesuffix(".md")
+    if not folder or not os.path.isfile(os.path.join(folder, f"{slug}.md")):
+        _die(f"No theme {name!r}. {_catalog_text().strip()}")
+    with open(os.path.join(folder, f"{slug}.md"), encoding="utf-8") as handle:
+        text = handle.read()
+    light = dict(_HEX_ROW.findall(_section(text, "Color palette")))
+    light_chart = [c for k, c in _HEX_ROW.findall(_section(text, "Chart categorical")) if k.isdigit()]
+    dark_text = _section(text, "Dark mode")
+    dark_given = dict(_HEX_ROW.findall(dark_text))
+    line = re.search(r"Chart categorical:([^\n]*)", dark_text)
+    dark_chart = re.findall(r"#[0-9a-fA-F]{6}", line.group(1)) if line else light_chart
+    fonts, weights = {}, {}
+    for role, family, size, fallback in re.findall(
+        r"^\|\s*([\w ()]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|$", _section(text, "Typography"), re.M
+    ):
+        role = role.split()[0]
+        if role in ("display", "body", "mono"):
+            fonts[role] = (family, fallback)
+        if role in ("display", "h2", "body", "mono"):
+            explicit = re.findall(r"weight (\d+)", size)
+            plain = re.sub(r"\s+Italic$", "", family)
+            # Running text needs regular and bold; a display face only the weight it shows.
+            wanted = weights.setdefault(plain, set())
+            wanted.update(explicit or (("400", "700") if role in ("body", "mono") else ()))
+    radius = re.search(r"\*\*Border radius\*\*:\s*`([^`]+)`", text)
+    palette = {k: v for k, v in light.items() if not k.isdigit()}
+    return {
+        "name": slug,
+        "light": _mode_tokens(palette, light_chart, {}),
+        "dark": _mode_tokens({**palette, **{k: v for k, v in dark_given.items() if not k.startswith("on_")}},
+                             dark_chart, dark_given) if dark_given else None,
+        "fonts": {role: _font_stack(*value) for role, value in fonts.items()},
+        "families": {f: w for f, w in weights.items() if f.lower() not in _SYSTEM_FONTS},
+        "radius": radius.group(1) if radius else None,
+        "series": len(light_chart),
+    }
+
+
+def _fonts_link(families: dict):
+    if not families:
+        return None
+    query = "&".join(
+        "family=" + urllib.parse.quote_plus(f) + (f":wght@{';'.join(sorted(w))}" if w else "")
+        for f, w in families.items()
+    )
+    url = f"https://fonts.googleapis.com/css2?{query}&display=swap"
+    return url if any(_source_allows(source, url) for source in _cdn_sources()) else None
+
+
+def _tokens_text(theme: dict) -> str:
+    def block(tokens, scheme, indent):
+        pad = " " * indent
+        lines = [f"{pad}{name}: {value};" for name, value in tokens.items()]
+        return "\n".join(lines + [f"{pad}color-scheme: {scheme};"])
+
+    shared = {f"--font-{role}": stack for role, stack in theme["fonts"].items()}
+    if theme["radius"]:
+        shared["--radius"] = theme["radius"]
+    link = _fonts_link(theme["families"])
+    out = ["<!-- In <head>, before the <style> block. -->"]
+    out.append(f'<link rel="stylesheet" href="{link}">' if link else
+               "<!-- No font <link>: the theme's families are system fonts, or this installation "
+               "loads nothing from Google Fonts; the stacks fall back by themselves. -->")
+    out += [
+        "",
+        "/* First thing in the <style> block, as printed: the design plan, then the tokens.",
+        f"   Theme: {theme['name']} (themes/{theme['name']}.md).",
+        "   Text in a color: --primary-text, --accent-text, --state-ok-text, --state-warn-text,",
+        "   --state-danger-text (never --accent or --state-* as text: they are for fills, rules",
+        "   and marks). Text on a fill: --on-primary, --on-accent. A status pill: background",
+        f"   var(--state-ok-bg), color var(--state-ok-text). Series: --chart-1 to --chart-{theme['series']}.",
+        "   Layout: <one line on this page's layout>. */",
+        ":root {",
+        block({**theme["light"], **shared}, "light", 2),
+        "}",
+    ]
+    if theme["dark"]:
+        out += ["@media (prefers-color-scheme: dark) {", "  :root {", block(theme["dark"], "dark", 4), "  }", "}"]
+    out += [
+        "body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); }",
+        "h1, h2, h3 { font-family: var(--font-display); }",
+        "code, pre, .num { font-family: var(--font-mono); }",
+        ".scroll-x { overflow-x: auto; }",
+        "",
+        "// In a script that draws: the colors come from the tokens, never as literals.",
+        "const tok = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();",
+        f"const series = () => Array.from({{ length: {theme['series']} }}, (_, i) => tok(`--chart-${{i + 1}}`));",
+        'matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => draw());  // your draw()',
+    ]
+    return "\n".join(out) + "\n"
 
 
 # ---------------------------------------------------------------------------
@@ -1078,6 +1302,12 @@ def cmd_workdir(args):
     print(path)
 
 
+def cmd_tokens(args):
+    """Without a theme, list the catalog; with one, print it as the page's font <link>,
+    token block and script helper."""
+    sys.stdout.write(_tokens_text(_theme(args.theme)) if args.theme else _catalog_text())
+
+
 def cmd_check(args):
     """Check pages before `create` or `write`: what the viewer breaks, and the rules
     SKILL.md asks for. The first page is the entry: it is the one --title applies to.
@@ -1090,7 +1320,7 @@ def cmd_check(args):
             _die(f"{path} does not exist.")
         title = args.title if index == 0 else None
         if not path.lower().endswith((".html", ".htm")):
-            findings = _title_findings(title.strip()) if title else []
+            findings = _leveled(_title_findings(title.strip())) if title else []
             report.append({"file": path, "findings": findings})
             continue
         with open(path, encoding="utf-8", errors="replace") as handle:
@@ -1290,6 +1520,10 @@ def _parser() -> argparse.ArgumentParser:
     p = sub.add_parser("workdir")
     p.add_argument("name", help="The artifact's title; its folder is named after it")
     p.set_defaults(func=cmd_workdir)
+
+    p = sub.add_parser("tokens")
+    p.add_argument("theme", nargs="?", help="A theme of the catalog, e.g. corporate-formal; none lists them")
+    p.set_defaults(func=cmd_tokens)
 
     p = sub.add_parser("check")
     p.add_argument("files", nargs="+", help="The entry page first, then any other page")
