@@ -92,6 +92,9 @@ Markdown or HTML, these hold for every artifact.
   when there is one. A named metric keeps its standard definition. Workspace material
   counts only when it is about the same subject; other artifacts' working folders
   (`.artifact*/`) are not sources.
+- **Self-contained.** It makes sense to someone who never read this conversation: what
+  the work found goes in the artifact, not only in the chat. Its size follows the
+  subject and the request; never pad it.
 - **Facts are looked up, not recalled.** Official data (holidays, tax rates, legal
   limits, prices) comes from a source opened in this session (an MCP tool, a file in
   the workspace, the web when the sandbox reaches it), cited next to its figure. What

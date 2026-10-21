@@ -98,11 +98,12 @@ re-theme it unless the person asks.
 
 ### Pick the treatment first
 
-There is no fixed length. Decide how much design the request deserves before writing:
+There is no fixed length: it follows the subject and the request. Decide how much
+design the request deserves before writing:
 
 | Request | Treatment |
 |---|---|
-| Plan, memo, report, demo, document | **Utilitarian.** Real typographic hierarchy, careful spacing and the theme's palette, without over-design. No giant hero, few ornaments. A report gives every headline figure a reference (previous period, target or budget). A document for a broad audience (a policy, a guide) opens with what the reader must know or do, then the full text. Minutes and memos read as a document: sections under headings and rules, not a card per item. |
+| Plan, memo, report, demo, document | **Utilitarian.** Real typographic hierarchy, careful spacing and the theme's palette, without over-design. No giant hero, few ornaments. Utilitarian describes the design, not the amount of content. A report gives every headline figure a reference (previous period, target or budget). A document for a broad audience (a policy, a guide) opens with what the reader must know or do, then the full text. Minutes and memos read as a document: sections under headings and rules, not a card per item. |
 | Page or tool the person will keep or share | **Editorial.** A visual identity of its own, with one deliberate aesthetic risk in a single place, taken from the subject itself: a working mini-demo of the product, a diagram, a material or a typeface of the topic. Not a stock landing template (centered heads, a grid of rounded cards, gradients). |
 | Dashboard or tool | **Information design.** Summary first, detail after. The numbers the person asked for get the largest tiles, with their unit. Show status with pills or chips as well as numbers, and use semantic colors for good, warning and critical. |
 | Comparison or decision | The verdict first, then a criteria matrix with stated weights and totals computed from them, the total cost for the stated size, the assumptions, and the date prices were checked. A budget or forecast with scenarios: the recommendation and assumptions first, then each scenario. |
@@ -115,7 +116,7 @@ There is no fixed length. Decide how much design the request deserves before wri
 | Map by region | A choropleth of a rate (per inhabitant, growth, share of target), raw totals and the rate in the table (see [Content](#content)). |
 
 When in doubt: a well-composed page always works; an over-designed one sometimes does
-not.
+not. That is about design: a well-composed page still holds all the content.
 
 ### Theme
 
@@ -268,7 +269,8 @@ body { margin: 0; background: var(--bg); color: var(--ink); }
 
 ### Writing
 
-Active voice and short, direct sentences, with no stock phrases.
+Active voice and short, direct sentences, with no stock phrases. Short sentences, not
+short content: brevity applies to each sentence, never to how much the page covers.
 
 ### Before you save it
 
