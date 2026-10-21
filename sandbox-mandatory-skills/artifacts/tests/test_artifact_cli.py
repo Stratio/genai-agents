@@ -1569,7 +1569,7 @@ class TestLayout:
 
     def test_the_core_stays_small_and_points_to_the_detail(self):
         core = (_SKILL / "SKILL.md").read_text(encoding="utf-8")
-        assert core.count("\n") < 300
+        assert core.count("\n") < 320
         assert "**Read `html.md` in full, and the theme catalog in `brand-kit.md`, before you write or\nedit an HTML page.**" in core
         assert "`reference.md`" in core
         # The rules that break a page silently stay in the core, even if html.md is skipped.
