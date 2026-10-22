@@ -1281,6 +1281,7 @@ class TestCheck:
             return json.loads(capsys.readouterr().out)[0]["findings"]
 
         assert check_hosts("https://nexus.corp/npm/ https://cdn.jsdelivr.net") == []
+        assert check_hosts("https:") == []
         [finding] = check_hosts("https://nexus.corp/npm/")
         assert finding["rule"] == "host" and "nexus.corp" in finding["message"]
         for empty in ("", "'none'"):
@@ -1884,6 +1885,10 @@ class TestCheckRoundThree:
             ("https://cdn.jsdelivr.net", "https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js", True),
             ("https://nexus.corp:8443", "https://nexus.corp/x.js", False),
             ("https://cdn.jsdelivr.net", "http://cdn.jsdelivr.net/x.js", False),
+            # genai-api's default: any https origin, never plain http.
+            ("https:", "https://d3js.org/d3.v7.min.js", True),
+            ("https:", "https://nexus.corp:8443/npm/x.js", True),
+            ("https:", "http://d3js.org/d3.v7.min.js", False),
         ],
     )
     def test_a_source_with_a_path_allows_that_path_only(self, cli, source, url, allowed):

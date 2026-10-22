@@ -108,10 +108,11 @@ What the commands print and accept:
   `hero`, `reveal`, `svg` and `emoji`. For a Markdown entry only the title rule
   applies. `create` and `write` print the same findings on stderr as `check: …` lines,
   as warnings, with `advice` before the rule of an advice.
-- **`host`** checks against `$ARTIFACT_CDN_SOURCES`, the CDNs this installation lets a
-  page load from (set by the platform; empty means none; a source with a path, such as
-  an internal mirror's `https://nexus.corp/npm/`, allows that path only), or the public
-  CDNs of `html.md` where it is unset.
+- **`host`** checks against `$ARTIFACT_CDN_SOURCES`, the sources this installation lets a
+  page load from (set by the platform; `https:` means any https origin, its default;
+  empty means none; a source with a path, such as an internal mirror's
+  `https://nexus.corp/npm/`, allows that path only), or the public CDNs of `html.md`
+  where it is unset.
 - **Local files.** `create`, `write` and `upload` read files from
   `$USER_WORKSPACE/project/` only (the working folders and `output/` are inside it), and
   never key material (`*.key`, `*.pem`, `.env`…) even there. `create` reads every file

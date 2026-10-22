@@ -630,8 +630,9 @@ def _loaded_urls(markup: str, css: str) -> list:
 
 
 def _cdn_sources() -> list:
-    """The origins the viewer lets a page load from: $ARTIFACT_CDN_SOURCES, which genai-api
-    hands the sandbox (empty: none), or the public CDNs where it is unset."""
+    """The sources the viewer lets a page load from: $ARTIFACT_CDN_SOURCES, which genai-api
+    hands the sandbox (`https:` any https origin, empty none), or the public CDNs where
+    it is unset."""
     configured = os.environ.get("ARTIFACT_CDN_SOURCES")
     if configured is None:
         return [f"https://{host}" for host in _CDN_HOSTS]
@@ -639,10 +640,13 @@ def _cdn_sources() -> list:
 
 
 def _source_allows(source: str, url: str) -> bool:
-    """Whether a CSP source such as `https://cdn.jsdelivr.net` or an internal mirror's
-    `https://nexus.corp/npm/` lets the page load `url`: the same origin and, when the
-    source names a path, that path (a prefix when it ends in '/', as CSP reads it)."""
+    """Whether a CSP source lets the page load `url`: `https:` any https URL (what
+    genai-api allows by default); an origin such as `https://cdn.jsdelivr.net` or an
+    internal mirror's `https://nexus.corp/npm/` the same origin and, when the source
+    names a path, that path (a prefix when it ends in '/', as CSP reads it)."""
     allowed, wanted = urllib.parse.urlsplit(source), urllib.parse.urlsplit(url)
+    if source == "https:":
+        return wanted.scheme == "https" and bool(wanted.hostname)
     if (allowed.scheme, allowed.hostname, allowed.port) != (wanted.scheme, wanted.hostname, wanted.port):
         return False
     if allowed.path in ("", "/"):
