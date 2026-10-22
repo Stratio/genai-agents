@@ -46,8 +46,7 @@ multipágina.
 
 - **Motion budget**: `restrained` (transiciones web-craft, animaciones pptx)
 - **Border radius**: `2px` (web-craft)
-- **Dark mode variant**: no incluido (derivar intercambiando `bg` ↔
-  `ink`, manteniendo primary y accent)
+- **Dark mode variant**: ver [Dark mode](#dark-mode)
 - **Chart sequential**: no incluido
 
 ## Print variant (para pdf-writer)
@@ -63,6 +62,25 @@ vez de blanco puro y un casi negro cálido en vez del ink regular:
 | accent | #b84c2c | sin cambios — la terracota imprime bien |
 
 Tamaños de fuente y tipografía iguales que en el bloque core.
+
+## Dark mode
+
+| Token | Hex |
+|---|---|
+| bg | #0e1318 |
+| bg_alt | #161e26 |
+| ink | #e6e8ea |
+| muted | #868a92 |
+| rule | #27323c |
+| primary | #3f88d1 |
+| accent | #d06747 |
+| state_ok | #07986f |
+| state_warn | #d8650e |
+| state_danger | #df5757 |
+| on_primary | #0e1318 |
+| on_accent | #0e1318 |
+
+Chart categorical: `#2365a7`, `#b84c2c`, `#047857`, `#6366f1`, `#b45309`, `#6b7280`
 
 ## Tone family
 

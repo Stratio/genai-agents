@@ -56,9 +56,27 @@ acepta — y espera — información más densa por vista.
 
 - **Motion budget**: `minimal`
 - **Border radius**: `2px`
-- **Dark mode variant**: `bg` = `#1f2933`, `ink` = `#e4e7eb`,
-  `primary` = `#90a4ae`, mantener `accent`
+- **Dark mode variant**: ver [Dark mode](#dark-mode)
 - **Chart sequential**: color base `#37474f`
+
+## Dark mode
+
+| Token | Hex |
+|---|---|
+| bg | #1f2933 |
+| bg_alt | #283441 |
+| ink | #e4e7eb |
+| muted | #949ca4 |
+| rule | #3a4856 |
+| primary | #90a4ae |
+| accent | #f5a623 |
+| state_ok | #5eab5e |
+| state_warn | #f5a623 |
+| state_danger | #df7f7f |
+| on_primary | #1f2933 |
+| on_accent | #1f2933 |
+
+Chart categorical: `#5c7481`, `#f5a623`, `#418141`, `#d43434`, `#5c6ac4`, `#6b7b80`
 
 ## Tone family
 

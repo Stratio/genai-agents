@@ -20,7 +20,7 @@ Agente governance officer que combina la construcción de capas semánticas y la
 - Creación de reglas de calidad con aprobación humana obligatoria
 - Planificación de ejecución automática de reglas de calidad
 - Consulta y definición de Critical Data Elements (CDEs): identificar los activos más críticos de un dominio, recomendarlos y etiquetarlos con aprobación humana obligatoria
-- Generación de informes de cobertura (chat, PDF, DOCX, PPTX, Dashboard web, Informe web / Artículo web, Póster/Infografía, XLSX, Markdown)
+- Generación de informes de cobertura (chat, artefacto, PDF, DOCX, PPTX, Póster/Infografía, XLSX, Markdown)
 
 ## Requisitos
 
@@ -55,7 +55,7 @@ La configuración MCP está en `opencode.json` (OpenCode), preconfigurado para l
 | Evaluación de calidad | `/assess-quality` | Evaluar la cobertura de calidad por dominio o tabla |
 | Creación de reglas | `/create-quality-rules` | Diseñar y crear reglas de calidad con aprobación humana |
 | Planificación de calidad | `/create-quality-schedule` | Crear planificaciones de ejecución automática |
-| Informe de calidad | `/quality-report` | Generar informe formal de cobertura (PDF, DOCX, PPTX, Dashboard web, Informe web / Artículo web, Póster/Infografía, XLSX, Markdown, Chat) |
+| Informe de calidad | `/quality-report` | Generar informe formal de cobertura (Chat, Artefacto, PDF, DOCX, PPTX, Póster/Infografía, XLSX, Markdown) |
 | Critical Data Elements | `/manage-critical-data-elements` | Consultar o definir Critical Data Elements (CDEs) para un dominio gobernado, con aprobación humana obligatoria antes de etiquetar |
 | Lectura de PDF | `/pdf-reader` | Extraer texto, tablas y datos de archivos PDF proporcionados por el usuario |
 | Escritura de PDF | `/pdf-writer` | Crear PDFs personalizados, combinar/dividir, marca de agua, cifrar, rellenar formularios |

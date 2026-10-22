@@ -47,9 +47,27 @@ voice.
 - **Motion budget**: `expressive` (product decks can afford deliberate
   motion: staged reveals, smooth transitions, animated metrics)
 - **Border radius**: `12px` (characteristically rounded surfaces)
-- **Dark mode variant**: `bg` = `#0f172a`, `ink` = `#e2e8f0`,
-  `primary` = `#818cf8`, `accent` = `#fbbf24`
+- **Dark mode variant**: see [Dark mode](#dark-mode)
 - **Chart sequential**: base color `#6366f1`
+
+## Dark mode
+
+| Token | Hex |
+|---|---|
+| bg | #0f172a |
+| bg_alt | #15203b |
+| ink | #e2e8f0 |
+| muted | #818a97 |
+| rule | #253251 |
+| primary | #818cf8 |
+| accent | #fbbf24 |
+| state_ok | #10b981 |
+| state_warn | #f59e0b |
+| state_danger | #ef4e4e |
+| on_primary | #0f172a |
+| on_accent | #0f172a |
+
+Chart categorical: `#6366f1`, `#f59e0b`, `#10b981`, `#06b6d4`, `#ec4899`, `#8b5cf6`
 
 ## Tone family
 

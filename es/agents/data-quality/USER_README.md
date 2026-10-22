@@ -4,7 +4,7 @@ Agente experto en gobernanza y calidad del dato que evalúa la cobertura de cali
 
 ## Qué es este agente
 
-Data Quality es un asistente especializado en calidad del dato que trabaja sobre tus datos gobernados. Puede evaluar la cobertura de calidad de un dominio, colección o tabla, identificar qué dimensiones de calidad faltan, proponer reglas razonadas basadas en el contexto semántico y el profiling real, y crearlas con tu aprobación. También genera informes de cobertura en múltiples formatos — desde un resumen rápido en chat hasta un workbook Excel multi-hoja, un dashboard web interactivo o una infografía imprimible.
+Data Quality es un asistente especializado en calidad del dato que trabaja sobre tus datos gobernados. Puede evaluar la cobertura de calidad de un dominio, colección o tabla, identificar qué dimensiones de calidad faltan, proponer reglas razonadas basadas en el contexto semántico y el profiling real, y crearlas con tu aprobación. También genera informes de cobertura en múltiples formatos — desde un resumen rápido en chat o un dashboard interactivo o una página de informe en GenAI UI que puedes compartir, hasta un workbook Excel multi-hoja o una infografía imprimible.
 
 El agente evalúa la calidad en 11 dimensiones (completitud, unicidad, validez, consistencia, frescura, precisión, integridad referencial, disponibilidad, nivel de detalle, razonabilidad y trazabilidad) y siempre requiere tu aprobación antes de crear o modificar reglas. También puede ingerir contexto local (workbooks de specs de reglas en Excel, policy briefs en Word, decks de referencia en PowerPoint, PDFs de regulación) y aplicar branding visual consistente a cada entregable.
 
@@ -28,15 +28,16 @@ Para `/quality-report` puedes elegir cualquiera de:
 
 | Formato | Ideal para |
 |---|---|
-| **Chat** | Revisión rápida dentro de la conversación, sin fichero |
+| **Chat** | Revisión rápida dentro de la conversación, sin fichero (el formato por defecto si no eliges ninguno) |
+| **Artefacto** (Recomendado) | Un dashboard interactivo o una página de informe en GenAI UI que se puede compartir y volver a abrir |
 | **PDF** | Informe formal con narrativa en prosa, firma de compliance |
 | **DOCX** | Documento Word editable para equipos de auditoría y policy briefs |
 | **PPTX** | Deck de resumen ejecutivo, briefing a comité de dirección |
-| **Dashboard web** | HTML interactivo con KPI cards, filtros, tablas ordenables |
-| **Informe web / Artículo web** | Página HTML editorial autocontenida con secciones narrativas, callouts KPI inline y gráficos incrustados |
 | **Póster / Infografía** | Resumen visual de una página con cobertura por dominio |
 | **XLSX** | Workbook multi-hoja de cobertura con conditional formatting para auditoría y compliance |
 | **Markdown** | Formato de texto ligero para sistemas de documentación y wikis |
+
+Si quieres el informe como fichero `.html`, pídelo explícitamente.
 
 Cada formato visual aplica el tema que elijas al inicio (o el tema corporativo por defecto).
 
@@ -57,7 +58,7 @@ Cada formato visual aplica el tema que elijas al inicio (o el tema corporativo p
 ### Informes (generación de ficheros)
 - "Genera un informe PDF de cobertura de calidad del dominio ventas"
 - "Crea un resumen ejecutivo PowerPoint de los hallazgos de calidad"
-- "Construye un dashboard web interactivo de calidad"
+- "Construye un dashboard interactivo de calidad como artefacto"
 - "Genera una infografía de una página con la cobertura por dominio"
 - "Exporta el catálogo de reglas como un workbook Excel con conditional formatting"
 - "Usa el tema forensic-audit para este informe de compliance"
@@ -91,7 +92,7 @@ Cada formato visual aplica el tema que elijas al inicio (o el tema corporativo p
 | `/assess-quality` | Evaluar cobertura de calidad por dominio o tabla: dimensiones cubiertas, gaps y prioridades |
 | `/create-quality-rules` | Diseñar y crear reglas de calidad para cubrir gaps, con aprobación humana obligatoria |
 | `/create-quality-schedule` | Crear planificaciones de ejecución automática de reglas de calidad |
-| `/quality-report` | Generar informe formal de cobertura en Chat, PDF, DOCX, PPTX, Dashboard web, Informe web / Artículo web, Póster/Infografía, XLSX o Markdown |
+| `/quality-report` | Generar informe formal de cobertura en Chat, como Artefacto o en PDF, DOCX, PPTX, Póster/Infografía, XLSX o Markdown |
 | `/manage-critical-data-elements` | Consultar o definir Critical Data Elements (CDEs) de un dominio gobernado, con aprobación humana obligatoria antes de etiquetar |
 
 ### Lectores de contenido

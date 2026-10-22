@@ -49,8 +49,27 @@ identifiers, hashes and evidence strings aligned legibly.
 - **Motion budget**: `minimal` (no decorative transitions; evidence
   documents do not animate)
 - **Border radius**: `0px` (hard edges)
-- **Dark mode variant**: not shipped
+- **Dark mode variant**: see [Dark mode](#dark-mode)
 - **Chart sequential**: base color `#5a1c1c`
+
+## Dark mode
+
+| Token | Hex |
+|---|---|
+| bg | #180e0e |
+| bg_alt | #261616 |
+| ink | #eae6e6 |
+| muted | #908c88 |
+| rule | #3c2727 |
+| primary | #c66868 |
+| accent | #d3630e |
+| state_ok | #259851 |
+| state_warn | #d3630e |
+| state_danger | #da5a5a |
+| on_primary | #180e0e |
+| on_accent | #180e0e |
+
+Chart categorical: `#aa3c3c`, `#b45309`, `#536177`, `#65a30d`, `#a63f1b`, `#486093`
 
 ## Tone family
 

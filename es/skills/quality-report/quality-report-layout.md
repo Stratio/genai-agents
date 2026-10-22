@@ -1,12 +1,12 @@
 # Quality Report Layout — Guía
 
-Guía consumida por las writer skills (`pdf-writer`, `docx-writer`, `pptx-writer`, `web-craft`, `canvas-craft`, `xlsx-writer`) cuando el agente delega un entregable de informe de cobertura de calidad a través de la skill `quality-report`.
+Guía consumida al construir un Artefacto con la skill `artifacts` y por las writer skills (`pdf-writer`, `docx-writer`, `pptx-writer`, `web-craft`, `canvas-craft`, `xlsx-writer`) cuando el agente delega un entregable de informe de cobertura de calidad a través de la skill `quality-report`.
 
 Esta guía captura las convenciones que hacen reconocible un informe de cobertura de calidad del dato en cualquier formato: una anatomía estable de seis secciones (portada → resumen ejecutivo → matriz de cobertura → detalle de reglas → gaps → recomendaciones), una iconografía fija para el estado de reglas, KPI cards pensadas para lectura de auditoría y un layout determinista para que el mismo dataset reproduzca el mismo esqueleto mes a mes. Las writer skills aplican su propio oficio por encima — los tokens los da la skill centralizada de theming elegida en la cascada de branding del agente; esta guía aporta los **patrones del informe de calidad**.
 
 ## 1. Propósito y alcance
 
-Aplicar esta guía siempre que el agente produzca un informe de cobertura de calidad en un formato de fichero (PDF, DOCX, PPTX, Dashboard web, Informe web/Artículo web, Póster/Infografía, XLSX) vía la skill `quality-report`. Saltarla para el formato Chat — la respuesta de chat es markdown libre, no necesita decisiones específicas de formato.
+Aplicar esta guía siempre que el agente produzca un informe de cobertura de calidad como Artefacto (una página de GenAI UI construida con la skill `artifacts`) o en un formato de fichero (PDF, DOCX, PPTX, Póster/Infografía, XLSX) vía la skill `quality-report`. Saltarla para el formato Chat — la respuesta de chat es markdown libre, no necesita decisiones específicas de formato.
 
 La guía es agnóstica al formato donde puede serlo (misma anatomía en todos) y específica donde el tipo de entregable dicta la composición (§6).
 
@@ -136,7 +136,9 @@ Objetivo ≤12 slides. Guion:
 
 Relación 16:9 por defecto. Caer a 4:3 solo si el usuario lo pide explícitamente. No incrustar capturas raster de tablas — renderizar tablas PPTX nativas para que el dato quede editable.
 
-### 6.4 Dashboard web (HTML interactivo)
+### 6.4 Dashboard (dashboard de Artefacto)
+
+Esta composición aplica a un Artefacto que el usuario pidió como dashboard o con interacción (y a un fichero `.html` de dashboard que el usuario pidió explícitamente, construido con web-craft). Un Artefacto que no es un dashboard usa la composición narrativa de la skill `quality-report` (página scrollable, headings narrativos, callouts KPI inline, gráficos de cobertura como figuras, tablas estáticas). Para un Artefacto, el `html.md` de la skill `artifacts` manda donde choque con esta guía (nada de `fetch()` en tiempo de ejecución, colores solo como tokens, librerías solo de las CDN permitidas), y `build.py` incrusta los datos en la página.
 
 Consumir esta guía de layout **y** la `analytical-dashboard.md` local del agente host si está declarada. La analytical-dashboard provee los patrones genéricos de dashboard (filtros globales, tablas ordenables, KPI cards, Plotly vía CDN); esta guía añade el contenido específico de calidad:
 
@@ -247,11 +249,11 @@ Para informes que se repiten periódicamente (gobierno, compliance) el esqueleto
 - **Límites de ítems por formato**:
   - PDF / DOCX: hasta 20 gaps visibles; el resto se agrega en una línea `"… y N gaps más de prioridad menor"`.
   - PPTX: top 10 gaps solamente (una slide).
-  - Dashboard web: sin límite — usar filtros y tablas ordenables.
+  - Dashboard de Artefacto: sin límite — usar filtros y tablas ordenables.
   - Póster / Infografía: top 3 críticos + top 3 recomendaciones.
   - XLSX: hasta 50 gaps en la hoja Gaps; el resto se agrega en una fila `"… y N gaps más de prioridad menor"`. La hoja Recomendaciones lleva todos los bullets (sin tope).
 - **Marcadores de sección vacía**: cada sección canónica (§2.1–§2.6) emite siempre su cabecera. Si no tiene contenido, una única línea explícita reemplaza al contenido ("No hay reglas definidas para esta tabla todavía", "No se han detectado gaps en el scope actual", "No se han creado reglas en esta sesión"). Nunca se salta la sección silenciosamente — la presencia de la cabecera es lo que hace que los diffs mes a mes alineen.
 - **Formato de fecha de generación**: ISO 8601 (`YYYY-MM-DD`) en los metadatos del documento y en el `quality-report.md` interno. Las writer skills pueden renderizar una forma visible localizada (`24 April 2026` / `24 de abril de 2026`) en la portada, pero el metadato subyacente se queda en ISO.
-- **Nombres de fichero**: `<slug>-quality-report.<ext>` para PDF/DOCX/HTML/XLSX, `<slug>-quality-summary.pptx`, `<slug>-quality-poster.pdf` o `.png`. `<slug>` es el dominio o scope normalizado (ASCII minúsculas, underscores, ≤30 caracteres). Nombres consistentes facilitan hacer diff entre carpetas con herramientas externas.
+- **Nombres de fichero**: `<slug>-quality-report.<ext>` para PDF/DOCX/XLSX, `<slug>-quality-summary.pptx`, `<slug>-quality-poster.pdf` o `.png` (`<slug>-quality-dashboard.html` / `<slug>-quality-article.html` solo ante una petición explícita de `.html`). `<slug>` es el dominio o scope normalizado (ASCII minúsculas, underscores, ≤30 caracteres). Nombres consistentes facilitan hacer diff entre carpetas con herramientas externas. Un Artefacto no tiene nombre de fichero: vive en GenAI UI y se referencia por su enlace.
 
 La combinación de orden de secciones fijo, orden de KPIs fijo, orden de columnas fijo, reglas de ordenación fijas y convención de nombres hace que dos ejecuciones sobre el mismo dataset produzcan informes visualmente comparables — que es lo que los lectores de auditoría esperan.

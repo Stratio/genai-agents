@@ -1,6 +1,6 @@
 ---
 name: web-craft
-description: "Construye frontends interactivos (HTML/CSS/JS, React, Vue) distintivos y de calidad producción, con dirección estética deliberada. Úsala cuando el usuario pida un componente, página, landing, dashboard, artefacto interactivo o cualquier UI web con estilo. Produce código que funciona — tipografía, paleta, motion y composición se eligen, no se asumen."
+description: "Construye frontends interactivos (HTML/CSS/JS, React, Vue) distintivos y de calidad producción, con dirección estética deliberada. Úsala cuando el usuario pida un componente, página, landing, dashboard, artefacto interactivo o cualquier UI web con estilo. Produce código que funciona — tipografía, paleta, motion y composición se eligen, no se asumen. Una página, informe o dashboard pensado para que lo vea una persona es un artefacto: carga `artifacts` en su lugar. Esta skill es para código que el usuario integrará (componentes, sitios, apps) o un fichero .html explícito."
 argument-hint: "[componente|pagina|dashboard|landing] [proposito o brief]"
 ---
 
@@ -10,7 +10,7 @@ Guía para construir artefactos web interactivos con intención estética real. 
 
 El usuario aporta el brief: qué construir, quién lo usa, qué restricciones técnicas aplican. El alcance puede ser un componente único o una landing completa.
 
-**Alcance**: esta skill gestiona artefactos que viven en un navegador y responden a interacción. Para artefactos estáticos de una sola página (pósters, portadas, certificados, one-pagers de marketing, infografías) el artefacto no es interactivo y pertenece a otra herramienta. Para documentos tipográficos multi-página (informes, facturas, contratos, zines) la salida es un documento, no una interfaz web, y también pertenece a otra herramienta. Cuando haya duda, consulta `guides/visual-craftsmanship.md` para el criterio de selección.
+**Alcance**: esta skill gestiona artefactos que viven en un navegador y responden a interacción. Para artefactos estáticos de una sola página (pósters, portadas, certificados, one-pagers de marketing, infografías) el artefacto no es interactivo y pertenece a otra herramienta. Para documentos tipográficos multi-página (informes, facturas, contratos, zines) la salida es un documento, no una interfaz web, y también pertenece a otra herramienta. Una página, informe o dashboard pensado para que lo vea una persona es un artefacto, construido con `artifacts`, no un fichero de esta skill; esta skill cubre código que el usuario integrará (componentes, sitios, apps) y un fichero `.html` explícito. Cuando haya duda, consulta `guides/visual-craftsmanship.md` para el criterio de selección.
 
 ## 1. Lee la base
 

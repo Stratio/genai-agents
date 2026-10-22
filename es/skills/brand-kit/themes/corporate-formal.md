@@ -51,7 +51,7 @@ incluidas instalaciones de Office sin fuentes custom embebidas.
 
 - **Motion budget**: `minimal` (el contenido corporativo no anima)
 - **Border radius**: `2px`
-- **Dark mode variant**: no incluido
+- **Dark mode variant**: ver [Dark mode](#dark-mode)
 - **Chart sequential**: color base `#1a365d`
 
 ## Print variant (para pdf-writer)
@@ -68,6 +68,25 @@ sensación clínica de blanco puro + negro puro:
 | accent | #3182ce | sin cambios — el azul de negocio imprime bien |
 
 Tamaños de fuente y tipografía iguales que en el bloque core.
+
+## Dark mode
+
+| Token | Hex |
+|---|---|
+| bg | #0e1218 |
+| bg_alt | #161d26 |
+| ink | #e6e8ea |
+| muted | #818998 |
+| rule | #27303c |
+| primary | #5987c6 |
+| accent | #3e89d0 |
+| state_ok | #38a169 |
+| state_warn | #d69e2e |
+| state_danger | #e65151 |
+| on_primary | #0e1218 |
+| on_accent | #0e1218 |
+
+Chart categorical: `#3463a4`, `#3182ce`, `#38a169`, `#d69e2e`, `#805ad5`, `#e53e3e`
 
 ## Tone family
 

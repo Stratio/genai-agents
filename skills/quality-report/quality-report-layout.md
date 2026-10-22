@@ -1,12 +1,12 @@
 # Quality Report Layout — Guide
 
-Guide consumed by the writer skills (`pdf-writer`, `docx-writer`, `pptx-writer`, `web-craft`, `canvas-craft`, `xlsx-writer`) when the agent delegates a quality-coverage report deliverable through the `quality-report` skill.
+Guide consumed when building an Artifact with the `artifacts` skill and by the writer skills (`pdf-writer`, `docx-writer`, `pptx-writer`, `web-craft`, `canvas-craft`, `xlsx-writer`) when the agent delegates a quality-coverage report deliverable through the `quality-report` skill.
 
 This guide captures the conventions that make a data quality coverage report recognisable across formats: a stable six-section anatomy (cover → executive summary → coverage matrix → rules detail → gaps → recommendations), a fixed iconography for rule status, KPI cards tuned for audit readability, and a deterministic layout so the same dataset reproduces the same skeleton month after month. The writer skills still apply their own craft on top of this guide — tokens come from the centralized theming skill selected in the host agent's branding cascade; this guide contributes the **quality-report patterns**.
 
 ## 1. Purpose and scope
 
-Apply this guide whenever the agent produces a quality-coverage report in a file format (PDF, DOCX, PPTX, Dashboard web, Web article/Narrative report, Poster/Infographic, XLSX) via the `quality-report` skill. Skip it for the Chat format — the chat response is free-form markdown, no format-specific decisions are needed.
+Apply this guide whenever the agent produces a quality-coverage report as an Artifact (a GenAI UI page built with the `artifacts` skill) or in a file format (PDF, DOCX, PPTX, Poster/Infographic, XLSX) via the `quality-report` skill. Skip it for the Chat format — the chat response is free-form markdown, no format-specific decisions are needed.
 
 The guide is format-agnostic where possible (same anatomy everywhere) and format-specific where a deliverable type dictates composition (section §6).
 
@@ -136,7 +136,9 @@ Target ≤12 slides. Outline:
 
 16:9 aspect ratio by default. Fall back to 4:3 only if the user asks explicitly. Do not embed raster screenshots of tables — render native PPTX tables so the data stays editable.
 
-### 6.4 Dashboard web (interactive HTML)
+### 6.4 Dashboard (Artifact dashboard)
+
+This composition applies to an Artifact the user asked for as a dashboard or with interaction (and to an `.html` dashboard file the user explicitly asked for, built with web-craft). An Artifact that is not a dashboard uses the narrative composition from the `quality-report` skill (scrollable page, narrative headings, inline KPI callouts, coverage charts as figures, static tables). For an Artifact, the `artifacts` skill's `html.md` wins where it conflicts with this guide (no `fetch()` at run time, colours only as tokens, libraries only from the allowed CDNs), and `build.py` embeds the data in the page.
 
 Consume this layout guide **and** the host agent's local `analytical-dashboard.md` if declared. The analytical-dashboard guide provides the generic dashboard patterns (global filters, sortable tables, KPI cards, Plotly via CDN); this guide layers the quality-specific content:
 
@@ -247,11 +249,11 @@ For reports repeated periodically (governance, compliance) the structural skelet
 - **Item limits per format**:
   - PDF / DOCX: up to 20 gaps visible; rest aggregated into a `"… and N more gaps of lower priority"` line.
   - PPTX: top 10 gaps only (one slide).
-  - Dashboard web: no limit — use filters and sortable tables.
+  - Artifact dashboard: no limit — use filters and sortable tables.
   - Poster / Infographic: top 3 critical + top 3 recommendations.
   - XLSX: up to 50 gaps in the Gaps sheet; rest aggregated into a `"… and N more gaps of lower priority"` row. The Recommendations sheet carries every bullet (no cap).
 - **Empty-section markers**: every canonical section (§2.1–§2.6) always emits its heading. If it has no content, a single explicit line replaces the content ("No rules defined for this table yet", "No gaps detected in the current scope", "No rules created in this session"). The section is never skipped silently — the heading presence is what makes month-over-month diffs align.
 - **Generation date format**: ISO 8601 (`YYYY-MM-DD`) in the document metadata and internal `quality-report.md`. The writer skills may render a localised display form (`24 April 2026` / `24 de abril de 2026`) in the cover, but the underlying metadata field stays ISO.
-- **Filenames**: `<slug>-quality-report.<ext>` for PDF/DOCX/HTML/XLSX, `<slug>-quality-summary.pptx`, `<slug>-quality-poster.pdf` or `.png`. `<slug>` is the normalised domain or scope (lowercase ASCII, underscores, ≤30 chars). Consistent filenames let tools diff across folders.
+- **Filenames**: `<slug>-quality-report.<ext>` for PDF/DOCX/XLSX, `<slug>-quality-summary.pptx`, `<slug>-quality-poster.pdf` or `.png` (`<slug>-quality-dashboard.html` / `<slug>-quality-article.html` only on an explicit `.html` request). `<slug>` is the normalised domain or scope (lowercase ASCII, underscores, ≤30 chars). Consistent filenames let tools diff across folders. An Artifact has no filename: it lives in GenAI UI and is referred to by its link.
 
 The combination of fixed section order, fixed KPI order, fixed column order, fixed ordering rules and filename convention makes two runs of the same dataset produce visually comparable reports — which is what audit readers expect.

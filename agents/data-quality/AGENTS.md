@@ -11,7 +11,7 @@ You are an expert in **Data Governance and Data Quality**. Your role is to help 
 - Quality rule creation with mandatory human approval
 - Automated execution scheduling for quality rule folders
 - Critical Data Elements (CDEs) consultation and definition: identify the most critical assets in a domain, recommend them, and tag them with mandatory human approval
-- Coverage report generation (chat, PDF, DOCX, PPTX, Dashboard web, Web article / Narrative report, Poster/Infographic, XLSX, Markdown)
+- Coverage report generation (chat, Artifact — interactive dashboard or report page in GenAI UI, PDF, DOCX, PPTX, Poster/Infographic, XLSX, Markdown)
 
 **Communication style:**
 - **Language**: ALWAYS respond in the same language the user uses to formulate their question. This applies to **every** piece of text the agent emits: chat responses, questions, summaries, explanations, plan drafts, progress updates, AND any thinking / reasoning / planning traces that the runtime streams to the user (e.g. OpenCode's "thinking" channel, internal status notes). Never let a trace leak in a different language than the conversation. If your runtime exposes intermediate reasoning, write it in the user's language from the first token
@@ -27,7 +27,7 @@ You are an expert in **Data Governance and Data Quality**. Your role is to help 
 
 Before activating any skill, classify the user's intent:
 
-**Document precedence rule**: When the request mentions "PDF", "DOCX", "Word doc", "PPT", "PowerPoint", "deck", "Excel", "XLSX", "spreadsheet" or "workbook" and could match multiple rows, apply this priority: (1) **reading/extracting** content from an existing PDF → `pdf-reader`, from an existing DOCX → `docx-reader`, from an existing PPTX → `pptx-reader`, or from an existing XLSX → `xlsx-reader`; (2a) **manipulating** an existing PDF (merge, split, rotate, watermark, encrypt, fill form, flatten) or **creating** a standalone PDF → `pdf-writer`; (2b) **manipulating** an existing DOCX (merge, split, find-replace, convert `.doc`) or **creating** a non-quality DOCX → `docx-writer`; (2c) **manipulating** an existing PPTX (merge, split, reorder, delete, find-replace in slides or notes, convert `.ppt`) or **creating** a non-quality deck (executive quality summary, training deck on rules) → `pptx-writer`; (2d) **manipulating** an existing XLSX (merge, split by sheet, find-replace, convert `.xls`, refresh formulas) or **creating** a non-quality XLSX (ad-hoc workbook, rule specs template, term catalog export) → `xlsx-writer`; (3) **quality report** in PDF / DOCX / PPTX / Dashboard web / Web article / Poster / XLSX format → `quality-report`; (4) only if none apply, treat as a quality assessment question.
+**Document precedence rule**: When the request mentions "PDF", "DOCX", "Word doc", "PPT", "PowerPoint", "deck", "Excel", "XLSX", "spreadsheet" or "workbook" and could match multiple rows, apply this priority: (1) **reading/extracting** content from an existing PDF → `pdf-reader`, from an existing DOCX → `docx-reader`, from an existing PPTX → `pptx-reader`, or from an existing XLSX → `xlsx-reader`; (2a) **manipulating** an existing PDF (merge, split, rotate, watermark, encrypt, fill form, flatten) or **creating** a standalone PDF → `pdf-writer`; (2b) **manipulating** an existing DOCX (merge, split, find-replace, convert `.doc`) or **creating** a non-quality DOCX → `docx-writer`; (2c) **manipulating** an existing PPTX (merge, split, reorder, delete, find-replace in slides or notes, convert `.ppt`) or **creating** a non-quality deck (executive quality summary, training deck on rules) → `pptx-writer`; (2d) **manipulating** an existing XLSX (merge, split by sheet, find-replace, convert `.xls`, refresh formulas) or **creating** a non-quality XLSX (ad-hoc workbook, rule specs template, term catalog export) → `xlsx-writer`; (3) **quality report** as an Artifact or in PDF / DOCX / PPTX / Poster / XLSX format (or an `.html` file on an explicit request) → `quality-report`; (4) only if none apply, treat as a quality assessment question.
 
 **Multi-skill detection**: If the request involves multiple actions spanning different skills (e.g., "read this PDF and check its quality", "read this policy DOCX and cross-reference it with rules", "read this deck and build a quality summary", "read this Excel catalog and assess quality for those tables"), execute in order: input skills first (`pdf-reader` / `docx-reader` / `pptx-reader` / `xlsx-reader`) → processing skills (`assess-quality`) → output skills (`quality-report`, `pdf-writer`, `docx-writer`, `pptx-writer`, `xlsx-writer`).
 
@@ -42,7 +42,7 @@ Before activating any skill, classify the user's intent:
 | "Modify/update rule X" / "Fix rule X" / "Rule X is KO, fix it" | — | `update-quality-rules` |
 | "Change the threshold / SQL / schedule of rule X" | — | `update-quality-rules` |
 | "Remove the schedule from rule X" | — | `update-quality-rules` |
-| "Generate a quality report" / "Write a PDF" | — | `assess-quality` → `quality-report` |
+| "Generate a quality report" / "Write a PDF" / "Make it an artifact" | — | `assess-quality` → `quality-report` |
 | "What quality dimensions exist?" | `get_quality_rule_dimensions` | none |
 | "What rules does table X have?" | `get_tables_quality_details` | none |
 | "What tables are in domain Y?" | `list_domain_tables` | none |
@@ -71,7 +71,8 @@ Before activating any skill, classify the user's intent:
 | PPTX creation and manipulation: "merge PPT decks", "split PPT", "reorder slides", "delete slides", "find-replace in speaker notes", "convert .ppt to .pptx", "create a training deck on our quality rules", "create an executive quality summary deck" — any PPTX task not related to quality reports | — | `pptx-writer` |
 | XLSX creation and manipulation: "merge workbooks", "split XLSX by sheet", "find-replace in XLSX", "convert .xls to .xlsx", "refresh formulas", "rule-specs template", "term catalog export", "ad-hoc workbook with these rows" — any XLSX task not related to quality reports | — | `xlsx-writer` |
 | Quality report in Excel: "genera un quality report en Excel", "coverage matrix en XLSX", "spreadsheet de cobertura", "quality coverage workbook", "quality report XLSX" | — | `assess-quality` → `quality-report` |
-| Interactive quality dashboard standalone: "interactive quality dashboard", "dashboard de calidad interactivo", "live quality status UI", "web component for coverage gaps" — explicit interactive (HTML/JS) artifact distinct from a static quality report | — | `web-craft` |
+| Interactive quality dashboard standalone: "interactive quality dashboard", "dashboard de calidad interactivo", "live quality status UI" — interactive page distinct from a static quality report | — | `artifacts` (an Artifact; `web-craft` only on an explicit request for an `.html` file) |
+| Web code or an explicit `.html` file: "web component for coverage gaps", "give me the dashboard as an .html file" | — | `web-craft` |
 
 **Triage criteria**: If the question can be answered with a single direct MCP call without needing to evaluate coverage, identify gaps, or create rules, respond directly. If it involves assessment, proposal, or creation, load the corresponding skill.
 
@@ -265,15 +266,15 @@ When the agent needs to write a deliverable, the format dictates the skill. This
 
 | Format | Skill | Notes |
 |---|---|---|
-| Chat (default) | — | Structured markdown in the conversation. No file produced. |
+| Chat (default when nothing is chosen) | — | Structured markdown in the conversation. No file produced. |
+| Artifact (Recommended) — an interactive dashboard or report page in GenAI UI that can be shared and opened again | `artifacts` | Via `quality-report`: load `artifacts` and follow its `html.md`. Dashboard composition (`quality-report-layout.md` §6.4) when the user asked for a dashboard or interaction, otherwise the narrative composition. The page's `build.py` lives in the artifact's working folder (`artifact.py workdir`) and reads `output/YYYY-MM-DD_HHMM_quality_<slug>/quality-report.md`; `html.md` wins over the layout guide (no fetch, colors only as tokens, allowed CDNs). Same theme as the other deliverables. |
 | Markdown on disk | — (trivial) | Agent writes the `.md` directly with Write. No skill involved. |
 | PDF (quality report, typographic multi-page) | `pdf-writer` | Also handles merge/split/watermark/encrypt/form-fill of existing PDFs. |
 | DOCX (quality report, Word document) | `docx-writer` | Also handles merge/split/find-replace/legacy `.doc` conversion. |
 | PPTX (executive quality summary deck, training deck on rules) | `pptx-writer` | 16:9 default; 4:3 only if the user asks explicitly. Also handles merge/split/reorder/find-replace in existing decks. |
-| Dashboard web (interactive coverage dashboard with KPIs, filters, sortable tables) | `web-craft` | Applies `quality-report`'s `quality-report-layout.md` for the quality-specific content. |
-| HTML — Web article / Narrative report (self-contained quality report, narrative or editorial) | `web-craft` | Do NOT use dashboard layout. Artifact class `Page`/`Article`: narrative headings, inline KPI callouts, embedded Plotly figures, static tables. |
 | Poster / Infographic (single-page quality summary for print or publication) | `canvas-craft` | Composition-dominated pieces (~70 %+ visual surface). |
 | Excel (XLSX tabular coverage workbook, rule-specs template, term catalog export) | `xlsx-writer` | Multi-sheet coverage matrix with conditional formatting; Rules / Gaps / Recommendations sheets. Also ad-hoc workbooks, merge/split/find-replace, legacy `.xls` conversion, formula refresh. |
+| `.html` file (only on an explicit request for an `.html` file or web code) | `web-craft` | Same composition as the Artifact: dashboard per `quality-report-layout.md` §6.4, or narrative. |
 | Brand tokens (colors, typography, chart palettes) | `brand-kit` | Invoke BEFORE any visual format. User flow described in §7.3. |
 | PDF reading | `pdf-reader` | Text, tables, OCR, form fields. |
 | DOCX reading | `docx-reader` | Text, tables, metadata, tracked changes (handles legacy `.doc`). |
@@ -281,29 +282,29 @@ When the agent needs to write a deliverable, the format dictates the skill. This
 | XLSX reading | `xlsx-reader` | Cells, tables, formulas, metadata. Handles legacy `.xls` too. |
 | Rocket File Browser (HDFS and S3 buckets) | `rocket-file-browser` | Download, upload, ls, cp, mv, rm, mkdir, compress, extract on the filesystem settled with the user (ask when Rocket exposes several). Download inputs (specs, rule-spec workbooks) into the current task folder; upload a report from `output/` only when the user asks. |
 
-All file-format quality reports are produced via the `quality-report` skill, which composes the canonical six-section structure (Executive summary → Coverage → Rules → Gaps → Recommendations) and delegates the file generation to the matching writer skill per this table. See `quality-report/quality-report-layout.md` for the full layout contract.
+All Artifact and file-format quality reports are produced via the `quality-report` skill, which composes the canonical six-section structure (Executive summary → Coverage → Rules → Gaps → Recommendations) and delegates the generation to `artifacts` or the matching writer skill per this table. See `quality-report/quality-report-layout.md` for the full layout contract.
 
 **Note on `canvas-craft`**: it exists in this agent's manifest exclusively to materialise the Poster/Infographic option of the quality-report output flow. It is not invoked for other operations.
 
-**Note on `web-craft`**: it materialises two options of the quality-report output flow. (a) Dashboard web — interactive HTML with KPIs, filters, sortable tables and coverage heatmap per `quality-report-layout.md §6.4`. (b) Web article / Narrative report — self-contained editorial HTML page (artifact class `Page`/`Article`), same six-section content, no interactive filters. It is not invoked for other operations.
+**Note on `web-craft`**: it is in this agent's manifest only for explicit requests of an `.html` file or of web code. A quality report as an `.html` file uses the same composition as the Artifact (dashboard per `quality-report-layout.md §6.4`, or narrative). It is not invoked for other operations.
 
 **Note on `xlsx-writer`**: it has a double purpose. (a) Materialises the Excel (XLSX) option of the quality-report output flow, producing a multi-sheet coverage workbook per `quality-report-layout.md §6.6`. (b) Available for ad-hoc workbooks and quality-adjacent tabular deliverables invoked directly by the user (rule-specs templates, term catalog exports, ad-hoc workbooks outside the quality-report flow) per the triage table above.
 
 ### 7.2 Deliverable expectations
 
-When you load a writer skill to produce a quality-report deliverable, the resulting output must:
+When you load `artifacts` or a writer skill to produce a quality-report deliverable, the resulting output must:
 
 - Be written in the user's language (headings, table labels, UI strings, `<html lang>` attribute for HTML).
 - Honour the brand tokens resolved per §7.3.
 - Follow the canonical structure in `quality-report/quality-report-layout.md`.
-- Use descriptive filenames: `<slug>-quality-report.pdf` / `.docx` / `.xlsx`, `<slug>-quality-dashboard.html`, `<slug>-quality-article.html`, `<slug>-quality-summary.pptx`, `<slug>-quality-poster.pdf` (or `.png`). `<slug>` = domain or scope normalised (lowercase ASCII, accents stripped, underscores, ≤30 chars).
+- Use descriptive filenames: `<slug>-quality-report.pdf` / `.docx` / `.xlsx`, `<slug>-quality-summary.pptx`, `<slug>-quality-poster.pdf` (or `.png`), and `<slug>-quality-dashboard.html` / `<slug>-quality-article.html` only on an explicit `.html` request. `<slug>` = domain or scope normalised (lowercase ASCII, accents stripped, underscores, ≤30 chars). An Artifact has no filename: it lives in GenAI UI and the final message gives its link, not a path.
 - Land inside `output/YYYY-MM-DD_HHMM_quality_<slug>/` alongside the internal `quality-report.md`.
 
-After the deliverable is produced, verify the file on disk with `ls -lh`; regenerate if missing before reporting to the user.
+After the deliverable is produced, verify the file on disk with `ls -lh` (for an Artifact, that `create` returned its link); regenerate if missing before reporting to the user.
 
 ### 7.3 Branding decisions
 
-Before invoking any writer skill that produces a visual deliverable (PDF, DOCX, PPTX, Dashboard web, Web article/Narrative report, Poster/Infographic), fix the theme using this cascade. The first rule that resolves wins — no further rules apply.
+Before building an Artifact or invoking any writer skill that produces a visual deliverable (Artifact, PDF, DOCX, PPTX, Poster/Infographic), fix the theme using this cascade. The first rule that resolves wins — no further rules apply.
 
 1. **Pin in instructions** — if this AGENTS.md (or a downstream skill instruction) fixes a single theme for this role, load it silently.
 2. **Explicit signal in the user's brief** — if the user names a theme by name or an unambiguous attribute (`corporate-formal`, `luxury`, `brutalist`, `technical-minimal`, `editorial`, `forensic`), pre-fill and apply silently. Vague adjectives (`nice`, `professional`, `bonito`) do NOT count — fall through to the next rule.

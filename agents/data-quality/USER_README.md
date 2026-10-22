@@ -4,7 +4,7 @@ Expert agent in data governance and data quality that assesses quality coverage,
 
 ## What this agent does
 
-Data Quality is an assistant specialized in data quality that works on your governed data. It can assess the quality coverage of a domain, collection or table, identify which quality dimensions are missing, propose reasoned rules based on semantic context and real data profiling, and create them with your approval. It also generates coverage reports in multiple formats — from a quick chat summary to a multi-sheet Excel workbook, an interactive web dashboard or a printable infographic.
+Data Quality is an assistant specialized in data quality that works on your governed data. It can assess the quality coverage of a domain, collection or table, identify which quality dimensions are missing, propose reasoned rules based on semantic context and real data profiling, and create them with your approval. It also generates coverage reports in multiple formats — from a quick chat summary or an interactive dashboard or report page in GenAI UI that you can share, to a multi-sheet Excel workbook or a printable infographic.
 
 The agent evaluates quality across 11 dimensions (completeness, uniqueness, validity, consistency, timeliness, accuracy, referential integrity, availability, precision, reasonableness, and traceability) and always requires your approval before creating or modifying rules. It can also ingest local context (rule-spec workbooks in Excel, policy briefs in Word, reference decks in PowerPoint, regulation PDFs) and apply consistent visual branding to every deliverable.
 
@@ -28,15 +28,16 @@ For `/quality-report` you can pick any of:
 
 | Format | Best for |
 |---|---|
-| **Chat** | Quick review inside the conversation, no file generated |
+| **Chat** | Quick review inside the conversation, no file generated (the default when you choose nothing) |
+| **Artifact** (Recommended) | An interactive dashboard or report page in GenAI UI that can be shared and opened again |
 | **PDF** | Formal report with prose-driven narrative, compliance sign-off |
 | **DOCX** | Editable Word document for audit teams and policy briefs |
 | **PPTX** | Executive summary deck, steering-committee briefing |
-| **Dashboard web** | Interactive HTML with KPI cards, filters, sortable tables |
-| **Web article / Narrative report** | Self-contained editorial HTML page with narrative sections, inline KPI callouts and embedded charts |
 | **Poster / Infographic** | Single-page visual summary of coverage by domain |
 | **XLSX** | Multi-sheet coverage workbook with conditional formatting for audit and compliance teams |
 | **Markdown** | Lightweight text format for documentation systems and wikis |
+
+If you want the report as an `.html` file instead, ask for it explicitly.
 
 Every visual format applies the theme you choose at the start (or the default corporate theme).
 
@@ -57,7 +58,7 @@ Every visual format applies the theme you choose at the start (or the default co
 ### Reports (file generation)
 - "Generate a PDF coverage report for the sales domain"
 - "Create a PowerPoint executive summary of quality findings"
-- "Build an interactive quality dashboard web"
+- "Build an interactive quality dashboard as an artifact"
 - "Generate a one-page infographic of coverage by domain"
 - "Export the rule catalog as an Excel workbook with conditional formatting"
 - "Use the forensic-audit theme for this compliance report"
@@ -91,7 +92,7 @@ Every visual format applies the theme you choose at the start (or the default co
 | `/assess-quality` | Assess quality coverage by domain or table: covered dimensions, gaps and priorities |
 | `/create-quality-rules` | Design and create quality rules to cover gaps, with mandatory human approval |
 | `/create-quality-schedule` | Create automatic execution schedules for quality rules |
-| `/quality-report` | Generate a formal coverage report in Chat, PDF, DOCX, PPTX, Dashboard web, Web article / Narrative report, Poster/Infographic, XLSX or Markdown |
+| `/quality-report` | Generate a formal coverage report in Chat, as an Artifact, or in PDF, DOCX, PPTX, Poster/Infographic, XLSX or Markdown |
 | `/manage-critical-data-elements` | Consult or define Critical Data Elements (CDEs) for a governed domain, with mandatory human approval before tagging |
 
 ### Content readers

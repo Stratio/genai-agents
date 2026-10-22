@@ -53,9 +53,27 @@ emparejada con un serif de libro sólido para el body.
 
 - **Motion budget**: `restrained` (reveals lentos, nunca bruscos)
 - **Border radius**: `1px`
-- **Dark mode variant**: no incluido (los temas de lujo raramente van
-  oscuros — la calidez del crema es el punto)
+- **Dark mode variant**: ver [Dark mode](#dark-mode) (los temas de lujo raramente van oscuros)
 - **Chart sequential**: color base `#8b6f47`
+
+## Dark mode
+
+| Token | Hex |
+|---|---|
+| bg | #161311 |
+| bg_alt | #231e1b |
+| ink | #e9e8e7 |
+| muted | #938d85 |
+| rule | #37312d |
+| primary | #9e826d |
+| accent | #a28254 |
+| state_ok | #5f9748 |
+| state_warn | #a9822d |
+| state_danger | #cd6767 |
+| on_primary | #161311 |
+| on_accent | #161311 |
+
+Chart categorical: `#765f4d`, `#8b6f47`, `#4d7c3a`, `#6e5981`, `#a17c2a`, `#7a6f63`
 
 ## Tone family
 

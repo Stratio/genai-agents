@@ -42,7 +42,7 @@ The catalogue is grouped by family. The *Used by* column lists the agents in thi
 | [create-quality-schedule](create-quality-schedule/) | Create a schedule (at folder/collection level) that runs all quality rules in one or more folders automatically. | data-governance-officer, data-quality |
 | [update-quality-rules](update-quality-rules/) | Modify existing rules: fix SQL, change thresholds, update descriptions, add/remove scheduling. Requires the rule UUID and human confirmation. | data-governance-officer, data-quality |
 | [update-quality-scheduler](update-quality-scheduler/) | Modify an existing quality scheduler: change cron, update collections/filters, rename, activate/deactivate, resize execution. Requires the scheduler UUID and human confirmation. | data-governance-officer, data-quality |
-| [quality-report](quality-report/) | Generate a formal quality coverage report in the format chosen by the user — chat, PDF, DOCX, PPTX, web dashboard, web article, poster or XLSX. Delegates file rendering to the writer skills. | data-analytics-officer, data-governance-officer, data-quality |
+| [quality-report](quality-report/) | Generate a formal quality coverage report in the format chosen by the user — chat, artifact, PDF, DOCX, PPTX, poster or XLSX. Delegates file rendering to the writer skills. | data-analytics-officer, data-governance-officer, data-quality |
 
 ### Office document I/O
 
@@ -65,7 +65,7 @@ These three skills cover every visual output of the monorepo. They share [`guide
 |---|---|---|
 | [brand-kit](brand-kit/) | Centralised catalogue of visual identity themes (colours, typography, chart palettes, sizes, tone). Ships ten curated themes, extensible by clients. Every writer skill consumes it via a generic "centralised theming skill" reference. | data-analytics-officer, data-governance-officer, data-quality |
 | [canvas-craft](canvas-craft/) | Single-page visual artifacts (posters, covers, certificates, marketing one-pagers, infographics) as PDF or PNG. Composition dominates over prose. | data-analytics-officer, data-governance-officer, data-quality |
-| [web-craft](web-craft/) | Distinctive, production-grade interactive frontends (HTML/CSS/JS, React, Vue). Components, pages, landings, dashboards. | data-analytics-officer, data-governance-officer, data-quality |
+| [web-craft](web-craft/) | Distinctive, production-grade interactive frontends (HTML/CSS/JS, React, Vue). Components, pages, landings, dashboards as code to integrate or explicit `.html` files; a page or dashboard for a person to view is an artifact (`artifacts`). | data-analytics-officer, data-governance-officer, data-quality |
 
 ### Platform and meta-tools
 
@@ -130,13 +130,13 @@ If the agent has a local skill in `agents/<agent>/skills/` with the same name as
 
 ## Cross-referencing other shared skills
 
-Most skills here stay fully self-contained so they can be packaged standalone for third-party consumers. Cross-referencing another shared skill by name from inside a `SKILL.md` is **permitted** only when the workflow genuinely depends on delegating (e.g. `quality-report` delegates file rendering to `pdf-writer`, `docx-writer`, `pptx-writer`, `web-craft`, `canvas-craft` and `brand-kit`).
+Most skills here stay fully self-contained so they can be packaged standalone for third-party consumers. Cross-referencing another shared skill by name from inside a `SKILL.md` is **permitted** only when the workflow genuinely depends on delegating (e.g. `quality-report` delegates rendering to the sandbox's `artifacts` skill and to `pdf-writer`, `docx-writer`, `pptx-writer`, `web-craft`, `canvas-craft` and `brand-kit`).
 
 When a skill cross-references another:
 
 - Any agent that imports the cross-referencing skill **must also import** every skill named inside it. Without that, the references at runtime point to skills the agent cannot load.
 - The skill's own `README.md` documents the dependency explicitly.
-- The skill may detect missing dependencies at the start of its workflow and **gracefully degrade** to the features that still work. Concrete example: `quality-report` offers the Chat format standalone, but the PDF, DOCX, PPTX, web-dashboard, web-article, poster and XLSX formats only when the host agent declares the matching writer skill. A chat-only agent imports `quality-report` without any writer and still gets a working subset.
+- The skill may detect missing dependencies at the start of its workflow and **gracefully degrade** to the features that still work. Concrete example: `quality-report` offers the Chat and artifact formats standalone (the artifact uses the sandbox's `artifacts` skill, which needs no declaration), but the PDF, DOCX, PPTX, poster and XLSX formats only when the host agent declares the matching writer skill. A chat-only agent imports `quality-report` without any writer and still gets a working subset.
 
 ### Centralised theming — a special case of decoupled cross-reference
 

@@ -1,6 +1,6 @@
 ---
 name: analyze
-description: "Full BI/BA data analysis — domain discovery, EDA and data quality, metric and KPI planning with analytical framework, data queries via MCP, Python analysis with pandas, visualizations, multi-format report generation (PDF, DOCX, PowerPoint, Dashboard web, Web article/Narrative report, Poster/Infographic, Excel/XLSX), and reasoning documentation. Use when the user needs to analyze business data, calculate KPIs, produce visualizations, generate graphic summaries, obtain insights, or answer analytical questions about governed domains. Also activates for multi-metric comparisons, KPI overviews, deliverable requests (reports, dashboards, workbooks), or any request requiring data crossing across dimensions."
+description: "Full BI/BA data analysis — domain discovery, EDA and data quality, metric and KPI planning with analytical framework, data queries via MCP, Python analysis with pandas, visualizations, multi-format report generation (Artifact — interactive dashboard or report page in GenAI UI —, PDF, DOCX, PowerPoint, Poster/Infographic, Excel/XLSX), and reasoning documentation. Use when the user needs to analyze business data, calculate KPIs, produce visualizations, generate graphic summaries, obtain insights, or answer analytical questions about governed domains. Also activates for multi-metric comparisons, KPI overviews, deliverable requests (reports, dashboards, workbooks), or any request requiring data crossing across dimensions."
 argument-hint: "[analysis question or topic]"
 ---
 
@@ -97,15 +97,15 @@ A single interaction:
 |---|----------|-------------------|-----------|-----------|
 | 1 | What analysis depth do you prefer? | **Quick** · **Standard** (Recommended) · **Deep** | Single | Always |
 | 2 | What audience is the analysis for? | **C-level/Executive** · **Manager/Lead** · **Technical/Data team** · **Mixed/General** | Single | Always |
-| 3 | In what formats do you want the deliverables? | **PDF** · **DOCX** · **PowerPoint** (.pptx) · **Dashboard web** (Interactive HTML with Plotly) · **Web article / Narrative report** (self-contained HTML page, narrative or editorial) · **Poster/Infographic** (single-page visual) · **Excel** (.xlsx workbook) | Multiple | Always |
+| 3 | In what formats do you want the deliverables? | **Chat** (the analysis in this conversation, with no deliverable) · **Artifact** (Recommended) (an interactive dashboard or report page in GenAI UI that can be shared and opened again) · **PDF** · **DOCX** · **PowerPoint** (.pptx) · **Poster/Infographic** (single-page visual) · **Excel** (.xlsx workbook) | Multiple | Always |
 | 4 | Do you want unit tests to be generated and run on the Python code? | **Yes** (Recommended): improves precision and quality, but consumes more time, cost, and context · **No**: direct execution without tests | Single | Standard/Deep only |
 
-**Adaptive rule**: If the user's request already specifies information that answers any of these questions, pre-fill that answer and do not ask it again. For example: if the user said "give me a PDF report", pre-fill format as Document; if the user said "quick analysis", pre-fill depth as Quick; if the user said "executive dashboard", pre-fill audience as C-level/Executive and format as Web. Only ask questions whose answers cannot be inferred from the request.
+**Adaptive rule**: If the user's request already specifies information that answers any of these questions, pre-fill that answer and do not ask it again. For example: if the user said "give me a PDF report", pre-fill format as PDF; if the user said "quick analysis", pre-fill depth as Quick; if the user said "executive dashboard", pre-fill audience as C-level/Executive and format as Artifact. Only ask questions whose answers cannot be inferred from the request.
 
 - Tests validate transformations and calculations before running with real data. They improve precision but consume more tokens, time, and cost. **In Quick depth, testing is automatically disabled without asking the user.**
 - The format question ALWAYS allows multiple selection
-- The format options are EXACTLY 7: PDF, DOCX, PowerPoint, Dashboard web, Web article/Narrative report, Poster/Infographic, Excel. Each routes to its dedicated writer skill (see agent instructions §8). Do not invent, omit, or substitute
-- If no format is selected → no deliverables, the analysis is delivered only in chat + automatic report.md
+- The format options are EXACTLY 7: Chat, Artifact, PDF, DOCX, PowerPoint, Poster/Infographic, Excel. Each deliverable format routes to its dedicated skill (see agent instructions §8). Do not invent, omit, or substitute
+- If Chat (or no format) is selected → no deliverables, the analysis is delivered only in chat + automatic report.md; if Chat is chosen together with other formats, the other formats apply
 - **If one or more formats are selected → deliverables ARE ALWAYS GENERATED, regardless of the chosen depth. Quick/Standard/Deep affects the analysis, not the deliverables.**
 - Additional requirements via "Other" option (time filters, segments, mandatory metrics)
 
@@ -232,7 +232,7 @@ Present the complete plan to the user and request approval before executing.
 
 The user approves the full plan or corrects the theme in the same turn. If no formats were selected, skip this item entirely. If the cascade resolved silently (levels 1-4 of §8.3), either hide the item (silent) or show a one-line note stating which theme was applied and why — agent discretion based on whether it helps user review.
 
-**Dashboard guide disclosure (only when Dashboard web was selected)**: include a short line (in the user's language) stating whether the analytical dashboard guide will be applied. Example pattern:
+**Dashboard guide disclosure (only when an Artifact dashboard was selected)**: include a short line (in the user's language) stating whether the analytical dashboard guide will be applied. Example pattern:
 > The dashboard will apply the standard analytical pattern (KPIs, filters, sortable tables). If you prefer something more free or narrative, let me know.
 
 If the user signalled design freedom in the brief, state the opposite: "The dashboard will NOT apply the standard guide because you asked for a free design."
@@ -324,13 +324,13 @@ If during execution a finding is detected that exceeds the scope of the current 
    - **PDF** → `pdf-writer`. Output: `<slug>-report.pdf`.
    - **DOCX** → `docx-writer`. Output: `<slug>-report.docx`.
    - **PowerPoint** → `pptx-writer`. 16:9 by default; 4:3 only if the user asked explicitly. Output: `<slug>-presentation.pptx`.
-   - **Dashboard web** → `web-craft`. **Also load `analytical-dashboard.md`** (from this same skill folder) as input to web-craft, UNLESS the user signalled design freedom at the plan approval step (§5.11 dashboard guide disclosure). Output: `<slug>-dashboard.html`.
-   - **Web article / Narrative report** → `web-craft`. Do NOT load `analytical-dashboard.md`. Use artifact class `Page` or `Article`. Layout: narrative sections, inline KPI callouts, embedded Plotly figures as static figures, minimal or no interactive filters. Output: `<slug>-article.html`.
+   - **Artifact** → `artifacts`: load it and follow its `html.md`. If the user asked for a dashboard or interaction, use the dashboard composition: **also load `analytical-dashboard.md`** (from this same skill folder), UNLESS the user signalled design freedom at the plan approval step (§5.11 dashboard guide disclosure); otherwise build a narrative report page (narrative sections, inline KPI callouts, static figures, minimal or no interactive filters). The page's `build.py` lives in the artifact's working folder (`artifact.py workdir`) and reads its data from `output/[ANALYSIS_DIR]/`. Where a guide conflicts with `html.md` (no `fetch`, colors only as tokens, allowed CDNs), `html.md` wins. Same theme as the other deliverables (brand tokens from step 1). Output: the artifact's link, no file in `output/`.
+   - An explicit request for an .html file → `web-craft` (`<slug>-dashboard.html` with `analytical-dashboard.md`, same exception, or `<slug>-article.html`).
    - **Poster/Infographic** → `canvas-craft`. Output: `<slug>-poster.pdf` or `<slug>-poster.png`.
    - **Excel** → `xlsx-writer`. Analytical composition per `xlsx-writer` SKILL.md §8: cover/KPI sheet with 3-4 key metrics from the executive summary, parameters sheet documenting filters / date range / segment selections, detail sheets (one per principal dimension) with `openpyxl.worksheet.table.Table` objects and conditional formatting on delta columns (vs previous period / benchmark / target), optional hypothesis-validation sheet at Standard/Deep depth, optional raw-data appendix when the dataset is small. If the workbook includes formulas, load `/xlsx-writer` and run its `scripts/refresh_formulas.py <path> --json` post-build to populate cached values. Output: `<slug>-workbook.xlsx`.
 3. Write `output/[ANALYSIS_DIR]/report.md` (tables + mermaid) as internal documentation, always — regardless of which formats were selected. This is the source of truth that writer skills consume.
 4. Filename convention: `<slug>` = descriptive part of `[ANALYSIS_DIR]` (everything after `YYYY-MM-DD_HHMM_`). Internal files (`plan.md`, `reasoning/`, `validation/`) stay unprefixed.
-5. Verify each file exists on disk with `ls -lh output/[ANALYSIS_DIR]/` after the deliverable is produced. Regenerate if missing BEFORE reporting to the user.
+5. Verify each file exists on disk with `ls -lh output/[ANALYSIS_DIR]/` after the deliverable is produced and, for an Artifact, that `create` printed its link. Regenerate if missing BEFORE reporting to the user.
 
 ### 6.10 Reasoning
 
@@ -364,7 +364,7 @@ When presenting findings in conversation, follow this structure:
 3. Insights with concrete data and comparative context (vs previous, vs target)
 4. Prioritized actionable recommendations (high impact + high confidence first)
 5. Limitations and caveats
-6. Generated file paths
+6. Generated file paths and artifact links
 7. Follow-up analysis suggestions
 
 **Mandatory "So What?" checklist** — For EACH finding before including it:
