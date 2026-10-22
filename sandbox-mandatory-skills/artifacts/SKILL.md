@@ -1,6 +1,6 @@
 ---
 name: artifacts
-description: Create, find, read and edit Stratio artifacts — standalone Markdown or HTML documents that live outside the conversation, keep their own page in GenAI UI and can be shared with people, groups or anyone with the link. Use when someone asks for a document, report, page, guide or deliverable they will keep, share or come back to, rather than a throwaway answer in the chat — including substantial work that names no format, such as a comparison with a recommendation, a decision matrix, a plan or an analysis for management — and whenever they refer to an existing artifact by pasting its link, giving its id, naming it or alluding to one worked on before. It also sets how an HTML artifact is built and designed (the sandbox it runs in, theming, layout, content), so load it before writing one, and what to do when they ask for an Excel, Word, PowerPoint or PDF file instead.
+description: Create, find, read and edit Stratio artifacts — standalone Markdown or HTML documents that live outside the conversation, keep their own page in GenAI UI and can be shared with people, groups or anyone with the link. Use when the person explicitly asks for an artifact ("artifact", "artefacto"), when an artifact already came up earlier in this conversation, and whenever they refer to an existing artifact by pasting its link, giving its id, naming it or alluding to one worked on before. A request for content that never mentions an artifact is not one: it may want a local file or an answer in the chat, so ask before making an artifact. It also sets how an HTML artifact is built and designed (the sandbox it runs in, theming, layout, content), so load it before writing one, and what to do when they ask for an Excel, Word, PowerPoint or PDF file instead.
 license: Stratio proprietary
 compatibility: genai-api >= 0.9
 metadata:
@@ -35,21 +35,18 @@ check what it shows. The scripts that build it go in its working folder (see
 
 ## When to make one
 
-Make an artifact when the answer is something the person will **keep, share or come
-back to**: a report, a specification, a runbook, a guide, a standalone page, a
-dashboard mock-up. Roughly: more than a screenful, self-contained, and it still makes
-sense to someone who never read this conversation. That includes work that names no
-format: compare products or options and recommend one, a decision matrix, a plan, an
-analysis for management. Research it as you would anyway, then make the artifact.
+Only when the person **asks for an artifact explicitly** ("make it an artifact",
+"guárdalo como artefacto"), or when an artifact already came up earlier in this
+conversation (one you made, or one they referred to) and the request carries on that
+work. A document, report, guide or page that never mentions an artifact is not a request
+for one: it may want a file in the project or an answer in the chat, not an artifact.
 
-Do not make one for a short answer, a proposal or advice ("give me a modern style for
-HTML"), a snippet to read right here, or a step in your own reasoning. If it only makes
-sense as part of this conversation, it belongs in the conversation.
-
-When in doubt, ask. An unwanted artifact is clutter the person has to delete. When the
-request needs data you do not have (no dataset in the workspace, no figures in the
-conversation), ask for it once and, in the same message, offer to build it with sample
-data labeled as such, so one answer is enough to go on.
+When in doubt, ask before building anything, in one line: an artifact (its own page in
+GenAI UI, to keep and share), a file in the project, or the answer here. An unwanted
+artifact is clutter the person has to delete. When the request needs data you do not
+have (no dataset in the workspace, no figures in the conversation), ask for it once and,
+in the same message, offer to build it with sample data labeled as such, so one answer
+is enough to go on.
 
 ## Choosing the type
 
