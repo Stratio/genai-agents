@@ -18,13 +18,15 @@ is what makes it safe to open, and it is not negotiable. In practice:
   then the CSS in `<head>` and the JavaScript in `<script>` blocks, written in the page
   or in files next to it (see [Multi-file](#multi-file)).
 - **Libraries and fonts from the installation's CDNs only.** Scripts, stylesheets and fonts
-  can come from `cdnjs.cloudflare.com`, `cdn.jsdelivr.net`, `unpkg.com`,
-  `cdn.plot.ly`, `cdn.tailwindcss.com`, `code.jquery.com`, `fonts.googleapis.com` and
-  `fonts.gstatic.com`, over `https://`, and from nowhere else: anything else fails
-  silently and the person sees a broken page. That is the default: when
-  `$ARTIFACT_CDN_SOURCES` is set, its origins replace the list. Set but empty, a page
-  loads nothing from outside the artifact: draw charts as inline SVG written by
-  `build.py` and use the theme's fallback font stack with no `<link>`. The
+  load over `https://` from where `$ARTIFACT_CDN_SOURCES` allows, and from nowhere
+  else: anything else fails silently and the person sees a broken page. `https:` (what
+  the platform sets by default) is any https origin; a list of origins allows those
+  only. Set but empty, a page loads nothing from outside the artifact: draw charts as
+  inline SVG written by `build.py` and use the theme's fallback font stack with no
+  `<link>`. Unset, the public CDNs: `cdnjs.cloudflare.com`, `cdn.jsdelivr.net`,
+  `unpkg.com`, `cdn.plot.ly`, `cdn.tailwindcss.com`, `code.jquery.com`,
+  `fonts.googleapis.com` and `fonts.gstatic.com`. Take libraries from those even when
+  any origin is allowed: `check` pins and verifies their versions there. The
   page's own files are the artifact's (see [Multi-file](#multi-file)), and there is no
   `<iframe>` of another page. Data the page needs goes in the page, written there by
   `build.py`: never `fetch()` or `d3.json()` at run time. `build.py` reads files in the
