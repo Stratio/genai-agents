@@ -17,27 +17,30 @@ is what makes it safe to open, and it is not negotiable. In practice:
   `<meta name="viewport" content="width=device-width, initial-scale=1">` and `<title>`,
   then the CSS in `<head>` and the JavaScript in `<script>` blocks, written in the page
   or in files next to it (see [Multi-file](#multi-file)).
-- **Libraries and fonts from the installation's CDNs only.** Scripts, stylesheets and fonts
-  load over `https://` from where `$ARTIFACT_CDN_SOURCES` allows, and from nowhere
-  else: anything else fails silently and the person sees a broken page. `https:` (what
-  the platform sets by default) is any https origin; a list of origins allows those
-  only. Set but empty, a page loads nothing from outside the artifact: draw charts as
-  inline SVG written by `build.py` and use the theme's fallback font stack with no
-  `<link>`. Unset, the public CDNs: `cdnjs.cloudflare.com`, `cdn.jsdelivr.net`,
-  `unpkg.com`, `cdn.plot.ly`, `cdn.tailwindcss.com`, `code.jquery.com`,
-  `fonts.googleapis.com` and `fonts.gstatic.com`. Take libraries from those even when
-  any origin is allowed: `check` pins and verifies their versions there. The
-  page's own files are the artifact's (see [Multi-file](#multi-file)), and there is no
-  `<iframe>` of another page. Data the page needs goes in the page, written there by
-  `build.py`: never `fetch()` or `d3.json()` at run time. `build.py` reads files in the
-  workspace, what your tools saved there included, and downloads nothing but a map's
-  geometry (see [Content](#content)): the sandbox may have no route out.
-- **Any library, its exact version pinned.** Use whichever fits the page, with the
-  exact version in the URL (`chart.js@4.4.1`, never `chart.js` or `@4`): an unpinned
-  URL changes under a page that is opened months later. A version you remember may not
-  exist on that CDN (Chart.js 4.4.4 is on jsdelivr, not on cdnjs), and the page then
-  shows an empty box: `check` asks the CDN about every URL and names the ones that do
-  not exist.
+- **Libraries from GenAI's hosted copies only.** A page takes the scripts and
+  stylesheets of a library from `$ARTIFACT_LIBS_URL`, where GenAI hosts them, and never
+  from a public CDN: the platform adds a policy of its own that blocks most CDNs, so a
+  library from one fails silently and the person sees a broken page. `artifact.py libs`
+  lists the hosted libraries (Chart.js, D3, topojson-client, ECharts, Plotly, Leaflet,
+  Mermaid, marked), each with its version and the exact `<script>` or `<link>` to paste;
+  `check` flags any other. A library that is not hosted cannot be used: draw it as
+  inline SVG written by `build.py`, or use a hosted one. Where `$ARTIFACT_LIBS_URL` is
+  unset (an older installation), `libs` says so and libraries come from a CDN instead,
+  pinned to an exact version (`chart.js@4.4.1`, never `chart.js` or `@4`) and from
+  where `$ARTIFACT_CDN_SOURCES` allows: `https:` is any https origin; unset, the public
+  CDNs `cdnjs.cloudflare.com`, `cdn.jsdelivr.net`, `unpkg.com`, `cdn.plot.ly`,
+  `cdn.tailwindcss.com`, `code.jquery.com`. A version you remember may not exist on
+  that CDN (Chart.js 4.4.4 is on jsdelivr, not on cdnjs), and the page then shows an
+  empty box: `check` asks the CDN about every such URL.
+- **Fonts and images from outside, only where `$ARTIFACT_CDN_SOURCES` allows**
+  (`fonts.googleapis.com` and `fonts.gstatic.com` among the public CDNs). Set but
+  empty, a page loads nothing from outside the artifact but the hosted libraries: use
+  the theme's fallback font stack with no `<link>`. The page's own files are the
+  artifact's (see [Multi-file](#multi-file)), and there is no `<iframe>` of another
+  page. Data the page needs goes in the page, written there by `build.py`: never
+  `fetch()` or `d3.json()` at run time. `build.py` reads files in the workspace, what
+  your tools saved there included, and downloads nothing but a map's geometry (see
+  [Content](#content)): the sandbox may have no route out.
 - **A library that fails costs the chart, never the page.** Write the numbers, tables
   and text before any library call, and guard the call (`if (!window.Chart) { … }`)
   so that the chart's data shows as a table when the library did not load. Nothing

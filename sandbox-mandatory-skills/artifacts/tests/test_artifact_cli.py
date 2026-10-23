@@ -63,6 +63,7 @@ def cli(monkeypatch):
     module = _load()
     monkeypatch.setenv("GENAI_API_URL", "https://genai-api:8080")
     monkeypatch.delenv("ARTIFACT_CDN_SOURCES", raising=False)  # the public CDNs unless a test sets them
+    monkeypatch.delenv("ARTIFACT_LIBS_URL", raising=False)  # no hosted libraries unless a test sets them
     monkeypatch.delenv("USER_WORKSPACE", raising=False)  # no project folder unless a test sets one
     calls = []
     module.members = {
@@ -798,6 +799,7 @@ def wire(monkeypatch):
     module = _load()
     monkeypatch.setenv("GENAI_API_URL", "https://genai-api:8080")
     monkeypatch.delenv("ARTIFACT_CDN_SOURCES", raising=False)  # the public CDNs unless a test sets them
+    monkeypatch.delenv("ARTIFACT_LIBS_URL", raising=False)  # no hosted libraries unless a test sets them
     monkeypatch.setattr(module, "_context", lambda: None)
     module.requests = []
     module.error = None
@@ -909,7 +911,8 @@ class TestTargets:
             for m in re.findall(r'os\.environ(?:\.get)?[\[(]"([A-Z_]+)"', source)
             if m.endswith("_URL")
         }
-        assert url_vars == {"GENAI_API_URL"}
+        # ARTIFACT_LIBS_URL is where a page loads libraries from, never a request base.
+        assert url_vars - {"ARTIFACT_LIBS_URL"} == {"GENAI_API_URL"}
 
     def test_file_paths_are_url_quoted(self, cli):
         assert cli._quote("a b/c d.md") == "a%20b/c%20d.md"
@@ -997,7 +1000,8 @@ class TestSkillRules:
         installation's CDNs, storage, forms, downloads and pop-ups; a page that relies
         on any of them renders broken, silently."""
         text = self._skill()
-        assert "**Libraries and fonts from the installation's CDNs only.**" in text
+        assert "**Libraries from GenAI's hosted copies only.**" in text
+        assert "`$ARTIFACT_LIBS_URL`" in text and "`artifact.py libs`" in text
         assert "`$ARTIFACT_CDN_SOURCES`" in text
         # The hosts genai-api's artifact CSP allows by default
         # (artifact_http.DEFAULT_ARTIFACT_CDN_SOURCES).
@@ -1824,7 +1828,7 @@ class TestConfirmedCommands:
     commands that share or destroy run through it, and only through it."""
 
     UNCONFIRMED = {"list", "recent", "resolve", "create", "get", "files", "members", "read", "write", "upload",
-                   "rename", "tag", "copy", "workdir", "tokens", "check", "url"}
+                   "rename", "tag", "copy", "workdir", "tokens", "libs", "check", "url"}
 
     def test_every_command_is_placed(self, cli):
         commands = set(cli._parser()._subparsers._group_actions[0].choices)
@@ -1902,3 +1906,49 @@ class TestCheckRoundThree:
 
         monkeypatch.setattr(cli.urllib.request, "urlopen", answer)
         assert cli._url_exists(_OFF_TABLE_CHART_JS) is exists
+
+
+_LIBS = "https://genai.corp/genai-ui/assets/libs/"
+
+
+class TestHostedLibraries:
+    """GenAI UI hosts the libraries pages use: the platform's own policy blocks most CDNs."""
+
+    def test_the_list_matches_genai_uis_layout(self, cli):
+        for lib in cli._hosted_libs():
+            assert lib["name"] and lib["version"] and lib["global"] and lib["files"], lib
+        assert {lib["name"] for lib in cli._hosted_libs()} >= {"chart.js", "d3", "plotly.js", "echarts"}
+
+    def test_libs_prints_the_tags_that_load_each_one(self, cli, monkeypatch, capsys):
+        monkeypatch.setenv("ARTIFACT_LIBS_URL", _LIBS.rstrip("/"))
+        cli.main(["libs"])
+        out = capsys.readouterr().out
+        assert f'<script src="{_LIBS}chart.js/4.4.4/chart.umd.js"></script>' in out
+        assert f'<link rel="stylesheet" href="{_LIBS}leaflet/1.9.4/leaflet.css">' in out
+        assert "window.Chart" in out
+
+    def test_libs_prints_one_when_named(self, cli, monkeypatch, capsys):
+        monkeypatch.setenv("ARTIFACT_LIBS_URL", _LIBS)
+        cli.main(["libs", "Chart.js"])
+        out = capsys.readouterr().out
+        assert "chart.js 4.4.4" in out and "d3" not in out
+
+    def test_libs_says_when_the_installation_hosts_none(self, cli, capsys):
+        cli.main(["libs"])
+        assert "ARTIFACT_LIBS_URL is unset" in capsys.readouterr().out
+
+    def test_a_hosted_library_passes_and_a_cdn_one_does_not(self, cli, monkeypatch):
+        monkeypatch.setenv("ARTIFACT_LIBS_URL", _LIBS)
+        hosted = _GOOD_PAGE.replace(_TABLE_CHART_JS, f"{_LIBS}chart.js/4.4.4/chart.umd.js")
+        assert cli._page_findings(hosted, title="Ventas Q3", sources=["'none'"], libs=_LIBS) == []
+        [finding] = cli._page_findings(_GOOD_PAGE, title="Ventas Q3", libs=_LIBS)
+        assert finding["rule"] == "lib" and finding["level"] == "error"
+        assert "artifact.py libs" in finding["message"]
+
+    def test_a_file_that_is_not_hosted_is_flagged(self, cli):
+        missing = _GOOD_PAGE.replace(_TABLE_CHART_JS, f"{_LIBS}chart.js/9.9.9/chart.umd.js")
+        [finding] = cli._page_findings(missing, title="Ventas Q3", libs=_LIBS)
+        assert finding["rule"] == "lib" and "not one of the hosted libraries" in finding["message"]
+
+    def test_without_hosted_libraries_the_cdns_still_go(self, cli):
+        assert cli._page_findings(_GOOD_PAGE, title="Ventas Q3") == []
