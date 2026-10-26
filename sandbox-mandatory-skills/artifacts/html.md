@@ -72,6 +72,8 @@ is what makes it safe to open, and it is not negotiable. In practice:
 - **No `alert`, `confirm` or `prompt`.** They run, but use inline UI instead. Never
   build a page that asks the viewer for a password, a token or personal data.
   `window.print()` works; add a `@media print` block if the page is meant to be printed.
+  Paper is white in either mode, so that block writes plain colors (`#fff`, `#000`)
+  rather than the tokens.
 - **Size.** By default a file can be up to 16 MB and an artifact 64 MB: the API
   refuses more. The viewer shows a page up to 16 MB counting every file it puts
   inside it, and base64 makes each one a third bigger, so a page carries about 12 MB
@@ -166,10 +168,13 @@ a page that uses only these tokens passes the color, dark-mode and contrast chec
   - grid tracks: write `minmax(0, 1fr)`, never a bare `1fr`, and give every grid or
     flex child that holds a `<pre>`, a table or long code `min-width: 0`;
   - rows of chips, tags or buttons: `flex-wrap: wrap`;
-  - diagrams: draw the SVG at the width of its column (a `viewBox` no wider than the
-    content column), with text of at least 11 px at that size. Below that width it
-    must not shrink its text under 11 px: give the `<svg>` a `min-width` inside a
-    `.scroll-x` wrapper, or stack the diagram vertically.
+  - diagrams: SVG text shows at its size × (rendered width ÷ `viewBox` width), and
+    the reading column is 720 px. Draw at a `viewBox` no wider than 720 with text of
+    at least 13 px, and give the `<svg>` `min-width: <its viewBox width>px` inside a
+    `.scroll-x` wrapper, so a narrow pane scrolls it instead of shrinking its text
+    (`<div class="scroll-x"><svg viewBox="0 0 680 320" style="min-width: 680px">`).
+    A wider diagram keeps its text at full size only with that `min-width`; or stack
+    it vertically.
 - **Text stays text.** An element that holds running text (`li`, `p`, `td`) is never a
   grid or flex container: each inline child and each run of text becomes its own cell.
   Put a marker in `::before`, or wrap the text in one child

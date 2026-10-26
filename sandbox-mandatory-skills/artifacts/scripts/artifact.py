@@ -430,6 +430,22 @@ def _strip_line_comments(script: str) -> str:
     return re.sub(r"(?m)(^|[\s;{}()])//[^\n]*", r"\1", script)
 
 
+def _without_print(css: str) -> str:
+    """The CSS without its @media print blocks: paper is white whatever the screen's mode,
+    so a print rule writes plain colors instead of the tokens."""
+    out, i = [], 0
+    for found in re.finditer(r"@media\s+print\b[^{]*\{", css):
+        if found.start() < i:
+            continue
+        depth, j = 1, found.end()
+        while j < len(css) and depth:
+            depth += {"{": 1, "}": -1}.get(css[j], 0)
+            j += 1
+        out.append(css[i:found.start()])
+        i = j
+    return "".join(out) + css[i:]
+
+
 def _css_rules(css: str) -> list:
     """(selector, declarations) for every rule, those inside @media included."""
     return [(s.strip(), b) for s, b in re.findall(r"([^{}@;]+)\{([^{}]*)\}", css) if not s.strip().startswith("@")]
@@ -516,10 +532,13 @@ def _contrast_findings(css: str) -> list:
         if outline and re.search(r"(?i)check|box|radio|toggle|switch|input", selector):
             pairs.append((outline.group(1), 3.0, "outline"))
         for token, minimum, what in pairs:
+            # An outline in its own fill's token is the edge of that fill: what it has to
+            # stand out from is the page behind it.
+            behind = "--bg" if what == "outline" and token == surface else surface
             for mode, tokens in themes.items():
-                fg, bg = _token_rgb(tokens, token), _token_rgb(tokens, surface)
+                fg, bg = _token_rgb(tokens, token), _token_rgb(tokens, behind)
                 if fg and bg and round(_contrast(fg, bg), 1) < minimum:
-                    low.append(f"{selector} ({what} {token} on {surface}, {mode}: {_contrast(fg, bg):.1f}:1)")
+                    low.append(f"{selector} ({what} {token} on {behind}, {mode}: {_contrast(fg, bg):.1f}:1)")
     if not low:
         return []
     return [{"rule": "contrast", "message": f"{len(low)} pairs below 4.5:1 for text or 3:1 for a control's "
@@ -556,10 +575,14 @@ class _SvgScan(html.parser.HTMLParser):
             if self.depth == 1:
                 box = [float(x) for x in re.findall(r"-?\d*\.?\d+", attrs.get("viewbox", ""))]
                 classes = attrs.get("class", "").split()
-                fixed = "min-width" in attrs.get("style", "") or any(
-                    "min-width" in body and (re.search(r"(?:^|[\s>,])svg\b", s) or any(f".{c}" in s for c in classes))
-                    for s, body in self.rules)
-                self.svgs.append({"width": box[2] if len(box) == 4 else None, "fixed": fixed, "text": []})
+                widths = [_declared(body, "min-width") for s, body in self.rules if "min-width" in body and (
+                    re.search(r"(?:^|[\s>,])svg\b", s) or any(f".{c}" in s for c in classes))]
+                widths.append(_declared(attrs.get("style", ""), "min-width"))
+                given = [w for w in widths if w]
+                # A min-width keeps the <svg> from shrinking below it (in px, when it says).
+                minimum = max((_px(w) or 0 for w in given), default=0)
+                self.svgs.append({"width": box[2] if len(box) == 4 else None, "fixed": bool(given),
+                                  "min": minimum, "text": []})
         elif self.depth and tag in ("text", "tspan"):
             size = self._size(attrs)
             if size:
@@ -582,7 +605,7 @@ def _svg_findings(markup: str, css: str) -> list:
         if not width or width <= 64 or not svg["text"]:
             continue
         smallest = min(svg["text"])
-        at_column = smallest * min(1.0, _COLUMN / width)
+        at_column = smallest * min(1.0, max(_COLUMN, svg["min"]) / width)
         at_pane = smallest * min(1.0, _PANE / width)
         if at_column < 11:
             findings.append(f"text set at {smallest:g} px in a viewBox {width:g} wide shows at {at_column:.0f} px "
@@ -592,9 +615,10 @@ def _svg_findings(markup: str, css: str) -> list:
                             "in a 400 px pane")
     if not findings:
         return []
-    return [{"rule": "svg", "message": f"{'; '.join(dict.fromkeys(findings))}. Draw the diagram at the column's "
-             "width with text of at least 11 px; on a narrow pane give the <svg> a min-width inside a "
-             ".scroll-x wrapper or stack it vertically."}]
+    return [{"rule": "svg", "message": f"{'; '.join(dict.fromkeys(findings))}. Text shows at its size × "
+             "(column width ÷ viewBox width), and the column is 720 px: draw at a viewBox no wider than 720 "
+             "with text of at least 13 px, and give the <svg> min-width: <its viewBox width>px inside a "
+             ".scroll-x wrapper so a narrow pane scrolls it instead of shrinking it."}]
 
 
 def _blocks(markup: str, tag: str) -> str:
@@ -759,7 +783,7 @@ def _page_findings(text, base_dir=".", title=None, sources=None, verify=False, l
     if not re.search(r"prefers-color-scheme\s*:\s*dark", css):
         add("dark-mode", "No @media (prefers-color-scheme: dark) block redefining the tokens.")
     # Only the declarations: a selector such as #feed or #cafe is an id, not a color.
-    outside = " ".join(body for _, body in _css_rules(_VAR_FALLBACK.sub(r"var(\1)", _ROOT_BLOCK.sub("", css))))
+    outside = " ".join(body for _, body in _css_rules(_VAR_FALLBACK.sub(r"var(\1)", _ROOT_BLOCK.sub("", _without_print(css)))))
     styles = _VAR_FALLBACK.sub(r"var(\1)", " ".join(re.findall(r'(?i)\sstyle=["\']([^"\']*)', markup)))
     svg_attrs = " ".join(re.findall(
         rf'(?i)\s(?:fill|stroke|stop-color|color)=["\']((?:#[0-9a-f]{{3,8}}|(?:rgba?|hsla?|oklch|oklab)\(|{_NAMES})[^"\']*)["\']',

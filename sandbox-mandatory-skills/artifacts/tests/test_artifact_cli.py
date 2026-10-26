@@ -1512,6 +1512,25 @@ class TestCheckRoundTwo:
         # Text meant for a fill, on the fill an ancestor paints, is not this rule's business.
         assert cli._page_findings(self._page(css="header p { color: var(--on-primary); }"), title="Ventas Q3") == []
 
+    def test_print_blocks_write_plain_colors(self, cli):
+        css = "@media print { body { background: #fff; color: #000; } .card { border: 1px solid #ccc; } }"
+        assert cli._page_findings(self._page(css=css), title="Ventas Q3") == []
+        assert _rules(cli._page_findings(self._page(css=css + " .x { color: #fff; }"), title="Ventas Q3")) == ["colors"]
+
+    def test_an_outline_in_its_own_fill_stands_out_from_the_page(self, cli):
+        tokens = ":root { --primary: #1a365d; --rule: #e5e7eb; }"
+        css = ".opt input:checked + span { background: var(--primary); border: 1px solid var(--primary); }"
+        assert cli._page_findings(self._page(css=tokens + css), title="Ventas Q3") == []
+        pale = ".opt input:checked + span { background: var(--rule); border: 1px solid var(--rule); }"
+        [finding] = cli._page_findings(self._page(css=tokens + pale), title="Ventas Q3")
+        assert finding["rule"] == "contrast" and "(outline --rule on --bg" in finding["message"]
+
+    def test_svg_min_width_keeps_a_wide_diagram_readable(self, cli):
+        wide = '<div class="scroll-x"><svg viewBox="0 0 960 400" style="min-width: {w}px"><text font-size="12">Kafka</text></svg></div>'
+        assert cli._page_findings(self._page(body=wide.format(w=960)), title="Ventas Q3") == []
+        [finding] = cli._page_findings(self._page(body=wide.format(w=760)), title="Ventas Q3")
+        assert finding["rule"] == "svg" and "the column is 720 px" in finding["message"]
+
     def test_dark_tokens_come_from_the_dark_block(self, cli):
         themes = cli._themes(_GOOD_PAGE)
         assert themes["light"]["--ink"] == "#111111" and themes["dark"]["--ink"] == "#eeeeee"
