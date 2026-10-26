@@ -98,16 +98,15 @@ What the commands print and accept:
 - **Ids.** Every command that takes an `<artifact_id>` wants the id itself
   (8-4-4-4-12 hex): `resolve` turns a link or a name into it.
 - **`tokens`** with no theme lists the catalog, one theme per line with what it is
-  best for. With one it prints: the Google Fonts `<link>` (none when
-  the families are system fonts or `$ARTIFACT_CDN_SOURCES` leaves Google Fonts out), the
-  `:root` block and its dark-mode block, and a `tok()` helper for scripts. On top of the
-  theme's colors it adds `--on-primary` / `--on-accent` in both modes, a
+  best for. With one it prints the `:root` block and its dark-mode block, and a `tok()`
+  helper for scripts. On top of the theme's colors it adds `--on-primary` /
+  `--on-accent` in both modes, a
   `--primary-text`, `--accent-text` and `--state-*-text` that reach 4.5:1 on `--bg`,
   `--bg-alt` and the tints, the `--accent-bg` / `--state-*-bg` tints, `--chart-n`, the
   `--font-*` stacks and `--radius`. An unknown name prints the catalog.
 - **`check`** prints one entry per file with its findings (an empty list is clean).
   Each finding names a rule and a `level`. **`error`**, fix it: the viewer's limits
-  (`form`, `new-tab`, `storage`, `download`, `iframe`, `host`, `lib`, `pin`, `cdn`, `fetch`),
+  (`form`, `new-tab`, `storage`, `download`, `iframe`, `remote`, `lib`, `fetch`),
   `document` and `link`. **`advice`**, fix it if it is quick, and do not run `check`
   again for it: `dialog`, `title`, `dark-mode`, `colors`, `contrast`, `responsive`,
   `hero`, `reveal`, `svg` and `emoji`. For a Markdown entry only the title rule
@@ -116,15 +115,11 @@ What the commands print and accept:
 - **`libs`** lists the libraries GenAI hosts at `$ARTIFACT_LIBS_URL` (the copy of GenAI
   UI's `assets/libs/manifest.json` in `scripts/libs.json`), each with its version, the
   global it defines and the `<script>` / `<link>` that loads it. Where the variable is
-  unset it says that libraries come from a CDN instead.
-- **`lib`** flags a script or stylesheet that does not come from `$ARTIFACT_LIBS_URL`
-  (Google Fonts aside), or names a file there that is not hosted; it does not run when
-  the variable is unset.
-- **`host`** checks against `$ARTIFACT_CDN_SOURCES`, the sources this installation lets a
-  page load from (set by the platform; `https:` means any https origin, its default;
-  empty means none; a source with a path, such as an internal mirror's
-  `https://nexus.corp/npm/`, allows that path only), or the public CDNs of `html.md`
-  where it is unset.
+  unset it fails: the installation is broken, and `check` says so too.
+- **`lib`** flags a script or stylesheet that does not come from `$ARTIFACT_LIBS_URL`,
+  or names a file there that is not hosted.
+- **`remote`** flags anything else the page loads from outside the artifact (an image,
+  a font, an `@import`): upload it and use its relative path.
 - **Local files.** `create`, `write` and `upload` read files from
   `$USER_WORKSPACE/project/` only (the working folders and `output/` are inside it), and
   never key material (`*.key`, `*.pem`, `.env`…) even there. `create` reads every file

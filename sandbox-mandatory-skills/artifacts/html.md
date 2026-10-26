@@ -9,7 +9,7 @@ for every artifact (title, honest content, working folder) are in `SKILL.md`.
 An HTML artifact is someone else's page running in the viewer's browser, so the viewer
 isolates it. It loads the entry file into an iframe sandboxed to
 `allow-scripts allow-modals` and nothing else, in an opaque origin, under a policy that
-lets through inline code, `data:`/`blob:` resources and the CDNs the installation allows. That
+lets through inline code, `data:`/`blob:` resources and GenAI's hosted libraries. That
 is what makes it safe to open, and it is not negotiable. In practice:
 
 - **Write a full document.** The file is served as it is; nothing wraps it. Start with
@@ -19,28 +19,22 @@ is what makes it safe to open, and it is not negotiable. In practice:
   or in files next to it (see [Multi-file](#multi-file)).
 - **Libraries from GenAI's hosted copies only.** A page takes the scripts and
   stylesheets of a library from `$ARTIFACT_LIBS_URL`, where GenAI hosts them, and never
-  from a public CDN: the platform adds a policy of its own that blocks most CDNs, so a
+  from a public CDN: the platform adds a policy of its own that blocks them, so a
   library from one fails silently and the person sees a broken page. `artifact.py libs`
   lists the hosted libraries (Chart.js, D3, topojson-client, ECharts, Plotly, Leaflet,
   Mermaid, marked), each with its version and the exact `<script>` or `<link>` to paste;
   `check` flags any other. A library that is not hosted cannot be used: draw it as
   inline SVG written by `build.py`, or use a hosted one. Where `$ARTIFACT_LIBS_URL` is
-  unset (an older installation), `libs` says so and libraries come from a CDN instead,
-  pinned to an exact version (`chart.js@4.4.1`, never `chart.js` or `@4`) and from
-  where `$ARTIFACT_CDN_SOURCES` allows: `https:` is any https origin; unset, the public
-  CDNs `cdnjs.cloudflare.com`, `cdn.jsdelivr.net`, `unpkg.com`, `cdn.plot.ly`,
-  `cdn.tailwindcss.com`, `code.jquery.com`. A version you remember may not exist on
-  that CDN (Chart.js 4.4.4 is on jsdelivr, not on cdnjs), and the page then shows an
-  empty box: `check` asks the CDN about every such URL.
-- **Fonts and images from outside, only where `$ARTIFACT_CDN_SOURCES` allows**
-  (`fonts.googleapis.com` and `fonts.gstatic.com` among the public CDNs). Set but
-  empty, a page loads nothing from outside the artifact but the hosted libraries: use
-  the theme's fallback font stack with no `<link>`. The page's own files are the
-  artifact's (see [Multi-file](#multi-file)), and there is no `<iframe>` of another
-  page. Data the page needs goes in the page, written there by `build.py`: never
-  `fetch()` or `d3.json()` at run time. `build.py` reads files in the workspace, what
-  your tools saved there included, and downloads nothing but a map's geometry (see
-  [Content](#content)): the sandbox may have no route out.
+  unset the installation is broken: `libs` and `check` say so; tell the person, and
+  draw without libraries.
+- **Nothing else from outside the artifact.** No Google Fonts and no remote image: the
+  platform blocks them too. Fonts are the theme's stacks, as `tokens` prints them; a
+  font the person asks for goes up as a `.woff2` under `@font-face`, and an image is a
+  file of the artifact (see [Multi-file](#multi-file)); `check` flags a remote one.
+  There is no `<iframe>` of another page. Data the page needs goes in the page, written
+  there by `build.py`: never `fetch()` or `d3.json()` at run time. `build.py` reads
+  files in the workspace, what your tools saved there included, and downloads nothing
+  but a map's geometry (see [Content](#content)): the sandbox may have no route out.
 - **A library that fails costs the chart, never the page.** Write the numbers, tables
   and text before any library call, and guard the call (`if (!window.Chart) { … }`)
   so that the chart's data shows as a table when the library did not load. Nothing
@@ -140,7 +134,7 @@ not the same two for everything — say which one you used, and offer the catalo
 they want another look.
 
 **Then run `python3 scripts/artifact.py tokens <theme>` and paste what it prints**: the
-font `<link>`, the `:root` block with its dark-mode block, and the script helper. Do not
+`:root` block with its dark-mode block, and the script helper. Do not
 map the theme by hand: the printed block already has every value `check` looks for, and
 a page that uses only these tokens passes the color, dark-mode and contrast checks.
 
@@ -154,9 +148,6 @@ a page that uses only these tokens passes the color, dark-mode and contrast chec
   matching `--…-text`.
 - **A design system that is not a catalog theme** (see [Who decides](#who-decides))
   is mapped by hand onto the same names.
-- **A theme family Google Fonts does not serve** (Calibri, Aptos, Consolas, Arial) is
-  used as the theme's stack as written, with no `<link>` for it; link only families
-  Google Fonts serves.
 
 ### Layout
 
@@ -192,9 +183,9 @@ a page that uses only these tokens passes the color, dark-mode and contrast chec
   renders, with the `tok()` helper `tokens` prints, and draws again when
   `matchMedia("(prefers-color-scheme: dark)")` changes. A literal that only stands in
   for a missing token (`var(--x, #888)`, `tok("--x") || "#888"`) is allowed.
-- **Fonts.** The theme's `display` (used sparingly), `body` and `mono` families, loaded
-  from Google Fonts (a `<link>` to `fonts.googleapis.com`, with `display=swap`), each
-  with its fallback stack.
+- **Fonts.** The theme's `display` (used sparingly), `body` and `mono` stacks: the
+  first family shows where the reader has it installed, and the stack falls back by
+  itself.
 
 What `tokens` prints opens the `<style>` block; the rest of the page builds on it. Its
 shape, for a design system you map by hand:
@@ -260,7 +251,7 @@ body { margin: 0; background: var(--bg); color: var(--ink); }
   in `SKILL.md`); do not draw regions by hand or fetch them. It is the one thing
   `build.py` downloads, and the sandbox may have no route out: when the download fails
   there is no map. Show the rate as a sorted bar chart or a table by region instead,
-  and tell the person that a map needs the sandbox to reach the CDN.
+  and tell the person that a map needs the sandbox to reach the package's host.
   Color a rate, not a raw total, which mostly mirrors population: `build.py` computes
   it with its unit, the table shows it next to the total, and the legend names its
   breaks.

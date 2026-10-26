@@ -359,11 +359,6 @@ def _slug(name: str) -> str:
 # each finding says what to change, and a page can keep one when the person asked for it.
 # ---------------------------------------------------------------------------
 
-_CDN_HOSTS = (
-    "cdnjs.cloudflare.com", "cdn.jsdelivr.net", "unpkg.com", "cdn.plot.ly",
-    "cdn.tailwindcss.com", "code.jquery.com", "fonts.googleapis.com", "fonts.gstatic.com",
-)  # fmt: skip
-_FONT_HOSTS = ("fonts.googleapis.com", "fonts.gstatic.com")
 _COLOR = re.compile(
     r"#[0-9a-fA-F]{8}\b|#[0-9a-fA-F]{6}\b|#[0-9a-fA-F]{3,4}\b|\b(?:rgba?|hsla?|oklch|oklab)\("
 )
@@ -395,7 +390,6 @@ _NAMED_COLOR = re.compile(
 _ROOT_BLOCK = re.compile(r":root\b[^{]*\{[^{}]*\}")
 _EMOJI = re.compile("[\U0001F300-\U0001FAFF\U0001F000-\U0001F2FF✀-➿]")
 _TITLE_SEPARATOR = re.compile(r"\s[-–—|·]\s|[:|—–]")
-_VERSIONED = re.compile(r"@v?\d+\.\d+\.\d+|/v?\d+\.\d+\.\d+(?:/|$)|[-.]v?\d+\.\d+\.\d+")
 # A literal that only stands in for a token: `var(--x, #fff)` in CSS, and in a script the
 # `|| "#fff"` (or `??`) after a call that names one (getPropertyValue("--x"), tok("--x")).
 _VAR_FALLBACK = re.compile(r"var\(\s*(--[\w-]+)\s*,(?:[^()]|\([^()]*\))*\)")
@@ -405,7 +399,7 @@ _SCRIPT_FALLBACK = re.compile(
 # What breaks the page in the viewer, or a rule the page may never break: an error. The
 # rest is advice: the page works, and a cheap fix makes it better.
 _ERRORS = frozenset(
-    ("document", "form", "new-tab", "download", "iframe", "storage", "host", "lib", "pin", "cdn", "fetch", "link")
+    ("document", "form", "new-tab", "download", "iframe", "storage", "remote", "lib", "fetch", "link")
 )
 _PANE = 400 - 2 * 16  # the narrowest pane, less its gutters
 _COLUMN = 720  # a reading column on a desktop pane
@@ -651,7 +645,7 @@ def _local_assets(markup: str, base_dir: str) -> tuple[str, str]:
 
 # The libraries GenAI UI hosts (its assets/libs/manifest.json, copied here): pages take
 # their scripts and stylesheets from $ARTIFACT_LIBS_URL, which genai-api hands the
-# sandbox, because the platform's own policy blocks most public CDNs.
+# sandbox, because the platform's own policy blocks public CDNs.
 _LIBS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "libs.json")
 
 
@@ -660,9 +654,15 @@ def _hosted_libs() -> list:
         return json.load(handle)["libs"]
 
 
+_NO_LIBS = (
+    "$ARTIFACT_LIBS_URL is unset: this installation does not say where GenAI UI hosts the "
+    "libraries, so a page can load none. Tell the person the installation needs fixing; "
+    "meanwhile draw without libraries (inline SVG, plain JavaScript)."
+)
+
+
 def _libs_url():
-    """GenAI UI's libraries folder, ending in '/'; None when the installation hands none
-    (an older one), and pages then take libraries from the CDNs."""
+    """GenAI UI's libraries folder, ending in '/'; None when the installation hands none."""
     url = (os.environ.get("ARTIFACT_LIBS_URL") or "").strip()
     if not url:
         return None
@@ -694,56 +694,6 @@ def _loaded_urls(markup: str, css: str) -> list:
     return list(dict.fromkeys(urls))
 
 
-def _cdn_sources() -> list:
-    """The sources the viewer lets a page load from: $ARTIFACT_CDN_SOURCES, which genai-api
-    hands the sandbox (`https:` any https origin, empty none), or the public CDNs where
-    it is unset."""
-    configured = os.environ.get("ARTIFACT_CDN_SOURCES")
-    if configured is None:
-        return [f"https://{host}" for host in _CDN_HOSTS]
-    return [source for source in configured.split() if source != "'none'"]
-
-
-def _source_allows(source: str, url: str) -> bool:
-    """Whether a CSP source lets the page load `url`: `https:` any https URL (what
-    genai-api allows by default); an origin such as `https://cdn.jsdelivr.net` or an
-    internal mirror's `https://nexus.corp/npm/` the same origin and, when the source
-    names a path, that path (a prefix when it ends in '/', as CSP reads it)."""
-    allowed, wanted = urllib.parse.urlsplit(source), urllib.parse.urlsplit(url)
-    if source == "https:":
-        return wanted.scheme == "https" and bool(wanted.hostname)
-    if (allowed.scheme, allowed.hostname, allowed.port) != (wanted.scheme, wanted.hostname, wanted.port):
-        return False
-    if allowed.path in ("", "/"):
-        return True
-    if allowed.path.endswith("/"):
-        return wanted.path.startswith(allowed.path)
-    return wanted.path == allowed.path
-
-
-_cdn_unreachable = False
-
-
-def _url_exists(url: str):
-    """True or False when the CDN answered; None when it could not be asked. Once a CDN
-    could not be asked the rest of the run asks none: where the sandbox has no route out
-    every URL would otherwise wait for its timeout."""
-    global _cdn_unreachable
-    if _cdn_unreachable:
-        return None
-    request = urllib.request.Request(url, method="HEAD", headers={"User-Agent": "stratio-artifacts-check"})
-    try:
-        with urllib.request.urlopen(request, timeout=3) as response:
-            return response.status < 400
-    except urllib.error.HTTPError as e:
-        # Only a CDN saying the file is not there is an answer; a 429, a 5xx or a refused
-        # HEAD says nothing about the URL.
-        return False if e.code in (404, 410) else None
-    except (urllib.error.URLError, OSError, ValueError):
-        _cdn_unreachable = True
-        return None
-
-
 def _title_findings(name: str) -> list:
     findings = []
     if _TITLE_SEPARATOR.search(name):
@@ -754,11 +704,10 @@ def _title_findings(name: str) -> list:
     return findings
 
 
-def _page_findings(text, base_dir=".", title=None, sources=None, verify=False, libs=None) -> list:
-    """Findings for one HTML page: [{"rule", "message"}]. `sources` are the hosts the
-    installation lets a page load from (None: do not check hosts); `verify` asks each
-    CDN whether a library URL exists; `libs` is GenAI UI's libraries folder, where every
-    script and stylesheet must come from (None: the CDNs, as before it existed)."""
+def _page_findings(text, base_dir=".", title=None) -> list:
+    """Findings for one HTML page: [{"rule", "message"}]. Every script and stylesheet
+    comes from GenAI UI's libraries folder, $ARTIFACT_LIBS_URL; anything else the page
+    loads is a file of the artifact."""
     findings = []
 
     def add(rule, message):
@@ -850,31 +799,22 @@ def _page_findings(text, base_dir=".", title=None, sources=None, verify=False, l
     findings.extend(_svg_findings(markup, css))
     findings.extend(_contrast_findings(css))
 
-    urls = _loaded_urls(markup, css)
-    if libs:
-        hosted = _hosted_files(libs)
-        for url in _library_urls(markup):
-            if url.startswith(libs):
-                if url.split("?")[0].split("#")[0] not in hosted:
-                    add("lib", f"{url} is not one of the hosted libraries: `artifact.py libs` lists them.")
-            elif (urllib.parse.urlsplit(url).hostname or "") not in _FONT_HOSTS:
-                add("lib", f"{url}: take libraries from GenAI's hosted copies, never a CDN, which the "
-                    "platform may block: `artifact.py libs` prints each one's tag.")
-        urls = [url for url in urls if not url.startswith(libs)]
-    if sources is not None:
-        for url in urls:
-            if not any(_source_allows(source, url) for source in sources):
-                where = "nothing outside the artifact" if not sources else ", ".join(sources)
-                add("host", f"{url}: this installation lets a page load from {where}.")
+    libs = _libs_url()
+    hosted = _hosted_files(libs) if libs else set()
+    library_urls = _library_urls(markup)
+    for url in library_urls:
+        if not libs:
+            add("lib", f"{url}: {_NO_LIBS}")
+        elif not url.startswith(libs):
+            add("lib", f"{url}: take libraries from GenAI's hosted copies, never a CDN, which the "
+                "platform blocks: `artifact.py libs` prints each one's tag.")
+        elif url.split("?")[0].split("#")[0] not in hosted:
+            add("lib", f"{url} is not one of the hosted libraries: `artifact.py libs` lists them.")
+    for url in _loaded_urls(markup, css):
+        if url not in library_urls and not (libs and url.startswith(libs)):
+            add("remote", f"{url}: the viewer loads nothing from outside the artifact but the hosted "
+                "libraries. Put the file in the artifact (`upload` for an image or a font) and use its relative path.")
     findings.extend(_missing_libraries(markup, scripts, libs))
-    for url in urls:
-        host = urllib.parse.urlsplit(url).hostname or ""
-        if host in _CDN_HOSTS and host not in _FONT_HOSTS:
-            path = urllib.parse.urlsplit(url).path
-            if not _VERSIONED.search(path):
-                add("pin", f"{url}: pin the exact version.")
-            elif verify and _url_exists(url) is False:
-                add("cdn", f"{url} does not exist on that CDN: check the version and the path.")
     return _leveled(findings)
 
 
@@ -891,7 +831,7 @@ def _missing_libraries(markup: str, scripts: str, libs) -> list:
         if lib["name"].lower() in sources or any(f.lower() in sources for f in lib["files"]):
             continue
         tag = (f'<script src="{libs}{lib["name"]}/{lib["version"]}/{lib["files"][0]}"></script>'
-               if libs else "its <script> tag (`artifact.py libs`)")
+               if libs else "its <script> tag once $ARTIFACT_LIBS_URL is set")
         findings.append({"rule": "lib", "message": f"The script calls {name} but the page loads no "
                          f"{lib['name']}: add {tag} before the script that uses it."})
     return findings
@@ -925,9 +865,6 @@ _BRAND_KIT = os.path.join(_SKILL_DIR, os.pardir, os.pardir, "skills", "brand-kit
 _THEME_DIRS = (os.path.join(_SKILL_DIR, "themes"), os.path.join(_BRAND_KIT, "themes"))
 _CATALOG_FILES = (os.path.join(_SKILL_DIR, "brand-kit.md"), os.path.join(_BRAND_KIT, "SKILL.md"))
 _CATALOG_ROW = re.compile(r"^\|\s*\[([\w-]+)\]\(themes/[\w-]+\.md\)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|$", re.M)
-# Families of the catalog that Google Fonts does not serve: used as the stack, no <link>.
-_SYSTEM_FONTS = frozenset(("calibri", "aptos", "arial", "arial black", "consolas", "courier new", "georgia",
-                           "impact", "didot", "bodoni", "system-ui"))
 _HEX_ROW = re.compile(r"^\|\s*(\w+)\s*\|\s*(#[0-9a-fA-F]{6})\s*\|", re.M)
 _COLORED = ("primary", "accent", "state_ok", "state_warn", "state_danger")
 _TINTED = ("accent", "state_ok", "state_warn", "state_danger")
@@ -1033,19 +970,13 @@ def _theme(name: str) -> dict:
     dark_given = dict(_HEX_ROW.findall(dark_text))
     line = re.search(r"Chart categorical:([^\n]*)", dark_text)
     dark_chart = re.findall(r"#[0-9a-fA-F]{6}", line.group(1)) if line else light_chart
-    fonts, weights = {}, {}
-    for role, family, size, fallback in re.findall(
+    fonts = {}
+    for role, family, _size, fallback in re.findall(
         r"^\|\s*([\w ()]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|$", _section(text, "Typography"), re.M
     ):
         role = role.split()[0]
         if role in ("display", "body", "mono"):
             fonts[role] = (family, fallback)
-        if role in ("display", "h2", "body", "mono"):
-            explicit = re.findall(r"weight (\d+)", size)
-            plain = re.sub(r"\s+Italic$", "", family)
-            # Running text needs regular and bold; a display face only the weight it shows.
-            wanted = weights.setdefault(plain, set())
-            wanted.update(explicit or (("400", "700") if role in ("body", "mono") else ()))
     radius = re.search(r"\*\*Border radius\*\*:\s*`([^`]+)`", text)
     palette = {k: v for k, v in light.items() if not k.isdigit()}
     return {
@@ -1054,21 +985,9 @@ def _theme(name: str) -> dict:
         "dark": _mode_tokens({**palette, **{k: v for k, v in dark_given.items() if not k.startswith("on_")}},
                              dark_chart, dark_given) if dark_given else None,
         "fonts": {role: _font_stack(*value) for role, value in fonts.items()},
-        "families": {f: w for f, w in weights.items() if f.lower() not in _SYSTEM_FONTS},
         "radius": radius.group(1) if radius else None,
         "series": len(light_chart),
     }
-
-
-def _fonts_link(families: dict):
-    if not families:
-        return None
-    query = "&".join(
-        "family=" + urllib.parse.quote_plus(f) + (f":wght@{';'.join(sorted(w))}" if w else "")
-        for f, w in families.items()
-    )
-    url = f"https://fonts.googleapis.com/css2?{query}&display=swap"
-    return url if any(_source_allows(source, url) for source in _cdn_sources()) else None
 
 
 def _tokens_text(theme: dict) -> str:
@@ -1080,13 +999,7 @@ def _tokens_text(theme: dict) -> str:
     shared = {f"--font-{role}": stack for role, stack in theme["fonts"].items()}
     if theme["radius"]:
         shared["--radius"] = theme["radius"]
-    link = _fonts_link(theme["families"])
-    out = ["<!-- In <head>, before the <style> block. -->"]
-    out.append(f'<link rel="stylesheet" href="{link}">' if link else
-               "<!-- No font <link>: the theme's families are system fonts, or this installation "
-               "loads nothing from Google Fonts; the stacks fall back by themselves. -->")
-    out += [
-        "",
+    out = [
         "/* First thing in the <style> block, as printed: the design plan, then the tokens.",
         f"   Theme: {theme['name']} (themes/{theme['name']}.md).",
         "   Text in a color: --primary-text, --accent-text, --state-ok-text, --state-warn-text,",
@@ -1403,8 +1316,8 @@ def cmd_workdir(args):
 
 
 def cmd_tokens(args):
-    """Without a theme, list the catalog; with one, print it as the page's font <link>,
-    token block and script helper."""
+    """Without a theme, list the catalog; with one, print it as the page's token block
+    and script helper."""
     sys.stdout.write(_tokens_text(_theme(args.theme)) if args.theme else _catalog_text())
 
 
@@ -1413,9 +1326,7 @@ def cmd_libs(args):
     from there."""
     base = _libs_url()
     if not base:
-        sys.stdout.write("This installation hosts no libraries ($ARTIFACT_LIBS_URL is unset): "
-                         "take them from the CDNs html.md names.\n")
-        return
+        _die(_NO_LIBS)
     lines = []
     libs = [lib for lib in _hosted_libs() if not args.name or lib["name"].lower() == args.name.lower()]
     if not libs:
@@ -1433,10 +1344,9 @@ def cmd_libs(args):
 
 def cmd_check(args):
     """Check pages before `create` or `write`: what the viewer breaks, and the rules
-    SKILL.md asks for. The first page is the entry: it is the one --title applies to.
-    Hosts are checked against the CDNs the viewer allows, each library URL off
-    the html.md table is asked for on its CDN when the sandbox can reach it."""
-    sources = _cdn_sources()
+    SKILL.md asks for. The first page is the entry: it is the one --title applies to."""
+    if not _libs_url():
+        print(f"check: {_NO_LIBS}", file=sys.stderr)
     report = []
     for index, path in enumerate(args.files):
         if not os.path.isfile(path):
@@ -1448,9 +1358,7 @@ def cmd_check(args):
             continue
         with open(path, encoding="utf-8", errors="replace") as handle:
             content = handle.read()
-        findings = _page_findings(
-            content, os.path.dirname(path) or ".", title=title, sources=sources, verify=True, libs=_libs_url()
-        )
+        findings = _page_findings(content, os.path.dirname(path) or ".", title=title)
         report.append({"file": path, "findings": findings})
     _emit(report)
 
