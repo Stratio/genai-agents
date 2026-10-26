@@ -204,13 +204,13 @@ change the page, fix `build.py` and run it again instead of writing a new script
 
 **Read `html.md` in full, and the theme catalog in `brand-kit.md`, before you write or
 edit an HTML page.** `html.md` holds what the viewer silently breaks, which libraries
-and CDNs a page can use, how to pick the treatment and the theme, the layout and
+a page can use (GenAI's hosted copies, `artifact.py libs`), how to pick the treatment and the theme, the layout and
 dark-mode rules, pages with several files, and the checklist before saving. The
 essentials, which `check` also enforces and that checklist does not repeat:
 
 1. A full document (`<!doctype html>`, charset, viewport, `<title>`), its CSS and
-   JavaScript inside it or in files next to it; libraries only from the allowed CDNs
-   (`html.md`), version pinned.
+   JavaScript inside it or in files next to it; libraries only from GenAI's hosted
+   copies, as `artifact.py libs` prints them.
 2. No `<form>`, storage, new tabs, downloads or `alert`: the viewer's sandbox breaks
    them, silently.
 3. Colors only as tokens of a `brand-kit.md` theme: paste what `tokens <theme>` prints

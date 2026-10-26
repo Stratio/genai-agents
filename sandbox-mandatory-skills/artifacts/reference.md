@@ -27,6 +27,11 @@ python3 scripts/artifact.py workdir "Q3 sales report"
 python3 scripts/artifact.py tokens
 python3 scripts/artifact.py tokens corporate-formal
 
+# The libraries GenAI hosts, each with the <script> / <link> that loads it from there
+# (or just one): a page takes libraries from these only
+python3 scripts/artifact.py libs
+python3 scripts/artifact.py libs chart.js
+
 # Check the pages before saving them: the entry first, with the title it will get.
 python3 scripts/artifact.py check <workdir>/index.html <workdir>/annex/detail.html \
     --title "Q3 sales report"
@@ -102,12 +107,19 @@ What the commands print and accept:
   `--font-*` stacks and `--radius`. An unknown name prints the catalog.
 - **`check`** prints one entry per file with its findings (an empty list is clean).
   Each finding names a rule and a `level`. **`error`**, fix it: the viewer's limits
-  (`form`, `new-tab`, `storage`, `download`, `iframe`, `host`, `pin`, `cdn`, `fetch`),
+  (`form`, `new-tab`, `storage`, `download`, `iframe`, `host`, `lib`, `pin`, `cdn`, `fetch`),
   `document` and `link`. **`advice`**, fix it if it is quick, and do not run `check`
   again for it: `dialog`, `title`, `dark-mode`, `colors`, `contrast`, `responsive`,
   `hero`, `reveal`, `svg` and `emoji`. For a Markdown entry only the title rule
   applies. `create` and `write` print the same findings on stderr as `check: …` lines,
   as warnings, with `advice` before the rule of an advice.
+- **`libs`** lists the libraries GenAI hosts at `$ARTIFACT_LIBS_URL` (the copy of GenAI
+  UI's `assets/libs/manifest.json` in `scripts/libs.json`), each with its version, the
+  global it defines and the `<script>` / `<link>` that loads it. Where the variable is
+  unset it says that libraries come from a CDN instead.
+- **`lib`** flags a script or stylesheet that does not come from `$ARTIFACT_LIBS_URL`
+  (Google Fonts aside), or names a file there that is not hosted; it does not run when
+  the variable is unset.
 - **`host`** checks against `$ARTIFACT_CDN_SOURCES`, the sources this installation lets a
   page load from (set by the platform; `https:` means any https origin, its default;
   empty means none; a source with a path, such as an internal mirror's

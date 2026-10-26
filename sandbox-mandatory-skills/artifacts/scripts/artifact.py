@@ -405,7 +405,7 @@ _SCRIPT_FALLBACK = re.compile(
 # What breaks the page in the viewer, or a rule the page may never break: an error. The
 # rest is advice: the page works, and a cheap fix makes it better.
 _ERRORS = frozenset(
-    ("document", "form", "new-tab", "download", "iframe", "storage", "host", "pin", "cdn", "fetch", "link")
+    ("document", "form", "new-tab", "download", "iframe", "storage", "host", "lib", "pin", "cdn", "fetch", "link")
 )
 _PANE = 400 - 2 * 16  # the narrowest pane, less its gutters
 _COLUMN = 720  # a reading column on a desktop pane
@@ -619,6 +619,41 @@ def _local_assets(markup: str, base_dir: str) -> tuple[str, str]:
     return "\n".join(css), "\n".join(js)
 
 
+# The libraries GenAI UI hosts (its assets/libs/manifest.json, copied here): pages take
+# their scripts and stylesheets from $ARTIFACT_LIBS_URL, which genai-api hands the
+# sandbox, because the platform's own policy blocks most public CDNs.
+_LIBS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "libs.json")
+
+
+def _hosted_libs() -> list:
+    with open(_LIBS_FILE, encoding="utf-8") as handle:
+        return json.load(handle)["libs"]
+
+
+def _libs_url():
+    """GenAI UI's libraries folder, ending in '/'; None when the installation hands none
+    (an older one), and pages then take libraries from the CDNs."""
+    url = (os.environ.get("ARTIFACT_LIBS_URL") or "").strip()
+    if not url:
+        return None
+    return url if url.endswith("/") else url + "/"
+
+
+def _hosted_files(base: str) -> set:
+    return {f"{base}{lib['name']}/{lib['version']}/{name}" for lib in _hosted_libs() for name in lib["files"]}
+
+
+def _library_urls(markup: str) -> list:
+    """Absolute URLs of the page's scripts and stylesheets: what a library is."""
+    urls = re.findall(r'(?i)<script\b[^>]*?\ssrc=["\'](https?://[^"\']+)', markup)
+    for tag in re.findall(r"(?i)<link\b[^>]*>", markup):
+        rel = re.search(r'(?i)\srel=["\']([^"\']*)', tag)
+        href = re.search(r'(?i)\shref=["\'](https?://[^"\']+)', tag)
+        if rel and href and "stylesheet" in rel.group(1).lower().split():
+            urls.append(href.group(1))
+    return list(dict.fromkeys(urls))
+
+
 def _loaded_urls(markup: str, css: str) -> list:
     """Absolute URLs the page loads (not the links a reader may follow)."""
     no_anchors = re.sub(r"(?is)<a\b[^>]*>", "<a>", markup)
@@ -689,10 +724,11 @@ def _title_findings(name: str) -> list:
     return findings
 
 
-def _page_findings(text, base_dir=".", title=None, sources=None, verify=False) -> list:
+def _page_findings(text, base_dir=".", title=None, sources=None, verify=False, libs=None) -> list:
     """Findings for one HTML page: [{"rule", "message"}]. `sources` are the hosts the
     installation lets a page load from (None: do not check hosts); `verify` asks each
-    CDN whether a library URL exists."""
+    CDN whether a library URL exists; `libs` is GenAI UI's libraries folder, where every
+    script and stylesheet must come from (None: the CDNs, as before it existed)."""
     findings = []
 
     def add(rule, message):
@@ -785,6 +821,16 @@ def _page_findings(text, base_dir=".", title=None, sources=None, verify=False) -
     findings.extend(_contrast_findings(css))
 
     urls = _loaded_urls(markup, css)
+    if libs:
+        hosted = _hosted_files(libs)
+        for url in _library_urls(markup):
+            if url.startswith(libs):
+                if url.split("?")[0].split("#")[0] not in hosted:
+                    add("lib", f"{url} is not one of the hosted libraries: `artifact.py libs` lists them.")
+            elif (urllib.parse.urlsplit(url).hostname or "") not in _FONT_HOSTS:
+                add("lib", f"{url}: take libraries from GenAI's hosted copies, never a CDN, which the "
+                    "platform may block: `artifact.py libs` prints each one's tag.")
+        urls = [url for url in urls if not url.startswith(libs)]
     if sources is not None:
         for url in urls:
             if not any(_source_allows(source, url) for source in sources):
@@ -1312,6 +1358,29 @@ def cmd_tokens(args):
     sys.stdout.write(_tokens_text(_theme(args.theme)) if args.theme else _catalog_text())
 
 
+def cmd_libs(args):
+    """The libraries GenAI UI hosts (or the one named), each with the tags that load it
+    from there."""
+    base = _libs_url()
+    if not base:
+        sys.stdout.write("This installation hosts no libraries ($ARTIFACT_LIBS_URL is unset): "
+                         "take them from the CDNs html.md names.\n")
+        return
+    lines = []
+    libs = [lib for lib in _hosted_libs() if not args.name or lib["name"].lower() == args.name.lower()]
+    if not libs:
+        _die(f"{args.name!r} is not hosted: run `libs` for the list.")
+    for lib in libs:
+        lines.append(f"{lib['name']} {lib['version']} (window.{lib['global']}): {lib['description']}")
+        for name in lib["files"]:
+            url = f"{base}{lib['name']}/{lib['version']}/{name}"
+            if name.endswith(".js"):
+                lines.append(f'  <script src="{url}"></script>')
+            elif name.endswith(".css"):
+                lines.append(f'  <link rel="stylesheet" href="{url}">')
+    sys.stdout.write("\n".join(lines) + "\n")
+
+
 def cmd_check(args):
     """Check pages before `create` or `write`: what the viewer breaks, and the rules
     SKILL.md asks for. The first page is the entry: it is the one --title applies to.
@@ -1329,7 +1398,9 @@ def cmd_check(args):
             continue
         with open(path, encoding="utf-8", errors="replace") as handle:
             content = handle.read()
-        findings = _page_findings(content, os.path.dirname(path) or ".", title=title, sources=sources, verify=True)
+        findings = _page_findings(
+            content, os.path.dirname(path) or ".", title=title, sources=sources, verify=True, libs=_libs_url()
+        )
         report.append({"file": path, "findings": findings})
     _emit(report)
 
@@ -1528,6 +1599,10 @@ def _parser() -> argparse.ArgumentParser:
     p = sub.add_parser("tokens")
     p.add_argument("theme", nargs="?", help="A theme of the catalog, e.g. corporate-formal; none lists them")
     p.set_defaults(func=cmd_tokens)
+
+    p = sub.add_parser("libs")
+    p.add_argument("name", nargs="?", help="One library, e.g. chart.js; none lists them all")
+    p.set_defaults(func=cmd_libs)
 
     p = sub.add_parser("check")
     p.add_argument("files", nargs="+", help="The entry page first, then any other page")
