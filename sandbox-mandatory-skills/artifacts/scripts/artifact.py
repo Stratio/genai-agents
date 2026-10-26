@@ -508,6 +508,12 @@ def _token_rgb(tokens: dict, name: str, depth: int = 0):
     return _token_rgb(tokens, alias.group(1), depth + 1) if alias else _hex_rgb(value)
 
 
+# A selector naming a control: the word itself, alone or in a hyphenated class
+# (`.box`, `input[type=radio]`, `.toggle-btn`), not a container named after its
+# contents (`.inputs`, `.checklist`).
+_CONTROL = re.compile(r"(?i)(?<![\w-])(?:[\w-]*-)?(?:input|checkbox|check|box|radio|toggle|switch)(?:-[\w-]*)?(?![\w-])")
+
+
 def _contrast_findings(css: str) -> list:
     """Text, and the outline of a control, set in a token that does not stand out from the
     surface behind it, in either mode."""
@@ -529,7 +535,7 @@ def _contrast_findings(css: str) -> list:
         if text and (background or not re.search(r"ink|fg|text|muted|on-|bg|surface", text.group(1))):
             pairs.append((text.group(1), 4.5, "text"))
         outline = re.search(r"(?<![-\w])border(?:-[a-z]+)?\s*:[^;]*var\(\s*(--[\w-]+)", body)
-        if outline and re.search(r"(?i)check|box|radio|toggle|switch|input", selector):
+        if outline and _CONTROL.search(selector):
             pairs.append((outline.group(1), 3.0, "outline"))
         for token, minimum, what in pairs:
             # An outline in its own fill's token is the edge of that fill: what it has to

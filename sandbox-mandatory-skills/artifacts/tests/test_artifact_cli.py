@@ -1521,6 +1521,9 @@ class TestCheckRoundTwo:
         tokens = ":root { --primary: #1a365d; --rule: #e5e7eb; }"
         css = ".opt input:checked + span { background: var(--primary); border: 1px solid var(--primary); }"
         assert cli._page_findings(self._page(css=tokens + css), title="Ventas Q3") == []
+        # A panel named after the fields it holds is not a control.
+        panel = ".inputs { background: var(--bg-alt); border: 1px solid var(--rule); }"
+        assert cli._page_findings(self._page(css=tokens + panel), title="Ventas Q3") == []
         pale = ".opt input:checked + span { background: var(--rule); border: 1px solid var(--rule); }"
         [finding] = cli._page_findings(self._page(css=tokens + pale), title="Ventas Q3")
         assert finding["rule"] == "contrast" and "(outline --rule on --bg" in finding["message"]
