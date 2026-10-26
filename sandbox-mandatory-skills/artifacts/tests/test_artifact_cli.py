@@ -1484,7 +1484,7 @@ class TestCheckRoundTwo:
 
     def test_data_is_never_fetched_at_run_time(self, cli):
         for script in ('d3.json("https://cdn.jsdelivr.net/npm/es-atlas@0.6.0/es/provinces.json")', 'fetch("data.json")'):
-            assert _rules(cli._page_findings(self._page(script=script), title="Ventas Q3")) == ["fetch"], script
+            assert "fetch" in _rules(cli._page_findings(self._page(script=script), title="Ventas Q3")), script
 
     def test_emoji_in_a_diagram_label(self, cli):
         page = self._page(body='<svg viewBox="0 0 40 20"><text font-size="14">📡 Sensor</text></svg>')
@@ -1530,6 +1530,16 @@ class TestCheckRoundTwo:
         assert cli._page_findings(self._page(body=wide.format(w=960)), title="Ventas Q3") == []
         [finding] = cli._page_findings(self._page(body=wide.format(w=760)), title="Ventas Q3")
         assert finding["rule"] == "svg" and "the column is 720 px" in finding["message"]
+
+    def test_a_library_the_script_calls_is_loaded(self, cli):
+        libs = "https://genai.example.com/genai-ui/assets/libs/"
+        script = "if (window.d3) { d3.select('#chart').append('g'); }"
+        missing = [f for f in cli._page_findings(self._page(script=script), title="Ventas Q3", libs=libs) if "calls d3" in f["message"]]
+        assert missing and f'<script src="{libs}d3/7.9.0/d3.min.js">' in missing[0]["message"]
+        loaded = self._page(script=script).replace("</body>", f'<script src="{libs}d3/7.9.0/d3.min.js"></script></body>')
+        assert not [f for f in cli._page_findings(loaded, title="Ventas Q3", libs=libs) if "calls d3" in f["message"]]
+        # A guard alone, or a word that only looks like the global, calls nothing.
+        assert cli._page_findings(self._page(script="if (!window.Chart) show(table); const marked = 1;"), title="Ventas Q3") == []
 
     def test_dark_tokens_come_from_the_dark_block(self, cli):
         themes = cli._themes(_GOOD_PAGE)

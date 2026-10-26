@@ -860,6 +860,7 @@ def _page_findings(text, base_dir=".", title=None, sources=None, verify=False, l
             if not any(_source_allows(source, url) for source in sources):
                 where = "nothing outside the artifact" if not sources else ", ".join(sources)
                 add("host", f"{url}: this installation lets a page load from {where}.")
+    findings.extend(_missing_libraries(markup, scripts, libs))
     for url in urls:
         host = urllib.parse.urlsplit(url).hostname or ""
         if host in _CDN_HOSTS and host not in _FONT_HOSTS:
@@ -869,6 +870,25 @@ def _page_findings(text, base_dir=".", title=None, sources=None, verify=False, l
             elif verify and _url_exists(url) is False:
                 add("cdn", f"{url} does not exist on that CDN: check the version and the path.")
     return _leveled(findings)
+
+
+def _missing_libraries(markup: str, scripts: str, libs) -> list:
+    """A hosted library the page's script calls (`new Chart(`, `d3.select`) with no
+    <script src> that loads it: the guard hides the chart and the page shows its
+    fallback, so nobody sees it is missing."""
+    sources = " ".join(re.findall(r'(?i)<script\b[^>]*?\ssrc=["\']([^"\']+)', markup)).lower()
+    findings = []
+    for lib in _hosted_libs():
+        name = lib.get("global")
+        if not name or not re.search(rf"(?<![\w.$])(?:window\.)?{re.escape(name)}\s*(?:\.\s*\w|\()", scripts):
+            continue
+        if lib["name"].lower() in sources or any(f.lower() in sources for f in lib["files"]):
+            continue
+        tag = (f'<script src="{libs}{lib["name"]}/{lib["version"]}/{lib["files"][0]}"></script>'
+               if libs else "its <script> tag (`artifact.py libs`)")
+        findings.append({"rule": "lib", "message": f"The script calls {name} but the page loads no "
+                         f"{lib['name']}: add {tag} before the script that uses it."})
+    return findings
 
 
 def _leveled(findings: list) -> list:
