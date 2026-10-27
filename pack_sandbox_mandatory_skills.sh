@@ -53,6 +53,10 @@ check_frontmatter() {
   local skill_md="$1" name="$2" frontmatter
   [[ "$(head -n 1 "$skill_md")" == "---" ]] || die "$skill_md does not start with a --- frontmatter"
   frontmatter="$(awk 'NR==1{next} /^---$/{exit} {print}' "$skill_md")"
+  # Valid YAML too: OpenCode leaves out a skill whose frontmatter it cannot parse (an
+  # unquoted ': ' in the description is enough), with no error anywhere.
+  python3 -c 'import sys, yaml; assert isinstance(yaml.safe_load(sys.stdin), dict)' <<<"$frontmatter" 2>/dev/null \
+    || die "$skill_md: frontmatter is not valid YAML (quote a value that holds ': ')"
   grep -qx "name: $name" <<<"$frontmatter" || die "$skill_md: frontmatter 'name:' is not '$name'"
   grep -q "^description: ." <<<"$frontmatter" || die "$skill_md: frontmatter has no description"
 }
