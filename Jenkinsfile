@@ -18,5 +18,12 @@ hose {
         doUT(config)
         doPackage(config)
         doDeploy(config)
+
+        // genai-agents-sandbox bakes this build's sandbox mandatory skills into its image
+        // (sandbox-mandatory-skills-<version>.zip), so rebuild its main to pick them up.
+        // doRebuildJob skips it on PR and release builds.
+        stage("Rebuild genai-agents-sandbox"){
+            doRebuildJob(config, 'GenAI/genai-agents-sandbox', 'main', "", false, true, false)
+        }
     }
 }
