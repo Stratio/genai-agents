@@ -1,0 +1,10 @@
+# Files from elsewhere in the monorepo that this skill ships with, copied into it by
+# pack_sandbox_mandatory_skills.sh. One per line: <source, from the monorepo root>
+# <destination, inside the skill>. A sandbox mandatory skill runs in every sandbox,
+# agentless ones included, so it cannot count on an agent having imported another
+# skill: it carries its own copy. (Guides from guides/ go in the `guides` manifest,
+# as for any shared skill.)
+#
+# The Stratio theme catalog: brand-kit's token contract and its themes.
+skills/brand-kit/SKILL.md   brand-kit.md
+skills/brand-kit/themes     themes

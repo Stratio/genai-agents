@@ -1,6 +1,6 @@
 ---
 name: analyze
-description: "Análisis completo de datos BI/BA — descubrimiento de dominio, EDA y calidad de datos, planificación de métricas y KPIs con framework analítico, queries de datos vía MCP, análisis Python con pandas, visualizaciones, generación de informes multi-formato (PDF, DOCX, PowerPoint, Dashboard web, Informe web/Artículo web, Póster/Infografía, Excel/XLSX) y documentación del razonamiento. Usar cuando el usuario necesite analizar datos de negocio, calcular KPIs, producir visualizaciones, generar resúmenes gráficos, obtener insights o responder preguntas analíticas sobre dominios gobernados. También se activa para comparaciones multi-métrica, resúmenes de KPIs, peticiones de entregables (informes, dashboards, libros) o cualquier petición que requiera cruzar datos entre dimensiones."
+description: "Análisis completo de datos BI/BA — descubrimiento de dominio, EDA y calidad de datos, planificación de métricas y KPIs con framework analítico, queries de datos vía MCP, análisis Python con pandas, visualizaciones, generación de informes multi-formato (Artefacto — dashboard interactivo o página de informe en GenAI UI —, PDF, DOCX, PowerPoint, Póster/Infografía, Excel/XLSX) y documentación del razonamiento. Usar cuando el usuario necesite analizar datos de negocio, calcular KPIs, producir visualizaciones, generar resúmenes gráficos, obtener insights o responder preguntas analíticas sobre dominios gobernados. También se activa para comparaciones multi-métrica, resúmenes de KPIs, peticiones de entregables (informes, dashboards, libros) o cualquier petición que requiera cruzar datos entre dimensiones."
 argument-hint: "[pregunta o tema de análisis]"
 ---
 
@@ -97,15 +97,15 @@ Una sola interacción:
 |---|----------|---------------------|-----------|-----------|
 | 1 | ¿Qué profundidad de análisis prefieres? | **Rápido** · **Estándar** (Recomendado) · **Profundo** | Única | Siempre |
 | 2 | ¿Para que audiencia es el análisis? | **C-level/Direccion** · **Manager/Responsable** · **Equipo técnico/Data** · **Mixta/General** | Única | Siempre |
-| 3 | ¿En que formatos quieres los deliverables? | **PDF** · **DOCX** · **PowerPoint** (.pptx) · **Dashboard web** (HTML interactivo con Plotly) · **Informe web / Artículo web** (página HTML autocontenida, narrativa o editorial) · **Póster/Infografía** (visual de una página) · **Excel** (libro .xlsx) | Múltiple | Siempre |
+| 3 | ¿En que formatos quieres los deliverables? | **Chat** (el análisis en esta conversación, sin entregable) · **Artefacto** (Recomendado) (un dashboard interactivo o una página de informe en GenAI UI que se puede compartir y volver a abrir) · **PDF** · **DOCX** · **PowerPoint** (.pptx) · **Póster/Infografía** (visual de una página) · **Excel** (libro .xlsx) | Múltiple | Siempre |
 | 4 | ¿Quieres que se generen y ejecuten tests unitarios sobre el código Python? | **Sí** (Recomendado): mejora precisión y calidad, pero consume más tiempo, coste y contexto · **No**: ejecución directa sin tests | Única | Solo Estándar/Profundo |
 
-**Regla adaptativa**: Si la petición del usuario ya especifica información que responde a alguna de estas preguntas, pre-rellenar esa respuesta y no volver a preguntarla. Por ejemplo: si el usuario dijo "dame un informe en PDF", pre-rellenar formato como Document; si dijo "análisis rápido", pre-rellenar profundidad como Quick; si dijo "dashboard ejecutivo", pre-rellenar audiencia como C-level/Executive y formato como Web. Solo preguntar aquello cuya respuesta no pueda inferirse de la petición.
+**Regla adaptativa**: Si la petición del usuario ya especifica información que responde a alguna de estas preguntas, pre-rellenar esa respuesta y no volver a preguntarla. Por ejemplo: si el usuario dijo "dame un informe en PDF", pre-rellenar formato como PDF; si dijo "análisis rápido", pre-rellenar profundidad como Quick; si dijo "dashboard ejecutivo", pre-rellenar audiencia como C-level/Executive y formato como Artefacto. Solo preguntar aquello cuya respuesta no pueda inferirse de la petición.
 
 - Los tests validan transformaciones y cálculos antes de ejecutar con datos reales. Mejoran la precisión pero consumen más tokens, tiempo y coste. **En profundidad Rápido, testing se desactiva automáticamente sin preguntar al usuario.**
 - La pregunta de formato SIEMPRE permite selección múltiple
-- Las opciones de formato son EXACTAMENTE 7: PDF, DOCX, PowerPoint, Dashboard web, Informe web/Artículo web, Póster/Infografía, Excel. Cada una enruta a su skill writer dedicada (ver instrucciones del agente §8). No inventar, no omitir, no sustituir
-- Si no selecciona formato → no hay deliverables, el análisis se entrega solo en chat + report.md automático
+- Las opciones de formato son EXACTAMENTE 7: Chat, Artefacto, PDF, DOCX, PowerPoint, Póster/Infografía, Excel. Cada formato de entregable enruta a su skill dedicada (ver instrucciones del agente §8). No inventar, no omitir, no sustituir
+- Si selecciona Chat (o ningún formato) → no hay deliverables, el análisis se entrega solo en chat + report.md automático; si elige Chat junto con otros formatos, se aplican los otros formatos
 - **Si selecciona uno o más formatos → los deliverables SE GENERAN SIEMPRE, independientemente de la profundidad elegida. Rápido/Estándar/Profundo afecta al análisis, no a los entregables.**
 - Requisitos adicionales vía opción "Other" (filtros temporales, segmentos, métricas obligatorias)
 
@@ -232,7 +232,7 @@ Presentar plan completo al usuario y solicitar aprobación antes de ejecutar.
 
 El usuario aprueba el plan completo o corrige el tema en el mismo turno. Si no se seleccionaron formatos, saltarse este ítem entero. Si la cascada se resolvió silenciosamente (niveles 1-4 de §8.3), ocultar el ítem o mostrar una línea corta indicando qué tema se aplicó y por qué — a discreción del agente según ayude o no a la revisión del usuario.
 
-**Disclosure de la guía de dashboard (solo cuando se seleccionó Dashboard web)**: incluir una línea corta indicando si la guía analítica de dashboard se aplicará. Ejemplo:
+**Disclosure de la guía de dashboard (solo cuando se seleccionó un Artefacto dashboard)**: incluir una línea corta indicando si la guía analítica de dashboard se aplicará. Ejemplo:
 > Dashboard aplicará el patrón analítico estándar (KPIs, filtros, tablas ordenables). Si prefieres algo más libre o narrativo, avísame.
 
 Si el usuario señaló libertad de diseño en el brief, indicarlo: "Dashboard NO aplicará la guía estándar porque pediste diseño libre."
@@ -324,13 +324,13 @@ Si durante la ejecución se detecta un hallazgo que excede el alcance del nivel 
    - **PDF** → `pdf-writer`. Salida: `<slug>-report.pdf`.
    - **DOCX** → `docx-writer`. Salida: `<slug>-report.docx`.
    - **PowerPoint** → `pptx-writer`. 16:9 por defecto; 4:3 solo si el usuario lo pidió explícitamente. Salida: `<slug>-presentation.pptx`.
-   - **Dashboard web** → `web-craft`. **También cargar `analytical-dashboard.md`** (de esta misma carpeta de skill) como input a web-craft, SALVO que el usuario señalara libertad de diseño al aprobar el plan (disclosure de §5.11). Salida: `<slug>-dashboard.html`.
-   - **Informe web / Artículo web** → `web-craft`. NO cargar `analytical-dashboard.md`. Usar artifact class `Page` o `Article`. Layout: secciones narrativas, callouts KPI inline, figuras Plotly incrustadas como figuras estáticas, filtros mínimos o ninguno. Salida: `<slug>-article.html`.
+   - **Artefacto** → `artifacts`: cargarla y seguir su `html.md`. Si el usuario pidió un dashboard o interacción, usar la composición de dashboard: **cargar también `analytical-dashboard.md`** (de esta misma carpeta de skill), SALVO que el usuario señalara libertad de diseño al aprobar el plan (disclosure de §5.11); si no, construir una página de informe narrativa (secciones narrativas, callouts KPI inline, figuras estáticas, filtros mínimos o ninguno). El `build.py` de la página vive en la carpeta de trabajo del artefacto (`artifact.py workdir`) y lee sus datos de `output/[ANALISIS_DIR]/`. Si una guía choca con `html.md` (sin `fetch`, colores solo como tokens, CDNs permitidas), manda `html.md`. Mismo tema que el resto de entregables (tokens de marca del paso 1). Salida: el enlace del artefacto, ningún fichero en `output/`.
+   - Una petición explícita de un fichero .html → `web-craft` (`<slug>-dashboard.html` con `analytical-dashboard.md`, misma excepción, o `<slug>-article.html`).
    - **Póster/Infografía** → `canvas-craft`. Salida: `<slug>-poster.pdf` o `<slug>-poster.png`.
    - **Excel** → `xlsx-writer`. Composición analítica según `xlsx-writer` SKILL.md §8: hoja cover/KPI con 3-4 métricas clave del resumen ejecutivo, hoja de parámetros documentando filtros / rango de fechas / selecciones de segmento, hojas de detalle (una por dimensión principal) con `openpyxl.worksheet.table.Table` objects y formato condicional en columnas de delta (vs período anterior / benchmark / target), hoja opcional de validación de hipótesis en profundidad Standard/Deep, apéndice opcional de raw data cuando el dataset sea pequeño. Si el libro usa fórmulas, cargar `/xlsx-writer` y ejecutar su `scripts/refresh_formulas.py <ruta> --json` post-build para poblar los valores cacheados. Salida: `<slug>-workbook.xlsx`.
 3. Escribir `output/[ANALISIS_DIR]/report.md` (tablas + mermaid) como documentación interna, siempre — independientemente de los formatos seleccionados. Es la fuente de verdad que consumen las skills writer.
 4. Convención de nombres: `<slug>` = parte descriptiva de `[ANALISIS_DIR]` (todo lo que va después de `YYYY-MM-DD_HHMM_`). Los ficheros internos (`plan.md`, `reasoning/`, `validation/`) se quedan sin prefijo.
-5. Verificar cada fichero en disco con `ls -lh output/[ANALISIS_DIR]/` una vez producido el entregable. Regenerar si falta ANTES de reportar al usuario.
+5. Verificar cada fichero en disco con `ls -lh output/[ANALISIS_DIR]/` una vez producido el entregable y, para un Artefacto, que `create` imprimió su enlace. Regenerar si falta ANTES de reportar al usuario.
 
 ### 6.10 Reasoning
 
@@ -364,7 +364,7 @@ Al presentar hallazgos en la conversación, seguir esta estructura:
 3. Insights con datos concretos y contexto comparativo (vs anterior, vs objetivo)
 4. Recomendaciones accionables priorizadas (alto impacto + alta confianza primero)
 5. Limitaciones y caveats
-6. Rutas de archivos generados
+6. Rutas de archivos generados y enlaces de artefactos
 7. Sugerencias de análisis de seguimiento
 
 **Checklist "So What?" obligatorio** — Para CADA hallazgo antes de incluirlo:

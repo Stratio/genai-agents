@@ -45,9 +45,27 @@ data is the story and the theme should step back.
 
 - **Motion budget**: `minimal` (tight transitions, no decorative motion)
 - **Border radius**: `4px`
-- **Dark mode variant**: not shipped (derive with `bg` = `#0b1220`,
-  `ink` = `#e5e7eb`, keep primary and accent)
+- **Dark mode variant**: see [Dark mode](#dark-mode)
 - **Chart sequential**: base color `#0369a1`
+
+## Dark mode
+
+| Token | Hex |
+|---|---|
+| bg | #0b1220 |
+| bg_alt | #111c31 |
+| ink | #e5e7eb |
+| muted | #838b96 |
+| rule | #202d48 |
+| primary | #098cd3 |
+| accent | #f59e0b |
+| state_ok | #07986f |
+| state_warn | #d3630e |
+| state_danger | #df5757 |
+| on_primary | #0b1220 |
+| on_accent | #0b1220 |
+
+Chart categorical: `#0369a1`, `#f59e0b`, `#059669`, `#dc2626`, `#8b5cf6`, `#6b7280`
 
 ## Tone family
 

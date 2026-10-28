@@ -2,7 +2,7 @@
 
 Skill local del agente `data-analytics-officer`. Orquesta el flujo analítico completo: intake, preguntas de clarificación, plan, consulta de datos gobernados vía MCP, análisis Python, visualizaciones, testing opcional, iteración, documentación de razonamiento y validación, y orquestación de la generación de deliverables a través de las skills writer declaradas en `AGENTS.md §8`.
 
-Es el único motor analítico del agente. La generación de deliverables se delega a `pdf-writer`, `docx-writer`, `pptx-writer`, `web-craft`, `canvas-craft` + `brand-kit`.
+Es el único motor analítico del agente. La generación de deliverables se delega a `artifacts`, `pdf-writer`, `docx-writer`, `pptx-writer`, `canvas-craft` + `brand-kit` (`web-craft` cuando el usuario pide explícitamente un fichero .html).
 
 ## Qué hace
 
@@ -39,7 +39,7 @@ Ninguna específica de `/analyze`. Las skills writer declaran sus propias depend
 ## Sub-guides
 
 - `visualization.md` — selección de tipo de gráfica, storytelling, principios anti-solapamiento
-- `analytical-dashboard.md` — patrones de composición para dashboards analíticos (la carga `web-craft` cuando el formato es Dashboard web)
+- `analytical-dashboard.md` — patrones de composición para dashboards analíticos (se carga para un Artefacto dashboard, o la carga `web-craft` cuando se pide explícitamente un fichero .html de dashboard)
 - `reasoning-guide.md` — cómo y cuándo documentar el razonamiento
 - `validation-guide.md` — bloques y formatos de validación
 - `analytical-patterns.md` — patrones operacionalizados (Pareto, cohortes, funnel, RFM, etc.)

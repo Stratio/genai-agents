@@ -1,12 +1,12 @@
 # Analytical Dashboard — Guide
 
-Guide consumed by `web-craft` when the agent asks it to build an interactive dashboard as the deliverable of an analytical flow (loaded from `/analyze` Phase 4 when the user selected **Dashboard web** as one of the formats in §4.1).
+Guide consumed by `artifacts` (or by `web-craft` for an explicitly requested .html file) when the agent builds an interactive dashboard as the deliverable of an analytical flow (loaded from `/analyze` Phase 4 when the user selected an **Artifact** dashboard in §4.1). In an Artifact, where this guide conflicts with the `artifacts` skill's `html.md` (no `fetch`, colors only as tokens, allowed CDNs), `html.md` wins.
 
 This guide captures the conventions that make an analytical dashboard recognisable: KPI cards up top, global filters that cascade over everything, sortable support tables, Plotly charts with insight-titles, and a composition that reads as analysis rather than as marketing. `web-craft` still applies its own five decisions (tone / type pairing / palette / motion budget / composition) on top of this guide — the tokens come from the centralized theming skill selected in the plan; this guide contributes the **analytical patterns**.
 
 ## 1. When to apply this guide
 
-Apply silently when the agent calls `web-craft` from `/analyze` Phase 4 with a Dashboard web deliverable AND the user has not signalled design freedom. Skip entirely when the user's brief contains phrases like:
+Apply silently when the agent builds an Artifact dashboard (or an explicitly requested .html dashboard) from `/analyze` Phase 4 AND the user has not signalled design freedom. Skip entirely when the user's brief contains phrases like:
 
 - "rompe el molde", "dashboard creativo", "experimental", "narrativo", "más libre"
 - "algo diferente", "fuera del patrón habitual", "dashboard personalizado"

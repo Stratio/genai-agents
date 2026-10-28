@@ -50,7 +50,7 @@ installations without custom fonts embedded.
 
 - **Motion budget**: `minimal` (corporate content does not animate)
 - **Border radius**: `2px`
-- **Dark mode variant**: not shipped
+- **Dark mode variant**: see [Dark mode](#dark-mode)
 - **Chart sequential**: base color `#1a365d`
 
 ## Print variant (for pdf-writer)
@@ -66,6 +66,25 @@ softer near-black to avoid the clinical feel of pure white + pure black:
 | accent | #3182ce | unchanged — business blue prints well |
 
 Font sizes and typography are the same as in the core block.
+
+## Dark mode
+
+| Token | Hex |
+|---|---|
+| bg | #0e1218 |
+| bg_alt | #161d26 |
+| ink | #e6e8ea |
+| muted | #818998 |
+| rule | #27303c |
+| primary | #5987c6 |
+| accent | #3e89d0 |
+| state_ok | #38a169 |
+| state_warn | #d69e2e |
+| state_danger | #e65151 |
+| on_primary | #0e1218 |
+| on_accent | #0e1218 |
+
+Chart categorical: `#3463a4`, `#3182ce`, `#38a169`, `#d69e2e`, `#805ad5`, `#e53e3e`
 
 ## Tone family
 

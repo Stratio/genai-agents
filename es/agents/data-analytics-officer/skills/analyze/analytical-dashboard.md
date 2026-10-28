@@ -1,12 +1,12 @@
 # Dashboard Analítico — Guía
 
-Guía consumida por `web-craft` cuando el agente le pide construir un dashboard interactivo como entregable de un flujo analítico (cargada desde `/analyze` Fase 4 cuando el usuario seleccionó **Dashboard web** como uno de los formatos en §4.1).
+Guía consumida por `artifacts` (o por `web-craft` para un fichero .html pedido explícitamente) cuando el agente construye un dashboard interactivo como entregable de un flujo analítico (cargada desde `/analyze` Fase 4 cuando el usuario seleccionó un **Artefacto** dashboard en §4.1). En un Artefacto, si esta guía choca con el `html.md` de la skill `artifacts` (sin `fetch`, colores solo como tokens, CDNs permitidas), manda `html.md`.
 
 Esta guía captura las convenciones que hacen que un dashboard analítico sea reconocible: KPI cards arriba, filtros globales que cascadean sobre todo, tablas de soporte ordenables, gráficas Plotly con títulos-insight y una composición que se lee como análisis y no como marketing. `web-craft` sigue aplicando sus cinco decisiones (tono / pairing tipográfico / paleta / motion / composición) encima de esta guía — los tokens vienen de la skill de theming centralizado elegida en el plan; esta guía aporta los **patrones analíticos**.
 
 ## 1. Cuándo aplicar esta guía
 
-Aplicar silenciosamente cuando el agente llame a `web-craft` desde `/analyze` Fase 4 con un entregable Dashboard web Y el usuario no haya señalado libertad de diseño. Saltarse por completo cuando el brief del usuario contiene frases como:
+Aplicar silenciosamente cuando el agente construya un Artefacto dashboard (o un dashboard .html pedido explícitamente) desde `/analyze` Fase 4 Y el usuario no haya señalado libertad de diseño. Saltarse por completo cuando el brief del usuario contiene frases como:
 
 - "rompe el molde", "dashboard creativo", "experimental", "narrativo", "más libre"
 - "algo diferente", "fuera del patrón habitual", "dashboard personalizado"

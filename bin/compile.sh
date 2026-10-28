@@ -51,6 +51,19 @@ for script in "$REPO_ROOT"/pack_*.sh "$REPO_ROOT"/bin/*.sh; do
   fi
 done
 
+# --- Sandbox mandatory skills: frontmatter, manifests, packable ---
+echo "==> Validating sandbox mandatory skills..."
+MANDATORY_TMP="$(mktemp -d)"
+if bash "$REPO_ROOT/pack_sandbox_mandatory_skills.sh" --output-dir "$MANDATORY_TMP" >/dev/null; then
+  for skill in "$REPO_ROOT"/sandbox-mandatory-skills/*/; do
+    echo "  [OK] Sandbox mandatory skill: $(basename "$skill")"
+  done
+else
+  echo "  ERROR: pack_sandbox_mandatory_skills.sh failed (see above)" >&2
+  ERRORS=$((ERRORS + 1))
+fi
+rm -rf "$MANDATORY_TMP"
+
 # --- Result ---
 if [[ "$ERRORS" -gt 0 ]]; then
   echo "==> FAILED: $ERRORS validation error(s)" >&2

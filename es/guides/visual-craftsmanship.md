@@ -88,11 +88,12 @@ Antes de entregar, haz un último pase. El objetivo de este pase es contención,
 
 ## Disambiguación entre skills visuales
 
-Tres skills del monorepo producen salida visual y comparten deliberadamente esta guía. Son complementarias, no solapadas.
+Cuatro skills producen salida visual y comparten deliberadamente esta guía: `artifacts` y tres del monorepo. Son complementarias, no solapadas.
 
 | Skill | Medio | Cuándo usarla |
 |---|---|---|
-| `web-craft` | Frontend interactivo (HTML/CSS/JS, React, Vue) | Componentes, páginas, landings, dashboards, artefactos interactivos. El artefacto vive en un navegador. |
+| `artifacts` | Página en GenAI UI (HTML), compartida y reabierta | Páginas, informes y dashboards que alguien abre en GenAI UI. La opción por defecto para un entregable visualizable. |
+| `web-craft` | Frontend interactivo (HTML/CSS/JS, React, Vue) | Componentes, landings y apps para integrar como código, o un fichero `.html` explícito. El artefacto vive en un navegador. |
 | `canvas-craft` | Artefacto estático de una sola página (PDF o PNG) | Pósters, portadas, certificados, one-pagers de marketing, infografías. La composición visual domina (aproximadamente un setenta por ciento o más de la superficie). Texto mínimo, tipografía como elemento visual. |
 | `pdf-writer` | Documento tipográfico multi-página, o documento de una sola página dominado por prosa, tablas o datos (PDF) | Informes analíticos, estados financieros, facturas, contratos, zines editoriales, documentación técnica. Tipo y ritmo dominan; la disposición sirve a la lectura. |
 
@@ -100,11 +101,11 @@ Tres skills del monorepo producen salida visual y comparten deliberadamente esta
 
 - **One-pager ejecutivo, prosa densa y KPIs** → `pdf-writer`. El artefacto se lee; no posa.
 - **One-pager de marketing, imagen hero y una afirmación** → `canvas-craft`. El artefacto posa; no se lee.
-- **Dashboard interactivo con KPIs** → `web-craft`. La interacción es el punto.
+- **Dashboard interactivo con KPIs** → un artefacto (`artifacts`). La interacción es el punto. `web-craft` solo para código a integrar o un fichero `.html`.
 - **Informe con portada diseñada** → pipeline combinada: `canvas-craft` produce la portada, `pdf-writer` ensambla el cuerpo, merge final con `pypdf`.
 
 Cuando ninguna de estas encaja limpiamente, es probable que el artefacto necesite más definición antes de elegir herramienta. Vuelve a las cinco decisiones del principio de esta guía y clasifica primero el artefacto.
 
 ## Nota sobre distribución standalone
 
-Si esta guía se empaqueta dentro de una única skill para distribución externa (sin las otras skills visuales al lado), la tabla de disambiguación de arriba sigue aportando contexto. Indica que la skill pertenece a una familia de tres skills con responsabilidades distintas. Los consumidores sin las skills compañeras pueden seguir usando los principios — la selección de tono, los anti-patrones, los roles de paleta y el checklist son autocontenidos y no dependen de las otras skills.
+Si esta guía se empaqueta dentro de una única skill para distribución externa (sin las otras skills visuales al lado), la tabla de disambiguación de arriba sigue aportando contexto. Indica que la skill pertenece a una familia de skills visuales con responsabilidades distintas. Los consumidores sin las skills compañeras pueden seguir usando los principios — la selección de tono, los anti-patrones, los roles de paleta y el checklist son autocontenidos y no dependen de las otras skills.

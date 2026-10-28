@@ -1,6 +1,6 @@
 ---
 name: brand-kit
-description: "Seleccionar y aplicar un tema de identidad visual (colores, tipografía, tono, paleta de charts, tamaños) que cada writer skill (docx-writer, pptx-writer, pdf-writer, web-craft, canvas-craft, xlsx-writer) consume para producir entregables con branding coherente. Incluye diez temas curados y es extensible mediante nuevos ficheros markdown de tema. Usar siempre que el usuario pida una marca o tema específicos, mencione colores/identidad/tono corporativos, solicite un informe/deck/poster con branding, o antes de generar cualquier entregable visual para fijar los tokens de marca. No renderiza el fichero final — delega en las writer skills."
+description: "Seleccionar y aplicar un tema de identidad visual (colores, tipografía, tono, paleta de charts, tamaños) que cada writer skill (docx-writer, pptx-writer, pdf-writer, web-craft, canvas-craft, xlsx-writer) y la skill artifacts consumen para producir entregables con branding coherente. Incluye diez temas curados y es extensible mediante nuevos ficheros markdown de tema. Usar siempre que el usuario pida una marca o tema específicos, mencione colores/identidad/tono corporativos, solicite un informe/deck/poster con branding, o antes de generar cualquier entregable visual para fijar los tokens de marca. No renderiza el fichero final — delega en las writer skills."
 argument-hint: "[nombre del tema | 'personalizado' | 'scaffold']"
 ---
 
@@ -36,7 +36,7 @@ en que carga la skill, sin lectura adicional.
 ## Flujo (invoca este flujo ANTES de cualquier skill de output con dimensión visual)
 
 Siempre que el agente vaya a generar un entregable que tenga cualquier
-expresión visual (informe DOCX, deck PPTX, documento PDF, libro XLSX,
+expresión visual (artefacto, informe DOCX, deck PPTX, documento PDF, libro XLSX,
 landing HTML, PDF / PNG de una sola página), ejecuta este flujo primero para fijar
 los tokens de marca. Saltarse este paso produce artefactos
 inconsistentes — fuentes distintas, acentos distintos, sin paleta
@@ -119,10 +119,12 @@ series. Las dos primeras entradas suelen coincidir con `primary` y
 - `motion_budget` — `"minimal"` / `"restrained"` / `"expressive"`.
   Usado por web-craft para transiciones y por pptx para animaciones.
 - `radius` — border-radius en píxeles. Usado por web-craft.
-- `dark_mode` — subset con `primary` / `ink` / `bg` / `accent` de modo
-  oscuro. Usado por web-craft cuando se pide variante dark. Si el tema
-  omite `dark_mode` y hace falta una variante oscura, deriva
-  invirtiendo `bg` ↔ `ink` manteniendo `primary` / `accent`.
+- `dark_mode` — los tokens de color otra vez para el modo oscuro, más
+  `on_primary` / `on_accent` (texto sobre esos rellenos) y una paleta de
+  gráficos oscura, en la sección `## Dark mode` del tema. El texto llega
+  a 4,5:1 sobre `bg` y `bg_alt`, los colores de gráfico a 3:1. Un tema
+  propio sin ella aclara `primary`, `accent` y los estados (mismo tono)
+  hasta llegar a eso.
 - `chart_sequential` — color base para escalas secuenciales / heatmaps.
 - `print` — subset de tokens afinados para PDF impreso (`paper`, `ink`,
   `rule`, opcionalmente `accent`). Usado por `pdf-writer`. Decláralo

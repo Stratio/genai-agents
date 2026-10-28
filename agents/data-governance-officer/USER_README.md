@@ -41,12 +41,11 @@ For quality coverage reports and other multi-format deliverables, you can pick a
 
 | Format | Best for |
 |---|---|
-| **Chat** | Quick review inside the conversation, no file generated |
+| **Chat** | Quick review inside the conversation, no file generated (the default when you choose nothing) |
+| **Artifact** (Recommended) | An interactive dashboard or report page in GenAI UI that can be shared and opened again |
 | **PDF** | Formal documents with prose-driven narrative, executive or compliance reports |
 | **DOCX** | Editable Word documents for policy briefs and compliance reports |
 | **PPTX** | Executive summary decks, steering-committee briefings, ontology walkthroughs |
-| **Dashboard web** | Interactive HTML with KPI cards, filters and sortable tables |
-| **Web article / Narrative report** | Self-contained editorial HTML page with narrative sections, inline KPI callouts and embedded charts |
 | **Poster / Infographic** | Single-page visual summary for communication or display |
 | **XLSX** | Multi-sheet quality-coverage workbook, ontology export, term catalog, compliance matrix with conditional formatting |
 | **Markdown** | Lightweight text format for documentation systems and wikis |
@@ -86,7 +85,7 @@ Every visual format applies the theme you choose at the start of the deliverable
 ### Reports and deliverables
 - "Generate a PDF coverage report for the sales domain"
 - "Create a PowerPoint executive summary of quality findings"
-- "Build an interactive quality dashboard web for the operations team"
+- "Build an interactive quality dashboard artifact for the operations team"
 - "Generate a one-page infographic of coverage by domain"
 - "Export the rule catalog as an Excel workbook with conditional formatting"
 - "Use the forensic-audit theme for the compliance report"
@@ -120,7 +119,7 @@ Every visual format applies the theme you choose at the start of the deliverable
 | `/assess-quality` | Assess quality coverage by domain or table: covered dimensions, gaps and priorities |
 | `/create-quality-rules` | Design and create quality rules with mandatory human approval |
 | `/create-quality-schedule` | Create automatic execution schedules for quality rules |
-| `/quality-report` | Generate a formal coverage report in Chat, PDF, DOCX, PPTX, Dashboard web, Web article / Narrative report, Poster/Infographic, XLSX or Markdown |
+| `/quality-report` | Generate a formal coverage report in Chat, as an Artifact, or in PDF, DOCX, PPTX, Poster/Infographic, XLSX or Markdown |
 | `/manage-critical-data-elements` | Consult or define Critical Data Elements (CDEs) for a governed domain, with mandatory human approval before tagging |
 
 ### Content readers
@@ -142,7 +141,7 @@ Every visual format applies the theme you choose at the start of the deliverable
 ### Visual artifacts and branding
 | Command | Description |
 |---------|-------------|
-| `/web-craft` | Standalone interactive HTML: dashboards, landing pages, UI components |
+| `/web-craft` | Web code to integrate and explicit `.html` files: landing pages, UI components, sites and apps |
 | `/canvas-craft` | Single-page composition-dominated visuals: posters, infographics, covers |
 | `/brand-kit` | Centralized theming catalog: 10 curated themes (corporate-formal, forensic-audit, luxury-refined, editorial-serious and more), extensible with client-specific themes |
 
