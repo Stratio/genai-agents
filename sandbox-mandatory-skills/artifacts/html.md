@@ -68,11 +68,15 @@ is what makes it safe to open, and it is not negotiable. In practice:
   `window.print()` works; add a `@media print` block if the page is meant to be printed.
   Paper is white in either mode, so that block writes plain colors (`#fff`, `#000`)
   rather than the tokens.
-- **Size.** By default a file can be up to 16 MB and an artifact 64 MB: the API
-  refuses more. The viewer shows a page up to 16 MB counting every file it puts
-  inside it, and base64 makes each one a third bigger, so a page carries about 12 MB
-  of images, fonts and clips; one that does not fit stays out and shows broken.
-  Downscale and compress images, keep clips short, and use only what the page needs.
+- **Size.** By default a file can be up to 5 MB, an artifact 20 MB and 128 files: the
+  API refuses more. The viewer shows a page up to 5 MB counting every file it puts
+  inside it, and base64 makes each one a third bigger, so a page carries about 3.7 MB
+  of images, fonts and clips; one that does not fit stays out and shows broken. An
+  installation may set other limits, in bytes: `$ARTIFACT_MAX_FILE_SIZE_BYTES`,
+  `$ARTIFACT_MAX_TOTAL_SIZE_BYTES`, `$ARTIFACT_MAX_FILES` and
+  `$ARTIFACT_MAX_INLINE_BYTES` (the page in the viewer); where one is set, it replaces
+  the default. Read them before a page heavy on images, fonts or clips. Downscale and
+  compress images, keep clips short, and use only what the page needs.
 
 ## Designing an HTML page
 
