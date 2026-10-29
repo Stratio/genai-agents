@@ -669,6 +669,27 @@ def _libs_url():
     return url if url.endswith("/") else url + "/"
 
 
+# The API's size limits, which genai-api hands the sandbox as ARTIFACT_MAX_*; where one
+# is unset or not a positive integer, GenAI API's own default.
+_LIMITS = (
+    ("max_file_size_bytes", "ARTIFACT_MAX_FILE_SIZE_BYTES", 5 * 1024 * 1024),
+    ("max_total_size_bytes", "ARTIFACT_MAX_TOTAL_SIZE_BYTES", 20 * 1024 * 1024),
+    ("max_files", "ARTIFACT_MAX_FILES", 128),
+    ("max_inline_bytes", "ARTIFACT_MAX_INLINE_BYTES", None),  # the file limit
+)
+
+
+def _limits() -> dict:
+    limits = {}
+    for key, name, default in _LIMITS:
+        value = (os.environ.get(name) or "").strip()
+        valid = value.isdigit() and int(value) > 0
+        limits[key] = int(value) if valid else default or limits["max_file_size_bytes"]
+    # Inlined as base64, every file in a page takes a third more than its size.
+    limits["page_media_bytes"] = limits["max_inline_bytes"] * 3 // 4
+    return limits
+
+
 def _hosted_files(base: str) -> set:
     return {f"{base}{lib['name']}/{lib['version']}/{name}" for lib in _hosted_libs() for name in lib["files"]}
 
@@ -1342,6 +1363,11 @@ def cmd_libs(args):
     sys.stdout.write("\n".join(lines) + "\n")
 
 
+def cmd_limits(args):
+    """This installation's size limits, in bytes (max_files is a count)."""
+    _emit(_limits())
+
+
 def cmd_check(args):
     """Check pages before `create` or `write`: what the viewer breaks, and the rules
     SKILL.md asks for. The first page is the entry: it is the one --title applies to."""
@@ -1561,6 +1587,9 @@ def _parser() -> argparse.ArgumentParser:
     p = sub.add_parser("libs")
     p.add_argument("name", nargs="?", help="One library, e.g. chart.js; none lists them all")
     p.set_defaults(func=cmd_libs)
+
+    p = sub.add_parser("limits")
+    p.set_defaults(func=cmd_limits)
 
     p = sub.add_parser("check")
     p.add_argument("files", nargs="+", help="The entry page first, then any other page")
