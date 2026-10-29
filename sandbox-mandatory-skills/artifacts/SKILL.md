@@ -128,7 +128,8 @@ the topic (`--tags sales,q3,report`), in the language of the conversation. They 
 what finds the artifact later when someone names it.
 
 Tags are for searching **on demand** only. Do not list or search artifacts on your own
-initiative when the person has not referred to one.
+initiative when the person has not referred to one, except to [keep this
+conversation's own up to date](#keeping-it-in-step-with-the-conversation).
 
 ## When the person refers to an artifact
 
@@ -169,6 +170,17 @@ generated the page, change the script and run it again instead of editing its ou
 If they genuinely want a separate document, say so and confirm before creating one.
 When it starts from an existing artifact, `copy` it: the copy is theirs, private until
 they share it, and the original is left untouched.
+
+## Keeping it in step with the conversation
+
+When a later turn changes what an artifact created or edited in this conversation says
+(the code it documents, a decision, a figure), update it in that turn unasked, as in
+[Editing](#editing-not-re-creating), and say so in one line with its link. Only those
+(after a summary, `recent` lists them: `last_edit_conversation_id` is
+`$CONVERSATION_ID`). A change it does not cover, or one undone, leaves it alone. Ask in
+one line instead when it is shared (`link_access` not `none`, or `members` lists anyone
+else) or a snapshot by design (dated, "as of", a before and after); without `can_edit`,
+say it no longer matches. "Keep it updated" or "leave it" from the person wins.
 
 ## Working folder
 
