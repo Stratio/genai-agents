@@ -6,11 +6,8 @@ Every command of `scripts/artifact.py`, and how roles and sharing work. The flow
 ## How to use it
 
 The script lives beside this file, at `scripts/artifact.py`. The examples below assume
-you are in this skill's directory; from anywhere else, give the full path. `share`,
-`delete` and `rm` run through `scripts/artifact-manage` instead, as it is and never
-through `python3`: the sandbox asks the person before any command that names it, and
-`scripts/artifact.py` refuses them. `<workdir>` stands for the absolute path `workdir`
-printed, written out in full.
+you are in this skill's directory; from anywhere else, give the full path. `<workdir>`
+stands for the absolute path `workdir` printed, written out in full.
 
 ```bash
 # The person referred to an artifact: a link, an id or a name. Always first.
@@ -53,7 +50,7 @@ python3 scripts/artifact.py read <artifact_id> index.html > <workdir>/index.html
 
 # Edit in place: change the file in the working folder, then write it back
 python3 scripts/artifact.py write <artifact_id> index.html --from-file <workdir>/index.html
-scripts/artifact-manage rm <artifact_id> annex/old.html
+python3 scripts/artifact.py rm <artifact_id> annex/old.html
 # Add or replace an image, a font or a clip a page uses (a stylesheet or a script: write)
 python3 scripts/artifact.py upload <artifact_id> img/logo.png --from-file <workdir>/img/logo.png
 python3 scripts/artifact.py rename <artifact_id> "Q3 sales report"
@@ -65,11 +62,11 @@ python3 scripts/artifact.py copy <artifact_id> --title "Q3 report (EMEA)"
 
 # Share. Adds to the list (--replace overwrites it, --remove takes ids off it);
 # --role applies to the ids of this call, and sharing again changes a role.
-scripts/artifact-manage share <artifact_id> --user alice --group analysts
-scripts/artifact-manage share <artifact_id> --user bob --role editor
-scripts/artifact-manage share <artifact_id> --user carol --role owner   # co-owner
-scripts/artifact-manage share <artifact_id> --link on    # any Stratio user can read
-scripts/artifact-manage share <artifact_id> --remove --user alice
+python3 scripts/artifact.py share <artifact_id> --user alice --group analysts
+python3 scripts/artifact.py share <artifact_id> --user bob --role editor
+python3 scripts/artifact.py share <artifact_id> --user carol --role owner   # co-owner
+python3 scripts/artifact.py share <artifact_id> --link on    # any Stratio user can read
+python3 scripts/artifact.py share <artifact_id> --remove --user alice
 python3 scripts/artifact.py members <artifact_id>             # who has it, and how
 
 # When the person asks for a list, or `recent` did not find the one they alluded to
@@ -82,7 +79,7 @@ python3 scripts/artifact.py get <artifact_id>
 python3 scripts/artifact.py url <artifact_id>
 
 # Owners only, and only when the person explicitly asked for it
-scripts/artifact-manage delete <artifact_id>
+python3 scripts/artifact.py delete <artifact_id>
 ```
 
 What the commands print and accept:
