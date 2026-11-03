@@ -71,11 +71,11 @@ Para el contrato completo de layout (iconografía, KPI cards, composición por f
 
 Antes de invocar cualquier writer skill para un formato de fichero, fijar el tema siguiendo la cascada de branding del agente host. Cuando el agente host declara un contrato format→skill con una sub-sección §Decisiones de branding, seguir esa cascada — típicamente 4 niveles: pin → señal explícita → continuidad intra-sesión → propuesta curada.
 
-**Default neutro primario para informes de calidad** (cuando ninguna regla de la cascada resuelve a un tema concreto): `forensic-audit`. Encaja con el registro de auditoría de un informe de cobertura y mantiene visualmente estables las re-ejecuciones mes a mes del mismo dataset. La propuesta curada debe preferir temas cuyo descriptor mencione "audit", "technical", "editorial" o "corporate".
+**Default para informes de calidad** (cuando ninguna regla de la cascada resuelve a un tema concreto): `stratio`, el aspecto propio de Stratio. Mantiene visualmente estables las re-ejecuciones mes a mes del mismo dataset. `forensic-audit`, por el registro de auditoría de un informe de cobertura, es la primera alternativa; después, temas cuyo descriptor mencione "technical", "editorial" o "corporate".
 
-Si el usuario pide neutralidad explícita ("no me importa el diseño" / "hazlo neutro" / "sin branding"), aplicar `technical-minimal` como fallback sobrio — máxima contención, salida predecible para contextos no-auditoría.
+Si el usuario pide neutralidad explícita ("no me importa el diseño" / "hazlo neutro" / "sin branding"), aplicar también `stratio`.
 
-El tema elegido se registra silenciosamente como última línea del `quality-report.md` interno (p. ej. `theme applied: forensic-audit`). Informativo, no contractual.
+El tema elegido se registra silenciosamente como última línea del `quality-report.md` interno (p. ej. `theme applied: stratio`). Informativo, no contractual.
 
 ## 5. Generación del entregable
 
