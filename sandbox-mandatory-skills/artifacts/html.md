@@ -122,16 +122,17 @@ not. That is about design: a well-composed page still holds all the content.
 ### Theme
 
 Take the tokens from a theme instead of inventing a palette. The Stratio catalog is
-`brand-kit.md`, which ships with this skill: read its catalog table (ten themes, from
-`corporate-formal` to `technical-minimal`, each with its tone and what it is best for)
+`brand-kit.md`, which ships with this skill: read its catalog table (eleven themes, from
+`stratio` to `corporate-formal`, each with its tone and what it is best for)
 and its token contract before the first line of the page. Its workflow and its
 references to other skills do not apply here: this skill picks the theme and builds
 the page. Each theme's full values (palette, typography, dark mode, tone) are in
 `themes/<name>.md`; read the chosen one when its tone should shape the page.
 `python3 scripts/artifact.py tokens` prints the same catalog in one line per theme. Use
-the one the person names; otherwise pick the one whose "Best for" fits the request —
-not the same two for everything — say which one you used, and offer the catalog if
-they want another look.
+the one the person names; otherwise `stratio`, GenAI UI's own look, so that an artifact
+looks like part of the product. Another theme only when the subject clearly asks for
+its tone (an audit report: `forensic-audit`; a board summary: `luxury-refined`). Say
+which one you used, and offer the catalog if they want another look.
 
 **Then run `python3 scripts/artifact.py tokens <theme>` and paste what it prints**: the
 `:root` block with its dark-mode block, and the script helper. Do not

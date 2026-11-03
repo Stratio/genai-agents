@@ -63,7 +63,7 @@ These three skills cover every visual output of the monorepo. They share [`guide
 
 | Skill | Purpose | Used by |
 |---|---|---|
-| [brand-kit](brand-kit/) | Centralised catalogue of visual identity themes (colours, typography, chart palettes, sizes, tone). Ships ten curated themes, extensible by clients. Every writer skill consumes it via a generic "centralised theming skill" reference. | data-analytics-officer, data-governance-officer, data-quality |
+| [brand-kit](brand-kit/) | Centralised catalogue of visual identity themes (colours, typography, chart palettes, sizes, tone). Ships eleven curated themes (`stratio` the default), extensible by clients. Every writer skill consumes it via a generic "centralised theming skill" reference. | data-analytics-officer, data-governance-officer, data-quality |
 | [canvas-craft](canvas-craft/) | Single-page visual artifacts (posters, covers, certificates, marketing one-pagers, infographics) as PDF or PNG. Composition dominates over prose. | data-analytics-officer, data-governance-officer, data-quality |
 | [web-craft](web-craft/) | Distinctive, production-grade interactive frontends (HTML/CSS/JS, React, Vue). Components, pages, landings, dashboards as code to integrate or explicit `.html` files; a page or dashboard for a person to view is an artifact (`artifacts`). | data-analytics-officer, data-governance-officer, data-quality |
 

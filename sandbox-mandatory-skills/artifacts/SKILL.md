@@ -228,7 +228,7 @@ written out in full.
 
 ```bash
 python3 scripts/artifact.py workdir "Q3 sales report"            # prints <workdir>
-python3 scripts/artifact.py tokens [corporate-formal]             # catalog / tokens
+python3 scripts/artifact.py tokens [stratio]                     # catalog / tokens
 python3 scripts/artifact.py check <workdir>/index.html --title "Q3 sales report"
 python3 scripts/artifact.py create --title "Q3 sales report" --type html \
     --description "Third-quarter sales by store and category." \

@@ -1,6 +1,6 @@
 ---
 name: brand-kit
-description: "Seleccionar y aplicar un tema de identidad visual (colores, tipografía, tono, paleta de charts, tamaños) que cada writer skill (docx-writer, pptx-writer, pdf-writer, web-craft, canvas-craft, xlsx-writer) y la skill artifacts consumen para producir entregables con branding coherente. Incluye diez temas curados y es extensible mediante nuevos ficheros markdown de tema. Usar siempre que el usuario pida una marca o tema específicos, mencione colores/identidad/tono corporativos, solicite un informe/deck/poster con branding, o antes de generar cualquier entregable visual para fijar los tokens de marca. No renderiza el fichero final — delega en las writer skills."
+description: "Seleccionar y aplicar un tema de identidad visual (colores, tipografía, tono, paleta de charts, tamaños) que cada writer skill (docx-writer, pptx-writer, pdf-writer, web-craft, canvas-craft, xlsx-writer) y la skill artifacts consumen para producir entregables con branding coherente. Incluye once temas curados, `stratio` por defecto, y es extensible mediante nuevos ficheros markdown de tema. Usar siempre que el usuario pida una marca o tema específicos, mencione colores/identidad/tono corporativos, solicite un informe/deck/poster con branding, o antes de generar cualquier entregable visual para fijar los tokens de marca. No renderiza el fichero final — delega en las writer skills."
 argument-hint: "[nombre del tema | 'personalizado' | 'scaffold']"
 ---
 
@@ -19,6 +19,7 @@ La skill no genera artefactos por sí misma. Proporciona tokens.
 
 | Theme | Tone family | Best for |
 |---|---|---|
+| [stratio](themes/stratio.md) | technical-minimal | por defecto: el aspecto de GenAI UI y de la marca Stratio, para cualquier entregable |
 | [editorial-serious](themes/editorial-serious.md) | editorial-serious | informes analíticos largos, legal, policy |
 | [technical-minimal](themes/technical-minimal.md) | technical-minimal | dashboards, docs de ingeniería, runbooks |
 | [warm-magazine](themes/warm-magazine.md) | warm-magazine | comunicaciones, marketing, storytelling |
@@ -132,7 +133,7 @@ series. Las dos primeras entradas suelen coincidir con `primary` y
   puro o `ink` negro puro). Si está ausente, `pdf-writer` aplica
   sensibilidades genéricas de impresión.
 
-## Temas personalizados y externos (cuando ninguno de los 10 encaja)
+## Temas personalizados y externos (cuando ninguno de los 11 encaja)
 
 Si el usuario aporta su propia marca (hex + fuentes ad-hoc, o un
 fichero externo de marca como scaffold), incorpórala al mismo contrato

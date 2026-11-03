@@ -1,6 +1,6 @@
 ---
 name: brand-kit
-description: "Select and apply a visual identity theme (colors, typography, tone, chart palettes, sizing) that every writer skill (docx-writer, pptx-writer, pdf-writer, web-craft, canvas-craft, xlsx-writer) and the artifacts skill consume to produce branded deliverables. Ships ten curated themes and is extensible via new markdown theme files. Use whenever the user asks for a specific brand or theme, mentions corporate colors/identity/tone, requests a branded report/deck/poster, or before generating any visual deliverable to fix the brand tokens. Does not render the final file — delegates to the writer skills."
+description: "Select and apply a visual identity theme (colors, typography, tone, chart palettes, sizing) that every writer skill (docx-writer, pptx-writer, pdf-writer, web-craft, canvas-craft, xlsx-writer) and the artifacts skill consume to produce branded deliverables. Ships eleven curated themes, `stratio` the default, and is extensible via new markdown theme files. Use whenever the user asks for a specific brand or theme, mentions corporate colors/identity/tone, requests a branded report/deck/poster, or before generating any visual deliverable to fix the brand tokens. Does not render the final file — delegates to the writer skills."
 argument-hint: "[theme name | 'custom' | 'scaffold']"
 ---
 
@@ -18,6 +18,7 @@ The skill does not generate artifacts by itself. It provides tokens.
 
 | Theme | Tone family | Best for |
 |---|---|---|
+| [stratio](themes/stratio.md) | technical-minimal | default: GenAI UI's and the Stratio brand's look, for any deliverable |
 | [editorial-serious](themes/editorial-serious.md) | editorial-serious | long-form analytical reports, legal briefs, policy |
 | [technical-minimal](themes/technical-minimal.md) | technical-minimal | dashboards, engineering docs, runbooks |
 | [warm-magazine](themes/warm-magazine.md) | warm-magazine | communications, marketing, storytelling |
@@ -128,7 +129,7 @@ conversation with the rest of the artifact.
   pure black `ink`). If absent, `pdf-writer` applies generic print
   sensibilities.
 
-## Custom and external themes (when none of the 10 fit)
+## Custom and external themes (when none of the 11 fit)
 
 If the user provides their own brand (ad-hoc hex + fonts, or an
 external brand file as scaffold), fold it into the same contract

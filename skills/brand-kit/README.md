@@ -3,7 +3,7 @@
 Centralized catalog of visual identity (colors, typography, chart
 palettes, sizing, tone) that every output skill in the monorepo
 (`docx-writer`, `pptx-writer`, `pdf-writer`, `web-craft`,
-`canvas-craft`) knows how to consume. Ships with **10 curated themes**
+`canvas-craft`) knows how to consume. Ships with **11 curated themes**
 and is **extensible by the client**: add your own themes following the
 guide at the end of this file.
 
@@ -21,6 +21,7 @@ every output skill consumes the same contract.
 
 | Theme | Tone family | Best for |
 |---|---|---|
+| [stratio](themes/stratio.md) | technical-minimal | default: GenAI UI's and the Stratio brand's look, for any deliverable |
 | [editorial-serious](themes/editorial-serious.md) | editorial-serious | long-form analytical reports, legal briefs, policy |
 | [technical-minimal](themes/technical-minimal.md) | technical-minimal | dashboards, engineering docs, runbooks |
 | [warm-magazine](themes/warm-magazine.md) | warm-magazine | communications, marketing, storytelling |
@@ -43,7 +44,7 @@ Each theme declares a **tone family** from the eight canonical tones defined in 
 | Tone family | Themes that map here |
 |---|---|
 | editorial-serious | editorial-serious, academic-sober, corporate-formal |
-| technical-minimal | technical-minimal, modern-product |
+| technical-minimal | stratio, technical-minimal, modern-product |
 | warm-magazine | warm-magazine |
 | forensic-audit | forensic-audit |
 | brutalist-raw | brutalist-raw |
@@ -127,7 +128,7 @@ consistent:
 
 With those two entries in place, any agent that includes `brand-kit`
 will offer the new theme as a regular option, exactly like the bundled
-ten.
+eleven.
 
 ## Your brand does not HAVE to live here
 

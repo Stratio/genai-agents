@@ -3,7 +3,7 @@
 Catálogo centralizado de identidad visual (colores, tipografía, paletas
 de charts, tamaños, tono) que cualquier skill de output del monorepo
 (`docx-writer`, `pptx-writer`, `pdf-writer`, `web-craft`,
-`canvas-craft`) sabe consumir. Incluye **10 temas curados de serie** y
+`canvas-craft`) sabe consumir. Incluye **11 temas curados de serie** y
 es **extensible por el cliente**: añade los tuyos siguiendo la guía
 al final de este fichero.
 
@@ -22,6 +22,7 @@ los tokens, todas las skills de output consumen el mismo contrato.
 
 | Theme | Tone family | Best for |
 |---|---|---|
+| [stratio](themes/stratio.md) | technical-minimal | por defecto: el aspecto de GenAI UI y de la marca Stratio, para cualquier entregable |
 | [editorial-serious](themes/editorial-serious.md) | editorial-serious | informes analíticos largos, legal, policy |
 | [technical-minimal](themes/technical-minimal.md) | technical-minimal | dashboards, docs de ingeniería, runbooks |
 | [warm-magazine](themes/warm-magazine.md) | warm-magazine | comunicaciones, marketing, storytelling |
@@ -45,7 +46,7 @@ Cada tema declara una **tone family** de las ocho tonos canónicos definidos en 
 | Tone family | Temas que mapean aquí |
 |---|---|
 | editorial-serious | editorial-serious, academic-sober, corporate-formal |
-| technical-minimal | technical-minimal, modern-product |
+| technical-minimal | stratio, technical-minimal, modern-product |
 | warm-magazine | warm-magazine |
 | forensic-audit | forensic-audit |
 | brutalist-raw | brutalist-raw |
@@ -130,7 +131,7 @@ catálogo quede consistente:
 
 Con esas dos entradas en su sitio, cualquier agente que incluya
 `brand-kit` ofrecerá el tema nuevo como una opción más, exactamente
-como los diez de serie.
+como los once de serie.
 
 ## Tu marca NO tiene que vivir aquí
 
