@@ -12,6 +12,8 @@
 
 * **Individual skill ZIPs keep their subfolders on import**: `pack_skills.sh --skill <name>` now nests the skill under `<name>/` in the ZIP, like the bulk mode and the Stratio Cowork sub-bundle already did. With `SKILL.md` at the ZIP root, genai-api's skill importer kept only the root-level files, so a skill's `tasks/`, `scripts/` or `fonts/` silently went missing in Cowork. The packer now also fails if anything is left at the ZIP root.
 
+* [ROCK-15743] CI/CD: bump the Jenkins builder image to `python-builder-3.14:1.4.0` (Debian 13, Poetry 2.5.1).
+
 ## Previous development
 
 ### 0.3.0 (2026-08-06)
