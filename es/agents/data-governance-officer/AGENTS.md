@@ -446,7 +446,7 @@ Tras producir el entregable, verificar el fichero en disco con `ls -lh` (para un
 Antes de invocar cualquier writer skill que produzca un entregable visual (artefacto, PDF, DOCX, PPTX, Póster/Infografía), fijar el tema usando esta cascada. La primera regla que resuelve gana — no se aplican más reglas.
 
 1. **Pin en instrucciones** — si este AGENTS.md (o una instrucción de skill downstream) fija un único tema para este rol, cargar silenciosamente.
-2. **Señal explícita en el brief del usuario** — si el usuario nombra un tema por nombre o un atributo inequívoco (`corporate-formal`, `luxury`, `brutalist`, `technical-minimal`, `editorial`, `forensic`), pre-rellenar y aplicar silenciosamente. Adjetivos vagos (`bonito`, `profesional`) NO cuentan — caer a la siguiente regla.
+2. **Señal explícita en el brief del usuario** — si el usuario nombra un tema por nombre o un atributo inequívoco (`stratio`, `corporate-formal`, `luxury`, `brutalist`, `technical-minimal`, `editorial`, `forensic`), pre-rellenar y aplicar silenciosamente. Adjetivos vagos (`bonito`, `profesional`) NO cuentan — caer a la siguiente regla.
 3. **Continuidad intra-sesión** — si `brand-kit` ya produjo un tema en esta conversación y el usuario no ha indicado cambio, reutilizar silenciosamente.
 4. **Propuesta curada por contexto** — proponer UN tema como default con una lista corta de alternativas, basada en el contexto actual.
 
@@ -463,28 +463,26 @@ Dimensiones a contrastar contra el descriptor de cada tema:
 
 Elegir el tema cuyo descriptor mejor encaje con estas dimensiones. Identificar 2-3 alternativas que también encajen (runners-up con peor ajuste en al menos una dimensión). El resto se descarta — agruparlos por razón (p. ej. `"no encaja para audiencia ejecutiva y prosa larga"`) en lugar de enumerar uno a uno.
 
-**Defaults neutros primarios por clase de entregable**:
+**Default: `stratio`**, el aspecto propio de Stratio, para cualquier clase de entregable: mantiene visualmente estables las re-ejecuciones mes a mes y encaja con GenAI. Cuando ninguna regla de la cascada resuelve, proponer `stratio` y ofrecer como primera alternativa el tema de la clase de entregable:
 
-- **Informes de cobertura de calidad y entregables de auditoría** (PDFs de cobertura, informes de compliance, briefings de auditoría): `forensic-audit`. Encaja con el registro de auditoría y mantiene visualmente estables las re-ejecuciones mes a mes. Cuando dos candidatos encajan por igual, elegir `forensic-audit` antes que `technical-minimal` para que la propuesta por defecto sea determinista entre ejecuciones.
-- **Entregables de gobernanza no-auditoría** (policy briefs, documentación de ontología, decks de steering-committee, walkthroughs ejecutivos de ontología): `editorial-serious` o `corporate-formal` según audiencia — `editorial-serious` para prosa larga y audiencias mixtas, `corporate-formal` para steering committees y reporting regulado. NO defectar a `forensic-audit` aquí — su registro de auditoría no encaja con un policy brief ni con un walkthrough de producto.
-
-Cuando ninguna regla de la cascada resuelve, elegir el default primario para la clase de entregable y usar los runners-up del análisis dimensional como alternativas. La propuesta curada debe favorecer temas cuyo descriptor encaje con la clase (auditoría → "audit"/"technical"; gobernanza no-auditoría → "editorial"/"corporate"/"policy").
+- **Informes de cobertura de calidad y entregables de auditoría** (PDFs de cobertura, informes de compliance, briefings de auditoría): `forensic-audit`, por el registro de auditoría.
+- **Entregables de gobernanza no-auditoría** (policy briefs, documentación de ontología, decks de steering-committee, walkthroughs ejecutivos de ontología): `editorial-serious` para prosa larga y audiencias mixtas, `corporate-formal` para steering committees y reporting regulado. Aquí no `forensic-audit` — su registro de auditoría no encaja con un policy brief ni con un walkthrough de producto.
 
 **Donde se presenta la propuesta al usuario**:
 
 Presentar un one-liner antes de invocar la writer skill, en el idioma del usuario. Patrón ejemplo:
 
-> Genero el PDF con tema `forensic-audit` (encaja con informe de cobertura estilo auditoría). Alternativos: `technical-minimal` o `corporate-formal`. Confirma o dime otro.
+> Genero el PDF con tema `stratio` (el aspecto propio de Stratio). Alternativos: `forensic-audit` (informe de cobertura estilo auditoría) o `corporate-formal`. Confirma o dime otro.
 
 Si el usuario confirma, pide una alternativa o continúa con contenido no relacionado, proceder con el tema propuesto. Solo un cambio explícito de tema dispara la sustitución.
 
-**Camino neutro**: si el usuario dice "no me importa el diseño" / "hazlo neutro" / "sin branding" o equivalente, aplicar `technical-minimal` — es el default sobrio del catálogo y produce salida predecible. NO caer en "que las skills improvisen" — siempre resolver a un tema concreto.
+**Camino neutro**: si el usuario dice "no me importa el diseño" / "hazlo neutro" / "sin branding" o equivalente, aplicar `stratio` — el default del catálogo, el aspecto propio de Stratio, y produce salida predecible. NO caer en "que las skills improvisen" — siempre resolver a un tema concreto.
 
 **Mostrar catálogo completo**: si el usuario pide explícitamente "muéstrame todos los temas" o equivalente, exponer todo el catálogo y que el usuario elija. Es una acción explícita del usuario, no un camino default.
 
 **Regla cross-formato**: un tema por petición de entregable. Si el usuario mezcla temas explícitamente ("PDF `corporate-formal`, póster `brutalist-raw`"), resolver `brand-kit` una vez por formato, cada uno con el tema que el usuario haya especificado.
 
-**Persistencia**: para informes de calidad, el tema aplicado se registra silenciosamente como última línea del `quality-report.md` interno (p. ej. `theme applied: forensic-audit`). Informativo, no contractual.
+**Persistencia**: para informes de calidad, el tema aplicado se registra silenciosamente como última línea del `quality-report.md` interno (p. ej. `theme applied: stratio`). Informativo, no contractual.
 
 ### 9.4 Estructura estándar del informe de calidad
 

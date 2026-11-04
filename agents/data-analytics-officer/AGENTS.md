@@ -470,7 +470,7 @@ After the deliverable is produced, verify the file on disk with `ls -lh` (for an
 Before invoking any writer skill that produces a visual deliverable (Artifact, PDF, DOCX, PPTX, Poster/Infographic, Excel/XLSX, and an explicitly requested .html file — workbooks with styled headers, KPI bands, conditional formatting and Table objects count as visual deliverables for the purposes of this cascade), fix the theme using this cascade. The first rule that resolves wins — no further rules apply.
 
 1. **Pin in instructions** — if this AGENTS.md (or a downstream skill instruction) fixes a single theme for this role, load it silently.
-2. **Explicit signal in the user's brief** — if the user names a theme by name or an unambiguous attribute (`corporate-formal`, `luxury`, `brutalist`, `technical-minimal`, `editorial`, `forensic`), pre-fill and apply silently. Vague adjectives (`nice`, `professional`, `bonito`) do NOT count — fall through to the next rule.
+2. **Explicit signal in the user's brief** — if the user names a theme by name or an unambiguous attribute (`stratio`, `corporate-formal`, `luxury`, `brutalist`, `technical-minimal`, `editorial`, `forensic`), pre-fill and apply silently. Vague adjectives (`nice`, `professional`, `bonito`) do NOT count — fall through to the next rule.
 3. **Intra-session continuity** — if `brand-kit` already produced a theme earlier in this conversation and the user has not indicated a change, reuse silently.
 4. **Curated proposal by context** — propose ONE theme as default with a short list of alternatives, based on the current context.
 
@@ -485,7 +485,7 @@ Dimensions to contrast against each theme's descriptor:
 - **Tone implied by the brief** (sober, warm, technical, dramatic, decorative, restrained).
 - **Domain semantics** (finance, operations, marketing, audit, compliance, product, research, etc.).
 
-Pick the theme whose descriptor best fits these dimensions. Identify 2-3 alternatives that also fit (runners-up with a weaker match on at least one dimension). The rest are discarded — group them by reason (e.g. `"not a fit for executive audience and long-form prose"`) rather than enumerating one by one.
+**Default: `stratio`**, Stratio's own look. It is the chosen theme unless another theme's descriptor fits these dimensions clearly better (a board summary, a marketing piece, an audit). Identify 2-3 alternatives that also fit (runners-up with a weaker match on at least one dimension). The rest are discarded — group them by reason (e.g. `"not a fit for executive audience and long-form prose"`) rather than enumerating one by one.
 
 **Where the proposal is presented to the user**:
 
@@ -500,11 +500,11 @@ Pick the theme whose descriptor best fits these dimensions. Identify 2-3 alterna
 
 - **Outside `/analyze`** (single-format flows — repackaging from `/explore-data` or `/assess-quality`, ad-hoc document, reasoning/validation override): present a one-liner before invoking the writer skill, in the user's language. Example pattern:
 
-  > I'll generate the PDF with theme `editorial-serious` (fits a prose-heavy multi-page report). Alternatives: `luxury-refined` or `corporate-formal`. Confirm or name another.
+  > I'll generate the PDF with theme `stratio` (Stratio's own look). Alternatives: `editorial-serious` (prose-heavy multi-page report) or `corporate-formal`. Confirm or name another.
 
   If the user confirms, asks for an alternative, or continues with unrelated content, proceed with the proposed theme. Only a specific theme change triggers substitution.
 
-**Neutral path**: if the user says "no me importa el diseño", "hazlo neutro", "sin branding" or equivalent, apply `technical-minimal` — it is the sober default in the catalog and produces predictable output. Do NOT fall back to "the skills improvise" — always resolve to a concrete theme.
+**Neutral path**: if the user says "no me importa el diseño", "hazlo neutro", "sin branding" or equivalent, apply `stratio` — the catalog's default, Stratio's own look, and predictable output. Do NOT fall back to "the skills improvise" — always resolve to a concrete theme.
 
 **Show full catalog**: if the user explicitly asks "muéstrame todos los temas" or equivalent, surface the entire catalog and let them pick. This is an explicit user action, not a default path.
 
