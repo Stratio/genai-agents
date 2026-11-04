@@ -29,6 +29,9 @@ python3 scripts/artifact.py tokens corporate-formal
 python3 scripts/artifact.py libs
 python3 scripts/artifact.py libs chart.js
 
+# This installation's size limits: file, artifact and viewer page, in bytes
+python3 scripts/artifact.py limits   # before a page heavy on images, fonts or clips
+
 # Check the pages before saving them: the entry first, with the title it will get.
 python3 scripts/artifact.py check <workdir>/index.html <workdir>/annex/detail.html \
     --title "Q3 sales report"
@@ -113,6 +116,10 @@ What the commands print and accept:
   UI's `assets/libs/manifest.json` in `scripts/libs.json`), each with its version, the
   global it defines and the `<script>` / `<link>` that loads it. Where the variable is
   unset it fails: the installation is broken, and `check` says so too.
+- **`limits`** prints the limits the API enforces, from `$ARTIFACT_MAX_FILE_SIZE_BYTES`,
+  `$ARTIFACT_MAX_TOTAL_SIZE_BYTES`, `$ARTIFACT_MAX_FILES` and `$ARTIFACT_MAX_INLINE_BYTES`,
+  which GenAI API sets; unset, its defaults (5 MB, 20 MB, 128 files, 5 MB).
+  `page_media_bytes` is what a page carries inlined once base64 adds its third.
 - **`lib`** flags a script or stylesheet that does not come from `$ARTIFACT_LIBS_URL`,
   or names a file there that is not hosted.
 - **`remote`** flags anything else the page loads from outside the artifact (an image,
