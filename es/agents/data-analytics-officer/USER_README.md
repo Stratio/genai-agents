@@ -134,7 +134,7 @@ Tras explorar un dominio, una evaluación de calidad o una consulta MCP rápida,
 |---------|-------------|
 | `/canvas-craft` | Visuales de una sola página dominados por composición: pósters, infografías, portadas, one-pagers de marketing (PDF o PNG) |
 | `/web-craft` | Ficheros HTML interactivos standalone: componentes UI, landing pages, y dashboards o artículos web como ficheros .html cuando pides un fichero .html |
-| `/brand-kit` | Catálogo centralizado de temas: 10 temas curados (corporate-formal, luxury-refined, editorial-serious, technical-minimal y más), extensible con temas propios del cliente |
+| `/brand-kit` | Catálogo centralizado de temas: 11 temas curados (stratio, corporate-formal, luxury-refined, editorial-serious, technical-minimal y más), extensible con temas propios del cliente |
 
 ## Conexiones necesarias
 

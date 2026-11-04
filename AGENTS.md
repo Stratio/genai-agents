@@ -171,7 +171,7 @@ Agents that produce visual output declare the family members they need in `<agen
 
 ### Brand-kit / centralized theming
 
-`brand-kit` is the shared skill that centralizes visual identity tokens (colors, typography, chart palettes, sizes, tone). It ships ten curated themes and is extensible — clients add their own themes directly inside the skill or provide an alternative theming skill. Agents that generate visual deliverables declare `brand-kit` in `<agent>/imported-skills`.
+`brand-kit` is the shared skill that centralizes visual identity tokens (colors, typography, chart palettes, sizes, tone). It ships eleven curated themes (`stratio`, GenAI UI's look, is the default) and is extensible — clients add their own themes directly inside the skill or provide an alternative theming skill. Agents that generate visual deliverables declare `brand-kit` in `<agent>/imported-skills`.
 
 Output skills (`docx-writer`, `pptx-writer`, `pdf-writer`, `xlsx-writer`, `web-craft`, `canvas-craft`) reference the concept "centralized theming skill" **generically**, not by name — they never mention `brand-kit` literally. This keeps self-containment intact: a client can substitute `brand-kit` with their own skill without editing any output skill, and a standalone pack of (for example) `docx-writer` or `xlsx-writer` still works by improvising tokens from `visual-craftsmanship.md`.
 

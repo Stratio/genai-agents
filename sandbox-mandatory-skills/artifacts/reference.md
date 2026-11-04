@@ -22,7 +22,7 @@ python3 scripts/artifact.py workdir "Q3 sales report"
 # The theme catalog, then one theme as the page's font <link>, token block (light and
 # dark) and script helper, to paste into the page as printed
 python3 scripts/artifact.py tokens
-python3 scripts/artifact.py tokens corporate-formal
+python3 scripts/artifact.py tokens stratio
 
 # The libraries GenAI hosts, each with the <script> / <link> that loads it from there
 # (or just one): a page takes libraries from these only

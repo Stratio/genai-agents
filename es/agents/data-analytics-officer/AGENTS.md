@@ -470,7 +470,7 @@ Una vez producido el entregable, verificar el fichero en disco con `ls -lh` (par
 Antes de invocar cualquier skill writer que produzca un entregable visual (Artefacto, PDF, DOCX, PPTX, Póster/Infografía, Excel/XLSX, y un fichero .html pedido explícitamente — los libros con cabeceras estilizadas, bandas KPI, formato condicional y Table objects cuentan como entregables visuales para los propósitos de esta cascada), fija el tema aplicando esta cascada. La primera regla que resuelva gana — no se aplican más.
 
 1. **Pin en instrucciones** — si este AGENTS.md (o una instrucción de skill downstream) fija un tema único para este rol, cárgalo silenciosamente.
-2. **Señal explícita en el brief del usuario** — si el usuario nombra un tema por nombre o un atributo unívoco (`corporate-formal`, `luxury`, `brutalist`, `technical-minimal`, `editorial`, `forensic`), pre-rellena y aplica silenciosamente. Adjetivos vagos (`bonito`, `profesional`) NO cuentan — pasan a la siguiente regla.
+2. **Señal explícita en el brief del usuario** — si el usuario nombra un tema por nombre o un atributo unívoco (`stratio`, `corporate-formal`, `luxury`, `brutalist`, `technical-minimal`, `editorial`, `forensic`), pre-rellena y aplica silenciosamente. Adjetivos vagos (`bonito`, `profesional`) NO cuentan — pasan a la siguiente regla.
 3. **Continuidad intra-sesión** — si `brand-kit` ya produjo un tema antes en esta conversación y el usuario no ha indicado cambio, reutilizar silenciosamente.
 4. **Propuesta curada por contexto** — proponer UN tema por defecto con lista corta de alternativos, basándose en el contexto actual.
 
@@ -485,7 +485,7 @@ Dimensiones a contrastar con el descriptor de cada tema:
 - **Tono implícito en el brief** (sobrio, cálido, técnico, dramático, decorativo, restrained).
 - **Semántica del dominio** (finanzas, operaciones, marketing, auditoría, compliance, producto, investigación, etc.).
 
-Escoge el tema cuyo descriptor mejor encaje en estas dimensiones. Identifica 2-3 alternativos que también encajan (runners-up con un match más débil en al menos una dimensión). El resto se descartan — agrúpalos por razón (ej. `"no encaja con audiencia ejecutiva y prosa larga"`) en lugar de enumerar uno por uno.
+**Default: `stratio`**, el aspecto propio de Stratio. Es el tema elegido salvo que el descriptor de otro encaje claramente mejor en estas dimensiones (un resumen para el consejo, una pieza de marketing, una auditoría). Identifica 2-3 alternativos que también encajan (runners-up con un match más débil en al menos una dimensión). El resto se descartan — agrúpalos por razón (ej. `"no encaja con audiencia ejecutiva y prosa larga"`) en lugar de enumerar uno por uno.
 
 **Dónde se presenta la propuesta al usuario**:
 
@@ -500,11 +500,11 @@ Escoge el tema cuyo descriptor mejor encaje en estas dimensiones. Identifica 2-3
 
 - **Fuera de `/analyze`** (flujos single-format — reempaquetado de `/explore-data` o `/assess-quality`, documento ad-hoc, override de reasoning/validation): presenta un one-liner antes de invocar la skill writer. Ejemplo:
 
-  > Genero el PDF con tema `editorial-serious` (encaja con informe prosa multipágina). Alternativos: `luxury-refined` o `corporate-formal`. Confirma o dime otro.
+  > Genero el PDF con tema `stratio` (el aspecto propio de Stratio). Alternativos: `editorial-serious` (informe prosa multipágina) o `corporate-formal`. Confirma o dime otro.
 
   Si el usuario confirma, pide un alternativo, o sigue con contenido no relacionado, procede con el tema propuesto. Solo un cambio específico de tema dispara sustitución.
 
-**Ruta neutra**: si el usuario dice "no me importa el diseño", "hazlo neutro", "sin branding" o equivalente, aplicar `technical-minimal` — es el default sobrio del catálogo y produce salida predecible. NO caer en "las skills improvisan" — siempre resolver a un tema concreto.
+**Ruta neutra**: si el usuario dice "no me importa el diseño", "hazlo neutro", "sin branding" o equivalente, aplicar `stratio` — el default del catálogo, el aspecto propio de Stratio, y produce salida predecible. NO caer en "las skills improvisan" — siempre resolver a un tema concreto.
 
 **Mostrar catálogo completo**: si el usuario pide explícitamente "muéstrame todos los temas" o equivalente, muestra el catálogo entero y deja que elija. Esta es una acción explícita del usuario, no una ruta por defecto.
 

@@ -16,7 +16,7 @@ Skills-only functional plugin that bundles document I/O, visual crafting and bra
 | [xlsx-writer](../../skills/xlsx-writer/) | XLSX authoring: analytical workbooks, pivot matrices, tabular exports, `.xls` → `.xlsx`, formula refresh. |
 | [web-craft](../../skills/web-craft/) | Interactive frontend output (HTML/CSS/JS, React, Vue): components, pages, dashboards. |
 | [canvas-craft](../../skills/canvas-craft/) | Single-page static visual artifacts (PDF/PNG): posters, covers, certificates, infographics. |
-| [brand-kit](../../skills/brand-kit/) | Centralised visual identity tokens (colors, typography, chart palettes, sizes, tone). Ten curated themes; clients can extend or replace. |
+| [brand-kit](../../skills/brand-kit/) | Centralised visual identity tokens (colors, typography, chart palettes, sizes, tone). Eleven curated themes, `stratio` the default; clients can extend or replace. |
 
 ## Supported platforms
 
