@@ -1,0 +1,22 @@
+{
+  "mcpServers": {
+    "opendata_harvester": {
+      "type": "stdio",
+      "command": "/home/agala/IdeaProjects/dg-ai/mcp/opendata-harvester/venv/bin/python",
+      "args": ["-m", "opendata_harvester_mcp"],
+      "cwd": "/home/agala/IdeaProjects/dg-ai/mcp/opendata-harvester",
+      "env": {
+        "LOG_FILE": "/tmp/opendata_harvester-mcp.log"
+      }
+    },
+    "datamarket": {
+      "type": "stdio",
+      "command": "/home/agala/IdeaProjects/dg-ai/mcp/datamarket/venv/bin/python",
+      "args": ["-m", "datamarket_mcp_server"],
+      "cwd": "/home/agala/IdeaProjects/dg-ai/mcp/datamarket",
+      "env": {
+        "LOG_FILE": "/tmp/datamarket-mcp.log"
+      }
+    }
+  }
+}
