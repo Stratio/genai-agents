@@ -24,6 +24,10 @@
 | 11 | `propose_knowledge` | Proponer términos de negocio descubiertos |
 | — | `get_mcp_task_result(task_id)` | Obtener el resultado de una tool de larga duración que sigue ejecutándose en segundo plano. Se llama cuando cualquier tool devuelve solo un `task_id` — ver §9 y `stratio-mcp-response-patterns.md` §1 |
 
+### 2.1 Herramientas no MCP — el cliente de Virtualizer
+
+No todas las vías de obtención de datos son tools MCP. Para **detalle fila a fila volcado directamente a un fichero CSV** (trabajo con Python/pandas), usar el cliente de Virtualizer — un CLI de Bash `virtualizer-sql` y su clase Python `VirtualizerHttpClient`. Ejecuta en Virtualizer la SQL generada por el MCP y escribe CSV; **nunca genera SQL** (eso sigue correspondiendo a `generate_sql`). Enrutado completo, comprobación de disponibilidad y uso en §13.
+
 ## 3. Reglas Estrictas
 
 - **INMUTABILIDAD de `domain_name`**: El parámetro `domain_name` en TODAS las llamadas MCP debe ser **exactamente** el valor devuelto por `list_domains` o `search_domains`. NUNCA traducirlo, interpretarlo, parafrasearlo ni inferirlo. Si el dominio se llama `semantic_AnaliticaBanca`, usar `"semantic_AnaliticaBanca"` — no `"Banca Particulares"`, no `"Analítica Banca"`, no `"banca"`. Si hay duda sobre el nombre exacto, volver a llamar a `search_domains` o `list_domains` para confirmarlo
@@ -32,11 +36,11 @@
 - **Los marcadores estadísticos y los agregados vienen del MCP, no de descargar filas.** Medias, medianas, desviaciones típicas, percentiles, conteos, cardinalidad e incluso correlaciones (`corr(a, b)`) son todos expresables en Spark SQL — pídelos **agregados** para que el resultado sean unas pocas filas, nunca el detalle fila a fila. Este es el comportamiento por defecto ante cualquier petición de "dame las medias / marcadores estadísticos". Resuelve las necesidades de datos en este orden:
   1. **Agregar en el MCP (SQL)** — resuelve en el MCP todo lo expresable como query SQL; entiende el dominio gobernado, sus relaciones y reglas de negocio. Usa `query_data` (lenguaje natural) o `generate_sql` + `execute_sql` (una query agregada a medida). Prefiere **una sola query MCP** cuando el resultado necesita varias tablas relacionadas (el MCP genera los JOINs) o agregaciones con filtros complejos; usa **múltiples queries independientes** (lanzadas en paralelo) para cortes ortogonales (una temporal + una por segmento + una de ranking).
   2. **`profile_data`** para el perfil estadístico del EDA (% de nulls, distribuciones, outliers, cardinalidad). Es la fuente de los marcadores de profiling — no una descarga de datos.
-  3. **Detalle fila a fila + Python/pandas** SOLO cuando el cálculo realmente no se pueda expresar en SQL ni obtener de `profile_data` (tests estadísticos reales, clustering, transformaciones iterativas/procedurales, o preparación de datos para una visualización). Este camino es legítimo — no lo evites cuando de verdad haga falta — pero el detalle debe vivir **en disco, nunca en el contexto del modelo**: un script Python lee los datos del disco y agrega ahí. Las salidas grandes de las tools de datos las trunca a un fichero el runtime anfitrión (ver `stratio-mcp-response-patterns.md` §2, rama "datos-para-cálculo"); el script lee ese fichero directamente (`json.load(ruta)` → `pd.DataFrame(resp["data"])`). Nunca vuelques el payload `dict`/`csv` de detalle a la conversación.
+  3. **Detalle fila a fila + Python/pandas** SOLO cuando el cálculo realmente no se pueda expresar en SQL ni obtener de `profile_data` (tests estadísticos reales, clustering, transformaciones iterativas/procedurales, o preparación de datos para una visualización). Este camino es legítimo — no lo evites cuando de verdad haga falta — pero el detalle debe vivir **en disco, nunca en el contexto del modelo**: un script Python lee los datos del disco y agrega ahí. Las salidas grandes de las tools de datos las trunca a un fichero el runtime anfitrión (ver `stratio-mcp-response-patterns.md` §2, rama "datos-para-cálculo"); el script lee ese fichero directamente (`json.load(ruta)` → `pd.DataFrame(resp["data"])`). Nunca vuelques el payload `dict`/`csv` de detalle a la conversación. **Cuando el cliente de Virtualizer esté disponible, prefiérelo (§13)**: escribe el resultado directamente en un CSV en disco de forma determinística, en lugar de depender de que el runtime anfitrión trunque a un fichero un payload de `query_data`.
 - **El disco no es el contexto**: guardar filas en un CSV/JSON en disco está bien; lo que degrada la sesión es que el detalle fila a fila acabe en el *contexto del modelo*. El runtime anfitrión trunca a un fichero cualquier salida de tool por encima de ~2000 líneas o ~50 KiB — el detalle transaccional cruza ese umbral con unos cientos de filas, así que forzarlo o bien trunca (no puedes calcular estadística sobre el preview truncado) o bien satura el contexto turno tras turno. Agregar en el MCP mantiene los resultados pequeños por construcción.
 - **Inconsistencias**: Si dos queries dan totales diferentes, verificar granularidad y filtros. Reformular con `additional_context` para alinear
 - Puedes proporcionar `additional_context` al MCP para guiar la generación (ej: definiciones de negocio, filtros específicos)
-- **`output_format` es un string**: Los valores válidos son `"dict"`, `"csv"` o `"markdown"`. Es opcional (default: `"dict"`). NUNCA pasar un booleano (`true`/`false`). Si no necesitas un formato específico, omitir el parámetro
+- **`output_format` es un string**: Los valores válidos son `"dict"`, `"csv"` o `"markdown"`. Es opcional (default: `"dict"`). NUNCA pasar un booleano (`true`/`false`). Si no necesitas un formato específico, omitir el parámetro. Rige la obtención **inline** de `query_data`; para detalle fila a fila escrito a un fichero, usar el cliente de Virtualizer (§13)
 - Si una query falla o da resultados inesperados: reformular la pregunta en lenguaje natural, no intentar escribir SQL
 - **Profiling (`profile_data`)**: Requiere SQL como parámetro — generarla SIEMPRE con `generate_sql`, nunca escribirla manualmente. NUNCA añadir LIMIT a la SQL; usar el parámetro `limit` de la tool
 - **Dialecto Spark SQL — limitación de filas**: El motor de consultas es Spark SQL; NO soporta la sintaxis `LIMIT N OFFSET M` (la palabra clave `OFFSET` provoca un error de sintaxis). Para acotar o paginar filas en `query_data`, `execute_sql` o `profile_data`, usar el parámetro `limit` de la tool — nunca añadir `LIMIT` ni `OFFSET` a la SQL. Si un resultado se trunca (`limit_reached`), subir `limit` o reformular la pregunta; no paginar con `OFFSET`
@@ -54,7 +58,7 @@ Aplica a `query_data`, `execute_sql` y a cualquier otro flujo que devuelva datos
 - **N explícito del usuario**: cuando el usuario pidió un número concreto (`top 50`, `primeras 25`, `muéstrame 100`, `dame 30`), respetar esa intención hasta un **techo absoluto de 50 filas** pintadas en chat. Por encima de 50, aplicar el cap y reportar el total en la línea de cierre.
 - **Línea de cierre** (una línea breve en cursiva justo después de la tabla):
   - `N_devueltas ≤ pintadas`: sin línea de cierre. Solo la tabla.
-  - `N_devueltas > pintadas`: añadir `_Mostrando {pintadas} de {N_devueltas} filas — query ejecutada con LIMIT {LIMIT_query}_` (en el idioma del usuario).
+  - `N_devueltas > pintadas`: añadir `_Mostrando {pintadas} de {N_devueltas} filas — query ejecutada con LIMIT {LIMIT_query}_` (en el idioma del usuario). Para un resultado leído de un fichero CSV de §13 (el cliente ejecuta la SQL completa **sin LIMIT**), usar en su lugar `_Mostrando {pintadas} de {total} filas — resultado completo en {ruta_csv}_`.
   - `N_devueltas == 0`: no pintar tabla. Emitir un mensaje breve `_La query no devolvió filas._` (en el idioma del usuario).
 - **Cabeceras**: incluir todas las columnas devueltas por la tool, en el orden devuelto. No abreviar ni ocultar columnas.
 
@@ -169,7 +173,7 @@ informar al usuario y omitir esa métrica del análisis.
 
 ## 8. Validación Post-Query
 
-Cada resultado de `query_data` debe pasar estas 7 validaciones antes de usarse en el análisis. Cuando se lanzan queries en paralelo, validar cada resultado conforme se recibe:
+Cada dataset obtenido debe pasar estas 7 validaciones antes de usarse en el análisis — tanto si llegó inline desde `query_data` como si se escribió a un fichero con el cliente de Virtualizer (§13). Cuando se lanzan queries en paralelo, validar cada resultado conforme se recibe. **Para un resultado en fichero, ejecutar los checks 1–6 sobre el perfil del resultado, no cargando filas en el contexto — §13.3 explica cómo** (`--profile` en el CLI, o el DataFrame dentro del script):
 1. **Dataset no vacío** (>0 filas). Si vacío: reformular pregunta o alertar al usuario
 2. **Columnas esperadas presentes**. Si faltan: revisar formulación de la pregunta
 3. **Tipos de datos coherentes** (fechas son fechas, numéricos son numéricos)
@@ -240,3 +244,60 @@ Procedimiento:
 3. Continuar el workflow con normalidad (non-blocking).
 4. Parar únicamente si la alternativa no cubre la necesidad del usuario (el listado es demasiado grande para que el usuario elija, o se requiere realmente una búsqueda free-text). En ese caso, pedir al usuario que acote el alcance manualmente.
 5. Registrar la degradación en cualquier reasoning o resumen producido al final del turno.
+
+## 13. Obtención a fichero con el cliente de Virtualizer
+
+Cuando aplica el paso 3 de la cascada de §3 — necesitas de verdad detalle fila a fila para un cálculo que SQL no puede hacer (tests estadísticos reales, clustering, transformaciones iterativas/procedurales, o preparación de datos para una visualización) — obtenlo **directamente a un fichero en disco** con el cliente de Virtualizer en lugar de traer las filas por `query_data` al contexto. El cliente ejecuta la SQL generada por el MCP directamente en Virtualizer y escribe el resultado en CSV; al modelo solo llegan resúmenes.
+
+Es la alternativa determinística a depender de que el runtime anfitrión trunque a un fichero un payload grande de `query_data` (`stratio-mcp-response-patterns.md` §2): tú eliges el fichero y su ruta, y las filas no entran en el contexto en ningún momento.
+
+### 13.1 Disponibilidad — comprobar antes de usarlo (por superficie)
+
+El cliente viene preinstalado en los runtimes controlados por Stratio, pero puede faltar en otros. Comprobar una vez por sesión, por superficie, antes de enrutar nada hacia él:
+
+- **CLI (cualquier agente, vía Bash)**: `command -v virtualizer-sql`. Código de salida 0 → disponible. Distinto de cero → **recurrir al fallback**: la cascada de §3 con `query_data` como hasta ahora.
+- **Cliente Python (dentro de un script de análisis)**: proteger el import — `try: from virtualizer import VirtualizerHttpClient` / `except ImportError:` aplicar el fallback. Que el import funcione es la comprobación para este camino; no fiarse para ello de la comprobación del CLI (los dos resultados pueden no coincidir).
+
+Guardar en caché el resultado de la comprobación durante el turno — no volver a comprobar antes de cada query. Si el cliente está presente pero la primera llamada falla (Virtualizer inaccesible, problema de conexión o de entorno), no entrar en bucle: volver a `query_data` y registrar la degradación (misma postura que en §12).
+
+### 13.2 El flujo (la SQL sigue gobernada por el MCP)
+
+1. `generate_sql(question, domain_name)` → texto SQL (§1: nunca escribir SQL a mano).
+2. **Confirmar que el paso 1 devolvió SQL** — no una solicitud de aclaración (§7) ni un `task_id` (§9). Nunca pasar al cliente un texto de aclaración o un `task_id` como si fuera SQL.
+3. Ejecutar y escribir a disco:
+   - **CLI**: `virtualizer-sql --query-file <fichero-sql> --out output/[ANALYSIS_DIR]/data/<nombre>.csv` (o `--query "<sql>"`). Siempre imprime un perfil compacto por stdout — la señal de validación para §8 (§13.3).
+   - **Python**: `df = VirtualizerHttpClient().sql_to_df(sql)` y después `df.to_csv(ruta, index=False)`. La instanciación no lleva argumentos — el runtime aporta la conexión mediante el entorno.
+4. Los pasos siguientes leen el fichero con pandas; al contexto solo llegan resúmenes, el perfil y los KPIs.
+
+CSV es el formato por defecto. El CLI imprime `rows=<n> cols=[...] -> <ruta>` más un perfil compacto (§13.3); nunca imprime las filas.
+
+### 13.3 Validación de un resultado en fichero (§8 sobre el perfil, no sobre las filas)
+
+Las validaciones de §8 son obligatorias. En el camino CLI es automático: el comando **siempre imprime un perfil compacto** — la única forma de ejecutar los checks 1–6 sin cargar filas en el contexto. Tres bloques por stdout tras la línea `rows=… -> ruta`:
+
+```
+rows=1234 cols=['customer_id', 'amount', 'signup_date'] -> …/data/tx.csv
+customer_id             int64        # bloque 1: df.dtypes  → checks 2 (columnas), 3 (tipos)
+amount                float64
+signup_date    datetime64[ns]
+customer_id    0.000                 # bloque 2: fracción de nulos/col → check 5 (% de nulos)
+amount         0.012
+signup_date    0.004
+               customer_id      amount     # bloque 3: describe() → checks 1 (filas>0),
+count          1234.0          1234.0      #           4/6 (rangos: min/max/mean)
+mean              …             152.3
+min               …               0.0
+max               …            9800.0
+```
+
+- **Python** (en el script): el script ya tiene el DataFrame — validarlo directamente (`df.shape`, `df.dtypes`, `df.isna().mean()`, rangos de valores); no hace falta ningún flag.
+
+La validación 7 (sanity check de negocio) se hace sobre el perfil más los KPIs que imprime el script. Un resultado vacío es un CSV con solo la cabecera (`rows=0`) — tratarlo como "sin filas" (check 1 de §8); no pasar un DataFrame vacío a un clustering.
+
+### 13.4 Mostrar al usuario un resultado en fichero
+
+Si el usuario pide ver los datos (disparadores de §4) y están en un CSV de esta sección, leer solo las primeras filas (`pd.read_csv(ruta, nrows=N)`) y renderizarlas como la tabla Markdown de §4 con el mismo cap de 10/50. El cliente ejecutó la SQL completa **sin LIMIT**, así que usar la línea de cierre de fichero de §4 (`— resultado completo en <ruta_csv>`), no la redacción con `LIMIT`.
+
+### 13.5 Obtención en paralelo
+
+Las llamadas a `generate_sql` se paralelizan como llamadas MCP, exactamente igual que en §3. La ejecución es distinta: las obtenciones independientes con `virtualizer-sql` son invocaciones de Bash separadas (emitirlas en la misma respuesta para que el runtime las ejecute concurrentemente), o un bucle de llamadas a `sql_to_df` dentro de un mismo script de análisis. La regla de §3 se mantiene — nunca delegar en un subagente.
