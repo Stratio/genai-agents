@@ -6,7 +6,7 @@
 
 ## Previous development
 
-### Branched to branch-0.4 (2026-11-10)
+### 0.4.0 (2026-11-10)
 
 * [ROCK-15363] Sandbox mandatory skills: `sandbox-mandatory-skills/` holds the skills genai-agents-sandbox bakes into every sandbox, packed into `sandbox-mandatory-skills-{v}.zip` by `make package`
 * [ROCK-15363] `artifacts` sandbox mandatory skill: create, find, edit and share Stratio artifacts from the chat, as HTML pages on brand-kit's themes. `artifact.py check` flags what the viewer would break before a page is stored. Requests for Excel, Word, PowerPoint or PDF files still go to `project/output/`
