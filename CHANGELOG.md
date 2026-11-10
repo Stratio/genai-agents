@@ -9,14 +9,15 @@
 * data-analytics-officer, data-quality, data-governance-officer and `quality-report`: `stratio` is the default theme and the neutral path, instead of `technical-minimal` and `forensic-audit`. The deliverable class's own theme (`forensic-audit` for coverage and audit reports, `editorial-serious` or `corporate-formal` for governance documents) is offered as the first alternative
 * [ROCK-15363] artifacts `check`: names a hosted library the script calls but the page never loads, honours an SVG's `min-width`, and no longer flags colors in `@media print`, a control's border in its own fill or a container named after its fields; html.md gives the 720 px column and the SVG recipe. In 34 sandbox-like runs the first `check` came back with no error every time, and with no finding at all in 13 of the last 14
 * [ROCK-15363] Deliverables: data-analytics-officer (`/analyze`), data-quality, data-governance-officer and `quality-report` offer Chat and then an artifact, the recommended format, ahead of the file formats. The artifact replaces the web dashboard and web article `.html` files, which `web-craft` now makes only when an `.html` file is asked for
-
-* **New shared skill `rocket-file-browser`**: manages files in Rocket's File Browser from the sandbox — download, upload, ls, cp, mv, rm, mkdir, compress and extract — over Rocket's mutual-TLS listener (port 7777) with the sandbox client certificate, so every call runs with the user's own Gosec permissions. Supports every filesystem Rocket exposes (its internal HDFS plus the configured S3 buckets): the target filesystem is always sent explicitly, the agent asks the user when several exist, and moving data across filesystems goes through download + upload. Requires `ROCKET_API_URL` in the project pod. Imported by `data-analytics-officer`, `data-quality`, `data-governance-officer` and `semantic-layer`. EN + ES.
-
-* **Individual skill ZIPs keep their subfolders on import**: `pack_skills.sh --skill <name>` now nests the skill under `<name>/` in the ZIP, like the bulk mode and the Stratio Cowork sub-bundle already did. With `SKILL.md` at the ZIP root, genai-api's skill importer kept only the root-level files, so a skill's `tasks/`, `scripts/` or `fonts/` silently went missing in Cowork. The packer now also fails if anything is left at the ZIP root.
-
-* [ROCK-15743] CI/CD: bump the Jenkins builder image to `python-builder-3.14:1.4.0` (Debian 13, Poetry 2.5.1).
+* [ROCK-14822] Virtualizer client: when an analysis needs row-level detail that SQL cannot aggregate, agents that query data write the result of the MCP-generated SQL straight to a CSV on disk with the Virtualizer client (`virtualizer-sql` CLI or `VirtualizerHttpClient` in Python), and validate it on its profile instead of loading the rows into the chat. Where the client is not installed they keep using `query_data`
+* [ROCK-15743] CI/CD: bump the Jenkins builder image to `python-builder-3.14:1.4.0` (Debian 13, Poetry 2.5.1)
 
 ## Previous development
+
+### 0.3.1 (2026-10-15)
+
+* **New shared skill `rocket-file-browser`**: manages files in Rocket's File Browser from the sandbox — download, upload, ls, cp, mv, rm, mkdir, compress and extract — over Rocket's mutual-TLS listener (port 7777) with the sandbox client certificate, so every call runs with the user's own Gosec permissions. Supports every filesystem Rocket exposes (its internal HDFS plus the configured S3 buckets): the target filesystem is always sent explicitly, the agent asks the user when several exist, and moving data across filesystems goes through download + upload. Requires `ROCKET_API_URL` in the project pod. Imported by `data-analytics-officer`, `data-quality`, `data-governance-officer` and `semantic-layer`. EN + ES.
+* **Individual skill ZIPs keep their subfolders on import**: `pack_skills.sh --skill <name>` now nests the skill under `<name>/` in the ZIP, like the bulk mode and the Stratio Cowork sub-bundle already did. With `SKILL.md` at the ZIP root, genai-api's skill importer kept only the root-level files, so a skill's `tasks/`, `scripts/` or `fonts/` silently went missing in Cowork. The packer now also fails if anything is left at the ZIP root.
 
 ### 0.3.0 (2026-08-06)
 
