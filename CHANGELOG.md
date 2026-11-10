@@ -2,15 +2,13 @@
 
 ## 0.4.0 (upcoming)
 
-* [ROCK-15363] Sandbox mandatory skills: `sandbox-mandatory-skills/` holds the skills genai-agents-sandbox bakes into every sandbox, packed into `sandbox-mandatory-skills-{v}.zip` by `make package`
-* [ROCK-15363] `artifacts` sandbox mandatory skill: create, find, edit and share Stratio artifacts from the chat, as HTML pages on brand-kit's themes. `artifact.py check` flags what the viewer would break before a page is stored. Requests for Excel, Word, PowerPoint or PDF files still go to `project/output/`
-* [ROCK-15363] brand-kit: every theme ships a complete, contrast-checked dark mode
-* brand-kit: new `stratio` theme, GenAI UI's own look (SDS colors, Inter, GenAI UI's dark mode), first in the catalog. The `artifacts` skill uses it unless the person asks for another look or the subject clearly calls for another tone
-* data-analytics-officer, data-quality, data-governance-officer and `quality-report`: `stratio` is the default theme and the neutral path, instead of `technical-minimal` and `forensic-audit`. The deliverable class's own theme (`forensic-audit` for coverage and audit reports, `editorial-serious` or `corporate-formal` for governance documents) is offered as the first alternative
-* [ROCK-15363] artifacts `check`: names a hosted library the script calls but the page never loads, honours an SVG's `min-width`, and no longer flags colors in `@media print`, a control's border in its own fill or a container named after its fields; html.md gives the 720 px column and the SVG recipe. In 34 sandbox-like runs the first `check` came back with no error every time, and with no finding at all in 13 of the last 14
-* [ROCK-15363] Deliverables: data-analytics-officer (`/analyze`), data-quality, data-governance-officer and `quality-report` offer Chat and then an artifact, the recommended format, ahead of the file formats. The artifact replaces the web dashboard and web article `.html` files, which `web-craft` now makes only when an `.html` file is asked for
-* [ROCK-14822] Virtualizer client: when an analysis needs row-level detail that SQL cannot aggregate, agents that query data write the result of the MCP-generated SQL straight to a CSV on disk with the Virtualizer client (`virtualizer-sql` CLI or `VirtualizerHttpClient` in Python), and validate it on its profile instead of loading the rows into the chat. Where the client is not installed they keep using `query_data`
-* [ROCK-15743] CI/CD: bump the Jenkins builder image to `python-builder-3.14:1.4.0` (Debian 13, Poetry 2.5.1)
+ * [ROCK-15760] -  artifacts: share, delete and rm through artifact.py, without special permissions  - [`#178`](https://github.com/Stratio/genai-agents/pull/178)
+ * [ROCK-15743] -  Update python-builder to 1.4.0  - [`#177`](https://github.com/Stratio/genai-agents/pull/177)
+ * [ROCK-15363] -  CI: rebuild genai-agents-sandbox main after a main build  - [`#176`](https://github.com/Stratio/genai-agents/pull/176)
+ * [ROCK-15363] -  Sandbox mandatory skills, starting with artifacts  - [`#166`](https://github.com/Stratio/genai-agents/pull/166)
+ * [ROCK-14822] -  Update instructions to explain how to user virtualizer client  - [`#159`](https://github.com/Stratio/genai-agents/pull/159)
+ * [ROCK-15167] -  Bump Jenkins builder image to python-builder-3.14:1.3.4 (#153)  - [`#154`](https://github.com/Stratio/genai-agents/pull/154)
+ * [ROCK-15076] -  docs(guide): name the ripgrep 64 KB failure in the large-output pattern  - [`#149`](https://github.com/Stratio/genai-agents/pull/149)
 
 ## Previous development
 
