@@ -1,6 +1,12 @@
 # Changelog
 
-## 0.4.0 (upcoming)
+## 0.5.0 (upcoming)
+
+* Pending changelog
+
+## Previous development
+
+### Branched to branch-0.4 (2026-11-10)
 
 * [ROCK-15363] Sandbox mandatory skills: `sandbox-mandatory-skills/` holds the skills genai-agents-sandbox bakes into every sandbox, packed into `sandbox-mandatory-skills-{v}.zip` by `make package`
 * [ROCK-15363] `artifacts` sandbox mandatory skill: create, find, edit and share Stratio artifacts from the chat, as HTML pages on brand-kit's themes. `artifact.py check` flags what the viewer would break before a page is stored. Requests for Excel, Word, PowerPoint or PDF files still go to `project/output/`
@@ -12,7 +18,7 @@
 * [ROCK-14822] Virtualizer client: when an analysis needs row-level detail that SQL cannot aggregate, agents that query data write the result of the MCP-generated SQL straight to a CSV on disk with the Virtualizer client (`virtualizer-sql` CLI or `VirtualizerHttpClient` in Python), and validate it on its profile instead of loading the rows into the chat. Where the client is not installed they keep using `query_data`
 * [ROCK-15743] CI/CD: bump the Jenkins builder image to `python-builder-3.14:1.4.0` (Debian 13, Poetry 2.5.1)
 
-## Previous development
+
 
 ### 0.3.1 (2026-10-15)
 
