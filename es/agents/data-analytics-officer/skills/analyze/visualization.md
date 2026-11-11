@@ -95,3 +95,12 @@ Mapear cada hallazgo a su rol narrativo:
 ## 5. Dashboard Interactivo
 
 Para composición, layout, filtros, tablas ordenables, KPI cards y patrones de performance del dashboard, ver [analytical-dashboard.md](analytical-dashboard.md). Esa guía la carga `web-craft` cuando el agente produce un dashboard analítico desde `/analyze` Fase 4.
+
+## 6. Gráficas en el Chat
+
+Una gráfica que se muestra en la conversación (el formato Chat, o una gráfica que el usuario pide en una respuesta) es un fichero de imagen, nunca texto:
+
+- **Nunca dibujar una gráfica con caracteres** (`█`, `▇`, `#`, barras ASCII o Unicode, sparklines de texto en un bloque de código). Nadie puede leer valores en ellas y GenAI UI no puede mostrarlas como gráfica. Los valores exactos van en una tabla markdown
+- **Dibujarla como PNG** con un script, siguiendo la §2: guardarla en `output/[ANALISIS_DIR]/assets/<nombre_descriptivo>.png` con `dpi=150` y `bbox_inches='tight'`
+- **Ejecutar el script.** Un script que dibuja una gráfica no es la gráfica: ejecutarlo en el mismo turno, comprobar que el PNG existe y no está vacío (`ls -l`), y corregirlo y volver a ejecutarlo si falla. Nunca entregar solo el script
+- **Incrustar la imagen en la respuesta** con la sintaxis de imagen de markdown, en una línea propia junto al insight que apoya, por su ruta desde la raíz del proyecto: `![El BAI se mantiene en torno a 80K al mes](output/2026-11-11_1630_bai_mensual/assets/bai_mensual.png)`. GenAI UI la muestra ahí. Una ruta que la respuesta solo nombra, entre backticks o en el texto, no se muestra
