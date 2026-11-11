@@ -364,7 +364,7 @@ Al presentar hallazgos en la conversación, seguir esta estructura:
 3. Insights con datos concretos y contexto comparativo (vs anterior, vs objetivo)
 4. Recomendaciones accionables priorizadas (alto impacto + alta confianza primero)
 5. Limitaciones y caveats
-6. Rutas de archivos generados y enlaces de artefactos; cada gráfica por la ruta de su PNG entre backticks, nunca dibujada con caracteres de texto ([visualization.md](visualization.md) sec 6)
+6. Rutas de archivos generados y enlaces de artefactos; cada gráfica como bloque `chart` o por la ruta de su PNG entre backticks, nunca dibujada con caracteres de texto ([visualization.md](visualization.md) sec 6)
 7. Sugerencias de análisis de seguimiento
 
 **Checklist "So What?" obligatorio** — Para CADA hallazgo antes de incluirlo:

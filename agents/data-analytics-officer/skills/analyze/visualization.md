@@ -98,7 +98,22 @@ For dashboard composition, layout, filters, sortable tables, KPI cards and perfo
 
 ## 6. Charts in the Chat
 
-A chart shown in the conversation (the Chat format, or a chart the user asks for in a reply) is an image file, never text:
+A chart shown in the conversation (the Chat format, or a chart the user asks for in a reply) is never text. A simple chart is a `chart` block GenAI UI draws as an interactive chart; any other is a PNG.
+
+**Simple chart → `chart` block.** Bar, line, area or pie, with one category or period column and up to ~50 rows: write a fenced block with the language `chart` holding one JSON object, next to the insight it supports:
+
+````
+```chart
+{"type": "bar", "title": "BAI holds around 80K a month", "x": "month", "y": ["bai"], "data": [{"month": "2023-05", "bai": 81470.07}, {"month": "2023-06", "bai": 79281.40}]}
+```
+````
+
+- `type`: `bar`, `line`, `area` or `pie`; `title`: the insight (§3), optional
+- `x`: the column of the categories or periods (a pie's slices); `y`: the numeric column, or a list of them for several series (a pie draws the first)
+- `data`: the rows, each with the `x` column and every `y` column as a number (or `null`). Take the values from the MCP results as they are, never rounded or invented, and order the periods
+- Valid JSON only (double quotes, no comments, no trailing commas). A block GenAI UI cannot draw shows as code
+
+**Any other chart → PNG.** Heatmaps, distributions, scatter, maps, subplots, annotations or more rows:
 
 - **Never draw a chart with characters** (`█`, `▇`, `#`, ASCII or Unicode bars, text sparklines in a code block). Nobody can read values off them and GenAI UI cannot show them as a chart. Exact values go in a markdown table instead
 - **Draw it as a PNG** with a script, following §2: save it in `output/[ANALYSIS_DIR]/assets/<descriptive_name>.png` with `dpi=150` and `bbox_inches='tight'`

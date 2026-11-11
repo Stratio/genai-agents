@@ -98,7 +98,22 @@ Para composición, layout, filtros, tablas ordenables, KPI cards y patrones de p
 
 ## 6. Gráficas en el Chat
 
-Una gráfica que se muestra en la conversación (el formato Chat, o una gráfica que el usuario pide en una respuesta) es un fichero de imagen, nunca texto:
+Una gráfica que se muestra en la conversación (el formato Chat, o una gráfica que el usuario pide en una respuesta) nunca es texto. Una gráfica sencilla es un bloque `chart` que GenAI UI dibuja como gráfica interactiva; cualquier otra es un PNG.
+
+**Gráfica sencilla → bloque `chart`.** Barras, línea, área o tarta, con una columna de categorías o periodos y hasta ~50 filas: escribir un bloque de código con el lenguaje `chart` que contenga un objeto JSON, junto al insight que apoya:
+
+````
+```chart
+{"type": "bar", "title": "El BAI se mantiene en torno a 80K al mes", "x": "mes", "y": ["bai"], "data": [{"mes": "2023-05", "bai": 81470.07}, {"mes": "2023-06", "bai": 79281.40}]}
+```
+````
+
+- `type`: `bar`, `line`, `area` o `pie`; `title`: el insight (§3), opcional
+- `x`: la columna de las categorías o periodos (las porciones de una tarta); `y`: la columna numérica, o una lista de ellas para varias series (una tarta dibuja la primera)
+- `data`: las filas, cada una con la columna `x` y cada columna `y` como número (o `null`). Tomar los valores de los resultados del MCP tal cual, nunca redondeados ni inventados, y ordenar los periodos
+- Solo JSON válido (comillas dobles, sin comentarios ni comas finales). Un bloque que GenAI UI no puede dibujar se muestra como código
+
+**Cualquier otra gráfica → PNG.** Mapas de calor, distribuciones, dispersión, mapas, subplots, anotaciones o más filas:
 
 - **Nunca dibujar una gráfica con caracteres** (`█`, `▇`, `#`, barras ASCII o Unicode, sparklines de texto en un bloque de código). Nadie puede leer valores en ellas y GenAI UI no puede mostrarlas como gráfica. Los valores exactos van en una tabla markdown
 - **Dibujarla como PNG** con un script, siguiendo la §2: guardarla en `output/[ANALISIS_DIR]/assets/<nombre_descriptivo>.png` con `dpi=150` y `bbox_inches='tight'`
