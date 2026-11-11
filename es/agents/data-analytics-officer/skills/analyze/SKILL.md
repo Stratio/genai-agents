@@ -269,7 +269,7 @@ Aplicar las 7 validaciones de `guides/stratio-data-tools.md` sec 8 a cada result
 - Cada script debe:
   - Leer datos de `output/[ANALISIS_DIR]/data/` (CSVs guardados previamente) o recibir datos como parámetro
   - Realizar transformaciones y cálculos
-  - Generar visualizaciones en `output/[ANALISIS_DIR]/assets/`
+  - Generar visualizaciones en `output/[ANALISIS_DIR]/assets/`, y ejecutar cada script que dibuja una hasta que su PNG exista ([visualization.md](visualization.md) sec 6)
   - Producir outputs en `output/[ANALISIS_DIR]/`
 - **Datasets grandes (>100k filas)**: Usar muestreo estratificado para desarrollo rápido. Para la versión final, preferir agregar en el MCP (SQL) para que solo el resultado agregado llegue al análisis; si el script realmente necesita el detalle fila a fila completo, leerlo del disco (el fichero de salida truncada o un CSV guardado), nunca de un payload pegado en el contexto
 
@@ -364,7 +364,7 @@ Al presentar hallazgos en la conversación, seguir esta estructura:
 3. Insights con datos concretos y contexto comparativo (vs anterior, vs objetivo)
 4. Recomendaciones accionables priorizadas (alto impacto + alta confianza primero)
 5. Limitaciones y caveats
-6. Rutas de archivos generados y enlaces de artefactos
+6. Rutas de archivos generados y enlaces de artefactos; cada gráfica por la ruta de su PNG entre backticks, nunca dibujada con caracteres de texto ([visualization.md](visualization.md) sec 6)
 7. Sugerencias de análisis de seguimiento
 
 **Checklist "So What?" obligatorio** — Para CADA hallazgo antes de incluirlo:

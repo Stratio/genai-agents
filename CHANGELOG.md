@@ -2,7 +2,7 @@
 
 ## 0.5.0 (upcoming)
 
-* Pending changelog
+* data-analytics-officer (`/analyze`): a chart shown in the chat is a PNG the agent draws, runs and names by its path, which GenAI UI shows inline under the answer, instead of bars drawn with text characters or a script nobody ran
 
 ## Previous development
 
