@@ -127,6 +127,8 @@ A chart shown in the conversation (the Chat format, or a chart the user asks for
 - `data`: the rows, every value a number, a string or `null`; the `y` columns numbers (or `null`). Take the values from the MCP results as they are, never rounded or invented, and order the periods
 - Valid JSON only (double quotes, no comments, no trailing commas). A block GenAI UI cannot draw shows as code, and the user can download every chart as a PNG
 
+**Diagram → `mermaid` block.** A process, a flow, a sequence, a hierarchy or a timeline (flowchart, sequence, Gantt, mindmap…) goes in a fenced block with the language `mermaid`, which GenAI UI draws as a diagram. A chart of data is a `chart` block, not a Mermaid chart (`xychart-beta`, `pie`): only a `chart` block takes its values as data and draws it like the rest of GenAI UI's charts.
+
 **Any other chart → PNG.** Heatmaps, box plots, subplots, annotations or more rows:
 
 - **Never draw a chart with characters** (`█`, `▇`, `#`, ASCII or Unicode bars, text sparklines in a code block). Nobody can read values off them and GenAI UI cannot show them as a chart. Exact values go in a markdown table instead
