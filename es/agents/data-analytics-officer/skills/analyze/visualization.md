@@ -100,7 +100,7 @@ Para composición, layout, filtros, tablas ordenables, KPI cards y patrones de p
 
 Una gráfica que se muestra en la conversación (el formato Chat, o una gráfica que el usuario pide en una respuesta) nunca es texto. Una gráfica sencilla es un bloque `chart` que GenAI UI dibuja como gráfica interactiva; cualquier otra es un PNG.
 
-**Gráfica sencilla → bloque `chart`.** Uno de los tipos de abajo, con hasta ~50 filas: escribir un bloque de código con el lenguaje `chart` que contenga un objeto JSON, junto al insight que apoya:
+**Gráfica sencilla → bloque `chart`.** Uno de los tipos de abajo, con hasta ~50 filas (un `pinmap` o `map` hasta ~200): escribir un bloque de código con el lenguaje `chart` que contenga un objeto JSON, junto al insight que apoya:
 
 ````
 ```chart
@@ -117,13 +117,17 @@ Una gráfica que se muestra en la conversación (el formato Chat, o una gráfica
 | `radar` | Perfiles comparados en varias métricas | `x`: los nombres de las métricas; `y`: una columna numérica por perfil |
 | `progress` | Un KPI frente a su objetivo | `y`: la columna del KPI, leída de la primera fila; `goal`: el objetivo, > 0 |
 | `gauge` | Un KPI sobre tramos con nombre | `y`: la columna del KPI, leída de la primera fila; `segments`: `[{"min": 0, "max": 45, "label": "Bueno"}, …]` que cubran su rango |
+| `bubble` | Una dispersión con una tercera medida | `x`, `y` como en `scatter`; `size`: la columna numérica que da tamaño a cada punto |
+| `histogram` | Distribución de una medida | `counts`: filas por tramo; `bin_edges`: los límites de los tramos, uno más que `counts`; sin `data` |
+| `map` | Un valor por geografía | `region`: `world_countries`, `Spain-communities`, `Spain-provinces` o `United States`; `x`: la columna de las regiones, como códigos ISO (`ES`, `ES-MD`, `ES-M`, `US-CA`); `y`: su valor |
+| `pinmap` | Lugares en un mapa | `lat`, `lon`: las columnas de las coordenadas de cada punto |
 | `table` | Valores exactos para ordenar y comparar | ninguno: las filas tal cual |
 
 - `title`: el insight (§3), opcional
 - `data`: las filas, cada valor un número, un texto o `null`; las columnas `y` números (o `null`). Tomar los valores de los resultados del MCP tal cual, nunca redondeados ni inventados, y ordenar los periodos
 - Solo JSON válido (comillas dobles, sin comentarios ni comas finales). Un bloque que GenAI UI no puede dibujar se muestra como código, y el usuario puede descargar cada gráfica como PNG
 
-**Cualquier otra gráfica → PNG.** Mapas de calor, distribuciones, mapas, subplots, anotaciones o más filas:
+**Cualquier otra gráfica → PNG.** Mapas de calor, diagramas de caja, subplots, anotaciones o más filas:
 
 - **Nunca dibujar una gráfica con caracteres** (`█`, `▇`, `#`, barras ASCII o Unicode, sparklines de texto en un bloque de código). Nadie puede leer valores en ellas y GenAI UI no puede mostrarlas como gráfica. Los valores exactos van en una tabla markdown
 - **Dibujarla como PNG** con un script, siguiendo la §2: guardarla en `output/[ANALISIS_DIR]/assets/<nombre_descriptivo>.png` con `dpi=150` y `bbox_inches='tight'`

@@ -100,7 +100,7 @@ For dashboard composition, layout, filters, sortable tables, KPI cards and perfo
 
 A chart shown in the conversation (the Chat format, or a chart the user asks for in a reply) is never text. A simple chart is a `chart` block GenAI UI draws as an interactive chart; any other is a PNG.
 
-**Simple chart → `chart` block.** One of the types below, with up to ~50 rows: write a fenced block with the language `chart` holding one JSON object, next to the insight it supports:
+**Simple chart → `chart` block.** One of the types below, with up to ~50 rows (a `pinmap` or `map` up to ~200): write a fenced block with the language `chart` holding one JSON object, next to the insight it supports:
 
 ````
 ```chart
@@ -117,13 +117,17 @@ A chart shown in the conversation (the Chat format, or a chart the user asks for
 | `radar` | Profiles compared on several metrics | `x`: the metrics' names; `y`: one numeric column per profile |
 | `progress` | A KPI against its target | `y`: the KPI's column, read from the first row; `goal`: the target, > 0 |
 | `gauge` | A KPI on labelled bands | `y`: the KPI's column, read from the first row; `segments`: `[{"min": 0, "max": 45, "label": "Good"}, …]` covering its range |
+| `bubble` | A scatter with a third measure | `x`, `y` as in `scatter`; `size`: the numeric column that sizes each point |
+| `histogram` | Distribution of one measure | `counts`: rows per bin; `bin_edges`: the bins' edges, one more than `counts`; no `data` |
+| `map` | A value by geography | `region`: `world_countries`, `Spain-communities`, `Spain-provinces` or `United States`; `x`: the regions' column, as ISO codes (`ES`, `ES-MD`, `ES-M`, `US-CA`); `y`: their value |
+| `pinmap` | Places on a map | `lat`, `lon`: the columns of each point's coordinates |
 | `table` | Exact values to sort and compare | none: the rows as they are |
 
 - `title`: the insight (§3), optional
 - `data`: the rows, every value a number, a string or `null`; the `y` columns numbers (or `null`). Take the values from the MCP results as they are, never rounded or invented, and order the periods
 - Valid JSON only (double quotes, no comments, no trailing commas). A block GenAI UI cannot draw shows as code, and the user can download every chart as a PNG
 
-**Any other chart → PNG.** Heatmaps, distributions, maps, subplots, annotations or more rows:
+**Any other chart → PNG.** Heatmaps, box plots, subplots, annotations or more rows:
 
 - **Never draw a chart with characters** (`█`, `▇`, `#`, ASCII or Unicode bars, text sparklines in a code block). Nobody can read values off them and GenAI UI cannot show them as a chart. Exact values go in a markdown table instead
 - **Draw it as a PNG** with a script, following §2: save it in `output/[ANALYSIS_DIR]/assets/<descriptive_name>.png` with `dpi=150` and `bbox_inches='tight'`
