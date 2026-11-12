@@ -98,7 +98,38 @@ Para composición, layout, filtros, tablas ordenables, KPI cards y patrones de p
 
 ## 6. Gráficas en el Chat
 
-Una gráfica que se muestra en la conversación (el formato Chat, o una gráfica que el usuario pide en una respuesta) es un fichero de imagen, nunca texto:
+Una gráfica que se muestra en la conversación (el formato Chat, o una gráfica que el usuario pide en una respuesta) nunca es texto. Una gráfica sencilla es un bloque `chart` que GenAI UI dibuja como gráfica interactiva; cualquier otra es un PNG.
+
+**Gráfica sencilla → bloque `chart`.** Uno de los tipos de abajo, con hasta ~50 filas (un `pinmap` o `map` hasta ~200): escribir un bloque de código con el lenguaje `chart` que contenga un objeto JSON, junto al insight que apoya:
+
+````
+```chart
+{"type": "bar", "title": "El BAI se mantiene en torno a 80K al mes", "x": "mes", "y": ["bai"], "data": [{"mes": "2023-05", "bai": 81470.07}, {"mes": "2023-06", "bai": 79281.40}]}
+```
+````
+
+| `type` | Para (§1) | Campos además de `data` |
+|---|---|---|
+| `bar`, `line`, `area` | Comparación, tendencia | `x`: columna de categorías o periodos; `y`: columna numérica, o una lista para varias series |
+| `pie` | Composición, <=5 categorías | `x`: las porciones; `y`: su valor (se dibuja la primera) |
+| `waterfall` | Cómo pasa un total de un valor a otro (puente de variaciones) | `x`: los pasos en orden; `y`: la variación de cada paso, positiva o negativa |
+| `scatter` | Correlación entre dos columnas numéricas | `x`, `y`: las dos columnas numéricas (se dibuja la primera `y`) |
+| `radar` | Perfiles comparados en varias métricas | `x`: los nombres de las métricas; `y`: una columna numérica por perfil |
+| `progress` | Un KPI frente a su objetivo | `y`: la columna del KPI, leída de la primera fila; `goal`: el objetivo, > 0 |
+| `gauge` | Un KPI sobre tramos con nombre | `y`: la columna del KPI, leída de la primera fila; `segments`: `[{"min": 0, "max": 45, "label": "Bueno"}, …]` que cubran su rango |
+| `bubble` | Una dispersión con una tercera medida | `x`, `y` como en `scatter`; `size`: la columna numérica que da tamaño a cada punto |
+| `histogram` | Distribución de una medida | `counts`: filas por tramo; `bin_edges`: los límites de los tramos, uno más que `counts`; sin `data` |
+| `map` | Un valor por geografía | `region`: `world_countries`, `Spain-communities`, `Spain-provinces` o `United States`; `x`: la columna de las regiones, como códigos ISO (`ES`, `ES-MD`, `ES-M`, `US-CA`); `y`: su valor |
+| `pinmap` | Lugares en un mapa | `lat`, `lon`: las columnas de las coordenadas de cada punto |
+| `table` | Valores exactos para ordenar y comparar | ninguno: las filas tal cual |
+
+- `title`: el insight (§3), opcional
+- `data`: las filas, cada valor un número, un texto o `null`; las columnas `y` números (o `null`). Tomar los valores de los resultados del MCP tal cual, nunca redondeados ni inventados, y ordenar los periodos
+- Solo JSON válido (comillas dobles, sin comentarios ni comas finales). Un bloque que GenAI UI no puede dibujar se muestra como código, y el usuario puede descargar cada gráfica como PNG
+
+**Diagrama → bloque `mermaid`.** Un proceso, un flujo, una secuencia, una jerarquía o una línea temporal (flowchart, sequence, Gantt, mindmap…) va en un bloque de código con el lenguaje `mermaid`, que GenAI UI dibuja como diagrama. Una gráfica de datos es un bloque `chart`, no una gráfica de Mermaid (`xychart-beta`, `pie`): solo un bloque `chart` toma sus valores como datos y la dibuja como el resto de gráficas de GenAI UI.
+
+**Cualquier otra gráfica → PNG.** Mapas de calor, diagramas de caja, subplots, anotaciones o más filas:
 
 - **Nunca dibujar una gráfica con caracteres** (`█`, `▇`, `#`, barras ASCII o Unicode, sparklines de texto en un bloque de código). Nadie puede leer valores en ellas y GenAI UI no puede mostrarlas como gráfica. Los valores exactos van en una tabla markdown
 - **Dibujarla como PNG** con un script, siguiendo la §2: guardarla en `output/[ANALISIS_DIR]/assets/<nombre_descriptivo>.png` con `dpi=150` y `bbox_inches='tight'`

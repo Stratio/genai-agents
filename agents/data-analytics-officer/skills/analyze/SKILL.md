@@ -364,7 +364,7 @@ When presenting findings in conversation, follow this structure:
 3. Insights with concrete data and comparative context (vs previous, vs target)
 4. Prioritized actionable recommendations (high impact + high confidence first)
 5. Limitations and caveats
-6. Generated file paths and artifact links; each chart by the path of its PNG in backticks, never drawn with text characters ([visualization.md](visualization.md) sec 6)
+6. Generated file paths and artifact links; each chart as a `chart` block or by the path of its PNG in backticks, never drawn with text characters ([visualization.md](visualization.md) sec 6)
 7. Follow-up analysis suggestions
 
 **Mandatory "So What?" checklist** — For EACH finding before including it:

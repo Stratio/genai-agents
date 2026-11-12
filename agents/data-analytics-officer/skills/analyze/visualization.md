@@ -98,7 +98,38 @@ For dashboard composition, layout, filters, sortable tables, KPI cards and perfo
 
 ## 6. Charts in the Chat
 
-A chart shown in the conversation (the Chat format, or a chart the user asks for in a reply) is an image file, never text:
+A chart shown in the conversation (the Chat format, or a chart the user asks for in a reply) is never text. A simple chart is a `chart` block GenAI UI draws as an interactive chart; any other is a PNG.
+
+**Simple chart → `chart` block.** One of the types below, with up to ~50 rows (a `pinmap` or `map` up to ~200): write a fenced block with the language `chart` holding one JSON object, next to the insight it supports:
+
+````
+```chart
+{"type": "bar", "title": "BAI holds around 80K a month", "x": "month", "y": ["bai"], "data": [{"month": "2023-05", "bai": 81470.07}, {"month": "2023-06", "bai": 79281.40}]}
+```
+````
+
+| `type` | Use it for (§1) | Fields besides `data` |
+|---|---|---|
+| `bar`, `line`, `area` | Comparison, trend | `x`: category or period column; `y`: numeric column, or a list for several series |
+| `pie` | Composition, <=5 categories | `x`: slices; `y`: their value (the first is drawn) |
+| `waterfall` | How a total moves from one value to another (variance bridge) | `x`: steps in order; `y`: each step's change, positive or negative |
+| `scatter` | Correlation of two numeric columns | `x`, `y`: the two numeric columns (the first `y` is drawn) |
+| `radar` | Profiles compared on several metrics | `x`: the metrics' names; `y`: one numeric column per profile |
+| `progress` | A KPI against its target | `y`: the KPI's column, read from the first row; `goal`: the target, > 0 |
+| `gauge` | A KPI on labelled bands | `y`: the KPI's column, read from the first row; `segments`: `[{"min": 0, "max": 45, "label": "Good"}, …]` covering its range |
+| `bubble` | A scatter with a third measure | `x`, `y` as in `scatter`; `size`: the numeric column that sizes each point |
+| `histogram` | Distribution of one measure | `counts`: rows per bin; `bin_edges`: the bins' edges, one more than `counts`; no `data` |
+| `map` | A value by geography | `region`: `world_countries`, `Spain-communities`, `Spain-provinces` or `United States`; `x`: the regions' column, as ISO codes (`ES`, `ES-MD`, `ES-M`, `US-CA`); `y`: their value |
+| `pinmap` | Places on a map | `lat`, `lon`: the columns of each point's coordinates |
+| `table` | Exact values to sort and compare | none: the rows as they are |
+
+- `title`: the insight (§3), optional
+- `data`: the rows, every value a number, a string or `null`; the `y` columns numbers (or `null`). Take the values from the MCP results as they are, never rounded or invented, and order the periods
+- Valid JSON only (double quotes, no comments, no trailing commas). A block GenAI UI cannot draw shows as code, and the user can download every chart as a PNG
+
+**Diagram → `mermaid` block.** A process, a flow, a sequence, a hierarchy or a timeline (flowchart, sequence, Gantt, mindmap…) goes in a fenced block with the language `mermaid`, which GenAI UI draws as a diagram. A chart of data is a `chart` block, not a Mermaid chart (`xychart-beta`, `pie`): only a `chart` block takes its values as data and draws it like the rest of GenAI UI's charts.
+
+**Any other chart → PNG.** Heatmaps, box plots, subplots, annotations or more rows:
 
 - **Never draw a chart with characters** (`█`, `▇`, `#`, ASCII or Unicode bars, text sparklines in a code block). Nobody can read values off them and GenAI UI cannot show them as a chart. Exact values go in a markdown table instead
 - **Draw it as a PNG** with a script, following §2: save it in `output/[ANALYSIS_DIR]/assets/<descriptive_name>.png` with `dpi=150` and `bbox_inches='tight'`
