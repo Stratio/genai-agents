@@ -127,6 +127,8 @@ Una gráfica que se muestra en la conversación (el formato Chat, o una gráfica
 - `data`: las filas, cada valor un número, un texto o `null`; las columnas `y` números (o `null`). Tomar los valores de los resultados del MCP tal cual, nunca redondeados ni inventados, y ordenar los periodos
 - Solo JSON válido (comillas dobles, sin comentarios ni comas finales). Un bloque que GenAI UI no puede dibujar se muestra como código, y el usuario puede descargar cada gráfica como PNG
 
+**Diagrama → bloque `mermaid`.** Un proceso, un flujo, una secuencia, una jerarquía o una línea temporal (flowchart, sequence, Gantt, mindmap…) va en un bloque de código con el lenguaje `mermaid`, que GenAI UI dibuja como diagrama. Una gráfica de datos es un bloque `chart`, no una gráfica de Mermaid (`xychart-beta`, `pie`): solo un bloque `chart` toma sus valores como datos y la dibuja como el resto de gráficas de GenAI UI.
+
 **Cualquier otra gráfica → PNG.** Mapas de calor, diagramas de caja, subplots, anotaciones o más filas:
 
 - **Nunca dibujar una gráfica con caracteres** (`█`, `▇`, `#`, barras ASCII o Unicode, sparklines de texto en un bloque de código). Nadie puede leer valores en ellas y GenAI UI no puede mostrarlas como gráfica. Los valores exactos van en una tabla markdown

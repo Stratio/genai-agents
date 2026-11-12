@@ -3,7 +3,7 @@
 ## 0.5.0 (upcoming)
 
 * data-analytics-officer (`/analyze`): a chart shown in the chat is a PNG the agent draws, runs and names by its path, which GenAI UI shows inline under the answer, instead of bars drawn with text characters or a script nobody ran
-* data-analytics-officer (`/analyze`): a simple chart in the chat (bar, line, area, pie, waterfall, scatter, bubble, radar, histogram, map, pin map, progress, gauge or table) is a `chart` block GenAI UI draws as an interactive chart; the rest stay PNGs
+* data-analytics-officer (`/analyze`): a simple chart in the chat (bar, line, area, pie, waterfall, scatter, bubble, radar, histogram, map, pin map, progress, gauge or table) is a `chart` block GenAI UI draws as an interactive chart, a diagram (flowchart, sequence, Gantt…) a `mermaid` block GenAI UI draws as a diagram; the rest stay PNGs
 
 ## Previous development
 
