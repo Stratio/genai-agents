@@ -269,7 +269,7 @@ Apply the 7 validations from `guides/stratio-data-tools.md` sec 8 to each receiv
 - Each script must:
   - Read data from `output/[ANALYSIS_DIR]/data/` (previously saved CSVs) or receive data as a parameter
   - Perform transformations and calculations
-  - Generate visualizations in `output/[ANALYSIS_DIR]/assets/`
+  - Generate visualizations in `output/[ANALYSIS_DIR]/assets/`, and run every script that draws one until its PNG exists ([visualization.md](visualization.md) sec 6)
   - Produce outputs in `output/[ANALYSIS_DIR]/`
 - **Large datasets (>100k rows)**: Use stratified sampling for rapid development. For the final version, prefer aggregating in the MCP (SQL) so only the aggregated result reaches the analysis; if the script genuinely needs the full row-level detail, read it from disk (the truncated-output file or a saved CSV), never from a payload pasted into the context
 
@@ -364,7 +364,7 @@ When presenting findings in conversation, follow this structure:
 3. Insights with concrete data and comparative context (vs previous, vs target)
 4. Prioritized actionable recommendations (high impact + high confidence first)
 5. Limitations and caveats
-6. Generated file paths and artifact links
+6. Generated file paths and artifact links; each chart by the path of its PNG in backticks, never drawn with text characters ([visualization.md](visualization.md) sec 6)
 7. Follow-up analysis suggestions
 
 **Mandatory "So What?" checklist** — For EACH finding before including it:

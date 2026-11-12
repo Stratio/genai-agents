@@ -95,3 +95,12 @@ Map each finding to its narrative role:
 ## 5. Interactive Dashboard
 
 For dashboard composition, layout, filters, sortable tables, KPI cards and performance patterns, see [analytical-dashboard.md](analytical-dashboard.md). That guide is loaded by `web-craft` when the agent produces an analytical dashboard from `/analyze` Phase 4.
+
+## 6. Charts in the Chat
+
+A chart shown in the conversation (the Chat format, or a chart the user asks for in a reply) is an image file, never text:
+
+- **Never draw a chart with characters** (`█`, `▇`, `#`, ASCII or Unicode bars, text sparklines in a code block). Nobody can read values off them and GenAI UI cannot show them as a chart. Exact values go in a markdown table instead
+- **Draw it as a PNG** with a script, following §2: save it in `output/[ANALYSIS_DIR]/assets/<descriptive_name>.png` with `dpi=150` and `bbox_inches='tight'`
+- **Run the script.** A script that draws a chart is not the chart: run it in the same turn, check that the PNG exists and is not empty (`ls -l`), and fix it and run it again if it fails. Never hand over the script alone
+- **Name the image in the reply** by its path from the project root, in backticks, next to the insight it supports: `` `output/2026-11-11_1630_monthly_bai/assets/monthly_bai.png` ``. GenAI UI shows every image the reply names inline under the answer. Do not use markdown image syntax (`![...](...)`): the chat cannot resolve a workspace path in it
