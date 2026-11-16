@@ -2,7 +2,8 @@
 
 ## 0.5.0 (upcoming)
 
-* Pending changelog
+* [ROCK-NA] Sandbox mandatory skills: new `charts` skill, so every agent in a sandbox, agentless projects included, shows a chart in the chat as GenAI UI draws it instead of bars drawn with text characters or a script nobody ran: a simple chart (bar, line, area, pie, waterfall, scatter, bubble, radar, histogram, heatmap, map, pin map, progress, gauge or table) as a `chart` block drawn as an interactive chart, its points named when hovered, a diagram (flowchart, sequence, Gantt…) as a `mermaid` block, and any other chart as a PNG it draws, runs and embeds in its reply (`![title](path)`). A Markdown artifact carries its charts and diagrams the same way. `scripts/chart.py` checks every `chart` and `mermaid` block before it is sent, a diagram with the Mermaid GenAI UI draws it with (needs genai-agents-sandbox with Mermaid's parser), and gives the line that embeds a PNG, which `genai.mplstyle` draws with the colors and axes of GenAI UI's charts. It is not used when the person, the agent or the project name another skill or format for charts or diagrams
+* [ROCK-NA] data-analytics-officer (`/analyze`): draws its charts in the chat with the `charts` skill
 
 ## Previous development
 

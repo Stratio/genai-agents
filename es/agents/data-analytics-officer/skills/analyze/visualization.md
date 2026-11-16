@@ -95,3 +95,7 @@ Mapear cada hallazgo a su rol narrativo:
 ## 5. Dashboard Interactivo
 
 Para composición, layout, filtros, tablas ordenables, KPI cards y patrones de performance del dashboard, ver [analytical-dashboard.md](analytical-dashboard.md). Esa guía la carga `web-craft` cuando el agente produce un dashboard analítico desde `/analyze` Fase 4.
+
+## 6. Gráficas en el Chat
+
+Una gráfica que se muestra en la conversación (el formato Chat, o una gráfica que el usuario pide en una respuesta) nunca se dibuja con caracteres de texto. En GenAI UI, carga la skill `charts` antes de dibujarla: una gráfica simple va como bloque `chart`, un diagrama como bloque `mermaid` y cualquier otra como PNG (§2) dibujado con un script ejecutado en el mismo turno e insertado en la respuesta con `![título](ruta)`.
