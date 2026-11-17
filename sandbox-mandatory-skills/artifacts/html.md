@@ -135,9 +135,9 @@ its tone (an audit report: `forensic-audit`; a board summary: `luxury-refined`).
 which one you used, and offer the catalog if they want another look.
 
 **Then run `python3 scripts/artifact.py tokens <theme>` and paste what it prints**: the
-`:root` block with its dark-mode block, and the script helper. Do not
+`:root` block with the theme's light values, and the script helper. Do not
 map the theme by hand: the printed block already has every value `check` looks for, and
-a page that uses only these tokens passes the color, dark-mode and contrast checks.
+a page that uses only these tokens passes the color and contrast checks.
 
 - **Text on a fill** is `--on-primary` or `--on-accent`: never `#fff` or `white` on a
   colored band.
@@ -171,18 +171,19 @@ a page that uses only these tokens passes the color, dark-mode and contrast chec
   grid or flex container: each inline child and each run of text becomes its own cell.
   Put a marker in `::before`, or wrap the text in one child
   (`<li><span class="n">1</span><div>…</div></li>`).
-- **Light and dark.** The viewer does not pass its theme into the page, so the page
-  follows the browser's `prefers-color-scheme`. Every color is a token on `:root`,
-  redefined for dark mode under `@media (prefers-color-scheme: dark)`: `tokens` prints
-  both. A design system without dark values: swap `bg` and
+- **Light by default.** Every artifact is light, whatever its theme (`stratio`, another
+  catalog theme or a design system of the workspace), and whatever the browser or GenAI
+  UI is set to: no `@media (prefers-color-scheme: dark)` block, and `check` flags one.
+  Dark only when the person asks for it: then `tokens <theme> --dark` prints the
+  theme's dark values as the `:root` block, and the page is dark for everyone. A design
+  system without dark values, asked for dark: swap `bg` and
   `ink`, and keep the hue of `primary`, `accent` and each `state_*` but lighten them
   until text in them reaches 4.5:1 on the dark `bg` (and darken their tint backgrounds);
-  `check` reports the text that does not. `body` gets an explicit `background` and
+  `check` reports the text that does not. Every color is a token on `:root`. `body` gets an explicit `background` and
   `color`: the frame behind it is white. No color outside the token block: not in a
   `style=""` attribute, not in SVG (`currentColor` or `var(--…)`), not in a chart
   library's options. A chart drawn by script reads its colors from the tokens when it
-  renders, with the `tok()` helper `tokens` prints, and draws again when
-  `matchMedia("(prefers-color-scheme: dark)")` changes. A literal that only stands in
+  renders, with the `tok()` helper `tokens` prints. A literal that only stands in
   for a missing token (`var(--x, #888)`, `tok("--x") || "#888"`) is allowed.
 - **Fonts.** The theme's `display` (used sparingly), `body` and `mono` stacks: the
   first family shows where the reader has it installed, and the stack falls back by
@@ -205,13 +206,7 @@ shape, for a design system you map by hand:
   --state-ok: …; --state-warn: …; --state-danger: …;
   --on-primary: …; --on-accent: …;
   --chart-1: …; --chart-2: …; --chart-3: …; --chart-4: …; --chart-5: …; --chart-6: …;
-  color-scheme: light;
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    /* the values in the theme's "Dark mode" section: every token above again */
-    color-scheme: dark;
-  }
+  color-scheme: light;  /* dark (and the theme's dark values) only when the person asks */
 }
 body { margin: 0; background: var(--bg); color: var(--ink); }
 .scroll-x { overflow-x: auto; }  /* a wrapper around every wide table, code block or diagram */
@@ -237,7 +232,7 @@ body { margin: 0; background: var(--bg); color: var(--ink); }
   (Plotly, Chart.js, D3). Mermaid suits a plain flowchart or sequence diagram where its
   layout is enough; a diagram that is the point of the page is inline SVG (see the
   Architecture row in [Pick the treatment first](#pick-the-treatment-first)). Axes labeled with their units, series
-  colors from `--chart-n` and status from the state tokens, readable in both themes.
+  colors from `--chart-n` and status from the state tokens.
   Draw bars and lines with coordinates computed from the data, never with CSS heights
   in percent inside flex items (they collapse to the same size). Every chart's numbers
   are also on the page, as a table or in the text. With Chart.js, keep the aspect ratio
