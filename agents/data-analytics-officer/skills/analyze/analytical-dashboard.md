@@ -251,7 +251,7 @@ The theme fixed in the plan (see agent instructions §8.3) produces a token bund
 
 **Plotly `layout.colorway`**: use `chart_categorical` from the token bundle (5-8 ordered hex colors). Keeps charts in conversation with the rest of the artifact.
 
-If the theme declares optional extensions (`motion_budget`, `radius`, `dark_mode`, `chart_sequential`), honour them. `motion_budget` controls the transition CSS; `dark_mode` enables `@media (prefers-color-scheme: dark)`; `chart_sequential` is for heatmaps.
+If the theme declares optional extensions (`motion_budget`, `radius`, `dark_mode`, `chart_sequential`), honour them. `motion_budget` controls the transition CSS; `dark_mode` is used only when the user asks for a dark dashboard, as the `:root` values (the dashboard is light by default, never via `@media (prefers-color-scheme: dark)`); `chart_sequential` is for heatmaps.
 
 ## 9. Motion
 

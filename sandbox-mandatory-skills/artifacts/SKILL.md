@@ -202,7 +202,7 @@ change the page, fix `build.py` and run it again instead of writing a new script
 **Read `html.md` in full, and the theme catalog in `brand-kit.md`, before you write or
 edit an HTML page.** `html.md` holds what the viewer silently breaks, which libraries
 a page can use (GenAI's hosted copies, `artifact.py libs`), how to pick the treatment and the theme, the layout and
-dark-mode rules, pages with several files, and the checklist before saving. The
+light-by-default rules, pages with several files, and the checklist before saving. The
 essentials, which `check` also enforces and that checklist does not repeat:
 
 1. A full document (`<!doctype html>`, charset, viewport, `<title>`), its CSS and
@@ -211,7 +211,8 @@ essentials, which `check` also enforces and that checklist does not repeat:
 2. No `<form>`, storage, new tabs, downloads or `alert`: the viewer's sandbox breaks
    them, silently.
 3. Colors only as tokens of a `brand-kit.md` theme: paste what `tokens <theme>` prints
-   (dark values under `@media (prefers-color-scheme: dark)`, `--on-*` for text on fills,
+   (light: no `prefers-color-scheme` block; dark only when the person asks, with
+   `tokens <theme> --dark`), `--on-*` for text on fills,
    `--*-text` for colored text, `--state-*-bg` for pills); no color anywhere else.
 4. It works in a 400 px wide pane, with no horizontal page scroll.
 5. Everything invented is labeled on the page, and every figure comes from the script
@@ -228,7 +229,7 @@ written out in full.
 
 ```bash
 python3 scripts/artifact.py workdir "Q3 sales report"            # prints <workdir>
-python3 scripts/artifact.py tokens [stratio]                     # catalog / tokens
+python3 scripts/artifact.py tokens [stratio] [--dark]            # catalog / tokens (light)
 python3 scripts/artifact.py check <workdir>/index.html --title "Q3 sales report"
 python3 scripts/artifact.py create --title "Q3 sales report" --type html \
     --description "Third-quarter sales by store and category." \

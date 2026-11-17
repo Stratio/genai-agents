@@ -102,7 +102,7 @@ Con las cinco decisiones registradas, escribe el código. Algunas reglas prácti
 - Evita sombras de texto en el body.
 
 ### Color y tema
-- Custom properties CSS para todo. Override en `:root` para modo oscuro vía `@media (prefers-color-scheme: dark)` cuando el diseño lo soporte.
+- Custom properties CSS para todo. Claro por defecto, sea cual sea el tema o la preferencia del navegador: sin `@media (prefers-color-scheme: dark)`. Oscuro solo si el usuario lo pide, con los valores oscuros del tema en `:root`.
 - Aplica el acento al 5–15 % de la superficie visible — no más. La saturación se gana su sitio por escasez.
 
 ### Motion

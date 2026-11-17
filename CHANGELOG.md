@@ -2,7 +2,7 @@
 
 ## 0.5.0 (upcoming)
 
-* Pending changelog
+* Artifacts, `web-craft` pages and analytical dashboards are light by default, whatever the theme or the browser's dark preference: dark only when the person asks for it. `artifact.py tokens <theme>` prints the light values (`--dark` the dark ones) and `check` flags a page that turns dark with the browser
 
 ## Previous development
 
