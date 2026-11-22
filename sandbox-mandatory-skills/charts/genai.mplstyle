@@ -1,0 +1,41 @@
+# GenAI UI's chart look for matplotlib and seaborn, so a PNG reads like the charts the chat draws:
+#   plt.style.use("<this skill's directory>/genai.mplstyle")
+# Colors: genai-ui's chart palette (genericColors), axis text and grid of its light theme.
+
+axes.prop_cycle: cycler('color', ['128bd3', 'ec7e13', '2ca02c', 'd62728', '9467bd', '8c564b', 'e377c2', '7f7f7f', 'bcbd22', '17becf'])
+image.cmap: Blues
+
+font.family: sans-serif
+font.size: 10
+text.color: 1b2433
+
+axes.titlesize: 12
+axes.titleweight: bold
+axes.titlelocation: left
+axes.titlepad: 12
+axes.labelsize: 10
+axes.labelcolor: 566574
+axes.edgecolor: CDD6DF
+axes.linewidth: 0.8
+axes.spines.top: False
+axes.spines.right: False
+axes.grid: True
+axes.axisbelow: True
+
+grid.color: CDD6DF
+grid.linewidth: 0.6
+grid.alpha: 0.7
+
+xtick.color: 566574
+ytick.color: 566574
+xtick.labelsize: 9
+ytick.labelsize: 9
+
+legend.frameon: False
+legend.fontsize: 9
+
+figure.figsize: 8, 4.5
+figure.facecolor: white
+savefig.dpi: 150
+savefig.bbox: tight
+savefig.facecolor: white
