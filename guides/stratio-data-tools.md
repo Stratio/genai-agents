@@ -11,7 +11,7 @@
 | Step | MCP Tool | Purpose |
 |------|----------|---------|
 | 1a | `search_domains(search_text, domain_type?, refresh?, prefer_semantic?)` | **Prefer over `list_domains`**. Search domains by free text (name or description). Results sorted by relevance. Use when part of the domain name or topic is known. `domain_type`: `'business'` (published semantic domains, with business names), `'technical'` (raw data domains, with database identifiers) or `'both'` (default — all). `refresh`: cache bypass. `prefer_semantic` (default `false`, only applies when `domain_type='both'`): deduplicates results by collection, returning the business (semantic) entry when available and falling back to technical otherwise |
-| 1b | `list_domains(domain_type?, refresh?, prefer_semantic?)` | List all available domains. Use only when you need to see all domains without filtering or when `search_domains` returns no results. Same `domain_type`, `refresh` and `prefer_semantic` parameters as `search_domains` |
+| 1b | `list_domains(domain_type?, refresh?, prefer_semantic?)` | List all available domains. Use only when you need to see all domains without filtering, when `search_domains` returns no results, or when it is not in your tool list or fails (§12). Same `domain_type`, `refresh` and `prefer_semantic` parameters as `search_domains` |
 | 2 | `list_domain_tables` | Get the domain's tables |
 | 3 | `get_tables_details` | Understand business rules and context |
 | 4 | `get_table_columns_details` | Get columns, types, and meanings |
@@ -78,6 +78,7 @@ If the user provides a domain or gives hints about the topic:
 - Execute `search_domains(name_or_hint)` to search for matches
 - If it matches a result -> use it directly and go to step 5.2
 - If there are no matches -> execute `list_domains()` as a fallback and ask the user
+- If `search_domains` is not in your tool list or fails -> follow §12 (`list_domains()` + local filter)
 
 If there is no clear domain, ask the user which one they are interested in. If the user gives no hints, execute `list_domains()` to show all available domains (present as selectable options).
 
