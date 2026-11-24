@@ -27,8 +27,8 @@ Searches the technical data dictionary for tables and paths, then creates a new 
 None. MCP rules and parameters are inline in `SKILL.md`.
 
 ### MCPs
-- **Data (`sql`):** `search_data_dictionary`, `search_domains`, `list_domains`.
-- **Governance (`gov`):** `create_data_collection`.
+- **Data (`sql`):** `search_domains`, `list_domains`.
+- **Governance (`gov`):** `search_data_dictionary`, `create_data_collection`.
 
 ### Python
 None — prompt-only skill.
