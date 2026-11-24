@@ -223,7 +223,7 @@ Este orden es para **planificar** las preguntas. En **ejecución**, lanzar en pa
 
 ## 12. Fallback por Indisponibilidad de OpenSearch
 
-`search_domains` consulta OpenSearch internamente. OpenSearch puede no estar disponible en todos los entornos (despliegues on-premise, entornos aislados, incidencias de infraestructura). Esta sección define el fallback cuando la tool no está disponible — distinto del fallback por *resultado vacío* ya descrito en §5.1.
+`search_domains` consulta OpenSearch internamente. OpenSearch puede no estar disponible en todos los entornos (despliegues on-premise, entornos aislados, incidencias de infraestructura). Esta sección define el fallback cuando la tool no está en tu lista de tools o no está disponible — distinto del fallback por *resultado vacío* ya descrito en §5.1.
 
 ### 12.1 Detección del caso
 
@@ -231,6 +231,7 @@ Este orden es para **planificar** las preguntas. En **ejecución**, lanzar en pa
 |-----------|-----------|------------------|
 | Resultado vacío (ya documentado) | La tool devuelve una respuesta bien formada con cero coincidencias | §5.1 — llamar a `list_domains()` y preguntar al usuario |
 | Indisponibilidad (nuevo) | Respuesta de error que menciona OpenSearch / index / connection / timeout, **o** dos reintentos sucesivos según §10 siguen fallando (no un `task_id` pendiente según §9 y `stratio-mcp-response-patterns.md` §1) | §12.2 |
+| No disponible (no configurada) | La tool no está en tu lista de tools: Governance OpenSearch no está habilitado en este entorno | §12.2 directamente — sin llamarla ni reintentar |
 
 ### 12.2 Fallback determinístico
 

@@ -223,7 +223,7 @@ This order is for **planning** the questions. In **execution**, launch all indep
 
 ## 12. OpenSearch Availability Fallback
 
-`search_domains` consults OpenSearch internally. OpenSearch may not be available in every environment (on-premises deployments, isolated environments, infrastructure incidents). This section defines the fallback when the tool is unavailable — distinct from the *empty result* fallback already described in §5.1.
+`search_domains` consults OpenSearch internally. OpenSearch may not be available in every environment (on-premises deployments, isolated environments, infrastructure incidents). This section defines the fallback when the tool is not in your tool list or is unavailable — distinct from the *empty result* fallback already described in §5.1.
 
 ### 12.1 Case detection
 
@@ -231,6 +231,7 @@ This order is for **planning** the questions. In **execution**, launch all indep
 |-----------|-----------|---------------|
 | Empty result (already documented) | Tool returns a well-formed response with zero matches | §5.1 — call `list_domains()` and ask the user |
 | Unavailability (new) | Error response mentioning OpenSearch / index / connection / timeout, **or** two successive retries per §10 still fail (not a `task_id` pending per §9 and `stratio-mcp-response-patterns.md` §1) | §12.2 |
+| Not available (not configured) | The tool is not in your tool list: Governance OpenSearch is not enabled in this environment | §12.2 directly — do not call it, no retries |
 
 ### 12.2 Deterministic fallback
 

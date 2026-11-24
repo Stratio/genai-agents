@@ -193,7 +193,7 @@ Two response patterns can occur on **any** MCP tool listed in §2, on either the
 
 ## 10. OpenSearch Availability Fallback
 
-`search_domains`, `search_ontologies` and `search_data_dictionary` consult OpenSearch internally. OpenSearch may not be available in every environment. This section defines the fallback when any of these tools is unavailable — distinct from the *empty result* fallback already described in §4.1 and §5.
+`search_domains`, `search_ontologies` and `search_data_dictionary` consult OpenSearch internally. OpenSearch may not be available in every environment. This section defines the fallback when any of these tools is not in your tool list or is unavailable — distinct from the *empty result* fallback already described in §4.1 and §5.
 
 ### 10.1 Case detection
 
@@ -201,6 +201,7 @@ Two response patterns can occur on **any** MCP tool listed in §2, on either the
 |-----------|-----------|---------------|
 | Empty result (already documented) | Tool returns a well-formed response with zero matches | §4.1 / §5 — call the corresponding `list_*` and ask the user |
 | Unavailability (new) | Error response mentioning OpenSearch / index / connection / timeout, **or** two successive retries per §7 still fail (not a `task_id` pending per §9) | §10.2 |
+| Not available (not configured) | The tool is not in your tool list: Governance OpenSearch is not enabled in this environment. Check each tool separately: the data and governance servers are configured independently | §10.2 directly — do not call it, no retries |
 
 ### 10.2 Deterministic fallback
 
@@ -208,14 +209,14 @@ Two response patterns can occur on **any** MCP tool listed in §2, on either the
 |-----------------|---------------------------|----------|
 | `search_domains(search_text, domain_type?)` | `list_domains(domain_type?)` + local substring filter over `name` and `description` | Complete |
 | `search_ontologies(search_text)` | `list_ontologies()` + local substring filter over `name` and `description` | Complete |
-| `search_data_dictionary(search_text, search_type?)` | With a domain hint: `list_domain_tables(domain)` + `get_tables_details(domain, tables)`. Without a domain hint: `list_domains(domain_type='technical')` → ask the user to pick one → continue | Partial — no cross-domain free-text search without OpenSearch |
+| `search_data_dictionary(search_text, search_type?)` | With a domain hint: `list_domain_tables(domain)` + `get_tables_details(domain, tables)`. Without a domain hint: `list_domains(domain_type='technical')` → ask the user to pick one → continue | Partial — only finds tables already in a domain, and returns no `metadata_path`: it cannot feed `create_data_collection` (the `create-data-collection` skill stops instead) |
 
 ### 10.3 Procedure
 
 1. On first detected unavailability in the session, announce the degradation to the user once — per tool, not per call.
 2. Invoke the deterministic alternative.
 3. Continue the workflow (non-blocking). The §6 state-detection checks still apply: if `search_ontologies(name)` is used for idempotency, substitute with `list_ontologies` + local filter. The §7 retry budget is consumed before declaring unavailability.
-4. Stop only if the alternative cannot cover the user's need — typically `search_data_dictionary` without a domain hint when the user cannot narrow the scope. In that case, inform the user and halt this sub-task.
+4. Stop only if the alternative cannot cover the user's need — typically `search_data_dictionary` to create a data collection, or without a domain hint when the user cannot narrow the scope. In that case, inform the user and halt this sub-task.
 5. Note the degradation in the summary at the end of the phase.
 
 ## 11. Glossary Instruction Enrichment Workflow
