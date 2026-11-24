@@ -10,7 +10,7 @@ Guide for analyzing an analysis conversation and proposing discovered business k
 
 ## 1. Determine Domain
 
-- If `$ARGUMENTS` contains a domain name, validate it with `search_domains($ARGUMENTS)` before using it. Use the exact name from the result, not the user's interpretation
+- If `$ARGUMENTS` contains a domain name, validate it with `search_domains($ARGUMENTS)` before using it. Use the exact name from the result, not the user's interpretation. If `search_domains` is not in your tool list, use `list_domains()` and pick the matching name instead
 - If not, infer the domain from the current conversation (look for previous MCP calls with `domain_name`)
 - If it cannot be inferred, list available domains via `list_domains()` and ask the user following the user question convention (adaptive to the environment: interactive if available, numbered list in chat otherwise)
 

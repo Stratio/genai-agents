@@ -20,7 +20,7 @@ Busca tablas y paths en el diccionario de datos técnico y crea una nueva colecc
 
 ## Workflow
 
-**Precondición**: si `search_data_dictionary` no está en tu lista de tools (Governance OpenSearch no está habilitado en este entorno), indicar al usuario que crear una colección de datos necesita la búsqueda en el diccionario de datos, que no está habilitada aquí, y detenerse. Continuar solo si el usuario da los valores `metadata_path` de las tablas o paths a incluir; en ese caso, saltar los pasos 2 y 3.
+**Precondición**: si `search_data_dictionary` no está en tu lista de tools (Governance OpenSearch no está habilitado en este entorno), indicar al usuario que crear una colección de datos necesita la búsqueda en el diccionario de datos, que no está habilitada aquí, y que puede dar en su lugar el `metadata_path` de cada tabla o path a incluir, indicando si es una Table o un Path (el paso 5 lo necesita). Detenerse salvo que lo haga; si lo hace, saltar los pasos 2 y 3.
 
 ### 1. Determinar intencion
 

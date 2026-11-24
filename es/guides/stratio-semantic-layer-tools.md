@@ -30,6 +30,7 @@
 | **Business terms** | `create_business_term(domain, name, description, type, related_assets)` | Crear business term en el diccionario con relaciones a activos |
 | | `list_business_asset_types()` | Listar tipos de activos disponibles para business terms |
 | **Colecciones** | `create_data_collection(collection_name, description, table_metadata_paths?, path_metadata_paths?)` | Crear colección de datos (dominio técnico) con tablas y paths. `collection_name` sin espacios (usar underscores). Refresca vista técnica automáticamente |
+| | `search_data_dictionary(search_text, search_type?)` | Buscar tablas y paths en el diccionario de datos técnico. `search_type`: `'tables'`, `'paths'` o `'both'` (defecto). Resultados ordenados por relevancia, con `metadata_path`, `name`, `subtype` (Table/Path), `alias`, `data_store`, `description` |
 | **Instrucciones del glosario** | `get_glossary_instructions(domain, phases?, include_globals?)` | Leer del diccionario de datos los business terms tipados como instrucciones GenAI para un dominio técnico. Filtrable por `phases` (lista entre `ontology` / `mapping` / `technical_terms` / `semantic_terms`; por defecto las cuatro) y por `include_globals` para el tipo global cross-phase `GenAI Instructions`. Para cada fase, la respuesta incluye siempre el tipo primario de la fase más cualquier tipo adicional por fase que tenga configurado el profile (replica lo que la chain consume internamente). Devuelve una sección por tipo de glosario con el contenido Markdown crudo. Solo lectura. Ver §11 para el workflow al usuario |
 | **Utilidad** | `list_technical_domain_concepts(domain)` | Listar vistas de negocio existentes con estado de gobernanza (Draft/Pending Publish/Published), booleano `has_sql_mapping`, la SQL real del mapping en `sql_mapping` (cuando existe — utilizable para validación con datos de muestra: `SELECT * FROM (<sql_mapping>) AS m LIMIT 5`), y `has_semantic_terms` |
 | | `create_collection_description(domain, user_instructions?)` | Generar SOLO la descripción del dominio/colección (sin tocar tablas) |
@@ -45,7 +46,6 @@
 | `get_tables_details(domain, tables)` | Detalle de tablas: reglas de negocio, contexto |
 | `get_table_columns_details(domain, table)` | Columnas de una tabla: nombres, tipos, descripciones de negocio |
 | `search_domain_knowledge(question, domain)` | Buscar conocimiento en dominios técnicos y semánticos |
-| `search_data_dictionary(search_text, search_type?)` | Buscar tablas y paths en el diccionario de datos técnico. `search_type`: `'tables'`, `'paths'` o `'both'` (defecto). Resultados ordenados por relevancia, con `metadata_path`, `name`, `subtype` (Table/Path), `alias`, `data_store`, `description` |
 | `get_mcp_task_result(task_id)` | Obtener el resultado de una tool de larga duración que sigue ejecutándose en segundo plano en el servidor `sql` (ver §9 y `stratio-mcp-response-patterns.md` §1) |
 
 ## 3. Reglas Estrictas
@@ -128,7 +128,7 @@ Antes de cualquier operación, verificar que no exista ya:
 | SQL Mappings | `list_technical_domain_concepts(domain)` → estado de mapping por vista + `sql_mapping` del mapping cuando existe | `create_sql_mappings` sobrescribe mappings existentes. Usar `sql_mapping` para validación de datos pre-publicación (ver §4 de `stratio-data-tools.md`) |
 | Términos semánticos | `list_technical_domain_concepts(domain)` → estado de términos por vista | Informar. Opciones: saltar / regenerar (destructivo) / cancelar |
 
-> Cuando cualquiera de las tools `search_*` anteriores no esté disponible (no vacía, sino fallando), sustituir según §10 y continuar.
+> Cuando cualquiera de las tools `search_*` anteriores no esté en tu lista de tools o no esté disponible (no vacía, sino fallando), sustituir según §10 y continuar.
 
 ## 7. Manejo de Errores y Recuperación
 

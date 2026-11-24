@@ -10,7 +10,7 @@ Guía para analizar una conversación de análisis y proponer conocimiento de ne
 
 ## 1. Determinar Dominio
 
-- Si `$ARGUMENTS` contiene un nombre de dominio, validarlo con `search_domains($ARGUMENTS)` antes de usarlo. Usar el nombre exacto del resultado, no la interpretación del usuario
+- Si `$ARGUMENTS` contiene un nombre de dominio, validarlo con `search_domains($ARGUMENTS)` antes de usarlo. Usar el nombre exacto del resultado, no la interpretación del usuario. Si `search_domains` no está en tu lista de tools, usar `list_domains()` y elegir el nombre que coincida
 - Si no, inferir el dominio de la conversación actual (buscar llamadas previas a MCPs con `domain_name`)
 - Si no es posible inferirlo, listar dominios disponibles vía `list_domains()` y preguntar al usuario siguiendo la convención de preguntas al usuario (adaptativa al entorno: interactivas si disponibles, lista numerada en chat si no)
 

@@ -20,7 +20,7 @@ Searches for tables and paths in the technical data dictionary and creates a new
 
 ## Workflow
 
-**Precondition**: if `search_data_dictionary` is not in your tool list (Governance OpenSearch is not enabled in this environment), tell the user that creating a data collection needs the data dictionary search, which is not enabled here, and stop. Continue only if the user gives the `metadata_path` values of the tables or paths to include; in that case skip steps 2 and 3.
+**Precondition**: if `search_data_dictionary` is not in your tool list (Governance OpenSearch is not enabled in this environment), tell the user that creating a data collection needs the data dictionary search, which is not enabled here, and that they can give instead the `metadata_path` of each table or path to include, saying whether each is a Table or a Path (step 5 needs it). Stop unless they do; if they do, skip steps 2 and 3.
 
 ### 1. Determine intent
 

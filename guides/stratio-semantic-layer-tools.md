@@ -30,6 +30,7 @@
 | **Business terms** | `create_business_term(domain, name, description, type, related_assets)` | Create a business term in the dictionary with asset relationships |
 | | `list_business_asset_types()` | List available asset types for business terms |
 | **Collections** | `create_data_collection(collection_name, description, table_metadata_paths?, path_metadata_paths?)` | Create a data collection (technical domain) with tables and paths. `collection_name` without spaces (use underscores). Automatically refreshes the technical view |
+| | `search_data_dictionary(search_text, search_type?)` | Search tables and paths in the technical data dictionary. `search_type`: `'tables'`, `'paths'`, or `'both'` (default). Results sorted by relevance, with `metadata_path`, `name`, `subtype` (Table/Path), `alias`, `data_store`, `description` |
 | **Glossary instructions** | `get_glossary_instructions(domain, phases?, include_globals?)` | Read GenAI instruction-typed business terms from the data dictionary for a technical domain. Filterable by `phases` (list of `ontology` / `mapping` / `technical_terms` / `semantic_terms`; defaults to all four) and by `include_globals` for the cross-phase global `GenAI Instructions` type. For each phase, the response always includes the phase-specific primary type plus any additional per-phase types the profile has configured (mirrors what the chain consumes internally). Returns one section per glossary type with the raw Markdown content. Read-only. See §11 for the user-facing workflow |
 | **Utility** | `list_technical_domain_concepts(domain)` | List existing business views with governance status (Draft/Pending Publish/Published), `has_sql_mapping` boolean, the actual mapping SQL in `sql_mapping` (when present — usable for sample-data validation: `SELECT * FROM (<sql_mapping>) AS m LIMIT 5`), and `has_semantic_terms` |
 | | `create_collection_description(domain, user_instructions?)` | Generate ONLY the domain/collection description (without touching tables) |
@@ -45,7 +46,6 @@
 | `get_tables_details(domain, tables)` | Table details: business rules, context |
 | `get_table_columns_details(domain, table)` | Table columns: names, types, business descriptions |
 | `search_domain_knowledge(question, domain)` | Search knowledge in technical and semantic domains |
-| `search_data_dictionary(search_text, search_type?)` | Search tables and paths in the technical data dictionary. `search_type`: `'tables'`, `'paths'`, or `'both'` (default). Results sorted by relevance, with `metadata_path`, `name`, `subtype` (Table/Path), `alias`, `data_store`, `description` |
 | `get_mcp_task_result(task_id)` | Retrieve the result of a long-running tool that continues executing in the background on the `sql` server (see §9 and `stratio-mcp-response-patterns.md` §1) |
 
 ## 3. Strict Rules
@@ -128,7 +128,7 @@ Before any operation, verify it does not already exist:
 | SQL Mappings | `list_technical_domain_concepts(domain)` -> mapping status per view + `sql_mapping` of the mapping when present | `create_sql_mappings` overwrites existing mappings. Use `sql_mapping` for pre-publication sample validation (see §4 of `stratio-data-tools.md`) |
 | Semantic terms | `list_technical_domain_concepts(domain)` -> term status per view | Inform. Options: skip / regenerate (destructive) / cancel |
 
-> When any `search_*` tool above is unavailable (not empty, but failing), substitute per §10 and continue.
+> When any `search_*` tool above is not in your tool list or is unavailable (not empty, but failing), substitute per §10 and continue.
 
 ## 7. Error Handling and Recovery
 
