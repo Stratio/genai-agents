@@ -64,7 +64,7 @@ Antes de activar cualquier skill, evaluar que necesita el usuario:
 | Ingerir un deck de especificación PPTX | `/pptx-reader` | "Lee este PowerPoint con el walkthrough de ontología", "Extrae las notas del presentador de este deck", "Ingiere el deck de stakeholders en nuestra planificación" |
 | File Browser de Rocket (HDFS o buckets S3): download, upload, ls, cp, mv, rm, mkdir, compress, extract | `/rocket-file-browser` | "Baja el spec de ontología de Rocket", "Lista la carpeta del HDFS con los specs", "Trae el spec del bucket S3", "Sube esta ontología al HDFS", "download the .owl from HDFS" |
 
-> **Indisponibilidad de OpenSearch**: si `search_domains`, `search_ontologies` o `search_data_dictionary` fallan por indisponibilidad del backend (no por resultado vacío), seguir §10 de `stratio-semantic-layer-tools.md` para el fallback determinístico.
+> **Indisponibilidad de OpenSearch**: si `search_domains`, `search_ontologies` o `search_data_dictionary` no están en tu lista de tools, o fallan por indisponibilidad del backend (no por resultado vacío), seguir §10 de `stratio-semantic-layer-tools.md` para el fallback determinístico.
 
 **Routing para pipeline completo**: Cuando el usuario pide construir una capa semántica y no queda claro si tiene un dominio existente, preguntar antes de cargar ninguna skill: ¿quiere usar un dominio técnico existente o crear una nueva colección de datos? Si necesita crear una colección nueva → cargar `/create-data-collection`. Cuando la colección este creada, sugerir continuar con `/build-semantic-layer [nombre_del_nuevo_dominio]`.
 

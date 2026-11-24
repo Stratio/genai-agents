@@ -2,7 +2,7 @@
 
 ## 0.5.0 (upcoming)
 
-* Pending changelog
+* [ROCK-15948] OpenSearch search tools: the agents and their guides go straight to `list_domains` / `list_ontologies` when `search_domains`, `search_ontologies` or `search_data_dictionary` are not in the tool list (the chains stop registering them when Governance OpenSearch is not enabled), and `create-data-collection` stops with a clear message when `search_data_dictionary` is missing, since no other tool returns the `metadata_path` it needs. The skill now also lists `search_data_dictionary` under the `gov` server. EN + ES.
 
 ## Previous development
 
