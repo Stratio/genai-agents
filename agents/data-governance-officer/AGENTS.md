@@ -142,7 +142,7 @@ Step 0 runs in Phase 0 and therefore does not violate the "never proceed to subs
 | "Read this governance / compliance / ontology deck (PPTX)" | — | `pptx-reader` |
 | "Read this ontology spec / data dictionary / term catalog (XLSX)" | — | `xlsx-reader` |
 
-> **OpenSearch unavailability**: if `search_domains`, `search_ontologies` or `search_data_dictionary` fail due to backend unavailability (not due to empty results), follow §12 of `stratio-data-tools.md` (for `search_domains`) or §10 of `stratio-semantic-layer-tools.md` (for all three) for the deterministic fallback.
+> **OpenSearch unavailability**: if `search_domains`, `search_ontologies` or `search_data_dictionary` are not in your tool list, or fail due to backend unavailability (not due to empty results), follow §12 of `stratio-data-tools.md` (for `search_domains`) or §10 of `stratio-semantic-layer-tools.md` (for all three) for the deterministic fallback.
 
 **Routing for full semantic pipeline**: When the user asks to build a semantic layer and it is not clear whether they have an existing domain, ask before loading any skill: do they want to use an existing technical domain or create a new data collection? If they need to create a new collection → load `/create-data-collection`. Once the collection is created, suggest continuing with `/build-semantic-layer [new_domain_name]`.
 

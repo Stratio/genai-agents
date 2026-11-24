@@ -30,6 +30,7 @@
 | **Business terms** | `create_business_term(domain, name, description, type, related_assets)` | Crear business term en el diccionario con relaciones a activos |
 | | `list_business_asset_types()` | Listar tipos de activos disponibles para business terms |
 | **Colecciones** | `create_data_collection(collection_name, description, table_metadata_paths?, path_metadata_paths?)` | Crear colección de datos (dominio técnico) con tablas y paths. `collection_name` sin espacios (usar underscores). Refresca vista técnica automáticamente |
+| | `search_data_dictionary(search_text, search_type?)` | Buscar tablas y paths en el diccionario de datos técnico. `search_type`: `'tables'`, `'paths'` o `'both'` (defecto). Resultados ordenados por relevancia, con `metadata_path`, `name`, `subtype` (Table/Path), `alias`, `data_store`, `description` |
 | **Instrucciones del glosario** | `get_glossary_instructions(domain, phases?, include_globals?)` | Leer del diccionario de datos los business terms tipados como instrucciones GenAI para un dominio técnico. Filtrable por `phases` (lista entre `ontology` / `mapping` / `technical_terms` / `semantic_terms`; por defecto las cuatro) y por `include_globals` para el tipo global cross-phase `GenAI Instructions`. Para cada fase, la respuesta incluye siempre el tipo primario de la fase más cualquier tipo adicional por fase que tenga configurado el profile (replica lo que la chain consume internamente). Devuelve una sección por tipo de glosario con el contenido Markdown crudo. Solo lectura. Ver §11 para el workflow al usuario |
 | **Utilidad** | `list_technical_domain_concepts(domain)` | Listar vistas de negocio existentes con estado de gobernanza (Draft/Pending Publish/Published), booleano `has_sql_mapping`, la SQL real del mapping en `sql_mapping` (cuando existe — utilizable para validación con datos de muestra: `SELECT * FROM (<sql_mapping>) AS m LIMIT 5`), y `has_semantic_terms` |
 | | `create_collection_description(domain, user_instructions?)` | Generar SOLO la descripción del dominio/colección (sin tocar tablas) |
@@ -45,7 +46,6 @@
 | `get_tables_details(domain, tables)` | Detalle de tablas: reglas de negocio, contexto |
 | `get_table_columns_details(domain, table)` | Columnas de una tabla: nombres, tipos, descripciones de negocio |
 | `search_domain_knowledge(question, domain)` | Buscar conocimiento en dominios técnicos y semánticos |
-| `search_data_dictionary(search_text, search_type?)` | Buscar tablas y paths en el diccionario de datos técnico. `search_type`: `'tables'`, `'paths'` o `'both'` (defecto). Resultados ordenados por relevancia, con `metadata_path`, `name`, `subtype` (Table/Path), `alias`, `data_store`, `description` |
 | `get_mcp_task_result(task_id)` | Obtener el resultado de una tool de larga duración que sigue ejecutándose en segundo plano en el servidor `sql` (ver §9 y `stratio-mcp-response-patterns.md` §1) |
 
 ## 3. Reglas Estrictas
@@ -128,7 +128,7 @@ Antes de cualquier operación, verificar que no exista ya:
 | SQL Mappings | `list_technical_domain_concepts(domain)` → estado de mapping por vista + `sql_mapping` del mapping cuando existe | `create_sql_mappings` sobrescribe mappings existentes. Usar `sql_mapping` para validación de datos pre-publicación (ver §4 de `stratio-data-tools.md`) |
 | Términos semánticos | `list_technical_domain_concepts(domain)` → estado de términos por vista | Informar. Opciones: saltar / regenerar (destructivo) / cancelar |
 
-> Cuando cualquiera de las tools `search_*` anteriores no esté disponible (no vacía, sino fallando), sustituir según §10 y continuar.
+> Cuando cualquiera de las tools `search_*` anteriores no esté en tu lista de tools o no esté disponible (no vacía, sino fallando), sustituir según §10 y continuar.
 
 ## 7. Manejo de Errores y Recuperación
 
@@ -193,7 +193,7 @@ Dos patrones de respuesta pueden ocurrir en **cualquier** tool MCP de las listad
 
 ## 10. Fallback por Indisponibilidad de OpenSearch
 
-`search_domains`, `search_ontologies` y `search_data_dictionary` consultan OpenSearch internamente. OpenSearch puede no estar disponible en todos los entornos. Esta sección define el fallback cuando cualquiera de estas tools no está disponible — distinto del fallback por *resultado vacío* ya descrito en §4.1 y §5.
+`search_domains`, `search_ontologies` y `search_data_dictionary` consultan OpenSearch internamente. OpenSearch puede no estar disponible en todos los entornos. Esta sección define el fallback cuando cualquiera de estas tools no está en tu lista de tools o no está disponible — distinto del fallback por *resultado vacío* ya descrito en §4.1 y §5.
 
 ### 10.1 Detección del caso
 
@@ -201,6 +201,7 @@ Dos patrones de respuesta pueden ocurrir en **cualquier** tool MCP de las listad
 |-----------|-----------|------------------|
 | Resultado vacío (ya documentado) | La tool devuelve una respuesta bien formada con cero coincidencias | §4.1 / §5 — llamar al `list_*` correspondiente y preguntar al usuario |
 | Indisponibilidad (nuevo) | Respuesta de error que menciona OpenSearch / index / connection / timeout, **o** dos reintentos sucesivos según §7 siguen fallando (no un `task_id` pendiente según §9) | §10.2 |
+| No disponible (no configurada) | La tool no está en tu lista de tools: Governance OpenSearch no está habilitado en este entorno. Comprobar cada tool por separado: los servidores de datos y de gobierno se configuran de forma independiente | §10.2 directamente — sin llamarla ni reintentar |
 
 ### 10.2 Fallback determinístico
 
@@ -208,14 +209,14 @@ Dos patrones de respuesta pueden ocurrir en **cualquier** tool MCP de las listad
 |-----------------|----------------------------|-----------|
 | `search_domains(search_text, domain_type?)` | `list_domains(domain_type?)` + filtro local de substring sobre `name` y `description` | Completa |
 | `search_ontologies(search_text)` | `list_ontologies()` + filtro local de substring sobre `name` y `description` | Completa |
-| `search_data_dictionary(search_text, search_type?)` | Con hint de dominio: `list_domain_tables(domain)` + `get_tables_details(domain, tables)`. Sin hint de dominio: `list_domains(domain_type='technical')` → pedir al usuario que elija uno → continuar | Parcial — sin búsqueda cross-domain free-text sin OpenSearch |
+| `search_data_dictionary(search_text, search_type?)` | Con hint de dominio: `list_domain_tables(domain)` + `get_tables_details(domain, tables)`. Sin hint de dominio: `list_domains(domain_type='technical')` → pedir al usuario que elija uno → continuar | Parcial — solo encuentra tablas que ya están en un dominio y no devuelve `metadata_path`: no sirve para `create_data_collection` (la skill `create-data-collection` se detiene) |
 
 ### 10.3 Procedimiento
 
 1. Al detectarse la indisponibilidad por primera vez en la sesión, avisar al usuario una sola vez — por tool, no por llamada.
 2. Invocar la alternativa determinística.
 3. Continuar el workflow (non-blocking). Las comprobaciones de detección de estado de §6 siguen aplicando: si se usa `search_ontologies(name)` para idempotencia, sustituir por `list_ontologies` + filtro local. El presupuesto de reintentos de §7 se agota antes de declarar indisponibilidad.
-4. Parar únicamente si la alternativa no cubre la necesidad del usuario — típicamente `search_data_dictionary` sin hint de dominio cuando el usuario no puede acotar el alcance. En ese caso, informar al usuario y detener la sub-tarea.
+4. Parar únicamente si la alternativa no cubre la necesidad del usuario — típicamente `search_data_dictionary` para crear una colección de datos, o sin hint de dominio cuando el usuario no puede acotar el alcance. En ese caso, informar al usuario y detener la sub-tarea.
 5. Registrar la degradación en el resumen al final de la fase.
 
 ## 11. Workflow de Enriquecimiento con Instrucciones del Glosario

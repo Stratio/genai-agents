@@ -11,7 +11,7 @@
 | Paso | Herramienta MCP | Propósito |
 |------|----------------|-----------|
 | 1a | `search_domains(search_text, domain_type?, refresh?, prefer_semantic?)` | **Preferir sobre `list_domains`**. Buscar dominios por texto libre (nombre o descripción). Resultados ordenados por relevancia. Usar cuando se conoce parte del nombre o tema del dominio. `domain_type`: `'business'` (dominios semánticos publicados, con nombres de negocio), `'technical'` (dominios de datos crudos, con identificadores de base de datos) o `'both'` (defecto — todos). `refresh`: bypass de cache. `prefer_semantic` (defecto `false`, solo aplica cuando `domain_type='both'`): deduplica los resultados por colección, devolviendo la entrada business/semántica cuando existe y cayendo al técnico en caso contrario |
-| 1b | `list_domains(domain_type?, refresh?, prefer_semantic?)` | Listar todos los dominios disponibles. Usar solo cuando se necesita ver todos los dominios sin filtro o cuando `search_domains` no devuelve resultados. Mismos parámetros `domain_type`, `refresh` y `prefer_semantic` que `search_domains` |
+| 1b | `list_domains(domain_type?, refresh?, prefer_semantic?)` | Listar todos los dominios disponibles. Usar solo cuando se necesita ver todos los dominios sin filtro, cuando `search_domains` no devuelve resultados, o cuando no está en tu lista de tools o falla (§12). Mismos parámetros `domain_type`, `refresh` y `prefer_semantic` que `search_domains` |
 | 2 | `list_domain_tables` | Conocer tablas del dominio |
 | 3 | `get_tables_details` | Entender reglas de negocio y contexto |
 | 4 | `get_table_columns_details` | Conocer columnas, tipos y significado |
@@ -78,6 +78,7 @@ Si el usuario proporciona un dominio o da pistas sobre el tema:
 - Ejecutar `search_domains(nombre_o_pista)` para buscar coincidencias
 - Si coincide con un resultado → usarlo directamente e ir al paso 5.2
 - Si no hay coincidencias → ejecutar `list_domains()` como fallback y preguntar al usuario
+- Si `search_domains` no está en tu lista de tools o falla → seguir §12 (`list_domains()` + filtro local)
 
 Si no hay dominio claro, preguntar al usuario cuál le interesa. Si el usuario no da pistas, ejecutar `list_domains()` para mostrar todos los dominios disponibles (presentar como opciones seleccionables).
 
@@ -223,7 +224,7 @@ Este orden es para **planificar** las preguntas. En **ejecución**, lanzar en pa
 
 ## 12. Fallback por Indisponibilidad de OpenSearch
 
-`search_domains` consulta OpenSearch internamente. OpenSearch puede no estar disponible en todos los entornos (despliegues on-premise, entornos aislados, incidencias de infraestructura). Esta sección define el fallback cuando la tool no está disponible — distinto del fallback por *resultado vacío* ya descrito en §5.1.
+`search_domains` consulta OpenSearch internamente. OpenSearch puede no estar disponible en todos los entornos (despliegues on-premise, entornos aislados, incidencias de infraestructura). Esta sección define el fallback cuando la tool no está en tu lista de tools o no está disponible — distinto del fallback por *resultado vacío* ya descrito en §5.1.
 
 ### 12.1 Detección del caso
 
@@ -231,6 +232,7 @@ Este orden es para **planificar** las preguntas. En **ejecución**, lanzar en pa
 |-----------|-----------|------------------|
 | Resultado vacío (ya documentado) | La tool devuelve una respuesta bien formada con cero coincidencias | §5.1 — llamar a `list_domains()` y preguntar al usuario |
 | Indisponibilidad (nuevo) | Respuesta de error que menciona OpenSearch / index / connection / timeout, **o** dos reintentos sucesivos según §10 siguen fallando (no un `task_id` pendiente según §9 y `stratio-mcp-response-patterns.md` §1) | §12.2 |
+| No disponible (no configurada) | La tool no está en tu lista de tools: Governance OpenSearch no está habilitado en este entorno | §12.2 directamente — sin llamarla ni reintentar |
 
 ### 12.2 Fallback determinístico
 

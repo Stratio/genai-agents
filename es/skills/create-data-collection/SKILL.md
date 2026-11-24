@@ -12,13 +12,15 @@ Busca tablas y paths en el diccionario de datos técnico y crea una nueva colecc
 
 | Tool | Servidor | Propósito |
 |------|----------|-----------|
-| `search_data_dictionary(search_text, search_type?)` | sql | Buscar tablas y paths en el diccionario. `search_type`: `'tables'`, `'paths'` o `'both'` (defecto). Resultados ordenados por relevancia. Cada resultado: `metadata_path`, `name`, `subtype` (Table/Path), `alias?`, `data_store?`, `description?` |
+| `search_data_dictionary(search_text, search_type?)` | gov | Buscar tablas y paths en el diccionario. `search_type`: `'tables'`, `'paths'` o `'both'` (defecto). Resultados ordenados por relevancia. Cada resultado: `metadata_path`, `name`, `subtype` (Table/Path), `alias?`, `data_store?`, `description?` |
 | `create_data_collection(collection_name, description, table_metadata_paths?, path_metadata_paths?)` | gov | Crear colección + asociar tablas/paths + refrescar vista técnica. `collection_name` sin espacios (usar underscores). Al menos una de las dos listas obligatoria. Los `metadata_path` provienen de resultados de `search_data_dictionary` |
 | `list_domains(domain_type='technical', refresh?)` | sql | Verificar que el nombre no exista ya. Tras crear la colección, llamar con `refresh=true` para precalentar la cache |
 
 **Reglas clave**: `collection_name` sin espacios ni caracteres especiales (usar underscores) — misma convención que ontologías. Al menos un `table_metadata_paths` o `path_metadata_paths` requerido. Los `metadata_path` se obtienen de los resultados de `search_data_dictionary`. Confirmación explícita antes de crear. La búsqueda es read-only e idempotente; la creación no es idempotente.
 
 ## Workflow
+
+**Precondición**: si `search_data_dictionary` no está en tu lista de tools (Governance OpenSearch no está habilitado en este entorno), indicar al usuario que crear una colección de datos necesita la búsqueda en el diccionario de datos, que no está habilitada aquí, y que puede dar en su lugar el `metadata_path` de cada tabla o path a incluir, indicando si es una Table o un Path (el paso 5 lo necesita). Detenerse salvo que lo haga; si lo hace, saltar los pasos 2 y 3.
 
 ### 1. Determinar intencion
 

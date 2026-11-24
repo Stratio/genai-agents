@@ -12,13 +12,15 @@ Searches for tables and paths in the technical data dictionary and creates a new
 
 | Tool | Server | Purpose |
 |------|--------|---------|
-| `search_data_dictionary(search_text, search_type?)` | sql | Search for tables and paths in the dictionary. `search_type`: `'tables'`, `'paths'` or `'both'` (default). Results ordered by relevance. Each result: `metadata_path`, `name`, `subtype` (Table/Path), `alias?`, `data_store?`, `description?` |
+| `search_data_dictionary(search_text, search_type?)` | gov | Search for tables and paths in the dictionary. `search_type`: `'tables'`, `'paths'` or `'both'` (default). Results ordered by relevance. Each result: `metadata_path`, `name`, `subtype` (Table/Path), `alias?`, `data_store?`, `description?` |
 | `create_data_collection(collection_name, description, table_metadata_paths?, path_metadata_paths?)` | gov | Create collection + associate tables/paths + refresh technical view. `collection_name` without spaces (use underscores). At least one of the two lists required. The `metadata_path` values come from `search_data_dictionary` results |
 | `list_domains(domain_type='technical', refresh?)` | sql | Verify that the name does not already exist. After creating the collection, call with `refresh=true` to warm the cache |
 
 **Key rules**: `collection_name` without spaces or special characters (use underscores) — same convention as ontologies. At least one `table_metadata_paths` or `path_metadata_paths` required. The `metadata_path` values are obtained from `search_data_dictionary` results. Explicit confirmation before creating. Search is read-only and idempotent; creation is not idempotent.
 
 ## Workflow
+
+**Precondition**: if `search_data_dictionary` is not in your tool list (Governance OpenSearch is not enabled in this environment), tell the user that creating a data collection needs the data dictionary search, which is not enabled here, and that they can give instead the `metadata_path` of each table or path to include, saying whether each is a Table or a Path (step 5 needs it). Stop unless they do; if they do, skip steps 2 and 3.
 
 ### 1. Determine intent
 

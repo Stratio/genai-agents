@@ -27,8 +27,8 @@ Busca en el diccionario técnico de datos tablas y paths, y luego crea una nueva
 Ninguno. Las reglas y parámetros de MCPs están inline en `SKILL.md`.
 
 ### MCPs
-- **Data (`sql`):** `search_data_dictionary`, `search_domains`, `list_domains`.
-- **Governance (`gov`):** `create_data_collection`.
+- **Data (`sql`):** `search_domains`, `list_domains`.
+- **Governance (`gov`):** `search_data_dictionary`, `create_data_collection`.
 
 ### Python
 Ninguna — skill de solo prompt.
