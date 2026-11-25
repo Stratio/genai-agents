@@ -1805,6 +1805,33 @@ class TestHostedLibraries:
         out = capsys.readouterr().out
         assert "chart.js 4.4.4" in out and "d3" not in out
 
+    def test_limits_default_to_genai_apis(self, cli, monkeypatch, capsys):
+        for name in ("FILE_SIZE_BYTES", "TOTAL_SIZE_BYTES", "FILES", "INLINE_BYTES"):
+            monkeypatch.delenv(f"ARTIFACT_MAX_{name}", raising=False)
+        cli.main(["limits"])
+        assert json.loads(capsys.readouterr().out) == {
+            "max_file_size_bytes": 5242880,
+            "max_total_size_bytes": 20971520,
+            "max_files": 128,
+            "max_inline_bytes": 5242880,
+            "page_media_bytes": 3932160,
+        }
+
+    def test_limits_follow_the_variables_genai_api_sets(self, cli, monkeypatch, capsys):
+        """A value that is not a positive integer keeps the default."""
+        monkeypatch.setenv("ARTIFACT_MAX_FILE_SIZE_BYTES", "1048576")
+        monkeypatch.setenv("ARTIFACT_MAX_TOTAL_SIZE_BYTES", "0")
+        monkeypatch.setenv("ARTIFACT_MAX_FILES", "10")
+        monkeypatch.setenv("ARTIFACT_MAX_INLINE_BYTES", "big")
+        cli.main(["limits"])
+        assert json.loads(capsys.readouterr().out) == {
+            "max_file_size_bytes": 1048576,
+            "max_total_size_bytes": 20971520,
+            "max_files": 10,
+            "max_inline_bytes": 1048576,
+            "page_media_bytes": 786432,
+        }
+
     def test_without_the_variable_it_is_an_installation_problem(self, cli, tmp_path, monkeypatch, capsys):
         """No CDN to fall back to: `libs` fails, and `check` says why every library is flagged."""
         monkeypatch.delenv("ARTIFACT_LIBS_URL")

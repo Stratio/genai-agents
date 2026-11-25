@@ -68,11 +68,13 @@ is what makes it safe to open, and it is not negotiable. In practice:
   `window.print()` works; add a `@media print` block if the page is meant to be printed.
   Paper is white in either mode, so that block writes plain colors (`#fff`, `#000`)
   rather than the tokens.
-- **Size.** By default a file can be up to 16 MB and an artifact 64 MB: the API
-  refuses more. The viewer shows a page up to 16 MB counting every file it puts
-  inside it, and base64 makes each one a third bigger, so a page carries about 12 MB
-  of images, fonts and clips; one that does not fit stays out and shows broken.
-  Downscale and compress images, keep clips short, and use only what the page needs.
+- **Size.** `artifact.py limits` prints this installation's limits, in bytes: the
+  largest file, the whole artifact and its file count (the API refuses more), and the
+  largest page the viewer shows, counting every file it puts inside it. base64 makes
+  each of those a third bigger, so a page carries `page_media_bytes` of images, fonts
+  and clips; one that does not fit stays out and shows broken. Run it before a page
+  heavy on images, fonts or clips. Downscale and compress images, keep clips short, and
+  use only what the page needs.
 
 ## Designing an HTML page
 
