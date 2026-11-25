@@ -1,0 +1,34 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__opendata_harvester__list_ckan_datasets",
+      "mcp__opendata_harvester__fetch_dcat_dataset",
+      "mcp__opendata_harvester__fetch_datos_gob_es_catalog",
+      "mcp__opendata_harvester__list_datos_gob_es_datasets",
+      "mcp__opendata_harvester__detect_opendata_api",
+      "mcp__opendata_harvester__discover_dcat_source",
+      "mcp__opendata_harvester__fetch_dcat_catalog_direct",
+      "mcp__opendata_harvester__list_dkan_datasets",
+      "mcp__opendata_harvester__fetch_ods_catalog",
+      "mcp__opendata_harvester__fetch_arcgis_catalog",
+      "mcp__datamarket__import_dcat_file",
+      "mcp__datamarket__get_import_report",
+      "mcp__datamarket__get_import_reports",
+      "mcp__datamarket__search_data_products",
+      "mcp__datamarket__search_published_data_products",
+      "mcp__datamarket__publish_data_products",
+      "mcp__datamarket__unpublish_data_products",
+      "mcp__opendata_harvester__fingerprint_portal",
+      "mcp__opendata_harvester__fetch_dcat_catalog",
+      "mcp__opendata_harvester__compare_portal_counts",
+      "mcp__opendata_harvester__fetch_sparql_dcat_catalog",
+      "mcp__opendata_harvester__merge_jsonld_files",
+      "WebSearch",
+      "WebFetch"
+    ]
+  },
+  "enabledMcpjsonServers": [
+    "opendata_harvester",
+    "datamarket"
+  ]
+}
