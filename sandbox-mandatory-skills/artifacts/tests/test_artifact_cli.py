@@ -1002,8 +1002,8 @@ class TestSkillRules:
     def test_html_themes_through_tokens(self):
         text = self._skill()
         assert "## Designing an HTML page" in text
-        # The viewer passes no theme into the page: it follows the browser's.
-        assert "@media (prefers-color-scheme: dark)" in text
+        # Light whatever the browser or the theme; dark only when the person asks.
+        assert "**Light by default.**" in text and "`tokens <theme> --dark`" in text
         assert "data-theme" not in text
 
     def test_upload_carries_images_and_nothing_else(self, cli, tmp_path):
@@ -1096,6 +1096,10 @@ class TestWorkdir:
 
 
 _HOSTED_CHART_JS = f"{_LIBS}chart.js/4.4.4/chart.umd.js"
+_DARK_BLOCK = """@media (prefers-color-scheme: dark) {
+  :root { --bg: #111111; --ink: #eeeeee; --primary: #8db4ee; --on-primary: #0b1220; color-scheme: dark; }
+}
+"""
 _GOOD_PAGE = """<!doctype html>
 <html lang="es"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -1103,9 +1107,6 @@ _GOOD_PAGE = """<!doctype html>
 <style>
 /* Design plan: #123456 in a comment is not a color */
 :root { --bg: #ffffff; --ink: #111111; --primary: #1f4e8c; --on-primary: #ffffff; color-scheme: light; }
-@media (prefers-color-scheme: dark) {
-  :root { --bg: #111111; --ink: #eeeeee; --primary: #8db4ee; --on-primary: #0b1220; color-scheme: dark; }
-}
 body { margin: 0; background: var(--bg); color: var(--ink); }
 .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); }
 .band { background: var(--primary); color: var(--on-primary); }
@@ -1155,8 +1156,9 @@ class TestCheck:
         page = _GOOD_PAGE.replace(*change)
         assert _rules(cli._page_findings(page, title="Ventas Q3")) == ["colors"]
 
-    def test_no_dark_block(self, cli):
-        page = re.sub(r"@media \(prefers-color-scheme: dark\) \{.*?\n\}\n", "", _GOOD_PAGE, flags=re.S)
+    def test_a_page_that_turns_dark_with_the_browser(self, cli):
+        """An artifact is light by default: dark only when the person asks, in :root."""
+        page = _GOOD_PAGE.replace("body {", _DARK_BLOCK + "body {")
         assert _rules(cli._page_findings(page, title="Ventas Q3")) == ["dark-mode"]
 
     def test_responsive_slips(self, cli):
@@ -1324,6 +1326,8 @@ class TestTokens:
     @pytest.mark.parametrize("theme", _CATALOG)
     def test_a_page_on_the_printed_tokens_passes_check(self, cli, theme):
         assert cli._page_findings(_token_page(cli._tokens_text(cli._theme(theme))), title="Ventas Q3") == []
+        dark = cli._tokens_text(cli._theme(theme), dark=True)
+        assert cli._page_findings(_token_page(dark), title="Ventas Q3") == []
 
     @pytest.mark.parametrize("theme", _CATALOG)
     def test_every_text_token_reads_in_both_modes(self, cli, theme):
@@ -1375,8 +1379,15 @@ class TestTokens:
         cli.main(["tokens", "themes/modern-product.md"])
         out = capsys.readouterr().out
         assert out.startswith("/* First thing in the <style> block")
-        assert "@media (prefers-color-scheme: dark)" in out and "const tok =" in out
+        assert "prefers-color-scheme" not in out and "const tok =" in out
+        assert "color-scheme: light;" in out and "color-scheme: dark;" not in out
         assert cli.calls == []
+
+    def test_dark_only_when_asked(self, cli, capsys):
+        cli.main(["tokens", "corporate-formal", "--dark"])
+        out = capsys.readouterr().out
+        assert "prefers-color-scheme" not in out and "color-scheme: dark;" in out
+        assert "--bg: #0e1218;" in out
 
 
 class TestCheckRoundTwo:
@@ -1466,7 +1477,7 @@ class TestCheckRoundTwo:
         assert cli._page_findings(self._page(script="if (!window.Chart) show(table); const marked = 1;"), title="Ventas Q3") == []
 
     def test_dark_tokens_come_from_the_dark_block(self, cli):
-        themes = cli._themes(_GOOD_PAGE)
+        themes = cli._themes(_GOOD_PAGE.replace("body {", _DARK_BLOCK + "body {"))
         assert themes["light"]["--ink"] == "#111111" and themes["dark"]["--ink"] == "#eeeeee"
 
     def test_check_applies_the_title_rule_to_markdown(self, cli, tmp_path, capsys):
@@ -1530,7 +1541,7 @@ class TestLayout:
         assert "**Read `html.md` in full, and the theme catalog in `brand-kit.md`, before you write or\nedit an HTML page.**" in core
         assert "`reference.md`" in core
         # The rules that break a page silently stay in the core, even if html.md is skipped.
-        for rule in ("No `<form>`, storage, new tabs", "@media (prefers-color-scheme: dark)",
+        for rule in ("No `<form>`, storage, new tabs", "`tokens <theme> --dark`",
                      "Run `check` on the pages", "## Working folder", "## Every artifact"):
             assert rule in core, rule
 
