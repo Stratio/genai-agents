@@ -55,7 +55,8 @@ An artifact is **Markdown or HTML. Nothing else, ever.**
 - `html` — **the default, and the normal case.** Reports, dashboards, pages, guides,
   specifications: build them as a self-contained HTML page.
 - `markdown` — only when the person **explicitly** asks for Markdown (or `.md`).
-  Never pick it on your own.
+  Never pick it on your own. A chart or a diagram in it is a `chart` or `mermaid`
+  block, as in the chat (the `charts` skill): GenAI UI draws them on its page.
 
 Markdown the person hands you to turn into an artifact is not a request for Markdown:
 build a designed HTML page from its content (see `html.md`), not a one-to-one

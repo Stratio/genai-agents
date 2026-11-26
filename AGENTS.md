@@ -299,7 +299,7 @@ Use the plugins under `plugins/` as templates: `stratio-governance` and `stratio
 
 ## Sandbox mandatory skills
 
-`sandbox-mandatory-skills/<name>/` holds the skills every Stratio sandbox carries, whatever the project, agentless ones included. They are not uploaded to GenAI UI, not imported by any agent and not part of a plugin: genai-agents-sandbox downloads `sandbox-mandatory-skills-{v}.zip` (built by `pack_sandbox_mandatory_skills.sh` in `make package`, uploaded by `make deploy`) and bakes it into its image, on OpenCode's skills path. The version it takes is pinned in its `genai_agents_version` file; a PR build (`{v}-PR<N>-SNAPSHOT`, in `raw-staging`) can be pinned there to test both PRs together. Today there is one, `artifacts` (create, find, edit and share Stratio artifacts).
+`sandbox-mandatory-skills/<name>/` holds the skills every Stratio sandbox carries, whatever the project, agentless ones included. They are not uploaded to GenAI UI, not imported by any agent and not part of a plugin: genai-agents-sandbox downloads `sandbox-mandatory-skills-{v}.zip` (built by `pack_sandbox_mandatory_skills.sh` in `make package`, uploaded by `make deploy`) and bakes it into its image, on OpenCode's skills path. The version it takes is pinned in its `genai_agents_version` file; a PR build (`{v}-PR<N>-SNAPSHOT`, in `raw-staging`) can be pinned there to test both PRs together. Today there are two: `artifacts` (create, find, edit and share Stratio artifacts) and `charts` (show a chart or a diagram in the chat as GenAI UI draws it).
 
 ```
 sandbox-mandatory-skills/
