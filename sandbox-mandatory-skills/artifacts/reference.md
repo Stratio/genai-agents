@@ -19,8 +19,8 @@ python3 scripts/artifact.py recent --page-size 10
 # The artifact's working folder, under $ARTIFACT_WORKDIR: created and printed
 python3 scripts/artifact.py workdir "Q3 sales report"
 
-# The theme catalog, then one theme as the page's font <link>, token block (light and
-# dark) and script helper, to paste into the page as printed
+# The theme catalog, then one theme as the page's font <link>, token block (light; dark
+# with --dark, only when the person asks) and script helper, to paste as printed
 python3 scripts/artifact.py tokens
 python3 scripts/artifact.py tokens stratio
 
@@ -95,9 +95,10 @@ What the commands print and accept:
 - **Ids.** Every command that takes an `<artifact_id>` wants the id itself
   (8-4-4-4-12 hex): `resolve` turns a link or a name into it.
 - **`tokens`** with no theme lists the catalog, one theme per line with what it is
-  best for. With one it prints the `:root` block and its dark-mode block, and a `tok()`
-  helper for scripts. On top of the theme's colors it adds `--on-primary` /
-  `--on-accent` in both modes, a
+  best for. With one it prints the `:root` block with the theme's light values, and a
+  `tok()` helper for scripts; with `--dark`, only when the person asks for a dark page,
+  the theme's dark values instead. On top of the theme's colors it adds `--on-primary` /
+  `--on-accent`, a
   `--primary-text`, `--accent-text` and `--state-*-text` that reach 4.5:1 on `--bg`,
   `--bg-alt` and the tints, the `--accent-bg` / `--state-*-bg` tints, `--chart-n`, the
   `--font-*` stacks and `--radius`. An unknown name prints the catalog.

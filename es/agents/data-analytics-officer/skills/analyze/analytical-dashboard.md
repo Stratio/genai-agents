@@ -251,7 +251,7 @@ El tema fijado en el plan (ver instrucciones del agente §8.3) produce un bundle
 
 **Plotly `layout.colorway`**: usar `chart_categorical` del bundle de tokens (5-8 colores hex ordenados). Mantiene las gráficas en conversación con el resto del artefacto.
 
-Si el tema declara extensiones opcionales (`motion_budget`, `radius`, `dark_mode`, `chart_sequential`), respetarlas. `motion_budget` controla el CSS de transiciones; `dark_mode` habilita `@media (prefers-color-scheme: dark)`; `chart_sequential` es para heatmaps.
+Si el tema declara extensiones opcionales (`motion_budget`, `radius`, `dark_mode`, `chart_sequential`), respetarlas. `motion_budget` controla el CSS de transiciones; `dark_mode` solo se usa si el usuario pide un dashboard oscuro, como valores de `:root` (el dashboard es claro por defecto, nunca vía `@media (prefers-color-scheme: dark)`); `chart_sequential` es para heatmaps.
 
 ## 9. Motion
 

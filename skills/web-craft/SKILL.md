@@ -102,7 +102,7 @@ With the five decisions recorded, write the code. Some practical rules:
 - Avoid text shadows on body copy.
 
 ### Colour and theme
-- CSS custom properties for everything. Override at `:root` for dark mode via `@media (prefers-color-scheme: dark)` when the design supports it.
+- CSS custom properties for everything. Light by default, whatever the theme or the browser's preference: no `@media (prefers-color-scheme: dark)`. Dark only when the user asks for it, with the theme's dark values in `:root`.
 - Apply the accent to 5–15 % of the visible surface — no more. Saturation earns its place through scarcity.
 
 ### Motion

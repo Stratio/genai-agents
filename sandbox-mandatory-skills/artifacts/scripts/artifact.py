@@ -733,8 +733,10 @@ def _page_findings(text, base_dir=".", title=None) -> list:
     for name in {page_title, (title or "").strip()} - {""}:
         findings.extend(_title_findings(name))
 
-    if not re.search(r"prefers-color-scheme\s*:\s*dark", css):
-        add("dark-mode", "No @media (prefers-color-scheme: dark) block redefining the tokens.")
+    if re.search(r"prefers-color-scheme\s*:\s*dark", css):
+        add("dark-mode", "The page turns dark with the browser: an artifact is light, whatever its theme. "
+            "Drop the @media (prefers-color-scheme: dark) block; only when the person asks for dark, "
+            "put the dark values in :root (`tokens <theme> --dark`).")
     # Only the declarations: a selector such as #feed or #cafe is an id, not a color.
     outside = " ".join(body for _, body in _css_rules(_VAR_FALLBACK.sub(r"var(\1)", _ROOT_BLOCK.sub("", _without_print(css)))))
     styles = _VAR_FALLBACK.sub(r"var(\1)", " ".join(re.findall(r'(?i)\sstyle=["\']([^"\']*)', markup)))
@@ -851,7 +853,7 @@ def _report_findings(label: str, findings: list) -> None:
 # Theme tokens
 #
 # A catalog theme turned into the page's token block, so that a page built on it passes
-# the color, dark-mode and contrast checks as written: the light and dark values, text
+# the color and contrast checks as written: the light (or, asked for, dark) values, text
 # on a fill, a text-safe variant of every colored token and the status tints, worked out
 # here once instead of by hand on every page.
 # ---------------------------------------------------------------------------
@@ -988,12 +990,15 @@ def _theme(name: str) -> dict:
     }
 
 
-def _tokens_text(theme: dict) -> str:
+def _tokens_text(theme: dict, dark: bool = False) -> str:
     def block(tokens, scheme, indent):
         pad = " " * indent
         lines = [f"{pad}{name}: {value};" for name, value in tokens.items()]
         return "\n".join(lines + [f"{pad}color-scheme: {scheme};"])
 
+    if dark and not theme["dark"]:
+        _die(f"{theme['name']} has no dark values: use it light, or pick a theme with a Dark mode section.")
+    mode = "dark" if dark else "light"
     shared = {f"--font-{role}": stack for role, stack in theme["fonts"].items()}
     if theme["radius"]:
         shared["--radius"] = theme["radius"]
@@ -1006,12 +1011,9 @@ def _tokens_text(theme: dict) -> str:
         f"   var(--state-ok-bg), color var(--state-ok-text). Series: --chart-1 to --chart-{theme['series']}.",
         "   Layout: <one line on this page's layout>. */",
         ":root {",
-        block({**theme["light"], **shared}, "light", 2),
+        block({**theme[mode], **shared}, mode, 2),
         "}",
-    ]
-    if theme["dark"]:
-        out += ["@media (prefers-color-scheme: dark) {", "  :root {", block(theme["dark"], "dark", 4), "  }", "}"]
-    out += [
+
         "body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); }",
         "h1, h2, h3 { font-family: var(--font-display); }",
         "code, pre, .num { font-family: var(--font-mono); }",
@@ -1020,7 +1022,6 @@ def _tokens_text(theme: dict) -> str:
         "// In a script that draws: the colors come from the tokens, never as literals.",
         "const tok = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();",
         f"const series = () => Array.from({{ length: {theme['series']} }}, (_, i) => tok(`--chart-${{i + 1}}`));",
-        'matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => draw());  // your draw()',
     ]
     return "\n".join(out) + "\n"
 
@@ -1314,8 +1315,8 @@ def cmd_workdir(args):
 
 def cmd_tokens(args):
     """Without a theme, list the catalog; with one, print it as the page's token block
-    and script helper."""
-    sys.stdout.write(_tokens_text(_theme(args.theme)) if args.theme else _catalog_text())
+    and script helper: light, or dark with --dark (only when the person asks for it)."""
+    sys.stdout.write(_tokens_text(_theme(args.theme), args.dark) if args.theme else _catalog_text())
 
 
 def cmd_libs(args):
@@ -1553,6 +1554,7 @@ def _parser() -> argparse.ArgumentParser:
 
     p = sub.add_parser("tokens")
     p.add_argument("theme", nargs="?", help="A theme of the catalog, e.g. corporate-formal; none lists them")
+    p.add_argument("--dark", action="store_true", help="The theme's dark values, only when the person asks for dark")
     p.set_defaults(func=cmd_tokens)
 
     p = sub.add_parser("libs")
